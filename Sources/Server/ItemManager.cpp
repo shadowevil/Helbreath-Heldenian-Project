@@ -425,7 +425,7 @@ void ItemManager::drop_item_handler(int client_h, short item_index, int amount, 
 
 int ItemManager::client_motion_get_item_handler(int client_h, short sX, short sY, direction dir)
 {
-	int   ret, erase_req;
+	int   ret;
 	CItem* item;
 
 	if (m_game->m_client_list[client_h] == 0) return 0;
@@ -456,28 +456,11 @@ int ItemManager::client_motion_get_item_handler(int client_h, short sX, short sY
 	CItem* remain = nullptr;
 	item = m_game->m_map_list[m_game->m_client_list[client_h]->m_map_index]->get_item(sX, sY, &remain);
 	if (item != 0) {
-		if (add_client_item_list(client_h, item, &erase_req)) {
-
-			item_log(ItemLogAction::get, client_h, 0, item);
-
-			ret = send_item_notify_msg(client_h, Notify::ItemObtained, item, 0);
-			switch (ret) {
-			case sock::Event::QueueFull:
-			case sock::Event::SocketError:
-			case sock::Event::CriticalError:
-			case sock::Event::SocketClosed:
-				m_game->delete_client(client_h, true, true);
-				return 0;
-			}
-
-			// Broadcast remaining item state to nearby clients (clears tile if no items remain)
-			m_game->send_ground_item_event(CommonType::SetItem,
-				m_game->m_client_list[client_h]->m_map_index, sX, sY, remain);
+		if (give_ground_item(client_h, sX, sY, item, remain)) {
+			if (m_game->m_client_list[client_h] == nullptr) return 0;
 		}
 		else
 		{
-			m_game->m_map_list[m_game->m_client_list[client_h]->m_map_index]->set_item(sX, sY, item);
-
 			ret = send_item_notify_msg(client_h, Notify::CannotCarryMoreItem, 0, 0);
 			switch (ret) {
 			case sock::Event::QueueFull:
@@ -506,6 +489,54 @@ int ItemManager::client_motion_get_item_handler(int client_h, short sX, short sY
 	}
 
 	return 1;
+}
+
+bool ItemManager::give_ground_item(int client_h, short sX, short sY, CItem* item, CItem* remain)
+{
+	int map_index = m_game->m_client_list[client_h]->m_map_index;
+	int erase_req = 0;
+
+	if (!add_client_item_list(client_h, item, &erase_req))
+	{
+		// Too heavy or bag full: back on top of the pile, and tell nearby clients in case the top changed
+		m_game->m_map_list[map_index]->set_item(sX, sY, item);
+		m_game->send_ground_item_event(CommonType::SetItem, map_index, sX, sY, item);
+		return false;
+	}
+
+	item_log(ItemLogAction::get, client_h, 0, item);
+	int ret = send_item_notify_msg(client_h, Notify::ItemObtained, item, 0);
+
+	// A stackable merged into an existing bag stack is no longer referenced
+	if (erase_req == 1) delete item;
+
+	// Broadcast remaining item state to nearby clients (clears tile if no items remain)
+	m_game->send_ground_item_event(CommonType::SetItem, map_index, sX, sY, remain);
+
+	switch (ret) {
+	case sock::Event::QueueFull:
+	case sock::Event::SocketError:
+	case sock::Event::CriticalError:
+	case sock::Event::SocketClosed:
+		m_game->delete_client(client_h, true, true);
+		break;
+	}
+	return true;
+}
+
+void ItemManager::auto_pickup_gold(int client_h)
+{
+	auto* client = m_game->m_client_list[client_h];
+	if (client == nullptr || client->m_is_killed) return;
+	if (!m_game->m_server_config.gameplay.auto_pickup_gold) return;
+
+	CMap* map = m_game->m_map_list[client->m_map_index];
+	if (map == nullptr) return;
+
+	CItem* remain = nullptr;
+	CItem* gold = map->take_item(client->m_x, client->m_y, hb::shared::item::ItemId::Gold, &remain);
+	if (gold != nullptr)
+		give_ground_item(client_h, client->m_x, client->m_y, gold, remain);
 }
 
 bool ItemManager::add_client_item_list(int client_h, CItem* item, int* del_req)

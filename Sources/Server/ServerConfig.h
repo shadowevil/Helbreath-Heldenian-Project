@@ -59,6 +59,7 @@ struct server_config
 		int max_summon_points = 30000;
 		int max_war_contribution = 200000;
 		int max_bank_items = 200;
+		bool auto_pickup_gold = true;    // players collect gold by stepping on it
 	} gameplay;
 
 	// Raid schedule (-1 = disabled, minutes)

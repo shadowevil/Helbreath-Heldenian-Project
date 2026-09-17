@@ -1620,6 +1620,9 @@ int CGame::client_motion_move_handler(int client_h, short sX, short sY, directio
 			delete_client(client_h, true, true);
 			return 0;
 		}
+
+		m_item_manager->auto_pickup_gold(client_h);
+		if (m_client_list[client_h] == nullptr) return 0;
 	}
 	else {
 		m_client_list[client_h]->m_is_move_blocked = true;

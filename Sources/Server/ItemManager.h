@@ -67,6 +67,10 @@ public:
 	// Drop / pickup
 	void drop_item_handler(int client_h, short item_index, int amount, const char* item_name, bool by_player = true);
 	int client_motion_get_item_handler(int client_h, short sX, short sY, direction dir);
+	// Puts an item lifted from the ground into the bag; false = put back (can't carry). May disconnect the client.
+	bool give_ground_item(int client_h, short sX, short sY, CItem* item, CItem* remain);
+	// Collects gold on the player's tile after a step (server_config gameplay.auto_pickup_gold)
+	void auto_pickup_gold(int client_h);
 
 	// Give / exchange
 	void give_item_handler(int client_h, short item_index, int amount, short dX, short dY, uint16_t object_id, const char* item_name);
