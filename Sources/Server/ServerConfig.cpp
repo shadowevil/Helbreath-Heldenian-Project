@@ -125,6 +125,7 @@ bool load_server_config(const std::string& path, server_config& cfg)
 		read_value(gp, "max_summon_points", cfg.gameplay.max_summon_points);
 		read_value(gp, "max_war_contribution", cfg.gameplay.max_war_contribution);
 		read_value(gp, "max_bank_items", cfg.gameplay.max_bank_items);
+		read_value(gp, "auto_pickup_gold", cfg.gameplay.auto_pickup_gold);
 	}
 
 	// Raid schedule
@@ -202,6 +203,7 @@ bool save_server_config(const std::string& path, const server_config& cfg)
 	root["gameplay"]["max_summon_points"] = cfg.gameplay.max_summon_points;
 	root["gameplay"]["max_war_contribution"] = cfg.gameplay.max_war_contribution;
 	root["gameplay"]["max_bank_items"] = cfg.gameplay.max_bank_items;
+	root["gameplay"]["auto_pickup_gold"] = cfg.gameplay.auto_pickup_gold;
 
 	// Raid schedule
 	root["raid_schedule"]["monday"] = cfg.raid_schedule.monday;

@@ -39,7 +39,8 @@
 		"max_construction_points": 30000,
 		"max_summon_points": 30000,
 		"max_war_contribution": 200000,
-		"max_bank_items": 200
+		"max_bank_items": 200,
+		"auto_pickup_gold": true
 	},
 	"raid_schedule": {
 		"monday": 3,

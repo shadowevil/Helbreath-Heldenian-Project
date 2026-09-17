@@ -85,6 +85,8 @@ public:
 	bool init(char * name);
 	bool is_valid_loc(short sX, short sY);
 	CItem* get_item(short sX, short sY, CItem** remain = nullptr);
+	// Removes the first item with id_num anywhere in the tile's pile; remain = new top item
+	CItem* take_item(short sX, short sY, short id_num, CItem** remain = nullptr);
 	bool set_item(short sX, short sY, CItem * item);
 	void clear_dead_owner(short sX, short sY);
 	void clear_owner(int debug_code, short owner_h, char owner_type, short sX, short sY);

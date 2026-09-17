@@ -406,6 +406,28 @@ CItem* CMap::get_item(short sX, short sY, CItem** remain)
 	return item;
 }
 
+CItem* CMap::take_item(short sX, short sY, short id_num, CItem** remain)
+{
+	if ((sX < 0) || (sX >= m_size_x) || (sY < 0) || (sY >= m_size_y)) return nullptr;
+
+	CTile* tile = (m_tile + sX + sY * m_size_x);
+	for (int i = 0; i < tile->m_total_item; i++)
+	{
+		CItem* item = tile->m_item[i];
+		if (item == nullptr || item->m_id_num != id_num) continue;
+
+		for (int k = i; k < TilePerItems - 1; k++)
+			tile->m_item[k] = tile->m_item[k + 1];
+		tile->m_total_item--;
+		tile->m_item[tile->m_total_item] = nullptr;
+
+		if (remain)
+			*remain = tile->m_item[0];
+		return item;
+	}
+	return nullptr;
+}
+
 int CMap::check_item(short sX, short sY)
 {
 	class CTile* tile;
