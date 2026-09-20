@@ -33,11 +33,13 @@ void DialogBox_RepairAll::on_draw()
 	{
 		if ((i + m_scroll_offset) < m_game->totalItemRepair)
 		{
-			CItem* cfg = m_game->get_item_config(player().m_item_list[m_game->m_repair_all[i + m_scroll_offset].index]->m_id_num);
+			int idx = m_game->m_repair_all[i + m_scroll_offset].index;
+			auto* item = player().m_item_list[idx].get();
+			if (!item) continue;
+			CItem* cfg = m_game->get_item_config(item->m_id_num);
 			txt = std::format("{} - Cost: {}", cfg ? cfg->m_name : "Unknown", m_game->m_repair_all[i + m_scroll_offset].price);
 
 			put_string(sX + 30, sY + 45 + i * 15, txt.c_str(), GameColors::UIBlack);
-			inventory_manager::get().lock_item(m_game->m_repair_all[i + m_scroll_offset].index);
 		}
 	}
 
@@ -133,5 +135,26 @@ bool DialogBox_RepairAll::on_click()
 bool DialogBox_RepairAll::on_enable(int type, int64_t v1, int v2, const char* string)
 {
 	m_mode = type;
+	m_locked_by_us.fill(false);
+	for (int i = 0; i < m_game->totalItemRepair; i++)
+	{
+		int idx = m_game->m_repair_all[i].index;
+		if (inventory_manager::get().try_lock_item(idx))
+			m_locked_by_us[idx] = true;
+	}
+	return true;
+}
+
+bool DialogBox_RepairAll::on_disable()
+{
+	for (int i = 0; i < m_game->totalItemRepair; i++)
+	{
+		int idx = m_game->m_repair_all[i].index;
+		if (m_locked_by_us[idx])
+		{
+			inventory_manager::get().unlock_item(idx);
+			m_locked_by_us[idx] = false;
+		}
+	}
 	return true;
 }

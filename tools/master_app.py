@@ -40,6 +40,27 @@ TOOL_REGISTRY = [
         "module": "Drops.drop_manager_server",
         "icon": "drops",
     },
+    {
+        "name": "Exp Curve",
+        "category": "Database",
+        "port": 8082,
+        "module": "ExpCurve.app",
+        "icon": "expcurve",
+    },
+    {
+        "name": "NPC Editor",
+        "category": "Database",
+        "port": 8083,
+        "module": "NpcEditor.app",
+        "icon": "npc",
+    },
+    {
+        "name": "Creation Items",
+        "category": "Database",
+        "port": 8084,
+        "module": "CreationItemManager.app",
+        "icon": "creation",
+    },
 ]
 
 MASTER_PORT = 8000

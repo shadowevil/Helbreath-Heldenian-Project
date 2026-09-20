@@ -21,10 +21,12 @@ public:
 	void erase_item(int item_id);
 	bool check_item_operation_enabled(int item_id);
 
-	// Item lock (wraps m_is_item_disabled)
+	// Item lock (delegates to CItem::m_locked)
 	void lock_item(int slot);
+	bool try_lock_item(int slot);
 	void unlock_item(int slot);
 	bool is_locked(int slot) const;
+	bool warn_if_locked(int slot);
 	void unlock_all();
 
 	// Equipment

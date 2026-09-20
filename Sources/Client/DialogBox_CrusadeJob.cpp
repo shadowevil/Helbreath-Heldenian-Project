@@ -26,31 +26,11 @@ void DialogBox_CrusadeJob::draw_mode_select_job(short sX, short sY)
 
 	if (player().m_citizen)
 	{
-		if (player().m_guild_rank == 0)
-		{
-			// Guild master can be Commander
-			if (mouse_in(link_job_1))
-				put_aligned_string(sX + 24, sX + 246, sY + 150, DRAWDIALOGBOX_CRUSADEJOB5, GameColors::UIWhite);
-			else
-				put_aligned_string(sX + 24, sX + 246, sY + 150, DRAWDIALOGBOX_CRUSADEJOB5, GameColors::UIMagicBlue);
-		}
+		// Soldier option
+		if (mouse_in(link_job_1))
+			put_aligned_string(sX + 24, sX + 246, sY + 150, DRAWDIALOGBOX_CRUSADEJOB7, GameColors::UIWhite);
 		else
-		{
-			// Non-guild masters can be Soldier
-			if (mouse_in(link_job_1))
-				put_aligned_string(sX + 24, sX + 246, sY + 150, DRAWDIALOGBOX_CRUSADEJOB7, GameColors::UIWhite);
-			else
-				put_aligned_string(sX + 24, sX + 246, sY + 150, DRAWDIALOGBOX_CRUSADEJOB7, GameColors::UIMagicBlue);
-
-			// Guild members can also be Constructor
-			if (player().m_guild_rank != -1)
-			{
-				if (mouse_in(link_job_2))
-					put_aligned_string(sX + 24, sX + 246, sY + 175, DRAWDIALOGBOX_CRUSADEJOB9, GameColors::UIWhite);
-				else
-					put_aligned_string(sX + 24, sX + 246, sY + 175, DRAWDIALOGBOX_CRUSADEJOB9, GameColors::UIMagicBlue);
-			}
-		}
+			put_aligned_string(sX + 24, sX + 246, sY + 150, DRAWDIALOGBOX_CRUSADEJOB7, GameColors::UIMagicBlue);
 	}
 
 	put_aligned_string(sX + 24, sX + 246, sY + 290 - 40, DRAWDIALOGBOX_CRUSADEJOB10);
@@ -122,51 +102,17 @@ bool DialogBox_CrusadeJob::on_click()
 			return true;
 		}
 
-		if (player().m_guild_rank == 0)
+		// Soldier option
+		if (mouse_in(link_job_1))
 		{
-			// Guild master - Commander option
-			if (mouse_in(link_job_1))
 			{
-				{
-					auto pkt = hb::net::make_common_command(CommonType::RequestSelectCrusadeDuty, m_game->m_player->m_player_x, m_game->m_player->m_player_y);
-					pkt.v1 = 3;
-					m_game->send_game_packet(pkt);
-				}
-				disable_dialog_box(DialogBoxId::CrusadeJob);
-				audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-				return true;
+				auto pkt = hb::net::make_common_command(CommonType::RequestSelectCrusadeDuty, m_game->m_player->m_player_x, m_game->m_player->m_player_y);
+				pkt.v1 = 1;
+				m_game->send_game_packet(pkt);
 			}
-		}
-		else
-		{
-			// Soldier option
-			if (mouse_in(link_job_1))
-			{
-				{
-					auto pkt = hb::net::make_common_command(CommonType::RequestSelectCrusadeDuty, m_game->m_player->m_player_x, m_game->m_player->m_player_y);
-					pkt.v1 = 1;
-					m_game->send_game_packet(pkt);
-				}
-				disable_dialog_box(DialogBoxId::CrusadeJob);
-				audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-				return true;
-			}
-
-			// Constructor option (guild members only)
-			if (player().m_guild_rank != -1)
-			{
-				if (mouse_in(link_job_2))
-				{
-					{
-						auto pkt = hb::net::make_common_command(CommonType::RequestSelectCrusadeDuty, m_game->m_player->m_player_x, m_game->m_player->m_player_y);
-						pkt.v1 = 2;
-						m_game->send_game_packet(pkt);
-					}
-					disable_dialog_box(DialogBoxId::CrusadeJob);
-					audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-					return true;
-				}
-			}
+			disable_dialog_box(DialogBoxId::CrusadeJob);
+			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
+			return true;
 		}
 
 		// Help button

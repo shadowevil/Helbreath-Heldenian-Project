@@ -499,11 +499,7 @@ bool DialogBox_Commander::on_click()
 			if (tX > 494) tX = 494;
 			if (tY > 494) tY = 494;
 			{
-				auto pkt = hb::net::make_common_command_str(CommonType::SetGuildTeleportLoc, player().m_player_x, player().m_player_y);
-				pkt.v1 = tX;
-				pkt.v2 = tY;
-				std::snprintf(pkt.text, sizeof(pkt.text), "%s", "middleland");
-				send_game_packet(pkt);
+				// Guild teleport location removed with guild system
 			}
 			m_mode = mode::main;
 			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
@@ -525,7 +521,7 @@ bool DialogBox_Commander::on_click()
 	case mode::use_tp:
 		if (mouse_in(btn_use_tp))
 		{
-			send_game_packet(hb::net::make_common_command(CommonType::GuildTeleport, player().m_player_x, player().m_player_y));
+			// Guild teleport removed with guild system
 			disable_dialog_box(DialogBoxId::CrusadeCommander);
 			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
 		}
@@ -708,11 +704,7 @@ bool DialogBox_Commander::on_click()
 			if (tX > 494) tX = 494;
 			if (tY > 494) tY = 494;
 			{
-				auto pkt = hb::net::make_common_command_str(CommonType::SetGuildConstructLoc, player().m_player_x, player().m_player_y);
-				pkt.v1 = tX;
-				pkt.v2 = tY;
-				std::snprintf(pkt.text, sizeof(pkt.text), "%s", "middleland");
-				send_game_packet(pkt);
+				// Guild construct location removed with guild system
 			}
 			m_mode = mode::main;
 			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);

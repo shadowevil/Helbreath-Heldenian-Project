@@ -116,6 +116,27 @@ void DialogBox_HudPanel::draw_gauge_bars()
 	hb::shared::text::draw_text(GameFont::Numbers, SP_NUM_X() + 1, SP_NUM_Y() + 1, statBuf.c_str(), hb::shared::text::TextStyle::from_color(GameColors::UIBlack));
 	hb::shared::text::draw_text(GameFont::Numbers, SP_NUM_X(), SP_NUM_Y(), statBuf.c_str(), hb::shared::text::TextStyle::from_color(GameColors::UIWhite));
 
+	// Hunger bar (vertical — frame 17 covers missing hunger from top)
+	int hunger = std::clamp(player().m_hunger_status, 0, MAX_HUNGER);
+	int missing_hunger = MAX_HUNGER - hunger;
+	auto hunger_frame = sprite->GetFrameRect(17);
+	int bar_height = (missing_hunger * hunger_frame.height) / MAX_HUNGER;
+	if (bar_height < 0) bar_height = 0;
+	if (bar_height > hunger_frame.height) bar_height = hunger_frame.height;
+	sprite->DrawWidth(HUNGER_BAR_X(), m_y + HUNGER_BAR_Y(), 17, bar_height, true);
+
+	// EXP bar (horizontal — frame 18 fills from empty to full)
+	// m_exp is progress toward next level (0 to threshold), fills left-to-right
+	uint32_t next_level_exp = m_game->get_level_exp(player().m_level + 1);
+	auto exp_frame = sprite->GetFrameRect(18);
+	int exp_width = 0;
+	if (next_level_exp > 0)
+	{
+		exp_width = (int)((uint64_t)player().m_exp * exp_frame.width / next_level_exp);
+	}
+	if (exp_width < 0) exp_width = 0;
+	if (exp_width > exp_frame.width) exp_width = exp_frame.width;
+	sprite->DrawWidth(EXP_BAR_X(), m_y + EXP_BAR_Y(), 18, exp_width);
 }
 
 void DialogBox_HudPanel::draw_status_icons()
@@ -160,18 +181,11 @@ void DialogBox_HudPanel::draw_status_icons()
 	std::string infoBuf;
 	if (hb::shared::input::is_ctrl_down())
 	{
-		uint32_t cur_exp = m_game->get_level_exp(player().m_level);
 		uint32_t next_exp = m_game->get_level_exp(player().m_level + 1);
-		if (player().m_exp < next_exp)
-		{
-			uint32_t exp_range = next_exp - cur_exp;
-			uint32_t exp_progress = (player().m_exp > cur_exp) ? (player().m_exp - cur_exp) : 0;
-			infoBuf = std::format("Rest Exp: {}", exp_range - exp_progress);
-		}
+		if (next_exp > player().m_exp)
+			infoBuf = std::format("Rest Exp: {}", next_exp - player().m_exp);
 		else
-		{
 			infoBuf.clear();
-		}
 	}
 	else
 	{

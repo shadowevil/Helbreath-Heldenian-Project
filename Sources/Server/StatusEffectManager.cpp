@@ -320,15 +320,13 @@ void StatusEffectManager::check_farming_action(short attacker_h, short target_h,
 	}
 	if (type == 0) {
 		m_game->m_map_list[m_game->m_client_list[attacker_h]->m_map_index]->set_item(m_game->m_client_list[attacker_h]->m_x, m_game->m_client_list[attacker_h]->m_y, item);
-		m_game->send_event_to_near_client_type_b(MsgId::EventCommon, CommonType::ItemDrop, m_game->m_client_list[attacker_h]->m_map_index,
-			m_game->m_client_list[attacker_h]->m_x, m_game->m_client_list[attacker_h]->m_y, item->m_id_num, 0,
-			item->m_item_color, item->m_attribute);
+		m_game->send_ground_item_event(CommonType::ItemDrop, m_game->m_client_list[attacker_h]->m_map_index,
+			m_game->m_client_list[attacker_h]->m_x, m_game->m_client_list[attacker_h]->m_y, item);
 	}
 	else if (type == 1) {
 		m_game->m_map_list[m_game->m_npc_list[target_h]->m_map_index]->set_item(m_game->m_npc_list[target_h]->m_x, m_game->m_npc_list[target_h]->m_y, item);
-		m_game->send_event_to_near_client_type_b(MsgId::EventCommon, CommonType::ItemDrop, m_game->m_npc_list[target_h]->m_map_index,
-			m_game->m_npc_list[target_h]->m_x, m_game->m_npc_list[target_h]->m_y, item->m_id_num, 0,
-			item->m_item_color, item->m_attribute);
+		m_game->send_ground_item_event(CommonType::ItemDrop, m_game->m_npc_list[target_h]->m_map_index,
+			m_game->m_npc_list[target_h]->m_x, m_game->m_npc_list[target_h]->m_y, item);
 	}
 
 }

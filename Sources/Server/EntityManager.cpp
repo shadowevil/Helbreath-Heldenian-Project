@@ -23,11 +23,6 @@ using namespace hb::server::net;
 using namespace hb::shared::direction;
 namespace smap = hb::server::map;
 namespace sdelay = hb::server::delay_event;
-using namespace hb::server::config;
-using namespace hb::server::npc;
-using namespace hb::server::net;
-namespace smap = hb::server::map;
-namespace sdelay = hb::server::delay_event;
 
 using namespace hb::shared::item;
 
@@ -43,7 +38,7 @@ CEntityManager::CEntityManager()
     // Allocate entity array (EntityManager OWNS this)
     m_npc_list = new CNpc*[MaxNpcs];
     for(int i = 0; i < MaxNpcs; i++) {
-        m_npc_list[i] = NULL;
+        m_npc_list[i] = nullptr;
         m_entity_guid[i] = 0;
     }
 
@@ -51,8 +46,8 @@ CEntityManager::CEntityManager()
     m_active_entity_list = new int[MaxNpcs];
     m_active_entity_count = 0;
 
-    m_map_list = NULL;
-    m_game = NULL;
+    m_map_list = nullptr;
+    m_game = nullptr;
     m_max_maps = 0;
     m_total_entities = 0;
     m_next_guid = 1; // start GUIDs at 1 (0 = invalid)
@@ -62,11 +57,11 @@ CEntityManager::CEntityManager()
 CEntityManager::~CEntityManager()
 {
     // Delete all entities (EntityManager owns them)
-    if (m_npc_list != NULL) {
+    if (m_npc_list != nullptr) {
         for(int i = 0; i < MaxNpcs; i++) {
-            if (m_npc_list[i] != NULL) {
+            if (m_npc_list[i] != nullptr) {
                 delete m_npc_list[i];
-                m_npc_list[i] = NULL;
+                m_npc_list[i] = nullptr;
             }
         }
         delete[] m_npc_list;
@@ -74,9 +69,9 @@ CEntityManager::~CEntityManager()
     }
 
     // Delete active entity tracking list
-    if (m_active_entity_list != NULL) {
+    if (m_active_entity_list != nullptr) {
         delete[] m_active_entity_list;
-        m_active_entity_list = NULL;
+        m_active_entity_list = nullptr;
     }
 }
 
@@ -93,7 +88,7 @@ void CEntityManager::set_map_list(CMap** map_list, int max_maps)
 void CEntityManager::set_game(CGame* game)
 {
     m_game = game;
-    m_initialized = (m_npc_list != NULL && m_map_list != NULL && m_game != NULL);
+    m_initialized = (m_npc_list != nullptr && m_map_list != nullptr && m_game != nullptr);
 }
 
 // ========================================================================
@@ -102,7 +97,7 @@ void CEntityManager::set_game(CGame* game)
 
 void CEntityManager::process_spawns()
 {
-    if (!m_initialized || m_map_list == NULL || m_game == NULL)
+    if (!m_initialized || m_map_list == nullptr || m_game == nullptr)
         return;
 
     if (m_game->m_on_exit_process)
@@ -112,7 +107,7 @@ void CEntityManager::process_spawns()
 
     // Loop through all maps and process their spot spawn generators
     for(int i = 0; i < m_max_maps; i++) {
-        if (m_map_list[i] != NULL) {
+        if (m_map_list[i] != nullptr) {
             process_spot_spawns(i);
         }
     }
@@ -126,18 +121,16 @@ int CEntityManager::create_entity(
     int spot_mob_index, char change_side,
     bool hide_gen_mode, bool is_summoned,
     bool firm_berserk, bool is_master,
-    int guild_guid,
     bool bypass_mob_limit)
 {
     if (!m_initialized) return -1;
-    if (m_game == NULL) return -1;
+    if (m_game == nullptr) return -1;
     if (strlen(name) == 0) return -1;
     if (npc_config_id < 0 || npc_config_id >= MaxNpcTypes) return -1;
 
-    int t, j, k, map_index;
+    int t, map_index;
     char tmp_name[11];
     short sX, sY;
-    bool flag;
     hb::time::local_time SysTime{};
 
     SysTime = hb::time::local_time::now();
@@ -147,7 +140,7 @@ int CEntityManager::create_entity(
 
     // Find map index
     for(int i = 0; i < m_max_maps; i++)
-        if (m_map_list[i] != 0) {
+        if (m_map_list[i] != nullptr) {
             if (memcmp(m_map_list[i]->m_name, tmp_name, 10) == 0)
                 map_index = i;
         }
@@ -156,14 +149,14 @@ int CEntityManager::create_entity(
 
     // Find free entity slot
     for(int i = 1; i < MaxNpcs; i++)
-        if (m_npc_list[i] == 0) {
+        if (m_npc_list[i] == nullptr) {
             m_npc_list[i] = new CNpc(name);
 
             // initialize NPC attributes from config
             if (init_entity_attributes(m_npc_list[i], npc_config_id, sClass, sa) == false) {
                 hb::logger::log("Invalid NPC creation request (config_id={}), ignored", npc_config_id);
                 delete m_npc_list[i];
-                m_npc_list[i] = 0;
+                m_npc_list[i] = nullptr;
                 return -1;
             }
 
@@ -171,89 +164,17 @@ int CEntityManager::create_entity(
             if (m_npc_list[i]->m_day_of_week_limit < 10) {
                 if (m_npc_list[i]->m_day_of_week_limit != SysTime.day_of_week) {
                     delete m_npc_list[i];
-                    m_npc_list[i] = 0;
+                    m_npc_list[i] = nullptr;
                     return -1;
                 }
             }
 
-            // Determine spawn location based on move type
-            switch (move_type) {
-            case MoveType::Guard:
-            case MoveType::Random:
-                if ((offset_x != 0) && (offset_y != 0) && (*offset_x != 0) && (*offset_y != 0)) {
-                    sX = *offset_x;
-                    sY = *offset_y;
-                }
-                else {
-                    for (j = 0; j <= 30; j++) {
-                        sX = (rand() % (m_map_list[map_index]->m_size_x - 50)) + 15;
-                        sY = (rand() % (m_map_list[map_index]->m_size_y - 50)) + 15;
-
-                        flag = true;
-                        for (k = 0; k < smap::MaxMgar; k++)
-                            if (m_map_list[map_index]->m_mob_generator_avoid_rect[k].x != -1) {
-                                if ((sX >= m_map_list[map_index]->m_mob_generator_avoid_rect[k].Left()) &&
-                                    (sX <= m_map_list[map_index]->m_mob_generator_avoid_rect[k].Right()) &&
-                                    (sY >= m_map_list[map_index]->m_mob_generator_avoid_rect[k].Top()) &&
-                                    (sY <= m_map_list[map_index]->m_mob_generator_avoid_rect[k].Bottom())) {
-                                    // Avoid Rect
-                                    flag = false;
-                                }
-                            }
-                        if (flag) break;
-                    }
-                    if (!flag) {
-                        delete m_npc_list[i];
-                        m_npc_list[i] = 0;
-                        return -1;
-                    }
-                    // sX, sY found
-                }
-                break;
-
-            case MoveType::RandomArea:
-                // Spawn in random area
-                sX = (short)((rand() % area->width) + area->x);
-                sY = (short)((rand() % area->height) + area->y);
-                break;
-
-            case MoveType::RandomWaypoint:
-                // Spawn at random waypoint
-                sX = (short)m_map_list[map_index]->m_waypoint_list[waypoint_list[m_game->dice(1, 10) - 1]].x;
-                sY = (short)m_map_list[map_index]->m_waypoint_list[waypoint_list[m_game->dice(1, 10) - 1]].y;
-                break;
-
-            default:
-                // Use provided position or first waypoint
-                if ((offset_x != 0) && (offset_y != 0) && (*offset_x != 0) && (*offset_y != 0)) {
-                    sX = *offset_x;
-                    sY = *offset_y;
-                }
-                else {
-                    sX = (short)m_map_list[map_index]->m_waypoint_list[waypoint_list[0]].x;
-                    sY = (short)m_map_list[map_index]->m_waypoint_list[waypoint_list[0]].y;
-                }
-                break;
-            }
-
-            // Check if position is empty
-            if (m_game->get_empty_position(&sX, &sY, map_index) == false) {
+            // Determine spawn location, validate, and apply hide-gen check
+            if (!find_spawn_position(map_index, move_type, offset_x, offset_y,
+                    waypoint_list, area, hide_gen_mode, sX, sY)) {
                 delete m_npc_list[i];
-                m_npc_list[i] = 0;
+                m_npc_list[i] = nullptr;
                 return -1;
-            }
-
-            // Hide generation mode check
-            if ((hide_gen_mode) && (m_game->get_player_number_on_spot(sX, sY, map_index, 7) != 0)) {
-                delete m_npc_list[i];
-                m_npc_list[i] = 0;
-                return -1;
-            }
-
-            // Set output position
-            if ((offset_x != 0) && (offset_y != 0)) {
-                *offset_x = sX;
-                *offset_y = sY;
             }
 
             // Set entity position
@@ -347,35 +268,7 @@ int CEntityManager::create_entity(
             m_npc_list[i]->m_target_index = 0;
             m_npc_list[i]->m_turn = (rand() % 2);
 
-            // Set appearance based on type
-            switch (m_npc_list[i]->m_type) {
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-                // Player-type NPCs (guard towers): encode weapon/shield into appearance
-                // sub_type stores weapon type, special_frame stores shield type
-                m_npc_list[i]->m_appearance.sub_type = static_cast<uint8_t>(rand() % 13);    // weapon type
-                m_npc_list[i]->m_appearance.special_frame = static_cast<uint8_t>(rand() % 9); // shield type
-                break;
-
-            case 36: // AGT
-            case 37: // CGT
-            case 38:
-            case 39:
-                m_npc_list[i]->m_appearance.special_frame = 3;
-                break;
-
-            case 64: // Crop
-                m_npc_list[i]->m_appearance.special_frame = 1;
-                break;
-
-            default:
-                m_npc_list[i]->m_appearance.clear();
-                break;
-            }
+            setup_entity_appearance(m_npc_list[i]);
 
             // Set entity properties
             m_npc_list[i]->m_map_index = (char)map_index;
@@ -399,7 +292,6 @@ int CEntityManager::create_entity(
 
             m_npc_list[i]->m_bravery = (rand() % 3) + m_npc_list[i]->m_min_bravery;
             m_npc_list[i]->m_spot_mob_index = spot_mob_index;
-            m_npc_list[i]->m_guild_guid = guild_guid;
 
             // Generate and assign GUID
             m_entity_guid[i] = generate_entity_guid();
@@ -413,18 +305,11 @@ int CEntityManager::create_entity(
             m_total_entities++;
 
             // Special handling for crusade structures and crops
-            switch (m_npc_list[i]->m_type) {
-            case 36: // AGT
-            case 37: // CGT
-            case 38:
-            case 39:
-            case 42: // ManaStone
+            if (is_crusade_structure(m_npc_list[i]->m_type)) {
                 m_map_list[map_index]->add_crusade_structure_info(static_cast<char>(m_npc_list[i]->m_type), sX, sY, m_npc_list[i]->m_side);
-                break;
-
-            case 64: // Crop
+            }
+            else if (m_npc_list[i]->m_type == 64) {
                 m_map_list[map_index]->add_crops_total_sum();
-                break;
             }
 
             // Add to active entity list for efficient iteration (Performance!)
@@ -437,10 +322,610 @@ int CEntityManager::create_entity(
     // No free slots - log diagnostic info
     int used_slots = 0;
     for(int idx = 1; idx < MaxNpcs; idx++) {
-        if (m_npc_list[idx] != 0) used_slots++;
+        if (m_npc_list[idx] != nullptr) used_slots++;
     }
     hb::logger::log("No free entity slots: used={}/{} active={} total={}", used_slots, MaxNpcs - 1, m_active_entity_count, m_total_entities);
     return -1; // No free slots
+}
+
+bool CEntityManager::find_spawn_position(int map_index, char move_type,
+    int* offset_x, int* offset_y, char* waypoint_list,
+    hb::shared::geometry::GameRectangle* area,
+    bool hide_gen_mode, short& out_x, short& out_y)
+{
+    bool flag;
+
+    switch (move_type) {
+    case MoveType::Guard:
+    case MoveType::Random:
+        if ((offset_x != nullptr) && (offset_y != nullptr) && (*offset_x != 0) && (*offset_y != 0)) {
+            out_x = *offset_x;
+            out_y = *offset_y;
+        }
+        else {
+            flag = false;
+            for (int j = 0; j <= 30; j++) {
+                out_x = (rand() % (m_map_list[map_index]->m_size_x - 50)) + 15;
+                out_y = (rand() % (m_map_list[map_index]->m_size_y - 50)) + 15;
+
+                flag = true;
+                for (int k = 0; k < smap::MaxMgar; k++)
+                    if (m_map_list[map_index]->m_mob_generator_avoid_rect[k].x != -1) {
+                        if ((out_x >= m_map_list[map_index]->m_mob_generator_avoid_rect[k].Left()) &&
+                            (out_x <= m_map_list[map_index]->m_mob_generator_avoid_rect[k].Right()) &&
+                            (out_y >= m_map_list[map_index]->m_mob_generator_avoid_rect[k].Top()) &&
+                            (out_y <= m_map_list[map_index]->m_mob_generator_avoid_rect[k].Bottom())) {
+                            flag = false;
+                        }
+                    }
+                if (flag) break;
+            }
+            if (!flag) return false;
+        }
+        break;
+
+    case MoveType::RandomArea:
+        out_x = (short)((rand() % area->width) + area->x);
+        out_y = (short)((rand() % area->height) + area->y);
+        break;
+
+    case MoveType::RandomWaypoint:
+        out_x = (short)m_map_list[map_index]->m_waypoint_list[waypoint_list[m_game->dice(1, 10) - 1]].x;
+        out_y = (short)m_map_list[map_index]->m_waypoint_list[waypoint_list[m_game->dice(1, 10) - 1]].y;
+        break;
+
+    default:
+        if ((offset_x != nullptr) && (offset_y != nullptr) && (*offset_x != 0) && (*offset_y != 0)) {
+            out_x = *offset_x;
+            out_y = *offset_y;
+        }
+        else {
+            out_x = (short)m_map_list[map_index]->m_waypoint_list[waypoint_list[0]].x;
+            out_y = (short)m_map_list[map_index]->m_waypoint_list[waypoint_list[0]].y;
+        }
+        break;
+    }
+
+    if (m_game->get_empty_position(&out_x, &out_y, map_index) == false)
+        return false;
+
+    if ((hide_gen_mode) && (m_game->get_player_number_on_spot(out_x, out_y, map_index, 7) != 0))
+        return false;
+
+    if ((offset_x != nullptr) && (offset_y != nullptr)) {
+        *offset_x = out_x;
+        *offset_y = out_y;
+    }
+
+    return true;
+}
+
+void CEntityManager::setup_entity_appearance(CNpc* npc)
+{
+    switch (npc->m_type) {
+    case 1: case 2: case 3: case 4: case 5: case 6:
+        npc->m_appearance.sub_type = static_cast<uint8_t>(rand() % 13);
+        npc->m_appearance.special_frame = static_cast<uint8_t>(rand() % 9);
+        break;
+    case 36: case 37: case 38: case 39:
+        npc->m_appearance.special_frame = 3;
+        break;
+    case 64:
+        npc->m_appearance.special_frame = 1;
+        break;
+    default:
+        npc->m_appearance.clear();
+        break;
+    }
+}
+
+void CEntityManager::award_kill_experience(int entity_handle, short attacker_h, char attacker_type)
+{
+    CNpc* entity = m_npc_list[entity_handle];
+    short type = entity->m_type;
+
+    if ((entity->m_is_summoned != true) && (attacker_type == hb::shared::owner_class::Player) &&
+        (m_game->m_client_list[attacker_h] != nullptr)) {
+        double tmp1, tmp2, tmp3;
+        uint32_t exp = (entity->m_exp / 3);
+
+        if (entity->m_no_die_remain_exp > 0) {
+            exp += entity->m_no_die_remain_exp;
+        }
+
+        if (m_game->m_client_list[attacker_h]->m_add_exp != 0) {
+            tmp1 = (double)m_game->m_client_list[attacker_h]->m_add_exp;
+            tmp2 = (double)exp;
+            tmp3 = (tmp1 / 100.0f) * tmp2;
+            exp += (uint32_t)tmp3;
+        }
+
+        if (type == 81) {
+            for(int i = 1; i < MaxClients; i++) {
+                if (m_game->m_client_list[i] != nullptr) {
+                    m_game->send_notify_msg(attacker_h, i, Notify::AbaddonKilled,
+                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+                }
+            }
+        }
+
+        if (m_game->m_is_crusade_mode) {
+            if (exp > 10) exp = exp / 3;
+        }
+
+        m_game->get_exp(attacker_h, exp, true);
+
+        int quest_index = m_game->m_client_list[attacker_h]->m_quest;
+        if (quest_index != 0 && m_game->m_quest_manager->m_quest_config_list[quest_index] != nullptr) {
+            switch (m_game->m_quest_manager->m_quest_config_list[quest_index]->m_type) {
+            case hb::server::quest::Type::MonsterHunt:
+                if (m_game->m_client_list[attacker_h]->m_quest_match_flag_loc &&
+                    m_game->m_quest_manager->m_quest_config_list[quest_index]->m_target_config_id == entity->m_npc_config_id) {
+                    m_game->m_client_list[attacker_h]->m_cur_quest_count++;
+                    char quest_remain = (m_game->m_quest_manager->m_quest_config_list[quest_index]->m_max_count -
+                        m_game->m_client_list[attacker_h]->m_cur_quest_count);
+                    m_game->send_notify_msg(0, attacker_h, Notify::QuestCounter, quest_remain, 0, 0, 0);
+                    m_game->m_quest_manager->check_is_quest_completed(attacker_h);
+                }
+                break;
+            }
+        }
+    }
+
+    // Rating adjustments (player only)
+    if (attacker_type == hb::shared::owner_class::Player) {
+        switch (type) {
+        case 32:
+            m_game->m_client_list[attacker_h]->m_rating -= 5;
+            if (m_game->m_client_list[attacker_h]->m_rating < -10000)
+                m_game->m_client_list[attacker_h]->m_rating = 0;
+            if (m_game->m_client_list[attacker_h]->m_rating > 10000)
+                m_game->m_client_list[attacker_h]->m_rating = 0;
+            break;
+        case 33:
+            break;
+        }
+    }
+}
+
+void CEntityManager::apply_crusade_contribution(int entity_handle, short attacker_h, char attacker_type)
+{
+    CNpc* entity = m_npc_list[entity_handle];
+    short type = entity->m_type;
+    int map_index = entity->m_map_index;
+
+    struct crusade_contribution { int type; int construction; int war; };
+    static constexpr crusade_contribution contribution_table[] = {
+        {1, 50, 100}, {2, 50, 100}, {3, 50, 100}, {4, 50, 100}, {5, 50, 100}, {6, 50, 100},
+        {36, 700, 4000}, {37, 700, 4000},
+        {38, 500, 2000}, {39, 500, 2000},
+        {40, 1500, 5000},
+        {41, 5000, 10000},
+        {43, 500, 1000},
+        {44, 1000, 2000}, {45, 1500, 3000},
+        {46, 1000, 2000}, {47, 1500, 3000},
+    };
+
+    int construction_point = 0;
+    int war_contribution = 0;
+
+    if (type == 64) {
+        m_map_list[map_index]->remove_crops_total_sum();
+    }
+
+    for (const auto& entry : contribution_table) {
+        if (entry.type == type) {
+            construction_point = entry.construction;
+            war_contribution = entry.war;
+            break;
+        }
+    }
+
+    if (construction_point != 0) {
+        switch (attacker_type) {
+        case hb::shared::owner_class::Player:
+            if (m_game->m_client_list[attacker_h]->m_side != entity->m_side) {
+                m_game->m_client_list[attacker_h]->m_construction_point += construction_point;
+                if (m_game->m_client_list[attacker_h]->m_construction_point > MaxConstructionPoint)
+                    m_game->m_client_list[attacker_h]->m_construction_point = MaxConstructionPoint;
+
+                m_game->m_client_list[attacker_h]->m_war_contribution += war_contribution;
+                if (m_game->m_client_list[attacker_h]->m_war_contribution > MaxWarContribution)
+                    m_game->m_client_list[attacker_h]->m_war_contribution = MaxWarContribution;
+
+                hb::logger::log("Enemy NPC killed by player, construction +{}, war contribution +{}", construction_point, war_contribution);
+
+                m_game->send_notify_msg(0, attacker_h, Notify::ConstructionPoint,
+                    m_game->m_client_list[attacker_h]->m_construction_point,
+                    m_game->m_client_list[attacker_h]->m_war_contribution, 0, 0);
+            }
+            else {
+                m_game->m_client_list[attacker_h]->m_war_contribution -= (war_contribution * 2);
+                if (m_game->m_client_list[attacker_h]->m_war_contribution < 0)
+                    m_game->m_client_list[attacker_h]->m_war_contribution = 0;
+
+                hb::logger::log("Friendly NPC killed by player, war contribution -{}", war_contribution);
+
+                m_game->send_notify_msg(0, attacker_h, Notify::ConstructionPoint,
+                    m_game->m_client_list[attacker_h]->m_construction_point,
+                    m_game->m_client_list[attacker_h]->m_war_contribution, 0, 0);
+            }
+            break;
+
+        case hb::shared::owner_class::Npc:
+            if (m_game->m_npc_list[attacker_h]->m_side != 0) {
+                if (m_game->m_npc_list[attacker_h]->m_side != entity->m_side) {
+                    for(int i = 1; i < MaxClients; i++) {
+                        if ((m_game->m_client_list[i] != nullptr) &&
+                            (m_game->m_client_list[i]->m_side == m_game->m_npc_list[attacker_h]->m_side) &&
+                            (m_game->m_client_list[i]->m_crusade_duty == 3)) {
+                            m_game->m_client_list[i]->m_construction_point += construction_point;
+                            if (m_game->m_client_list[i]->m_construction_point > MaxConstructionPoint)
+                                m_game->m_client_list[i]->m_construction_point = MaxConstructionPoint;
+
+                            hb::logger::log("Enemy NPC killed by NPC, construction +{}", construction_point);
+                            m_game->send_notify_msg(0, i, Notify::ConstructionPoint,
+                                m_game->m_client_list[i]->m_construction_point,
+                                m_game->m_client_list[i]->m_war_contribution, 0, 0);
+                            break;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+    }
+}
+
+bool CEntityManager::try_magic_attack(int npc_h, int target_h, char target_type, short sX, short sY, short dX, short dY, bool& out_skip_ranged)
+{
+	out_skip_ranged = false;
+
+	// Positive magic level: spell selection by tier
+	if ((m_npc_list[npc_h]->m_magic_level > 0) && (m_game->dice(1, 2) == 1) &&
+		(abs(sX - dX) <= 9) && (abs(sY - dY) <= 7)) {
+		int magic_type = -1;
+		switch (m_npc_list[npc_h]->m_magic_level) {
+		case 1:
+			if (m_game->m_magic_config_list[0]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 0;
+			break;
+
+		case 2:
+			if (m_game->m_magic_config_list[10]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 10;
+			else if (m_game->m_magic_config_list[0]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 0;
+			break;
+
+		case 3: // Orc-Mage
+			if (m_game->m_magic_config_list[20]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 20;
+			else if (m_game->m_magic_config_list[10]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 10;
+			break;
+
+		case 4:
+			if (m_game->m_magic_config_list[30]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 30;
+			else if (m_game->m_magic_config_list[37]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 37;
+			else if (m_game->m_magic_config_list[20]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 20;
+			else if (m_game->m_magic_config_list[10]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 10;
+			break;
+
+		case 5: // Rudolph, Cannibal-Plant, Cyclops
+			if (m_game->m_magic_config_list[43]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 43;
+			else if (m_game->m_magic_config_list[30]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 30;
+			else if (m_game->m_magic_config_list[37]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 37;
+			else if (m_game->m_magic_config_list[20]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 20;
+			else if (m_game->m_magic_config_list[10]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 10;
+			break;
+
+		case 6: // Tentocle, Liche
+			if (m_game->m_magic_config_list[51]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 51;
+			else if (m_game->m_magic_config_list[43]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 43;
+			else if (m_game->m_magic_config_list[30]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 30;
+			else if (m_game->m_magic_config_list[37]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 37;
+			else if (m_game->m_magic_config_list[20]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 20;
+			else if (m_game->m_magic_config_list[10]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 10;
+			break;
+
+		case 7: // Barlog, Fire-Wyvern, MasterMage-Orc, LightWarBeatle, GHK, GHKABS, TK, BG
+			// Sor, Gagoyle, Demon
+			if ((m_game->m_magic_config_list[70]->m_value_1 <= m_npc_list[npc_h]->m_mana) && (m_game->dice(1, 5) == 3))
+				magic_type = 70;
+			else if (m_game->m_magic_config_list[61]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 61;
+			else if (m_game->m_magic_config_list[60]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 60;
+			else if (m_game->m_magic_config_list[51]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 51;
+			else if (m_game->m_magic_config_list[43]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 43;
+			break;
+
+		case 8: // Unicorn, Centaurus
+			if ((m_game->m_magic_config_list[35]->m_value_1 <= m_npc_list[npc_h]->m_mana) && (m_game->dice(1, 3) == 2))
+				magic_type = 35;
+			else if (m_game->m_magic_config_list[60]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 60;
+			else if (m_game->m_magic_config_list[51]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 51;
+			else if (m_game->m_magic_config_list[43]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 43;
+			break;
+
+		case 9: // Tigerworm
+			if ((m_game->m_magic_config_list[74]->m_value_1 <= m_npc_list[npc_h]->m_mana) && (m_game->dice(1, 3) == 2))
+				magic_type = 74; // Lightning-Strike
+			break;
+
+		case 10: // Frost, Nizie
+			break;
+
+		case 11: // Ice-Golem
+			break;
+
+		case 12: // Wyvern
+			if ((m_game->m_magic_config_list[91]->m_value_1 <= m_npc_list[npc_h]->m_mana) && (m_game->dice(1, 3) == 2))
+				magic_type = 91; // Blizzard
+			else if (m_game->m_magic_config_list[63]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 63; // Mass-Chill-Wind
+			break;
+
+		case 13: // Abaddon
+			if ((m_game->m_magic_config_list[96]->m_value_1 <= m_npc_list[npc_h]->m_mana) && (m_game->dice(1, 3) == 2))
+				magic_type = 96; // Earth Shock Wave
+			else if (m_game->m_magic_config_list[81]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+				magic_type = 81; // Metoer Strike
+			break;
+		}
+
+		if (magic_type != -1) {
+			// AI level >= 2: check if target has magic protection
+			if (m_npc_list[npc_h]->m_ai_level >= 2) {
+				switch (target_type) {
+				case hb::shared::owner_class::Player:
+					if (m_game->m_client_list[target_h]->m_magic_effect_status[hb::shared::magic::Protect] == 2) {
+						if ((abs(sX - dX) > m_npc_list[npc_h]->m_attack_range) || (abs(sY - dY) > m_npc_list[npc_h]->m_attack_range)) {
+							m_npc_list[npc_h]->m_behavior_turn_count = 0;
+							m_npc_list[npc_h]->m_behavior = Behavior::Move;
+							return true;
+						}
+						else { out_skip_ranged = true; break; }
+					}
+					if ((magic_type == 35) && (m_game->m_client_list[target_h]->m_magic_effect_status[hb::shared::magic::HoldObject] != 0)) { out_skip_ranged = true; break; }
+					break;
+
+				case hb::shared::owner_class::Npc:
+					if (m_npc_list[target_h]->m_magic_effect_status[hb::shared::magic::Protect] == 2) {
+						if ((abs(sX - dX) > m_npc_list[npc_h]->m_attack_range) || (abs(sY - dY) > m_npc_list[npc_h]->m_attack_range)) {
+							m_npc_list[npc_h]->m_behavior_turn_count = 0;
+							m_npc_list[npc_h]->m_behavior = Behavior::Move;
+							return true;
+						}
+						else { out_skip_ranged = true; break; }
+					}
+					if ((magic_type == 35) && (m_npc_list[target_h]->m_magic_effect_status[hb::shared::magic::HoldObject] != 0)) { out_skip_ranged = true; break; }
+					break;
+				}
+			}
+
+			if (!out_skip_ranged) {
+				direction dir = m_npc_list[npc_h]->m_dir;
+				m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, m_npc_list[npc_h]->m_x + _tmp_cTmpDirX[dir], m_npc_list[npc_h]->m_y + _tmp_cTmpDirY[dir], 1);
+				npc_magic_handler(npc_h, dX, dY, magic_type);
+				m_npc_list[npc_h]->m_time = GameClock::GetTimeMS() + 2000;
+				return true;
+			}
+		}
+	}
+
+	// Negative magic level: limited spell set (43, 37, 0)
+	if (!out_skip_ranged && (m_npc_list[npc_h]->m_magic_level < 0) && (m_game->dice(1, 2) == 1) &&
+		(abs(sX - dX) <= 9) && (abs(sY - dY) <= 7)) {
+		int magic_type = -1;
+		if (m_game->m_magic_config_list[43]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+			magic_type = 43;
+		else if (m_game->m_magic_config_list[37]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+			magic_type = 37;
+		else if (m_game->m_magic_config_list[0]->m_value_1 <= m_npc_list[npc_h]->m_mana)
+			magic_type = 0;
+
+		if (magic_type != -1) {
+			direction dir = m_npc_list[npc_h]->m_dir;
+			m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, m_npc_list[npc_h]->m_x + _tmp_cTmpDirX[dir], m_npc_list[npc_h]->m_y + _tmp_cTmpDirY[dir], 1);
+			npc_magic_handler(npc_h, dX, dY, magic_type);
+			m_npc_list[npc_h]->m_time = GameClock::GetTimeMS() + 2000;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool CEntityManager::try_ranged_attack(int npc_h, int target_h, char target_type, short sX, short sY, short dX, short dY)
+{
+	if (m_npc_list[npc_h]->m_attack_range <= 1)
+		return false;
+	if ((abs(sX - dX) > m_npc_list[npc_h]->m_attack_range) || (abs(sY - dY) > m_npc_list[npc_h]->m_attack_range))
+		return false;
+
+	direction dir = CMisc::get_next_move_dir(sX, sY, dX, dY);
+	if (dir == 0) return false;
+	m_npc_list[npc_h]->m_dir = dir;
+
+	uint32_t time = GameClock::GetTimeMS();
+
+	if (m_npc_list[npc_h]->m_action_limit == 5) {
+		switch (m_npc_list[npc_h]->m_type) {
+		case 36: // Crossbow Guard Tower
+			m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, dX, dY, 2);
+			m_game->m_combat_manager->calculate_attack_effect(target_h, target_type, npc_h, hb::shared::owner_class::Npc, dX, dY, 2);
+			break;
+
+		case 37: // Cannon Guard Tower
+			m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, dX, dY, 1);
+			m_npc_list[npc_h]->m_magic_hit_ratio = 1000;
+			npc_magic_handler(npc_h, dX, dY, 61);
+			break;
+		}
+	}
+	else {
+		switch (m_npc_list[npc_h]->m_type) {
+		case 51: // v2.05 Catapult
+			m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, dX, dY, 1);
+			m_npc_list[npc_h]->m_magic_hit_ratio = 1000;
+			npc_magic_handler(npc_h, dX, dY, 61);
+			break;
+
+		case 54: // Dark Elf
+			m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, dX, dY, 2);
+			m_game->m_combat_manager->calculate_attack_effect(target_h, target_type, npc_h, hb::shared::owner_class::Npc, dX, dY, 2);
+			break;
+
+		case 63: // Frost
+		case 79: // Nizie
+			switch (target_type) {
+			case hb::shared::owner_class::Player:
+				if (m_game->m_client_list[target_h] != 0) {
+					if ((m_game->m_magic_config_list[57]->m_value_1 <= m_npc_list[npc_h]->m_mana) && (m_game->dice(1, 3) == 2))
+						npc_magic_handler(npc_h, dX, dY, 57);
+					if ((m_game->m_client_list[target_h]->m_hp > 0) &&
+						(m_game->m_combat_manager->check_resisting_ice_success(m_npc_list[npc_h]->m_dir, target_h, hb::shared::owner_class::Player, m_npc_list[npc_h]->m_magic_hit_ratio) == false)) {
+						if (m_game->m_client_list[target_h]->m_magic_effect_status[hb::shared::magic::Ice] == 0) {
+							m_game->m_client_list[target_h]->m_magic_effect_status[hb::shared::magic::Ice] = 1;
+							m_game->m_status_effect_manager->set_ice_flag(target_h, hb::shared::owner_class::Player, true);
+							m_game->m_delay_event_manager->register_delay_event(sdelay::Type::MagicRelease, hb::shared::magic::Ice, time + (5 * 1000),
+								target_h, hb::shared::owner_class::Player, 0, 0, 0, 1, 0, 0);
+							m_game->send_notify_msg(0, target_h, Notify::MagicEffectOn, hb::shared::magic::Ice, 1, 0, 0);
+						}
+					}
+				}
+				break;
+
+			case hb::shared::owner_class::Npc:
+				if (m_npc_list[target_h] != 0) {
+					if ((m_game->m_magic_config_list[57]->m_value_1 <= m_npc_list[npc_h]->m_mana) && (m_game->dice(1, 3) == 2))
+						npc_magic_handler(npc_h, dX, dY, 57);
+					if ((m_npc_list[target_h]->m_hp > 0) &&
+						(m_game->m_combat_manager->check_resisting_ice_success(m_npc_list[npc_h]->m_dir, target_h, hb::shared::owner_class::Npc, m_npc_list[npc_h]->m_magic_hit_ratio) == false)) {
+						if (m_npc_list[target_h]->m_magic_effect_status[hb::shared::magic::Ice] == 0) {
+							m_npc_list[target_h]->m_magic_effect_status[hb::shared::magic::Ice] = 1;
+							m_game->m_status_effect_manager->set_ice_flag(target_h, hb::shared::owner_class::Npc, true);
+							m_game->m_delay_event_manager->register_delay_event(sdelay::Type::MagicRelease, hb::shared::magic::Ice, time + (5 * 1000),
+								target_h, hb::shared::owner_class::Npc, 0, 0, 0, 1, 0, 0);
+						}
+					}
+				}
+				break;
+			}
+			// Fall through to Beholder case (Frost/Nizie also deal ranged physical damage)
+
+		case 53: // Beholder
+			switch (target_type) {
+			case hb::shared::owner_class::Player:
+				if (m_game->m_client_list[target_h] != 0) {
+					if ((m_game->m_client_list[target_h]->m_hp > 0) &&
+						(m_game->m_combat_manager->check_resisting_ice_success(m_npc_list[npc_h]->m_dir, target_h, hb::shared::owner_class::Player, m_npc_list[npc_h]->m_magic_hit_ratio) == false)) {
+						if (m_game->m_client_list[target_h]->m_magic_effect_status[hb::shared::magic::Ice] == 0) {
+							m_game->m_client_list[target_h]->m_magic_effect_status[hb::shared::magic::Ice] = 1;
+							m_game->m_status_effect_manager->set_ice_flag(target_h, hb::shared::owner_class::Player, true);
+							m_game->m_delay_event_manager->register_delay_event(sdelay::Type::MagicRelease, hb::shared::magic::Ice, time + (5 * 1000),
+								target_h, hb::shared::owner_class::Player, 0, 0, 0, 1, 0, 0);
+							m_game->send_notify_msg(0, target_h, Notify::MagicEffectOn, hb::shared::magic::Ice, 1, 0, 0);
+						}
+					}
+				}
+				break;
+
+			case hb::shared::owner_class::Npc:
+				if (m_npc_list[target_h] != 0) {
+					if ((m_npc_list[target_h]->m_hp > 0) &&
+						(m_game->m_combat_manager->check_resisting_ice_success(m_npc_list[npc_h]->m_dir, target_h, hb::shared::owner_class::Npc, m_npc_list[npc_h]->m_magic_hit_ratio) == false)) {
+						if (m_npc_list[target_h]->m_magic_effect_status[hb::shared::magic::Ice] == 0) {
+							m_npc_list[target_h]->m_magic_effect_status[hb::shared::magic::Ice] = 1;
+							m_game->m_status_effect_manager->set_ice_flag(target_h, hb::shared::owner_class::Npc, true);
+							m_game->m_delay_event_manager->register_delay_event(sdelay::Type::MagicRelease, hb::shared::magic::Ice, time + (5 * 1000),
+								target_h, hb::shared::owner_class::Npc, 0, 0, 0, 1, 0, 0);
+						}
+					}
+				}
+				break;
+			}
+			m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, dX, dY, 20);
+			m_game->m_combat_manager->calculate_attack_effect(target_h, target_type, npc_h, hb::shared::owner_class::Npc, dX, dY, 20);
+			break;
+
+		default:
+			m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, dX, dY, 20);
+			m_game->m_combat_manager->calculate_attack_effect(target_h, target_type, npc_h, hb::shared::owner_class::Npc, dX, dY, 20);
+			break;
+		}
+	}
+	m_npc_list[npc_h]->m_attack_count++;
+
+	if ((m_npc_list[npc_h]->m_is_perm_attack_mode == false) && (m_npc_list[npc_h]->m_action_limit == 0)) {
+		switch (m_npc_list[npc_h]->m_attack_strategy) {
+		case AttackAI::ExchangeAttack:
+			m_npc_list[npc_h]->m_behavior_turn_count = 0;
+			m_npc_list[npc_h]->m_behavior = Behavior::Flee;
+			break;
+
+		case AttackAI::TwoByOneAttack:
+			if (m_npc_list[npc_h]->m_attack_count >= 2) {
+				m_npc_list[npc_h]->m_behavior_turn_count = 0;
+				m_npc_list[npc_h]->m_behavior = Behavior::Flee;
+			}
+			break;
+		}
+	}
+	return true;
+}
+
+void CEntityManager::spawn_follower_mobs(int map_index, int npc_config_id, int total_mob,
+	bool firm_berserk, int prob_sa, int kind_sa,
+	const char* master_name, int pX, int pY)
+{
+	char cName_Slave[11];
+	char waypoint[11] = {};
+
+	for (int j = 0; j < total_mob; j++) {
+		int naming_value = m_map_list[map_index]->get_empty_naming_value();
+		if (naming_value != -1) {
+			std::memset(cName_Slave, 0, sizeof(cName_Slave));
+			sprintf(cName_Slave, "XX%d", naming_value);
+			cName_Slave[0] = 95; // '_'
+			cName_Slave[1] = map_index + 65;
+
+			char sa = 0;
+			if (m_game->dice(1, 100) <= static_cast<uint32_t>(prob_sa)) {
+				sa = m_game->get_special_ability(kind_sa);
+			}
+
+			if (create_entity(npc_config_id, cName_Slave, m_map_list[map_index]->m_name, (rand() % 3), sa,
+				MoveType::Random, &pX, &pY, waypoint, 0, 0, -1, false, false, firm_berserk, false, 0) <= 0) {
+				m_map_list[map_index]->set_naming_value_empty(naming_value);
+			}
+			else {
+				set_npc_follow_mode(cName_Slave, const_cast<char*>(master_name), hb::shared::owner_class::Npc);
+			}
+		}
+	}
 }
 
 void CEntityManager::delete_entity(int entity_handle)
@@ -448,7 +933,7 @@ void CEntityManager::delete_entity(int entity_handle)
     if (!is_valid_entity(entity_handle))
         return;
 
-    if (m_game == NULL)
+    if (m_game == nullptr)
         return;
 
     delete_npc_internal(entity_handle);
@@ -474,7 +959,7 @@ void CEntityManager::on_entity_killed(int entity_handle, short attacker_h, char 
         return;
     }
 
-    if (m_game == NULL || m_map_list == NULL) {
+    if (m_game == nullptr || m_map_list == nullptr) {
         return;
     }
 
@@ -505,8 +990,8 @@ void CEntityManager::on_entity_killed(int entity_handle, short attacker_h, char 
     // ========================================================================
     short attacker_weapon;
     if (attacker_type == hb::shared::owner_class::Player) {
-        if (m_game->m_client_list[attacker_h] != NULL)
-            attacker_weapon = m_game->m_client_list[attacker_h]->get_equipped_weapon_type();
+        if (m_game->m_client_list[attacker_h] != nullptr)
+            attacker_weapon = hb::shared::item::to_int(m_game->m_client_list[attacker_h]->get_equipped_weapon_class());
         else
             attacker_weapon = 1;
     }
@@ -542,157 +1027,11 @@ void CEntityManager::on_entity_killed(int entity_handle, short attacker_h, char 
     // ========================================================================
     npc_dead_item_generator(entity_handle, attacker_h, attacker_type);
 
-    // ========================================================================
-    // 8. Award experience and handle player-specific events
-    // ========================================================================
-    if ((entity->m_is_summoned != true) && (attacker_type == hb::shared::owner_class::Player) &&
-        (m_game->m_client_list[attacker_h] != NULL)) {
-        double tmp1, tmp2, tmp3;
-        uint32_t exp = (entity->m_exp / 3);
+    // 8-9. Award experience, quest progress, and rating adjustments
+    award_kill_experience(entity_handle, attacker_h, attacker_type);
 
-        if (entity->m_no_die_remain_exp > 0) {
-            exp += entity->m_no_die_remain_exp;
-        }
-
-        if (m_game->m_client_list[attacker_h]->m_add_exp != 0) {
-            tmp1 = (double)m_game->m_client_list[attacker_h]->m_add_exp;
-            tmp2 = (double)exp;
-            tmp3 = (tmp1 / 100.0f) * tmp2;
-            exp += (uint32_t)tmp3;
-        }
-
-        if (type == 81) {
-            for(int i = 1; i < MaxClients; i++) {
-                if (m_game->m_client_list[i] != NULL) {
-                    m_game->send_notify_msg(attacker_h, i, Notify::AbaddonKilled,
-                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-                }
-            }
-        }
-
-        if (m_game->m_is_crusade_mode) {
-            if (exp > 10) exp = exp / 3;
-        }
-
-        m_game->get_exp(attacker_h, exp, true);
-
-        int quest_index = m_game->m_client_list[attacker_h]->m_quest;
-        if (quest_index != 0 && m_game->m_quest_manager->m_quest_config_list[quest_index] != NULL) {
-            switch (m_game->m_quest_manager->m_quest_config_list[quest_index]->m_type) {
-            case hb::server::quest::Type::MonsterHunt:
-                if (m_game->m_client_list[attacker_h]->m_quest_match_flag_loc &&
-                    m_game->m_quest_manager->m_quest_config_list[quest_index]->m_target_config_id == entity->m_npc_config_id) {
-                    m_game->m_client_list[attacker_h]->m_cur_quest_count++;
-                    char quest_remain = (m_game->m_quest_manager->m_quest_config_list[quest_index]->m_max_count -
-                        m_game->m_client_list[attacker_h]->m_cur_quest_count);
-                    m_game->send_notify_msg(0, attacker_h, Notify::QuestCounter, quest_remain, 0, 0, 0);
-                    m_game->m_quest_manager->check_is_quest_completed(attacker_h);
-                }
-                break;
-            }
-        }
-
-    }
-
-    // ========================================================================
-    // 9. Rating adjustments (player only)
-    // ========================================================================
-    if (attacker_type == hb::shared::owner_class::Player) {
-        switch (type) {
-        case 32:
-            m_game->m_client_list[attacker_h]->m_rating -= 5;
-            if (m_game->m_client_list[attacker_h]->m_rating < -10000)
-                m_game->m_client_list[attacker_h]->m_rating = 0;
-            if (m_game->m_client_list[attacker_h]->m_rating > 10000)
-                m_game->m_client_list[attacker_h]->m_rating = 0;
-            break;
-        case 33:
-            break;
-        }
-    }
-
-    // ========================================================================
     // 10. Crusade construction points / war contribution
-    // ========================================================================
-    int construction_point = 0;
-    int war_contribution = 0;
-    switch (type) {
-    case 1:  construction_point = 50; war_contribution = 100; break;
-    case 2:  construction_point = 50; war_contribution = 100; break;
-    case 3:  construction_point = 50; war_contribution = 100; break;
-    case 4:  construction_point = 50; war_contribution = 100; break;
-    case 5:  construction_point = 50; war_contribution = 100; break;
-    case 6:  construction_point = 50; war_contribution = 100; break;
-    case 36: construction_point = 700; war_contribution = 4000; break;
-    case 37: construction_point = 700; war_contribution = 4000; break;
-    case 38: construction_point = 500; war_contribution = 2000; break;
-    case 39: construction_point = 500; war_contribution = 2000; break;
-    case 40: construction_point = 1500; war_contribution = 5000; break;
-    case 41: construction_point = 5000; war_contribution = 10000; break;
-    case 43: construction_point = 500; war_contribution = 1000; break;
-    case 44: construction_point = 1000; war_contribution = 2000; break;
-    case 45: construction_point = 1500; war_contribution = 3000; break;
-    case 46: construction_point = 1000; war_contribution = 2000; break;
-    case 47: construction_point = 1500; war_contribution = 3000; break;
-    case 64:
-        m_map_list[map_index]->remove_crops_total_sum();
-        break;
-    }
-
-    if (construction_point != 0) {
-        switch (attacker_type) {
-        case hb::shared::owner_class::Player:
-            if (m_game->m_client_list[attacker_h]->m_side != entity->m_side) {
-                m_game->m_client_list[attacker_h]->m_construction_point += construction_point;
-                if (m_game->m_client_list[attacker_h]->m_construction_point > MaxConstructionPoint)
-                    m_game->m_client_list[attacker_h]->m_construction_point = MaxConstructionPoint;
-
-                m_game->m_client_list[attacker_h]->m_war_contribution += war_contribution;
-                if (m_game->m_client_list[attacker_h]->m_war_contribution > MaxWarContribution)
-                    m_game->m_client_list[attacker_h]->m_war_contribution = MaxWarContribution;
-
-                hb::logger::log("Enemy NPC killed by player, construction +{}, war contribution +{}", construction_point, war_contribution);
-
-                m_game->send_notify_msg(0, attacker_h, Notify::ConstructionPoint,
-                    m_game->m_client_list[attacker_h]->m_construction_point,
-                    m_game->m_client_list[attacker_h]->m_war_contribution, 0, 0);
-            }
-            else {
-                m_game->m_client_list[attacker_h]->m_war_contribution -= (war_contribution * 2);
-                if (m_game->m_client_list[attacker_h]->m_war_contribution < 0)
-                    m_game->m_client_list[attacker_h]->m_war_contribution = 0;
-
-                hb::logger::log("Friendly NPC killed by player, war contribution -{}", war_contribution);
-
-                m_game->send_notify_msg(0, attacker_h, Notify::ConstructionPoint,
-                    m_game->m_client_list[attacker_h]->m_construction_point,
-                    m_game->m_client_list[attacker_h]->m_war_contribution, 0, 0);
-            }
-            break;
-
-        case hb::shared::owner_class::Npc:
-            if (m_game->m_npc_list[attacker_h]->m_guild_guid != 0) {
-                if (m_game->m_npc_list[attacker_h]->m_side != entity->m_side) {
-                    for(int i = 1; i < MaxClients; i++) {
-                        if ((m_game->m_client_list[i] != NULL) &&
-                            (m_game->m_client_list[i]->m_guild_guid == m_game->m_npc_list[attacker_h]->m_guild_guid) &&
-                            (m_game->m_client_list[i]->m_crusade_duty == 3)) {
-                            m_game->m_client_list[i]->m_construction_point += construction_point;
-                            if (m_game->m_client_list[i]->m_construction_point > MaxConstructionPoint)
-                                m_game->m_client_list[i]->m_construction_point = MaxConstructionPoint;
-
-                            hb::logger::log("Enemy NPC killed by NPC, construction +{}", construction_point);
-                            m_game->send_notify_msg(0, i, Notify::ConstructionPoint,
-                                m_game->m_client_list[i]->m_construction_point,
-                                m_game->m_client_list[i]->m_war_contribution, 0, 0);
-                            break;
-                        }
-                    }
-                }
-            }
-            break;
-        }
-    }
+    apply_crusade_contribution(entity_handle, attacker_h, attacker_type);
 
     // ========================================================================
     // 11. Handle special ability death triggers (explosive NPCs)
@@ -743,19 +1082,18 @@ void CEntityManager::on_entity_killed(int entity_handle, short attacker_h, char 
 
 void CEntityManager::process_entities()
 {
-    if (m_game == NULL)
+    if (m_game == nullptr)
         return;
 
     if (m_game->m_on_exit_process)
         return;
 
-    int max_hp;
     uint32_t time, action_time;
 
     time = GameClock::GetTimeMS();
 
     for(int i = 1; i < MaxNpcs; i++) {
-        if (m_npc_list[i] == 0)
+        if (m_npc_list[i] == nullptr)
             continue;
 
         if (i % 10 == 0) {
@@ -787,7 +1125,8 @@ void CEntityManager::process_entities()
 
             if (abs(m_npc_list[i]->m_magic_level) > 0) {
                 if ((time - m_npc_list[i]->m_mp_up_time) > MpUpTime) {
-                    m_npc_list[i]->m_mp_up_time = time;
+                    m_npc_list[i]->m_mp_up_time += MpUpTime;
+                    if (time - m_npc_list[i]->m_mp_up_time > MpUpTime) m_npc_list[i]->m_mp_up_time = time;
                     m_npc_list[i]->m_mana += m_game->dice(1, (m_npc_list[i]->m_max_mana / 5));
 
                     if (m_npc_list[i]->m_mana > m_npc_list[i]->m_max_mana)
@@ -796,14 +1135,15 @@ void CEntityManager::process_entities()
             }
 
             if (((time - m_npc_list[i]->m_hp_up_time) > HpUpTime) && (m_npc_list[i]->m_is_killed == false)) {
-                m_npc_list[i]->m_hp_up_time = time;
+                m_npc_list[i]->m_hp_up_time += HpUpTime;
+                if (time - m_npc_list[i]->m_hp_up_time > HpUpTime) m_npc_list[i]->m_hp_up_time = time;
 
-                max_hp = m_game->dice(m_npc_list[i]->m_hit_dice, 8) + m_npc_list[i]->m_hit_dice;
-                if (m_npc_list[i]->m_hp < max_hp) {
-                    if (m_npc_list[i]->m_is_summoned == false)
-                        m_npc_list[i]->m_hp += m_game->dice(1, m_npc_list[i]->m_hit_dice);
-
-                    if (m_npc_list[i]->m_hp > max_hp) m_npc_list[i]->m_hp = max_hp;
+                if (m_npc_list[i]->m_hp < m_npc_list[i]->m_max_hp) {
+                    if (m_npc_list[i]->m_is_summoned == false) {
+                        int regen = m_game->dice(1, (m_npc_list[i]->m_hp_max - m_npc_list[i]->m_hp_min) / 2 + 5);
+                        m_npc_list[i]->m_hp += regen;
+                    }
+                    if (m_npc_list[i]->m_hp > m_npc_list[i]->m_max_hp) m_npc_list[i]->m_hp = m_npc_list[i]->m_max_hp;
                     if (m_npc_list[i]->m_hp <= 0)     m_npc_list[i]->m_hp = 1;
                 }
             }
@@ -826,7 +1166,7 @@ void CEntityManager::process_entities()
                 break;
             }
 
-            if ((m_npc_list[i] != 0) && (m_npc_list[i]->m_hp != 0) && (m_npc_list[i]->m_is_summoned)) {
+            if ((m_npc_list[i] != nullptr) && (m_npc_list[i]->m_hp != 0) && (m_npc_list[i]->m_is_summoned)) {
                 switch (m_npc_list[i]->m_type) {
                 case 29:
                     if ((time - m_npc_list[i]->m_summoned_time) > 1000 * 90)
@@ -879,7 +1219,7 @@ void CEntityManager::npc_behavior_move(int npc_h)
 	short target, distance;
 	char  target_type;
 
-	if (m_npc_list[npc_h] == 0) return;
+	if (m_npc_list[npc_h] == nullptr) return;
 	if (m_npc_list[npc_h]->m_is_killed) return;
 	if ((m_npc_list[npc_h]->m_is_summoned) &&
 		(m_npc_list[npc_h]->m_summon_control_mode == 1)) return;
@@ -1039,7 +1379,7 @@ void CEntityManager::target_search(int npc_h, short* target, char* target_type)
 				pk_count = 0;
 				switch (owner_type) {
 				case hb::shared::owner_class::Player:
-					if (m_game->m_client_list[owner] == 0) {
+					if (m_game->m_client_list[owner] == nullptr) {
 						m_map_list[m_npc_list[npc_h]->m_map_index]->clear_owner(5, owner, hb::shared::owner_class::Player, ix, iy);
 					}
 					else {
@@ -1055,7 +1395,7 @@ void CEntityManager::target_search(int npc_h, short* target, char* target_type)
 					break;
 
 				case hb::shared::owner_class::Npc:
-					if (m_npc_list[owner] == 0) {
+					if (m_npc_list[owner] == nullptr) {
 						m_map_list[m_npc_list[npc_h]->m_map_index]->clear_owner(6, owner, hb::shared::owner_class::Npc, ix, iy);
 					}
 					else {
@@ -1118,12 +1458,10 @@ void CEntityManager::target_search(int npc_h, short* target, char* target_type)
 
 void CEntityManager::npc_behavior_attack(int npc_h)
 {
-	int   magic_type;
 	short sX, sY, dX, dY;
 	direction dir;
-	uint32_t time = GameClock::GetTimeMS();
 
-	if (m_npc_list[npc_h] == 0) return;
+	if (m_npc_list[npc_h] == nullptr) return;
 	if (m_npc_list[npc_h]->m_magic_effect_status[hb::shared::magic::HoldObject] != 0) return;
 	if (m_npc_list[npc_h]->m_is_killed) return;
 
@@ -1261,308 +1599,13 @@ void CEntityManager::npc_behavior_attack(int npc_h)
 		if (dir == 0) return;
 		m_npc_list[npc_h]->m_dir = dir;
 
-		if ((m_npc_list[npc_h]->m_magic_level > 0) && (m_game->dice(1, 2) == 1) &&
-			(abs(sX - dX) <= 9) && (abs(sY - dY) <= 7)) {
-			magic_type = -1;
-			switch (m_npc_list[npc_h]->m_magic_level) {
-			case 1:
-				if (m_game->m_magic_config_list[0]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 0;
-				break;
-
-			case 2:
-				if (m_game->m_magic_config_list[10]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 10;
-				else if (m_game->m_magic_config_list[0]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 0;
-				break;
-
-			case 3: // Orc-Mage
-				if (m_game->m_magic_config_list[20]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 20;
-				else if (m_game->m_magic_config_list[10]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 10;
-				break;
-
-			case 4:
-				if (m_game->m_magic_config_list[30]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 30;
-				else if (m_game->m_magic_config_list[37]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 37;
-				else if (m_game->m_magic_config_list[20]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 20;
-				else if (m_game->m_magic_config_list[10]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 10;
-				break;
-
-			case 5: // Rudolph, Cannibal-Plant, Cyclops
-				if (m_game->m_magic_config_list[43]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 43;
-				else if (m_game->m_magic_config_list[30]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 30;
-				else if (m_game->m_magic_config_list[37]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 37;
-				else if (m_game->m_magic_config_list[20]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 20;
-				else if (m_game->m_magic_config_list[10]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 10;
-				break;
-
-			case 6: // Tentocle, Liche
-				if (m_game->m_magic_config_list[51]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 51;
-				else if (m_game->m_magic_config_list[43]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 43;
-				else if (m_game->m_magic_config_list[30]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 30;
-				else if (m_game->m_magic_config_list[37]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 37;
-				else if (m_game->m_magic_config_list[20]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 20;
-				else if (m_game->m_magic_config_list[10]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 10;
-				break;
-
-			case 7: // Barlog, Fire-Wyvern, MasterMage-Orc , LightWarBeatle, GHK, GHKABS, TK, BG
-				// Sor, Gagoyle, Demon
-				if ((m_game->m_magic_config_list[70]->m_value_1 <= m_npc_list[npc_h]->m_mana) && (m_game->dice(1, 5) == 3))
-					magic_type = 70;
-				else if (m_game->m_magic_config_list[61]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 61;
-				else if (m_game->m_magic_config_list[60]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 60;
-				else if (m_game->m_magic_config_list[51]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 51;
-				else if (m_game->m_magic_config_list[43]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 43;
-				break;
-
-			case 8: // Unicorn, Centaurus
-				if ((m_game->m_magic_config_list[35]->m_value_1 <= m_npc_list[npc_h]->m_mana) && (m_game->dice(1, 3) == 2))
-					magic_type = 35;
-				else if (m_game->m_magic_config_list[60]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 60;
-				else if (m_game->m_magic_config_list[51]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 51;
-				else if (m_game->m_magic_config_list[43]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 43;
-				break;
-
-			case 9: // Tigerworm
-				if ((m_game->m_magic_config_list[74]->m_value_1 <= m_npc_list[npc_h]->m_mana) && (m_game->dice(1, 3) == 2))
-					magic_type = 74; // Lightning-Strike
-				break;
-
-			case 10: // Frost, Nizie
-				break;
-
-			case 11: // Ice-Golem
-				break;
-
-			case 12: // Wyvern
-				if ((m_game->m_magic_config_list[91]->m_value_1 <= m_npc_list[npc_h]->m_mana) && (m_game->dice(1, 3) == 2))
-					magic_type = 91; // Blizzard
-				else if (m_game->m_magic_config_list[63]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 63; // Mass-Chill-Wind
-				break;
-
-			case 13: // Abaddon
-				if ((m_game->m_magic_config_list[96]->m_value_1 <= m_npc_list[npc_h]->m_mana) && (m_game->dice(1, 3) == 2))
-					magic_type = 96; // Earth Shock Wave
-				else if (m_game->m_magic_config_list[81]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-					magic_type = 81; // Metoer Strike
-				break;
-
-			}
-
-			if (magic_type != -1) {
-
-				if (m_npc_list[npc_h]->m_ai_level >= 2) {
-					switch (m_npc_list[npc_h]->m_target_type) {
-					case hb::shared::owner_class::Player:
-						if (m_game->m_client_list[m_npc_list[npc_h]->m_target_index]->m_magic_effect_status[hb::shared::magic::Protect] == 2) {
-							if ((abs(sX - dX) > m_npc_list[npc_h]->m_attack_range) || (abs(sY - dY) > m_npc_list[npc_h]->m_attack_range)) {
-								m_npc_list[npc_h]->m_behavior_turn_count = 0;
-								m_npc_list[npc_h]->m_behavior = Behavior::Move;
-								return;
-							}
-							else { skip_to_chase = true; break; }
-						}
-						if ((magic_type == 35) && (m_game->m_client_list[m_npc_list[npc_h]->m_target_index]->m_magic_effect_status[hb::shared::magic::HoldObject] != 0)) { skip_to_chase = true; break; }
-						break;
-
-					case hb::shared::owner_class::Npc:
-						if (m_npc_list[m_npc_list[npc_h]->m_target_index]->m_magic_effect_status[hb::shared::magic::Protect] == 2) {
-							if ((abs(sX - dX) > m_npc_list[npc_h]->m_attack_range) || (abs(sY - dY) > m_npc_list[npc_h]->m_attack_range)) {
-								m_npc_list[npc_h]->m_behavior_turn_count = 0;
-								m_npc_list[npc_h]->m_behavior = Behavior::Move;
-								return;
-							}
-							else { skip_to_chase = true; break; }
-						}
-						if ((magic_type == 35) && (m_npc_list[m_npc_list[npc_h]->m_target_index]->m_magic_effect_status[hb::shared::magic::HoldObject] != 0)) { skip_to_chase = true; break; }
-						break;
-					}
-				}
-
-				if (!skip_to_chase) {
-					m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, m_npc_list[npc_h]->m_x + _tmp_cTmpDirX[dir], m_npc_list[npc_h]->m_y + _tmp_cTmpDirY[dir], 1);
-					npc_magic_handler(npc_h, dX, dY, magic_type);
-					m_npc_list[npc_h]->m_time = time + 2000;
-					return;
-				}
-			}
-		}
-
-		if (!skip_to_chase && (m_npc_list[npc_h]->m_magic_level < 0) && (m_game->dice(1, 2) == 1) &&
-			(abs(sX - dX) <= 9) && (abs(sY - dY) <= 7)) {
-			magic_type = -1;
-			if (m_game->m_magic_config_list[43]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-				magic_type = 43;
-			else if (m_game->m_magic_config_list[37]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-				magic_type = 37;
-			else if (m_game->m_magic_config_list[0]->m_value_1 <= m_npc_list[npc_h]->m_mana)
-				magic_type = 0;
-
-			if (magic_type != -1) {
-				m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, m_npc_list[npc_h]->m_x + _tmp_cTmpDirX[dir], m_npc_list[npc_h]->m_y + _tmp_cTmpDirY[dir], 1);
-				npc_magic_handler(npc_h, dX, dY, magic_type);
-				m_npc_list[npc_h]->m_time = time + 2000;
-				return;
-			}
-		}
-
-		// v1.41
-		if (!skip_to_chase && (m_npc_list[npc_h]->m_attack_range > 1) &&
-			(abs(sX - dX) <= m_npc_list[npc_h]->m_attack_range) && (abs(sY - dY) <= m_npc_list[npc_h]->m_attack_range)) {
-
-			dir = CMisc::get_next_move_dir(sX, sY, dX, dY);
-			if (dir == 0) return;
-			m_npc_list[npc_h]->m_dir = dir;
-
-			if (m_npc_list[npc_h]->m_action_limit == 5) {
-				switch (m_npc_list[npc_h]->m_type) {
-				case 36: // Crossbow Guard Tower
-					m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, dX, dY, 2);
-					m_game->m_combat_manager->calculate_attack_effect(m_npc_list[npc_h]->m_target_index, m_npc_list[npc_h]->m_target_type, npc_h, hb::shared::owner_class::Npc, dX, dY, 2);
-					break;
-
-				case 37: // Cannon Guard Tower
-					m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, dX, dY, 1);
-					m_npc_list[npc_h]->m_magic_hit_ratio = 1000;
-					npc_magic_handler(npc_h, dX, dY, 61);
-					break;
-				}
-			}
-			else {
-				switch (m_npc_list[npc_h]->m_type) {
-				case 51: // v2.05 Catapult
-					m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, dX, dY, 1);
-					m_npc_list[npc_h]->m_magic_hit_ratio = 1000;
-					npc_magic_handler(npc_h, dX, dY, 61);
-					break;
-
-				case 54: // Dark Elf:   .
-					m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, dX, dY, 2);
-					m_game->m_combat_manager->calculate_attack_effect(m_npc_list[npc_h]->m_target_index, m_npc_list[npc_h]->m_target_type, npc_h, hb::shared::owner_class::Npc, dX, dY, 2);
-					break;
-
-				case 63: // Frost
-				case 79: // Nizie
-					switch (m_npc_list[npc_h]->m_target_type) {
-					case hb::shared::owner_class::Player:
-						if (m_game->m_client_list[m_npc_list[npc_h]->m_target_index] != 0) {
-							if ((m_game->m_magic_config_list[57]->m_value_1 <= m_npc_list[npc_h]->m_mana) && (m_game->dice(1, 3) == 2))
-								npc_magic_handler(npc_h, dX, dY, 57);
-							if ((m_game->m_client_list[m_npc_list[npc_h]->m_target_index]->m_hp > 0) &&
-								(m_game->m_combat_manager->check_resisting_ice_success(m_npc_list[npc_h]->m_dir, m_npc_list[npc_h]->m_target_index, hb::shared::owner_class::Player, m_npc_list[npc_h]->m_magic_hit_ratio) == false)) {
-								if (m_game->m_client_list[m_npc_list[npc_h]->m_target_index]->m_magic_effect_status[hb::shared::magic::Ice] == 0) {
-									m_game->m_client_list[m_npc_list[npc_h]->m_target_index]->m_magic_effect_status[hb::shared::magic::Ice] = 1;
-								m_game->m_status_effect_manager->set_ice_flag(m_npc_list[npc_h]->m_target_index, hb::shared::owner_class::Player, true);
-									m_game->m_delay_event_manager->register_delay_event(sdelay::Type::MagicRelease, hb::shared::magic::Ice, time + (5 * 1000),
-										m_npc_list[npc_h]->m_target_index, hb::shared::owner_class::Player, 0, 0, 0, 1, 0, 0);
-									m_game->send_notify_msg(0, m_npc_list[npc_h]->m_target_index, Notify::MagicEffectOn, hb::shared::magic::Ice, 1, 0, 0);
-								}
-							}
-						}
-						break;
-
-					case hb::shared::owner_class::Npc:
-						if (m_npc_list[m_npc_list[npc_h]->m_target_index] != 0) {
-							if ((m_game->m_magic_config_list[57]->m_value_1 <= m_npc_list[npc_h]->m_mana) && (m_game->dice(1, 3) == 2))
-								npc_magic_handler(npc_h, dX, dY, 57);
-							if ((m_npc_list[m_npc_list[npc_h]->m_target_index]->m_hp > 0) &&
-								(m_game->m_combat_manager->check_resisting_ice_success(m_npc_list[npc_h]->m_dir, m_npc_list[npc_h]->m_target_index, hb::shared::owner_class::Npc, m_npc_list[npc_h]->m_magic_hit_ratio) == false)) {
-								if (m_npc_list[m_npc_list[npc_h]->m_target_index]->m_magic_effect_status[hb::shared::magic::Ice] == 0) {
-									m_npc_list[m_npc_list[npc_h]->m_target_index]->m_magic_effect_status[hb::shared::magic::Ice] = 1;
-								m_game->m_status_effect_manager->set_ice_flag(m_npc_list[npc_h]->m_target_index, hb::shared::owner_class::Npc, true);
-									m_game->m_delay_event_manager->register_delay_event(sdelay::Type::MagicRelease, hb::shared::magic::Ice, time + (5 * 1000),
-										m_npc_list[npc_h]->m_target_index, hb::shared::owner_class::Npc, 0, 0, 0, 1, 0, 0);
-								}
-							}
-						}
-						break;
-					}
-				case 53: //Beholder
-					switch (m_npc_list[npc_h]->m_target_type) {
-					case hb::shared::owner_class::Player:
-						if (m_game->m_client_list[m_npc_list[npc_h]->m_target_index] != 0) {
-							if ((m_game->m_client_list[m_npc_list[npc_h]->m_target_index]->m_hp > 0) &&
-								(m_game->m_combat_manager->check_resisting_ice_success(m_npc_list[npc_h]->m_dir, m_npc_list[npc_h]->m_target_index, hb::shared::owner_class::Player, m_npc_list[npc_h]->m_magic_hit_ratio) == false)) {
-								if (m_game->m_client_list[m_npc_list[npc_h]->m_target_index]->m_magic_effect_status[hb::shared::magic::Ice] == 0) {
-									m_game->m_client_list[m_npc_list[npc_h]->m_target_index]->m_magic_effect_status[hb::shared::magic::Ice] = 1;
-								m_game->m_status_effect_manager->set_ice_flag(m_npc_list[npc_h]->m_target_index, hb::shared::owner_class::Player, true);
-									m_game->m_delay_event_manager->register_delay_event(sdelay::Type::MagicRelease, hb::shared::magic::Ice, time + (5 * 1000),
-										m_npc_list[npc_h]->m_target_index, hb::shared::owner_class::Player, 0, 0, 0, 1, 0, 0);
-									m_game->send_notify_msg(0, m_npc_list[npc_h]->m_target_index, Notify::MagicEffectOn, hb::shared::magic::Ice, 1, 0, 0);
-								}
-							}
-						}
-						break;
-
-					case hb::shared::owner_class::Npc:
-						if (m_npc_list[m_npc_list[npc_h]->m_target_index] != 0) {
-							if ((m_npc_list[m_npc_list[npc_h]->m_target_index]->m_hp > 0) &&
-								(m_game->m_combat_manager->check_resisting_ice_success(m_npc_list[npc_h]->m_dir, m_npc_list[npc_h]->m_target_index, hb::shared::owner_class::Npc, m_npc_list[npc_h]->m_magic_hit_ratio) == false)) {
-								if (m_npc_list[m_npc_list[npc_h]->m_target_index]->m_magic_effect_status[hb::shared::magic::Ice] == 0) {
-									m_npc_list[m_npc_list[npc_h]->m_target_index]->m_magic_effect_status[hb::shared::magic::Ice] = 1;
-								m_game->m_status_effect_manager->set_ice_flag(m_npc_list[npc_h]->m_target_index, hb::shared::owner_class::Npc, true);
-									m_game->m_delay_event_manager->register_delay_event(sdelay::Type::MagicRelease, hb::shared::magic::Ice, time + (5 * 1000),
-										m_npc_list[npc_h]->m_target_index, hb::shared::owner_class::Npc, 0, 0, 0, 1, 0, 0);
-								}
-							}
-						}
-						break;
-					}
-					m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, dX, dY, 20);
-					m_game->m_combat_manager->calculate_attack_effect(m_npc_list[npc_h]->m_target_index, m_npc_list[npc_h]->m_target_type, npc_h, hb::shared::owner_class::Npc, dX, dY, 20);
-					break;
-
-				default:
-					m_game->send_event_to_near_client_type_a(npc_h, hb::shared::owner_class::Npc, MsgId::EventMotion, Type::Attack, dX, dY, 20);
-					m_game->m_combat_manager->calculate_attack_effect(m_npc_list[npc_h]->m_target_index, m_npc_list[npc_h]->m_target_type, npc_h, hb::shared::owner_class::Npc, dX, dY, 20);
-					break;
-				}
-			}
-			m_npc_list[npc_h]->m_attack_count++;
-
-			if ((m_npc_list[npc_h]->m_is_perm_attack_mode == false) && (m_npc_list[npc_h]->m_action_limit == 0)) {
-				switch (m_npc_list[npc_h]->m_attack_strategy) {
-				case AttackAI::ExchangeAttack:
-					m_npc_list[npc_h]->m_behavior_turn_count = 0;
-					m_npc_list[npc_h]->m_behavior = Behavior::Flee;
-					break;
-
-				case AttackAI::TwoByOneAttack:
-					if (m_npc_list[npc_h]->m_attack_count >= 2) {
-						m_npc_list[npc_h]->m_behavior_turn_count = 0;
-						m_npc_list[npc_h]->m_behavior = Behavior::Flee;
-					}
-					break;
-				}
-			}
+		// Try magic attack (positive and negative magic levels)
+		if (try_magic_attack(npc_h, m_npc_list[npc_h]->m_target_index, m_npc_list[npc_h]->m_target_type, sX, sY, dX, dY, skip_to_chase))
 			return;
-		}
+
+		// Try ranged attack (guard towers, catapult, dark elf, frost/nizie, beholder, default ranged)
+		if (!skip_to_chase && try_ranged_attack(npc_h, m_npc_list[npc_h]->m_target_index, m_npc_list[npc_h]->m_target_type, sX, sY, dX, dY))
+			return;
 
 		if (m_npc_list[npc_h]->m_action_limit != 0) return;
 
@@ -1592,7 +1635,7 @@ void CEntityManager::npc_behavior_flee(int npc_h)
 	short target;
 	char  target_type;
 
-	if (m_npc_list[npc_h] == 0) return;
+	if (m_npc_list[npc_h] == nullptr) return;
 	if (m_npc_list[npc_h]->m_is_killed) return;
 
 	m_npc_list[npc_h]->m_behavior_turn_count++;
@@ -1617,7 +1660,8 @@ void CEntityManager::npc_behavior_flee(int npc_h)
 		m_npc_list[npc_h]->m_behavior = Behavior::Move;
 		m_npc_list[npc_h]->m_tmp_error = 0;
 		if (m_npc_list[npc_h]->m_hp <= 3) {
-			m_npc_list[npc_h]->m_hp += m_game->dice(1, m_npc_list[npc_h]->m_hit_dice);
+			int regen = m_game->dice(1, (m_npc_list[npc_h]->m_hp_max - m_npc_list[npc_h]->m_hp_min) / 2 + 5);
+			m_npc_list[npc_h]->m_hp += regen;
 			if (m_npc_list[npc_h]->m_hp <= 0) m_npc_list[npc_h]->m_hp = 1;
 		}
 		return;
@@ -1665,7 +1709,7 @@ void CEntityManager::npc_behavior_stop(int npc_h)
 	short target = 0;
 	bool  flag;
 
-	if (m_npc_list[npc_h] == 0) return;
+	if (m_npc_list[npc_h] == nullptr) return;
 
 	m_npc_list[npc_h]->m_behavior_turn_count++;
 
@@ -1730,7 +1774,7 @@ void CEntityManager::npc_behavior_dead(int npc_h)
 {
 	uint32_t time;
 
-	if (m_npc_list[npc_h] == 0) return;
+	if (m_npc_list[npc_h] == nullptr) return;
 
 	time = GameClock::GetTimeMS();
 	m_npc_list[npc_h]->m_behavior_turn_count++;
@@ -1819,12 +1863,12 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 	bool no_effect = false;
 	uint32_t  time = GameClock::GetTimeMS();
 
-	if (m_npc_list[npc_h] == 0) return;
+	if (m_npc_list[npc_h] == nullptr) return;
 	if ((dX < 0) || (dX >= m_map_list[m_npc_list[npc_h]->m_map_index]->m_size_x) ||
 		(dY < 0) || (dY >= m_map_list[m_npc_list[npc_h]->m_map_index]->m_size_y)) return;
 
 	if ((type < 0) || (type >= 100))     return;
-	if (m_game->m_magic_config_list[type] == 0) return;
+	if (m_game->m_magic_config_list[type] == nullptr) return;
 
 	if (m_map_list[m_npc_list[npc_h]->m_map_index]->m_is_attack_enabled == false) return;
 
@@ -1843,7 +1887,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 
 				switch (owner_type) {
 				case hb::shared::owner_class::Player:
-					if (m_game->m_client_list[owner_h] == 0) { no_effect = true; break; }
+					if (m_game->m_client_list[owner_h] == nullptr) { no_effect = true; break; }
 					if (m_game->m_client_list[owner_h]->m_magic_effect_status[hb::shared::magic::Invisibility] != 0) { no_effect = true; break; }
 					m_game->m_client_list[owner_h]->m_magic_effect_status[hb::shared::magic::Invisibility] = (char)m_game->m_magic_config_list[type]->m_value_4;
 					m_game->m_status_effect_manager->set_invisibility_flag(owner_h, owner_type, true);
@@ -1851,7 +1895,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 					break;
 
 				case hb::shared::owner_class::Npc:
-					if (m_npc_list[owner_h] == 0) { no_effect = true; break; }
+					if (m_npc_list[owner_h] == nullptr) { no_effect = true; break; }
 					if (m_npc_list[owner_h]->m_magic_effect_status[hb::shared::magic::Invisibility] != 0) { no_effect = true; break; }
 					m_npc_list[owner_h]->m_magic_effect_status[hb::shared::magic::Invisibility] = (char)m_game->m_magic_config_list[type]->m_value_4;
 					m_game->m_status_effect_manager->set_invisibility_flag(owner_h, owner_type, true);
@@ -1877,7 +1921,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 						if (owner_h != 0) {
 							switch (owner_type) {
 							case hb::shared::owner_class::Player:
-								if (m_game->m_client_list[owner_h] == 0) { no_effect = true; break; }
+								if (m_game->m_client_list[owner_h] == nullptr) { no_effect = true; break; }
 								if (m_game->m_client_list[owner_h]->m_magic_effect_status[hb::shared::magic::Invisibility] != 0) {
 									if (m_game->m_client_list[owner_h]->m_type != 66) {
 										m_game->m_client_list[owner_h]->m_magic_effect_status[hb::shared::magic::Invisibility] = 0;
@@ -1888,7 +1932,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 								break;
 
 							case hb::shared::owner_class::Npc:
-								if (m_npc_list[owner_h] == 0) { no_effect = true; break; }
+								if (m_npc_list[owner_h] == nullptr) { no_effect = true; break; }
 								if (m_npc_list[owner_h]->m_magic_effect_status[hb::shared::magic::Invisibility] != 0) {
 									if (m_game->m_client_list[owner_h]->m_type != 66) {
 										m_npc_list[owner_h]->m_magic_effect_status[hb::shared::magic::Invisibility] = 0;
@@ -1910,14 +1954,14 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 
 				switch (owner_type) {
 				case hb::shared::owner_class::Player:
-					if (m_game->m_client_list[owner_h] == 0) { no_effect = true; break; }
+					if (m_game->m_client_list[owner_h] == nullptr) { no_effect = true; break; }
 					if (m_game->m_client_list[owner_h]->m_magic_effect_status[hb::shared::magic::HoldObject] != 0) { no_effect = true; break; }
 					if (m_game->m_client_list[owner_h]->m_add_poison_resistance >= 500) { no_effect = true; break; }
 					m_game->m_client_list[owner_h]->m_magic_effect_status[hb::shared::magic::HoldObject] = (char)m_game->m_magic_config_list[type]->m_value_4;
 					break;
 
 				case hb::shared::owner_class::Npc:
-					if (m_npc_list[owner_h] == 0) { no_effect = true; break; }
+					if (m_npc_list[owner_h] == nullptr) { no_effect = true; break; }
 					if (m_npc_list[owner_h]->m_magic_level >= 6) { no_effect = true; break; }
 					if (m_npc_list[owner_h]->m_magic_effect_status[hb::shared::magic::HoldObject] != 0) { no_effect = true; break; }
 					m_npc_list[owner_h]->m_magic_effect_status[hb::shared::magic::HoldObject] = (char)m_game->m_magic_config_list[type]->m_value_4;
@@ -1948,7 +1992,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 					m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
 
 				m_map_list[m_npc_list[npc_h]->m_map_index]->get_dead_owner(&owner_h, &owner_type, tX, tY);
-				if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != 0) &&
+				if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != nullptr) &&
 					(m_game->m_client_list[owner_h]->m_hp > 0)) {
 					if (m_game->m_combat_manager->check_resisting_magic_success(m_npc_list[npc_h]->m_dir, owner_h, owner_type, result) == false)
 						m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
@@ -1960,7 +2004,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 					m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
 
 				m_map_list[m_npc_list[npc_h]->m_map_index]->get_dead_owner(&owner_h, &owner_type, tX - 1, tY);
-				if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != 0) &&
+				if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != nullptr) &&
 					(m_game->m_client_list[owner_h]->m_hp > 0)) {
 					if (m_game->m_combat_manager->check_resisting_magic_success(m_npc_list[npc_h]->m_dir, owner_h, owner_type, result) == false)
 						m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
@@ -1972,7 +2016,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 					m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
 
 				m_map_list[m_npc_list[npc_h]->m_map_index]->get_dead_owner(&owner_h, &owner_type, tX + 1, tY);
-				if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != 0) &&
+				if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != nullptr) &&
 					(m_game->m_client_list[owner_h]->m_hp > 0)) {
 					if (m_game->m_combat_manager->check_resisting_magic_success(m_npc_list[npc_h]->m_dir, owner_h, owner_type, result) == false)
 						m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
@@ -1984,7 +2028,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 					m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
 
 				m_map_list[m_npc_list[npc_h]->m_map_index]->get_dead_owner(&owner_h, &owner_type, tX, tY - 1);
-				if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != 0) &&
+				if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != nullptr) &&
 					(m_game->m_client_list[owner_h]->m_hp > 0)) {
 					if (m_game->m_combat_manager->check_resisting_magic_success(m_npc_list[npc_h]->m_dir, owner_h, owner_type, result) == false)
 						m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
@@ -1996,7 +2040,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 					m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
 
 				m_map_list[m_npc_list[npc_h]->m_map_index]->get_dead_owner(&owner_h, &owner_type, tX, tY + 1);
-				if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != 0) &&
+				if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != nullptr) &&
 					(m_game->m_client_list[owner_h]->m_hp > 0)) {
 					if (m_game->m_combat_manager->check_resisting_magic_success(m_npc_list[npc_h]->m_dir, owner_h, owner_type, result) == false)
 						m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
@@ -2012,7 +2056,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 						m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
 
 					m_map_list[m_npc_list[npc_h]->m_map_index]->get_dead_owner(&owner_h, &owner_type, ix, iy);
-					if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != 0) &&
+					if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != nullptr) &&
 						(m_game->m_client_list[owner_h]->m_hp > 0)) {
 						if (m_game->m_combat_manager->check_resisting_magic_success(m_npc_list[npc_h]->m_dir, owner_h, owner_type, result) == false)
 							m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
@@ -2025,7 +2069,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 				m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_4, m_game->m_magic_config_list[type]->m_value_5, m_game->m_magic_config_list[type]->m_value_6 + whether_bonus, false, magic_attr);
 
 			m_map_list[m_npc_list[npc_h]->m_map_index]->get_dead_owner(&owner_h, &owner_type, dX, dY);
-			if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != 0) &&
+			if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != nullptr) &&
 				(m_game->m_client_list[owner_h]->m_hp > 0)) {
 				if (m_game->m_combat_manager->check_resisting_magic_success(m_npc_list[npc_h]->m_dir, owner_h, owner_type, result) == false)
 					m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_4, m_game->m_magic_config_list[type]->m_value_5, m_game->m_magic_config_list[type]->m_value_6 + whether_bonus, false, magic_attr);
@@ -2038,7 +2082,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 				m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_4, m_game->m_magic_config_list[type]->m_value_5, m_game->m_magic_config_list[type]->m_value_6 + whether_bonus, true, magic_attr);
 
 			m_map_list[m_npc_list[npc_h]->m_map_index]->get_dead_owner(&owner_h, &owner_type, dX, dY);
-			if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != 0) &&
+			if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != nullptr) &&
 				(m_game->m_client_list[owner_h]->m_hp > 0)) {
 				if (m_game->m_combat_manager->check_resisting_magic_success(m_npc_list[npc_h]->m_dir, owner_h, owner_type, result) == false)
 					m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_4, m_game->m_magic_config_list[type]->m_value_5, m_game->m_magic_config_list[type]->m_value_6 + whether_bonus, true, magic_attr);
@@ -2056,7 +2100,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 				m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_4, m_game->m_magic_config_list[type]->m_value_5, m_game->m_magic_config_list[type]->m_value_6 + whether_bonus, true, magic_attr);
 
 			m_map_list[m_npc_list[npc_h]->m_map_index]->get_dead_owner(&owner_h, &owner_type, dX, dY);
-			if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != 0) &&
+			if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != nullptr) &&
 				(m_game->m_client_list[owner_h]->m_hp > 0)) {
 				if (m_game->m_combat_manager->check_resisting_magic_success(m_npc_list[npc_h]->m_dir, owner_h, owner_type, result) == false)
 					m_game->m_combat_manager->effect_damage_spot(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, m_game->m_magic_config_list[type]->m_value_4, m_game->m_magic_config_list[type]->m_value_5, m_game->m_magic_config_list[type]->m_value_6 + whether_bonus, true, magic_attr);
@@ -2069,7 +2113,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 						m_game->m_combat_manager->effect_damage_spot_damage_move(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, dX, dY, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
 
 					m_map_list[m_npc_list[npc_h]->m_map_index]->get_dead_owner(&owner_h, &owner_type, ix, iy);
-					if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != 0) &&
+					if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != nullptr) &&
 						(m_game->m_client_list[owner_h]->m_hp > 0)) {
 						if (m_game->m_combat_manager->check_resisting_magic_success(m_npc_list[npc_h]->m_dir, owner_h, owner_type, result) == false)
 							m_game->m_combat_manager->effect_damage_spot_damage_move(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, dX, dY, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
@@ -2085,7 +2129,7 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 						m_game->m_combat_manager->effect_damage_spot_damage_move(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, dX, dY, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
 
 					m_map_list[m_npc_list[npc_h]->m_map_index]->get_dead_owner(&owner_h, &owner_type, ix, iy);
-					if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != 0) &&
+					if ((owner_type == hb::shared::owner_class::Player) && (m_game->m_client_list[owner_h] != nullptr) &&
 						(m_game->m_client_list[owner_h]->m_hp > 0)) {
 						if (m_game->m_combat_manager->check_resisting_magic_success(m_npc_list[npc_h]->m_dir, owner_h, owner_type, result) == false)
 							m_game->m_combat_manager->effect_damage_spot_damage_move(npc_h, hb::shared::owner_class::Npc, owner_h, owner_type, dX, dY, m_game->m_magic_config_list[type]->m_value_7, m_game->m_magic_config_list[type]->m_value_8, m_game->m_magic_config_list[type]->m_value_9 + whether_bonus, false, magic_attr);
@@ -2135,8 +2179,8 @@ void CEntityManager::npc_magic_handler(int npc_h, short dX, short dY, short type
 
 EntityRelationship CEntityManager::get_npc_relationship(int npc_h, int viewer_h)
 {
-	if (m_game->m_client_list[viewer_h] == 0) return EntityRelationship::Neutral;
-	if (m_npc_list[npc_h] == 0) return EntityRelationship::Neutral;
+	if (m_game->m_client_list[viewer_h] == nullptr) return EntityRelationship::Neutral;
+	if (m_npc_list[npc_h] == nullptr) return EntityRelationship::Neutral;
 
 	int npcSide = m_npc_list[npc_h]->m_side;
 	int viewerSide = m_game->m_client_list[viewer_h]->m_side;
@@ -2159,7 +2203,7 @@ void CEntityManager::npc_request_assistance(int npc_h)
 	char  owner_type;
 
 	// iNpc     NPC  .
-	if (m_npc_list[npc_h] == 0) return;
+	if (m_npc_list[npc_h] == nullptr) return;
 
 	sX = m_npc_list[npc_h]->m_x;
 	sY = m_npc_list[npc_h]->m_y;
@@ -2167,7 +2211,7 @@ void CEntityManager::npc_request_assistance(int npc_h)
 	for(int ix = sX - 8; ix <= sX + 8; ix++)
 		for(int iy = sY - 8; iy <= sY + 8; iy++) {
 			m_map_list[m_npc_list[npc_h]->m_map_index]->get_owner(&owner_h, &owner_type, ix, iy);
-			if ((owner_h != 0) && (m_npc_list[owner_h] != 0) && (owner_type == hb::shared::owner_class::Npc) &&
+			if ((owner_h != 0) && (m_npc_list[owner_h] != nullptr) && (owner_type == hb::shared::owner_class::Npc) &&
 				(npc_h != owner_h) && (m_npc_list[owner_h]->m_side == m_npc_list[npc_h]->m_side) &&
 				(m_npc_list[owner_h]->m_is_perm_attack_mode == false) && (m_npc_list[owner_h]->m_behavior == Behavior::Move)) {
 
@@ -2190,7 +2234,7 @@ bool CEntityManager::npc_behavior_mana_collector(int npc_h)
 	double v1, v2, v3;
 	bool ret;
 
-	if (m_npc_list[npc_h] == 0) return false;
+	if (m_npc_list[npc_h] == nullptr) return false;
 	if (m_npc_list[npc_h]->m_appearance.HasSpecialState()) return false;
 
 	ret = false;
@@ -2281,7 +2325,7 @@ bool CEntityManager::npc_behavior_detector(int npc_h)
 	char  owner_type, side;
 	bool  flag = false;
 
-	if (m_npc_list[npc_h] == 0) return false;
+	if (m_npc_list[npc_h] == nullptr) return false;
 	if (m_npc_list[npc_h]->m_appearance.HasSpecialState()) return false;
 
 	for (dX = m_npc_list[npc_h]->m_x - 10; dX <= m_npc_list[npc_h]->m_x + 10; dX++)
@@ -2339,7 +2383,7 @@ bool CEntityManager::set_npc_follow_mode(char* name, char* follow_name, char fol
 	follow_index = -1;
 
 	for(int i = 1; i < MaxNpcs; i++)
-		if ((m_npc_list[i] != 0) && (memcmp(m_npc_list[i]->m_name, name, 5) == 0)) {
+		if ((m_npc_list[i] != nullptr) && (memcmp(m_npc_list[i]->m_name, name, 5) == 0)) {
 			index = i;
 			map_index = m_npc_list[i]->m_map_index;
 			break;
@@ -2348,7 +2392,7 @@ bool CEntityManager::set_npc_follow_mode(char* name, char* follow_name, char fol
 	switch (follow_owner_type) {
 	case hb::shared::owner_class::Npc:
 		for(int i = 1; i < MaxNpcs; i++)
-			if ((m_npc_list[i] != 0) && (memcmp(m_npc_list[i]->m_name, follow_name, 5) == 0)) {
+			if ((m_npc_list[i] != nullptr) && (memcmp(m_npc_list[i]->m_name, follow_name, 5) == 0)) {
 				if (m_npc_list[i]->m_map_index != map_index) return false;
 				follow_index = i;
 				follow_side = m_npc_list[i]->m_side;
@@ -2358,7 +2402,7 @@ bool CEntityManager::set_npc_follow_mode(char* name, char* follow_name, char fol
 
 	case hb::shared::owner_class::Player:
 		for(int i = 1; i < MaxClients; i++)
-			if ((m_game->m_client_list[i] != 0) && (hb_strnicmp(m_game->m_client_list[i]->m_char_name, follow_name, hb::shared::limits::CharNameLen - 1) == 0)) {
+			if ((m_game->m_client_list[i] != nullptr) && (hb_strnicmp(m_game->m_client_list[i]->m_char_name, follow_name, hb::shared::limits::CharNameLen - 1) == 0)) {
 				if (m_game->m_client_list[i]->m_map_index != map_index) return false;
 				follow_index = i;
 				follow_side = m_game->m_client_list[i]->m_side;
@@ -2383,7 +2427,7 @@ void CEntityManager::set_npc_attack_mode(char* name, int target_h, char target_t
 
 	index = -1;
 	for(int i = 1; i < MaxNpcs; i++)
-		if ((m_npc_list[i] != 0) && (memcmp(m_npc_list[i]->m_name, name, 5) == 0)) {
+		if ((m_npc_list[i] != nullptr) && (memcmp(m_npc_list[i]->m_name, name, 5) == 0)) {
 			index = i;
 			break;
 
@@ -2395,11 +2439,11 @@ void CEntityManager::set_npc_attack_mode(char* name, int target_h, char target_t
 
 	switch (target_type) {
 	case hb::shared::owner_class::Player:
-		if (m_game->m_client_list[target_h] == 0) return;
+		if (m_game->m_client_list[target_h] == nullptr) return;
 		break;
 
 	case hb::shared::owner_class::Npc:
-		if (m_npc_list[target_h] == 0) return;
+		if (m_npc_list[target_h] == nullptr) return;
 		break;
 	}
 
@@ -2414,12 +2458,22 @@ void CEntityManager::set_npc_attack_mode(char* name, int target_h, char target_t
 	//PutLogList("set_npc_attack_mode - complete");
 }
 
+bool CEntityManager::is_crusade_structure(int npc_type)
+{
+	switch (npc_type) {
+	case 36: case 37: case 38: case 39: case 42:
+		return true;
+	default:
+		return false;
+	}
+}
+
 void CEntityManager::delete_npc_internal(int npc_h)
 {
 	int naming_value;
 	char tmp[21];
 	uint32_t time;
-	if (m_npc_list[npc_h] == 0) return;
+	if (m_npc_list[npc_h] == nullptr) return;
 
 	time = GameClock::GetTimeMS();
 
@@ -2437,6 +2491,13 @@ void CEntityManager::delete_npc_internal(int npc_h)
 		m_map_list[m_npc_list[npc_h]->m_map_index]->m_total_active_object--;
 	}
 
+	// If NPC was never killed via on_entity_killed() (e.g. summoned NPC cleanup,
+	// crop harvest, energy sphere, crusade structure removal), the alive counter
+	// was never decremented — do it here to prevent m_total_alive_object drift.
+	if (!m_npc_list[npc_h]->m_is_killed) {
+		m_map_list[m_npc_list[npc_h]->m_map_index]->m_total_alive_object--;
+	}
+
 	// Spot-mob-generator
 	if (m_npc_list[npc_h]->m_spot_mob_index != 0) {
 		int spot_idx = m_npc_list[npc_h]->m_spot_mob_index;
@@ -2446,29 +2507,17 @@ void CEntityManager::delete_npc_internal(int npc_h)
 
 	m_game->m_combat_manager->remove_from_target(npc_h, hb::shared::owner_class::Npc);
 
-	switch (m_npc_list[npc_h]->m_type) {
-	case 36:
-	case 37:
-	case 38:
-	case 39:
-	case 42:
+	if (is_crusade_structure(m_npc_list[npc_h]->m_type)) {
 		m_map_list[m_npc_list[npc_h]->m_map_index]->remove_crusade_structure_info(m_npc_list[npc_h]->m_x, m_npc_list[npc_h]->m_y);
-		for(int i = 0; i < MaxGuilds; i++)
-			if (m_game->m_guild_teleport_loc[i].m_v1 == m_npc_list[npc_h]->m_guild_guid) {
-				m_game->m_guild_teleport_loc[i].m_time = time;
-				m_game->m_guild_teleport_loc[i].m_v2--;
-				if (m_game->m_guild_teleport_loc[i].m_v2 < 0) m_game->m_guild_teleport_loc[i].m_v2 = 0;
-				break;
-			}
-		break;
-	case 64: m_map_list[m_npc_list[npc_h]->m_map_index]->remove_crops_total_sum(); break;
-
+	}
+	else if (m_npc_list[npc_h]->m_type == 64) {
+		m_map_list[m_npc_list[npc_h]->m_map_index]->remove_crops_total_sum();
 	}
 
 	// DelayEvent
 	m_game->m_delay_event_manager->remove_from_delay_event_list(npc_h, hb::shared::owner_class::Npc, 0);
 	delete m_npc_list[npc_h];
-	m_npc_list[npc_h] = 0;
+	m_npc_list[npc_h] = nullptr;
 }
 
 // Helper to apply drop rate multiplier (capped at 10000 = 100%)
@@ -2487,7 +2536,7 @@ static constexpr uint32_t BASE_SECONDARY_DROP_CHANCE = 500;  // 5% base secondar
 
 void CEntityManager::npc_dead_item_generator(int npc_h, short attacker_h, char attacker_type)
 {
-	if (m_npc_list[npc_h] == 0) return;
+	if (m_npc_list[npc_h] == nullptr) return;
 	if ((attacker_type != hb::shared::owner_class::Player) || (m_npc_list[npc_h]->m_is_summoned)) return;
 	if (m_npc_list[npc_h]->m_is_unsummoned) return;
 
@@ -2598,7 +2647,7 @@ int CEntityManager::roll_drop_table_item(const DropTable* table, int tier, int& 
 bool CEntityManager::spawn_npc_drop_item(int npc_h, int item_id, int min_count, int max_count)
 {
 	if (item_id <= 0) return false;
-	if (m_npc_list[npc_h] == 0) return false;
+	if (m_npc_list[npc_h] == nullptr) return false;
 
 	if (min_count < 0) min_count = 0;
 	if (max_count < min_count) max_count = min_count;
@@ -2630,15 +2679,15 @@ bool CEntityManager::spawn_npc_drop_item(int npc_h, int item_id, int min_count, 
 		delete item;
 		return false;
 	}
-	item->m_count = count;
+	item->m_instance.count = count;
 	m_game->m_item_manager->generate_item_attributes(item);
 	item->set_touch_effect_type(TouchEffectType::ID);
-	item->m_touch_effect_value1 = static_cast<short>(m_game->dice(1, 100000));
-	item->m_touch_effect_value2 = static_cast<short>(m_game->dice(1, 100000));
-	item->m_touch_effect_value3 = (short)GameClock::GetTimeMS();
+	item->m_instance.touch_effect_value1 = static_cast<short>(m_game->dice(1, 100000));
+	item->m_instance.touch_effect_value2 = static_cast<short>(m_game->dice(1, 100000));
+	item->m_instance.touch_effect_value3 = (short)GameClock::GetTimeMS();
 	m_map_list[m_npc_list[npc_h]->m_map_index]->set_item(m_npc_list[npc_h]->m_x, m_npc_list[npc_h]->m_y, item);
-	m_game->send_event_to_near_client_type_b(MsgId::EventCommon, CommonType::ItemDrop, m_npc_list[npc_h]->m_map_index,
-		m_npc_list[npc_h]->m_x, m_npc_list[npc_h]->m_y, item->m_id_num, 0, item->m_item_color, item->m_attribute);
+	m_game->send_ground_item_event(CommonType::ItemDrop, m_npc_list[npc_h]->m_map_index,
+		m_npc_list[npc_h]->m_x, m_npc_list[npc_h]->m_y, item);
 	m_game->m_item_manager->item_log(ItemLogAction::NewGenDrop, 0, m_npc_list[npc_h]->m_npc_name, item);
 	return true;
 }
@@ -2649,7 +2698,7 @@ int CEntityManager::get_entity_handle_by_guid(uint32_t guid) const
         return -1;
 
     for(int i = 1; i < MaxNpcs; i++) {
-        if (m_entity_guid[i] == guid && m_npc_list[i] != NULL)
+        if (m_entity_guid[i] == guid && m_npc_list[i] != nullptr)
             return i;
     }
 
@@ -2674,7 +2723,7 @@ int CEntityManager::get_map_entity_count(int map_index) const
     if (!m_initialized || map_index < 0 || map_index >= m_max_maps)
         return 0;
 
-    if (m_map_list[map_index] == NULL)
+    if (m_map_list[map_index] == nullptr)
         return 0;
 
     return m_map_list[map_index]->m_total_active_object;
@@ -2682,11 +2731,11 @@ int CEntityManager::get_map_entity_count(int map_index) const
 
 int CEntityManager::find_entity_by_name(const char* name) const
 {
-    if (name == NULL)
+    if (name == nullptr)
         return -1;
 
     for(int i = 1; i < MaxNpcs; i++) {
-        if (m_npc_list[i] != NULL) {
+        if (m_npc_list[i] != nullptr) {
             if (memcmp(m_npc_list[i]->m_name, name, 6) == 0)
                 return i;
         }
@@ -2701,7 +2750,7 @@ int CEntityManager::find_entity_by_name(const char* name) const
 
 bool CEntityManager::init_entity_attributes(CNpc* npc, int npc_config_id, short sClass, char sa)
 {
-    if (m_game == NULL)
+    if (m_game == nullptr)
         return false;
 
     return m_game->init_npc_attr(npc, npc_config_id, sClass, sa);
@@ -2710,7 +2759,7 @@ bool CEntityManager::init_entity_attributes(CNpc* npc, int npc_config_id, short 
 int CEntityManager::get_free_entity_slot() const
 {
     for(int i = 1; i < MaxNpcs; i++) {
-        if (m_npc_list[i] == NULL)
+        if (m_npc_list[i] == nullptr)
             return i;
     }
     return -1; // No free slots
@@ -2721,12 +2770,12 @@ bool CEntityManager::is_valid_entity(int entity_handle) const
     if (entity_handle < 1 || entity_handle >= MaxNpcs)
         return false;
 
-    return (m_npc_list[entity_handle] != NULL);
+    return (m_npc_list[entity_handle] != nullptr);
 }
 
 void CEntityManager::generate_entity_loot(int entity_handle, short attacker_h, char attacker_type)
 {
-    if (m_game == NULL)
+    if (m_game == nullptr)
         return;
 
     npc_dead_item_generator(entity_handle, attacker_h, attacker_type);
@@ -2786,31 +2835,28 @@ void CEntityManager::remove_from_active_list(int entity_handle)
 
 void CEntityManager::process_random_spawns(int map_index)
 {
-	int x, j, naming_value, result, total_mob;
-	char npc_name[hb::shared::limits::NpcNameLen], cName_Master[11], cName_Slave[11], waypoint[11];
-	char sa;
-	int  pX, pY, map_level, prob_sa, kind_sa, result_num, npc_id, npc_config_id;
-	bool master, firm_berserk, is_special_event;
+	int naming_value, result;
+	char npc_name[hb::shared::limits::NpcNameLen], cName_Master[11];
+	bool firm_berserk, is_special_event = false;
 
-	if (m_game == NULL || m_game->m_on_exit_process) return;
+	if (m_game == nullptr || m_game->m_on_exit_process) return;
 
 	for(int i = 0; i < m_max_maps; i++) {
 		// Random Mob Generator
 
-		//if ( (m_map_list[i] != 0) && (m_map_list[i]->m_random_mob_generator ) && 
-		//	 ((m_map_list[i]->m_maximum_object - 30) > m_map_list[i]->m_total_active_object) ) {
-
-		if (m_map_list[i] != 0) {
-			//if (m_game->m_is_crusade_mode ) 
-			//	 result_num = (m_map_list[i]->m_maximum_object - 30) / 3;
-			//else result_num = (m_map_list[i]->m_maximum_object - 30);
+		int result_num = 0;
+		if (m_map_list[i] != nullptr) {
 			result_num = (m_map_list[i]->m_maximum_object - 30);
 		}
 
-		if ( (m_map_list[i] != 0) && (m_map_list[i]->m_random_mob_generator ) && (result_num > m_map_list[i]->m_total_active_object) ) {
+		if ( (m_map_list[i] != nullptr) && (m_map_list[i]->m_random_mob_generator ) && (result_num > m_map_list[i]->m_total_active_object) ) {
 			if ((m_game->m_middleland_map_index != -1) && (m_game->m_middleland_map_index == i) && (m_game->m_is_crusade_mode )) break;
 
 			naming_value = m_map_list[i]->get_empty_naming_value();
+			int mob_dice_sides = 0, total_mob = 0, npc_id = 0;
+			bool master = false;
+			int pX = 0, pY = 0;
+			int prob_sa = 0, kind_sa = 0, npc_config_id = 0;
 			if (naming_value != -1) {
 				std::memset(cName_Master, 0, sizeof(cName_Master));
 				sprintf(cName_Master, "XX%d", naming_value);
@@ -2820,6 +2866,7 @@ void CEntityManager::process_random_spawns(int map_index)
 				std::memset(npc_name, 0, sizeof(npc_name));
 
 				firm_berserk = false;
+				is_special_event = false;
 				result = m_game->dice(1,100);
 				switch (m_map_list[i]->m_random_mob_generator_level) {
 
@@ -2839,7 +2886,6 @@ void CEntityManager::process_random_spawns(int map_index)
 					else if ((result >= 95) && (result <= 100)) {
 						result = 3; // Orc
 					}
-					map_level = 1;
 					break;
 
 				case 2:
@@ -2850,7 +2896,6 @@ void CEntityManager::process_random_spawns(int map_index)
 						result = 2;
 					}
 					else result = 10;
-					map_level = 1;
 					break;
 
 				case 3:
@@ -2890,7 +2935,6 @@ void CEntityManager::process_random_spawns(int map_index)
 				case 5:	result = 27; break;
 						}
 					}
-					map_level = 3;
 					break;
 
 				case 4:
@@ -2912,7 +2956,6 @@ void CEntityManager::process_random_spawns(int map_index)
 				case 2:	result = 9;  break;
 						}
 					}
-					map_level = 2;
 					break;
 
 				case 5:
@@ -2951,7 +2994,6 @@ void CEntityManager::process_random_spawns(int map_index)
 				case 3: result = 9;  break;
 						}
 					}
-					map_level = 3;
 					break;
 
 				case 6: // huntzone3, huntzone4
@@ -2984,7 +3026,6 @@ void CEntityManager::process_random_spawns(int map_index)
 				case 8: result = 29; break;
 						}
 					}
-					map_level = 4;
 					break;
 
 				case 7: // areuni, elvuni
@@ -2997,9 +3038,7 @@ void CEntityManager::process_random_spawns(int map_index)
 						case 5: result = 50; break; // Giant-Tree
 						}
 					}
-					//else if ((result >= 50) && (result < 60)) { 
-					//	result = 29; // Rudolph
-					else if ((result >= 50) && (result < 85)) { 
+					else if ((result >= 50) && (result < 85)) {
 						switch (m_game->dice(1,4)) {
 						case 1: result = 50; break; // Giant-Tree
 						case 2: 
@@ -3019,7 +3058,6 @@ void CEntityManager::process_random_spawns(int map_index)
 				case 4: result = 29;  break; // Cannibal-Plant
 						}
 					}
-					map_level = 4;
 					break;
 
 				case 8:
@@ -3038,7 +3076,6 @@ void CEntityManager::process_random_spawns(int map_index)
 					else if ((result >= 95) && (result <= 100)) {
 						result = 14; break;
 					}
-					map_level = 4;
 					break;
 
 				case 9:
@@ -3067,7 +3104,6 @@ void CEntityManager::process_random_spawns(int map_index)
 					}
 
 					if ((m_game->dice(1,3) == 1) && (result != 16)) firm_berserk = true;
-					map_level = 5;
 					break;
 
 				case 10:
@@ -3093,7 +3129,6 @@ void CEntityManager::process_random_spawns(int map_index)
 						}
 					}
 					if ((m_game->dice(1,3) == 1) && (result != 16)) firm_berserk = true;
-					map_level = 5;
 					break;
 
 				case 11:
@@ -3132,7 +3167,6 @@ void CEntityManager::process_random_spawns(int map_index)
 				case 3: result = 8; break;
 						}
 					}
-					map_level = 4;
 					break;
 
 				case 12:
@@ -3156,7 +3190,6 @@ void CEntityManager::process_random_spawns(int map_index)
 				case 3: result = 26; break;
 						}
 					}
-					map_level = 4;
 					break;
 
 				case 13:
@@ -3190,7 +3223,6 @@ void CEntityManager::process_random_spawns(int map_index)
 					else if ((result >= 95) && (result <= 100)) {
 						result = 22;
 					}
-					map_level = 5;
 					break;
 
 				case 14: // icebound
@@ -3211,7 +3243,6 @@ void CEntityManager::process_random_spawns(int map_index)
 					else if ((result >= 90) && (result <= 100)) {
 						result = 33; // Frost
 					}
-					map_level = 5;
 					break;
 
 				case 15:
@@ -3229,7 +3260,6 @@ void CEntityManager::process_random_spawns(int map_index)
 					else if ((result >= 80) && (result <= 100)) {
 						result = 21;
 					}
-					map_level = 4;
 					break;
 
 				case 16: // 2ndmiddle, huntzone1, huntzone2, 
@@ -3256,7 +3286,6 @@ void CEntityManager::process_random_spawns(int map_index)
 						case 3: result = 7;  break; // Scorpion
 						}
 					}
-					map_level = 1;
 					break;
 
 				case 17:
@@ -3283,7 +3312,6 @@ void CEntityManager::process_random_spawns(int map_index)
 					else if ((result >= 90) && (result <= 100)) {
 						result = 33;
 					}
-					map_level = 1;
 					break;
 
 				case 18: // druncncity
@@ -3305,7 +3333,6 @@ void CEntityManager::process_random_spawns(int map_index)
 					else if ((result >= 90) && (result <= 100)) {
 						result = 26; // Giant-Frog
 					}					
-					map_level = 4;
 					break;
 
 				case 19:
@@ -3327,7 +3354,6 @@ void CEntityManager::process_random_spawns(int map_index)
 					else if ((result >= 85) && (result <= 100)) {
 						result = 22;
 					}
-					map_level = 4;
 					break;
 
 				case 20:
@@ -3364,7 +3390,6 @@ void CEntityManager::process_random_spawns(int map_index)
 					else if ((result >= 95) && (result < 100)) {
 						result = 22;
 					}
-					map_level = 4;
 					break;
 
 				case 21:
@@ -3390,7 +3415,6 @@ void CEntityManager::process_random_spawns(int map_index)
 					else if ((result >= 99) && (result <= 100)) {
 						result = 51; // Abaddon
 					}
-					map_level = 4;
 					break;
 	
 				}			
@@ -3455,146 +3479,82 @@ void CEntityManager::process_random_spawns(int map_index)
 					}
 				}
 
+				// Random monster spawn attribute table
+				// {result_id, name, npc_id, prob_sa, kind_sa, mob_dice_sides}
+				// mob_dice_sides: >0 = dice(1,N)-1, <0 = fixed abs value, 0 = fixed 0
+				struct random_spawn_info { int id; const char* name; int npc_id; int prob_sa; int kind_sa; int mob_dice; };
+				static constexpr random_spawn_info spawn_table[] = {
+					{ 1, "Slime",            10,  5, 1,  5}, { 2, "Giant-Ant",       16, 10, 2,  5},
+					{ 3, "Orc",              14, 15, 1,  5}, { 4, "Zombie",           18, 15, 3,  3},
+					{ 5, "Skeleton",         11, 35, 8,  3}, { 6, "Orc-Mage",         14, 30, 7,  3},
+					{ 7, "Scorpion",         17, 15, 3,  3}, { 8, "Stone-Golem",      12, 25, 5,  2},
+					{ 9, "Cyclops",          13, 35, 8,  2}, {10, "Amphis",            22, 20, 3,  5},
+					{11, "Clay-Golem",       23, 20, 5,  3}, {12, "Troll",             28, 25, 3,  5},
+					{13, "Orge",             29, 25, 1,  3}, {14, "Hellbound",         27, 25, 8,  2},
+					{15, "Liche",            30, 30, 8,  3}, {16, "Demon",             31, 20, 8,  2},
+					{17, "Unicorn",          32, 35, 7,  2}, {18, "WereWolf",          33, 25, 1,  5},
+					{19, "YB-Aresden",       -1, 15, 1,  2}, {20, "YB-Elvine",        -1, 15, 1,  2},
+					{21, "Gagoyle",          52, 20, 8,  5}, {22, "Beholder",          53, 20, 5,  2},
+					{23, "Dark-Elf",         54, 20, 3,  2}, {24, "Rabbit",            -1,  5, 1,  4},
+					{25, "Cat",              -1, 10, 2,  2}, {26, "Giant-Frog",        57, 10, 2,  3},
+					{27, "Mountain-Giant",   58, 25, 1,  3}, {28, "Ettin",             59, 20, 8,  3},
+					{29, "Cannibal-Plant",   60, 20, 5,  5}, {30, "Rudolph",           -1, 20, 5,  3},
+					{31, "Ice-Golem",        65, 35, 8,  3}, {32, "DireBoar",          62, 20, 5, -1},
+					{33, "Frost",            63, 30, 8, -1}, {34, "Stalker",           48, 20, 1, -1},
+					{35, "Hellclaw",         49, 20, 1, -1}, {36, "Wyvern",            66, 20, 1, -1},
+					{37, "Fire-Wyvern",      -1, 20, 1, -1}, {38, "Barlog",            -1, 20, 1, -1},
+					{39, "Tentocle",         -1, 20, 1, -1}, {40, "Centaurus",         -1, 20, 1, -1},
+					{41, "Giant-Lizard",     -1, 20, 1, -1}, {42, "Minotaurs",         -1, 20, 1,  3},
+					{43, "Tentocle",         -1, 20, 1, -1}, {44, "Claw-Turtle",       -1, 20, 1,  3},
+					{45, "Giant-Crayfish",   -1, 20, 1, -1}, {46, "Giant-Plant",       -1, 20, 1,  0},
+					{47, "MasterMage-Orc",   -1, 20, 1,  0}, {48, "Nizie",             -1, 20, 1,  0},
+					{49, "Tigerworm",        50, 20, 1,  0}, {50, "Giant-Plant",       -1, 20, 1,  0},
+					{51, "Abaddon",          -1, 20, 1,  0}, {52, "YW-Aresden",        -1, 15, 1,  0},
+					{53, "YW-Elvine",        -1, 15, 1,  0}, {54, "YY-Aresden",        -1, 15, 1,  0},
+					{55, "YY-Elvine",        -1, 15, 1,  0}, {56, "XB-Aresden",        -1, 15, 1,  0},
+					{57, "XB-Elvine",        -1, 15, 1,  0}, {58, "XW-Aresden",        -1, 15, 1,  0},
+					{59, "XW-Elvine",        -1, 15, 1,  0}, {60, "XY-Aresden",        -1, 15, 1,  0},
+					{61, "XY-Elvine",        -1, 15, 1,  0},
+				};
+
 				std::memset(npc_name, 0, sizeof(npc_name));
-				//Random Monster Spawns
-				switch (result) {
-				case 1:  strcpy(npc_name, "Slime");				npc_id = 10; prob_sa = 5;  kind_sa = 1; break;
-				case 2:  strcpy(npc_name, "Giant-Ant");			npc_id = 16; prob_sa = 10; kind_sa = 2; break;
-				case 3:  strcpy(npc_name, "Orc");				npc_id = 14; prob_sa = 15; kind_sa = 1; break;
-				case 4:  strcpy(npc_name, "Zombie");			npc_id = 18; prob_sa = 15; kind_sa = 3; break;
-				case 5:  strcpy(npc_name, "Skeleton");			npc_id = 11; prob_sa = 35; kind_sa = 8; break;
-				case 6:  strcpy(npc_name, "Orc-Mage");			npc_id = 14; prob_sa = 30; kind_sa = 7; break;
-				case 7:  strcpy(npc_name, "Scorpion");			npc_id = 17; prob_sa = 15; kind_sa = 3; break;
-				case 8:  strcpy(npc_name, "Stone-Golem");		npc_id = 12; prob_sa = 25; kind_sa = 5; break;
-				case 9:  strcpy(npc_name, "Cyclops");			npc_id = 13; prob_sa = 35; kind_sa = 8; break;
-				case 10: strcpy(npc_name, "Amphis");			npc_id = 22; prob_sa = 20; kind_sa = 3; break;
-				case 11: strcpy(npc_name, "Clay-Golem");		npc_id = 23; prob_sa = 20; kind_sa = 5; break;
-				case 12: strcpy(npc_name, "Troll");				npc_id = 28; prob_sa = 25; kind_sa = 3; break; 
-				case 13: strcpy(npc_name, "Orge");				npc_id = 29; prob_sa = 25; kind_sa = 1; break;
-				case 14: strcpy(npc_name, "Hellbound");			npc_id = 27; prob_sa = 25; kind_sa = 8; break;
-				case 15: strcpy(npc_name, "Liche");				npc_id = 30; prob_sa = 30; kind_sa = 8; break;
-				case 16: strcpy(npc_name, "Demon");				npc_id = 31; prob_sa = 20; kind_sa = 8; break;
-				case 17: strcpy(npc_name, "Unicorn");			npc_id = 32; prob_sa = 35; kind_sa = 7; break;
-				case 18: strcpy(npc_name, "WereWolf");			npc_id = 33; prob_sa = 25; kind_sa = 1; break;
-				case 19: strcpy(npc_name, "YB-Aresden");		npc_id = -1;  prob_sa = 15; kind_sa = 1; break;
-				case 20: strcpy(npc_name, "YB-Elvine");			npc_id = -1;  prob_sa = 15; kind_sa = 1; break;
-				case 21: strcpy(npc_name, "Gagoyle");			npc_id = 52; prob_sa = 20; kind_sa = 8; break;
-				case 22: strcpy(npc_name, "Beholder");			npc_id = 53; prob_sa = 20; kind_sa = 5; break;
-				case 23: strcpy(npc_name, "Dark-Elf");			npc_id = 54; prob_sa = 20; kind_sa = 3; break;
-				case 24: strcpy(npc_name, "Rabbit");			npc_id = -1; prob_sa = 5;  kind_sa = 1; break;
-				case 25: strcpy(npc_name, "Cat");				npc_id = -1; prob_sa = 10; kind_sa = 2; break;
-				case 26: strcpy(npc_name, "Giant-Frog");		npc_id = 57; prob_sa = 10; kind_sa = 2; break;
-				case 27: strcpy(npc_name, "Mountain-Giant");	npc_id = 58; prob_sa = 25; kind_sa = 1; break;
-				case 28: strcpy(npc_name, "Ettin");				npc_id = 59; prob_sa = 20; kind_sa = 8; break;
-				case 29: strcpy(npc_name, "Cannibal-Plant");	npc_id = 60; prob_sa = 20; kind_sa = 5; break;
-				case 30: strcpy(npc_name, "Rudolph");			npc_id = -1; prob_sa = 20; kind_sa = 5; break;
-				case 31: strcpy(npc_name, "Ice-Golem");			npc_id = 65; prob_sa = 35; kind_sa = 8; break;
-				case 32: strcpy(npc_name, "DireBoar");			npc_id = 62; prob_sa = 20; kind_sa = 5; break;
-				case 33: strcpy(npc_name, "Frost");				npc_id = 63; prob_sa = 30; kind_sa = 8; break;
-				case 34: strcpy(npc_name, "Stalker");           npc_id = 48; prob_sa = 20; kind_sa = 1; break;
-				case 35: strcpy(npc_name, "Hellclaw");			npc_id = 49; prob_sa = 20; kind_sa = 1; break;
-				case 36: strcpy(npc_name, "Wyvern");			npc_id = 66; prob_sa = 20; kind_sa = 1; break;
-				case 37: strcpy(npc_name, "Fire-Wyvern");		npc_id = -1; prob_sa = 20; kind_sa = 1; break; 
-				case 38: strcpy(npc_name, "Barlog");			npc_id = -1; prob_sa = 20; kind_sa = 1; break;
-				case 39: strcpy(npc_name, "Tentocle");			npc_id = -1; prob_sa = 20; kind_sa = 1; break;
-				case 40: strcpy(npc_name, "Centaurus");			npc_id = -1; prob_sa = 20; kind_sa = 1; break;
-				case 41: strcpy(npc_name, "Giant-Lizard");		npc_id = -1; prob_sa = 20; kind_sa = 1; break;
-				case 42: strcpy(npc_name, "Minotaurs");			npc_id = -1; prob_sa = 20; kind_sa = 1; break;
-				case 43: strcpy(npc_name, "Tentocle");			npc_id = -1; prob_sa = 20; kind_sa = 1; break;
-				case 44: strcpy(npc_name, "Claw-Turtle");		npc_id = -1; prob_sa = 20; kind_sa = 1; break;
-				case 45: strcpy(npc_name, "Giant-Crayfish");	npc_id = -1; prob_sa = 20; kind_sa = 1; break;
-				case 46: strcpy(npc_name, "Giant-Plant");		npc_id = -1; prob_sa = 20; kind_sa = 1; break;
-				case 47: strcpy(npc_name, "MasterMage-Orc");	npc_id = -1; prob_sa = 20; kind_sa = 1; break;
-				case 48: strcpy(npc_name, "Nizie");				npc_id = -1; prob_sa = 20; kind_sa = 1; break;
-				case 49: strcpy(npc_name, "Tigerworm");			npc_id = 50; prob_sa = 20; kind_sa = 1; break;
-				case 50: strcpy(npc_name, "Giant-Plant");		npc_id = -1; prob_sa = 20; kind_sa = 1; break;
-				case 51: strcpy(npc_name, "Abaddon");			npc_id = -1; prob_sa = 20; kind_sa = 1; break;
-				case 52: strcpy(npc_name, "YW-Aresden");		npc_id = -1; prob_sa = 15; kind_sa = 1; break;
-				case 53: strcpy(npc_name, "YW-Elvine");			npc_id = -1; prob_sa = 15; kind_sa = 1; break;
-				case 54: strcpy(npc_name, "YY-Aresden");		npc_id = -1; prob_sa = 15; kind_sa = 1; break;
-				case 55: strcpy(npc_name, "YY-Elvine");			npc_id = -1; prob_sa = 15; kind_sa = 1; break;
-				case 56: strcpy(npc_name, "XB-Aresden");		npc_id = -1; prob_sa = 15; kind_sa = 1; break;
-				case 57: strcpy(npc_name, "XB-Elvine");			npc_id = -1; prob_sa = 15; kind_sa = 1; break;
-				case 58: strcpy(npc_name, "XW-Aresden");		npc_id = -1; prob_sa = 15; kind_sa = 1; break;
-				case 59: strcpy(npc_name, "XW-Elvine");			npc_id = -1; prob_sa = 15; kind_sa = 1; break;
-				case 60: strcpy(npc_name, "XY-Aresden");		npc_id = -1; prob_sa = 15; kind_sa = 1; break;
-				case 61: strcpy(npc_name, "XY-Elvine");			npc_id = -1; prob_sa = 15; kind_sa = 1; break;
-				default: strcpy(npc_name, "Orc");				npc_id = 14; prob_sa = 15; kind_sa = 1; break;
+				// Default values (Orc)
+				strcpy(npc_name, "Orc");
+				npc_id = 14;
+				prob_sa = 15; kind_sa = 1;
+
+				for (const auto& entry : spawn_table) {
+					if (entry.id == result) {
+						strcpy(npc_name, entry.name);
+						npc_id = entry.npc_id;
+						prob_sa = entry.prob_sa;
+						kind_sa = entry.kind_sa;
+						mob_dice_sides = entry.mob_dice;
+						break;
+					}
 				}
 
 				npc_config_id = m_game->get_npc_config_id_by_name(npc_name);
-				sa = 0;
+				char sa = 0;
 				if (m_game->dice(1, 100) <= static_cast<uint32_t>(prob_sa)) {
 					sa = m_game->get_special_ability(kind_sa);
 				}
 
+				char waypoint[11] = {};
 				master = (create_entity(npc_config_id, cName_Master, m_map_list[i]->m_name, (rand() % 3), sa,
 					MoveType::Random, &pX, &pY, waypoint, 0, 0, -1, false, false, firm_berserk, true, 0) > 0);
-				if (master == false) {
+				if (!master) {
 					m_map_list[i]->set_naming_value_empty(naming_value);
 				}
-				else {
-
-				}
-			}	
-
-			switch (result) {
-			case 1:	 total_mob = m_game->dice(1,5)-1; break;
-			case 2:	 total_mob = m_game->dice(1,5)-1; break;
-			case 3:	 total_mob = m_game->dice(1,5)-1; break;
-			case 4:	 total_mob = m_game->dice(1,3)-1; break;
-			case 5:	 total_mob = m_game->dice(1,3)-1; break;
-
-			case 6:  total_mob = m_game->dice(1,3)-1; break;
-			case 7:  total_mob = m_game->dice(1,3)-1; break;
-			case 8:  total_mob = m_game->dice(1,2)-1; break;
-			case 9:  total_mob = m_game->dice(1,2)-1; break;
-			case 10: total_mob = m_game->dice(1,5)-1; break;
-			case 11: total_mob = m_game->dice(1,3)-1; break;
-			case 12: total_mob = m_game->dice(1,5)-1; break;
-			case 13: total_mob = m_game->dice(1,3)-1; break;
-			case 14: total_mob = m_game->dice(1,2)-1; break;
-			case 15: total_mob = m_game->dice(1,3)-1; break;
-			case 16: total_mob = m_game->dice(1,2)-1; break;
-			case 17: total_mob = m_game->dice(1,2)-1; break;
-
-			case 18: total_mob = m_game->dice(1,5)-1; break;
-			case 19: total_mob = m_game->dice(1,2)-1; break;
-			case 20: total_mob = m_game->dice(1,2)-1; break;
-			case 21: total_mob = m_game->dice(1,5)-1; break;
-			case 22: total_mob = m_game->dice(1,2)-1; break;
-			case 23: total_mob = m_game->dice(1,2)-1; break;
-
-			case 24: total_mob = m_game->dice(1,4)-1; break;
-			case 25: total_mob = m_game->dice(1,2)-1; break;
-			case 26: total_mob = m_game->dice(1,3)-1; break;
-			case 27: total_mob = m_game->dice(1,3)-1; break;
-
-			case 28: total_mob = m_game->dice(1,3)-1; break;
-			case 29: total_mob = m_game->dice(1,5)-1; break;
-			case 30: total_mob = m_game->dice(1,3)-1; break;
-			case 31: total_mob = m_game->dice(1,3)-1; break;
-
-			case 32: total_mob = 1; break;
-			case 33: total_mob = 1; break;
-			case 34: total_mob = 1; break;
-			case 35: total_mob = 1; break;
-			case 36: total_mob = 1; break;
-
-			case 37: total_mob = 1; break;
-			case 38: total_mob = 1; break;
-			case 39: total_mob = 1; break;
-			case 40: total_mob = 1; break;
-			case 41: total_mob = 1; break;
-
-			case 42: total_mob = m_game->dice(1,3)-1; break;
-			case 43: total_mob = 1; break;
-			case 44: total_mob = m_game->dice(1,3)-1; break; 
-			case 45: total_mob = 1; break;
-			default: total_mob = 0; break;
 			}
 
-			if (master == false) total_mob = 0;
+			// Determine follower count from spawn table
+			if (mob_dice_sides > 0)
+				total_mob = m_game->dice(1, mob_dice_sides) - 1;
+			else if (mob_dice_sides < 0)
+				total_mob = -mob_dice_sides;
+
+			if (!master) total_mob = 0;
 
 			if (total_mob > 2) {
 				switch (result) {
@@ -3659,8 +3619,8 @@ void CEntityManager::process_random_spawns(int map_index)
 				case 1:
 					if ((result != 35) && (result != 36) && (result != 37) && (result != 49) 
 						&& (result != 51) && (result != 15) && (result != 16) && (result != 21)) total_mob = 12;
-					for (x = 1; x < MaxClients; x++)
-					if ((npc_id != -1) && (m_game->m_client_list[x] != 0) && (m_game->m_client_list[x]->m_is_init_complete )) {
+					for (int x = 1; x < MaxClients; x++)
+					if ((npc_id != -1) && (m_game->m_client_list[x] != nullptr) && (m_game->m_client_list[x]->m_is_init_complete )) {
 						m_game->send_notify_msg(0, x, Notify::SpawnEvent, pX, pY, npc_id, 0, 0, 0);
 					}
 					break;
@@ -3677,29 +3637,7 @@ void CEntityManager::process_random_spawns(int map_index)
 				m_game->m_is_special_event_time = false;
 			}
 
-			for (j = 0; j < total_mob; j++) {
-				naming_value = m_map_list[i]->get_empty_naming_value();
-				if (naming_value != -1) {
-					std::memset(cName_Slave, 0, sizeof(cName_Slave));
-					sprintf(cName_Slave, "XX%d", naming_value);
-					cName_Slave[0] = 95; // original '_';
-					cName_Slave[1] = i + 65;
-
-					sa = 0;
-
-					if (m_game->dice(1, 100) <= static_cast<uint32_t>(prob_sa)) {
-						sa = m_game->get_special_ability(kind_sa);
-					}
-
-					if (create_entity(npc_config_id, cName_Slave, m_map_list[i]->m_name, (rand() % 3), sa,
-						MoveType::Random, &pX, &pY, waypoint, 0, 0, -1, false, false, firm_berserk, false, 0) <= 0) {
-						m_map_list[i]->set_naming_value_empty(naming_value);
-					}
-					else {
-						set_npc_follow_mode(cName_Slave, cName_Master, hb::shared::owner_class::Npc);
-					}
-				}
-			}
+			spawn_follower_mobs(i, npc_config_id, total_mob, firm_berserk, prob_sa, kind_sa, cName_Master, pX, pY);
 		}
 
 		
@@ -3713,7 +3651,7 @@ void CEntityManager::process_spot_spawns(int map_index)
     if (map_index < 0 || map_index >= m_max_maps)
         return;
 
-    if (m_map_list[map_index] == NULL)
+    if (m_map_list[map_index] == nullptr)
         return;
 
     // Check if map has room for more objects

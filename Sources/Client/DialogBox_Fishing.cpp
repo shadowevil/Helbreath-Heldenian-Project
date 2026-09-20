@@ -31,7 +31,7 @@ void DialogBox_Fishing::on_draw()
 
 	draw_new_dialog_box(InterfaceNdGame1, sX, sY, 2);
 
-	auto itemInfo = item_name_formatter::get().format(m_game->find_item_id_by_name(m_fish_name),  0);
+	auto itemInfo = item_name_formatter::get().format(m_game->find_item_id_by_name(m_fish_name));
 
 	switch (m_mode)
 	{

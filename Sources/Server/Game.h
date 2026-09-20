@@ -48,6 +48,7 @@ extern bool G_bRunning;
 #include "ConcurrentMsgQueue.h"
 #include "ServerConfig.h"
 #include "FormulaEngine.h"
+#include "GameConfigSqliteStore.h"
 
 namespace hb::server::config
 {
@@ -86,7 +87,6 @@ constexpr int RagProtectionTime         = 7000;
 // Game config
 constexpr int MsgQueueSize              = 100000;
 constexpr int TotalLevelUpPoint         = 3;
-constexpr int GuildStartRank            = 12;
 constexpr int SsnLimitMultiplyValue     = 2;
 constexpr int CharPointLimit            = 1000;
 } // namespace hb::server::config
@@ -112,13 +112,10 @@ constexpr int MaxPortionTypes           = 500;
 constexpr int MaxQuestType              = 200;
 
 // Game limits
-constexpr int MaxGuilds                 = 1000;
 constexpr int MaxConstructNum           = 10;
 constexpr int MaxSchedule               = 10;
 constexpr int MaxApocalypse             = 7;
 constexpr int MaxHeldenian              = 10;
-constexpr int MaxFightZone              = 10;
-
 // Combat constants
 constexpr int MinimumHitRatio           = 15;
 constexpr int MaximumHitRatio           = 99;
@@ -164,6 +161,13 @@ struct ShopData
 {
 	int shop_id;
 	std::vector<int16_t> item_ids;   // List of item IDs available in this shop
+};
+
+struct summon_threshold_entry
+{
+	int min_mastery;
+	int npc_id;
+	int weight;
 };
 
 template <typename T>
@@ -278,11 +282,19 @@ public:
 
 	void reload_npc_configs();
 	void reload_shop_configs();
-	void send_config_reload_notification(bool items, bool magic, bool skills, bool npcs, bool balance = false);
-	void push_config_reload_to_clients(bool items, bool magic, bool skills, bool npcs, bool balance = false);
+	void send_config_reload_notification(bool items, bool magic, bool skills, bool npcs, bool balance = false, bool colors = false, bool attribute_types = false);
+	void push_config_reload_to_clients(bool items, bool magic, bool skills, bool npcs, bool balance = false, bool colors = false, bool attribute_types = false);
+	void reload_color_palette();
+	void reload_attribute_types();
 	void apply_server_config(const server_config& cfg);
 	bool reload_server_config();
+	void send_server_config_update();
 	bool reload_formulas();
+
+	void enforce_max_level(int new_max);
+	void enforce_max_stat_value(int new_max);
+	void enforce_base_stat_value();
+	void reprocess_online_player(int client_h);
 
 
 	
@@ -292,10 +304,6 @@ public:
 	
 	
 	// Lists
-
-	void command_red_ball(int client_h, char *data,size_t msg_size);
-	void command_blue_ball(int client_h, char *data,size_t msg_size);
-	void command_yellow_ball(int client_h, char* data, size_t msg_size);
 
 	// Crusade
 
@@ -385,19 +393,19 @@ public:
 	void level_up_settings_handler(int client_h, char * data, size_t msg_size);
 	bool check_level_up(int client_h);
 	uint32_t get_level_exp(int level);
-	void time_mana_points_up(int client_h);
-	void time_stamina_points_up(int client_h);
 	void quit();
 	void release_follow_mode(short owner_h, char owner_type);
 	void request_teleport_handler(int client_h, const char * data, const char * map_name = 0, int dX = -1, int dY = -1);
 	void request_teleport_auth_handler(int client_h, const char * data);
 	void toggle_combat_mode_handler(int client_h);
-	void time_hit_points_up(int client_h);
 	void on_start_game_signal();
 	uint32_t dice(uint32_t iThrow, uint32_t range);
 	bool init_npc_attr(class CNpc * npc, int npc_config_id, short sClass, char sa);
 	int get_npc_config_id_by_name(const char * npc_name) const;
 	void send_notify_msg(int from_h, int to_h, uint16_t msg_type, uint32_t v1, uint64_t v2, uint32_t v3, const char * string, uint32_t v4 = 0, uint32_t v5 = 0, uint32_t v6 = 0, uint32_t v7 = 0, uint32_t v8 = 0, uint32_t v9 = 0, const char * string2 = 0);
+	void send_item_attribute_change(int client_h, int item_index, CItem* item, uint32_t spec_value1 = 0, uint32_t spec_value2 = 0);
+	void send_gizon_item_change(int client_h, int item_index, CItem* item);
+	void send_exchange_item_notify(int from_h, int to_h, uint16_t msg_type, int item_index, CItem* item, int amount);
 
 	void broadcast_server_message(const char* message);
 	int  client_motion_stop_handler(int client_h, short sX, short sY, direction dir);
@@ -414,7 +422,7 @@ public:
 	void chat_msg_handler(int client_h, char * data, size_t msg_size);
 	bool is_blocked_by(int sender_h, int receiver_h) const;
 	void npc_process();
-	int create_new_npc(int npc_config_id, char * name, char * map_name, short sClass, char sa, char move_type, int * offset_x, int * offset_y, char * waypoint_list, hb::shared::geometry::GameRectangle * area, int spot_mob_index, char change_side, bool hide_gen_mode, bool is_summoned = false, bool firm_berserk = false, bool is_master = false, int guild_guid = 0, bool bypass_mob_limit = false);
+	int create_new_npc(int npc_config_id, char * name, char * map_name, short sClass, char sa, char move_type, int * offset_x, int * offset_y, char * waypoint_list, hb::shared::geometry::GameRectangle * area, int spot_mob_index, char change_side, bool hide_gen_mode, bool is_summoned = false, bool firm_berserk = false, bool is_master = false, bool bypass_mob_limit = false);
 	//bool create_new_npc(char * npc_name, char * name, char * map_name, short sX, short sY);
 	int spawn_map_npcs_from_database(struct sqlite3* db, int map_index);
 	bool get_is_string_is_number(char * str);
@@ -426,7 +434,8 @@ public:
 	int compose_move_map_data(short sX, short sY, int client_h, direction dir, char * data);
 	void send_event_to_near_client_type_b(uint32_t msg_id, uint16_t msg_type, char map_index, short sX, short sY, short v1, short v2, short v3, short v4 = 0);
 	void send_event_to_near_client_type_b(uint32_t msg_id, uint16_t msg_type, char map_index, short sX, short sY, short v1, short v2, short v3, uint32_t v4 = 0);
-	void send_event_to_near_client_type_a(short owner_h, char owner_type, uint32_t msg_id, uint16_t msg_type, short v1, short v2, short v3);
+	void send_ground_item_event(uint16_t msg_type, char map_index, short sX, short sY, const CItem* item);
+	void send_event_to_near_client_type_a(short owner_h, char owner_type, uint32_t msg_id, uint16_t msg_type, int v1, short v2, short v3);
 	void delete_client(int client_h, bool save, bool notify, bool count_logout = true, bool force_close_conn = false);
 	int  compose_init_map_data(short sX, short sY, int client_h, char * data);
 	void fill_player_map_object(hb::net::PacketMapDataObjectPlayer& obj, short owner_h, int viewer_h);
@@ -484,8 +493,6 @@ public:
 	char m_game_connection_ip[16];   // Optional - for future login->game server connection
 	int  m_game_connection_port;     // Optional - for future login->game server connection
 
-	uint32_t  m_level_exp_20;
-
 //private:
 	bool load_player_data_from_db(int client_h);
 	bool register_map(char * name);
@@ -510,6 +517,7 @@ public:
 	class SkillManager * m_skill_manager; // Skill mastery/profession
 	class WarManager * m_war_manager; // Crusade/Heldenian/Apocalypse/FightZone
 	class StatusEffectManager * m_status_effect_manager; // Status effect flags
+	class RegenManager * m_regen_manager; // Player HP/MP/SP regen, hunger, poison
 
 	hb::shared::net::ConcurrentMsgQueue m_msgQueue;
 	int             m_total_maps;
@@ -523,16 +531,39 @@ public:
 	bool m_is_shop_data_available;
 	std::map<int, int> m_npc_shop_mappings;        // npc_config_id  shop_id
 	std::map<int, ShopData> m_shop_data;          // shop_id  ShopData
+
+	// Summon Creature thresholds (loaded from gamedata.db)
+	std::vector<summon_threshold_entry> m_summon_thresholds;
+
+	// Character creation items (loaded from gamedata.db)
+	std::vector<creation_item_entry> m_creation_items;
 	CItem   * m_item_config_list[hb::server::config::MaxItemTypes];
 	class CNpc    * m_npc_config_list[hb::server::config::MaxNpcTypes];
 	class CMagic  * m_magic_config_list[hb::shared::limits::MaxMagicType];
 	class CSkill  * m_skill_config_list[hb::shared::limits::MaxSkillType];
+	std::unordered_map<int, int> m_magic_to_manual_item; // magic_index → item_id
+	void build_magic_manual_index();
 	//class CTeleport * m_pTeleportConfigList[DEF_MAXTELEPORTTYPE];
 
-	std::string m_config_hash[6];
+	std::string m_config_hash[8];
 	void compute_config_hashes();
 	void compute_balance_hash();
+	void compute_color_palette_hash();
+	void compute_attribute_types_hash();
 	bool send_client_balance_config(int client_h);
+	bool send_client_color_palette(int client_h);
+	bool send_client_attribute_types(int client_h);
+
+	std::vector<color_palette_entry> m_color_palette;
+	std::vector<attribute_prefix_type_entry> m_attribute_prefix_types;
+	std::vector<attribute_secondary_type_entry> m_attribute_secondary_types;
+	uint8_t m_prefix_multiplier[16]{};
+	uint8_t m_prefix_min_value[16]{};
+	uint8_t m_prefix_max_value[16]{};
+	uint8_t m_secondary_multiplier[16]{};
+	uint8_t m_secondary_min_value[16]{};
+	uint8_t m_secondary_max_value[16]{};
+	void build_multiplier_lookup();
 
 	class hb::shared::net::ASIOSocket* _lsock;
 
@@ -560,6 +591,7 @@ public:
 	char m_shutdown_message[128];            // Custom message for noticement dialog
 
 	uint32_t m_weather_time, m_game_time_1, m_game_time_2, m_game_time_3, m_game_time_4, m_game_time_5, m_game_time_6;
+	uint32_t m_equip_validation_time = 0;
 	
 	// Crusade Schedule
 	bool m_is_crusade_war_starter;
@@ -589,11 +621,6 @@ public:
 	int   m_aresden_occupy_tiles;
 	int   m_elvine_occupy_tiles;
 	int   m_cur_msgs, m_max_msgs;
-
-	uint32_t m_can_fightzone_reserve_time ;
-
-	int  m_fight_zone_reserve[hb::server::config::MaxFightZone] ;
-	int  m_fightzone_no_force_recall  ;
 
 	struct {
 		int64_t funds;
@@ -628,8 +655,6 @@ public:
 	
 	int m_collected_mana[3];
 	int m_aresden_mana, m_elvine_mana;
-
-	class CTeleportLoc m_guild_teleport_loc[hb::server::config::MaxGuilds];
 
 	int m_last_crusade_winner; 	// New 13/05/2004
 	struct {
@@ -767,7 +792,9 @@ public:
 
 	// Character/Leveling Settings
 	int m_base_stat_value;           // base-stat-value
-	int m_creation_stat_bonus;       // creation-stat-bonus
+	int m_max_creation_stat_value;   // max-creation-stat-value
+	int m_creation_stat_points;      // creation-stat-points
+	int m_base_stat_total;           // computed: m_base_stat_value * 6 + m_creation_stat_points
 	int m_levelup_stat_gain;         // levelup-stat-gain
 	int m_max_level;                // max-level (renamed from max-player-level)
 	int m_max_stat_value;            // calculated: base + creation + (levelup * max_level) + 16
@@ -778,7 +805,6 @@ public:
 
 	// Gameplay Settings
 	int m_nighttime_duration;       // nighttime-duration
-	int m_starting_guild_rank;       // starting-guild-rank
 	int m_grand_magic_mana_consumption; // grand-magic-mana-consumption
 	int m_max_construction_points;   // maximum-construction-points
 	int m_max_summon_points;         // maximum-summon-points

@@ -21,13 +21,7 @@ Screen_TestPrimitives::Screen_TestPrimitives(CGame* game)
 
 void Screen_TestPrimitives::on_initialize()
 {
-	GameModeManager::set_current_mode(GameMode::TestPrimitives);
 }
-
-void Screen_TestPrimitives::on_uninitialize()
-{
-}
-
 void Screen_TestPrimitives::on_update()
 {
 	if (hb::shared::input::get() && hb::shared::input::get()->is_key_pressed(KeyCode::Escape))

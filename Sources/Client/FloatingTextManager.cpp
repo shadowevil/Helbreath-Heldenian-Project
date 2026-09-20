@@ -87,7 +87,7 @@ int floating_text_manager::add_notify_text(notify_text_type eType, std::string_v
 	return bind_to_tile(i, object_id, map_data, -10, -10);
 }
 
-int floating_text_manager::add_damage_from_value(short damage, bool last_hit, uint32_t time,
+int floating_text_manager::add_damage_from_value(int damage, bool last_hit, uint32_t time,
                                              int object_id, CMapData* map_data)
 {
 	std::string txt;

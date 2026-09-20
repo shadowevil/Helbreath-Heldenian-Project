@@ -102,7 +102,7 @@ void shop_manager::handle_response(char* data)
 		std::memcpy(item->m_name, config->m_name, sizeof(item->m_name));
 		item->m_item_type = config->m_item_type;
 		item->m_equip_pos = config->m_equip_pos;
-		item->m_price = config->m_price;
+		item->m_sell_price = config->m_sell_price;
 		item->m_weight = config->m_weight;
 		item->m_item_effect_value1 = config->m_item_effect_value1;
 		item->m_item_effect_value2 = config->m_item_effect_value2;
@@ -110,11 +110,11 @@ void shop_manager::handle_response(char* data)
 		item->m_item_effect_value4 = config->m_item_effect_value4;
 		item->m_item_effect_value5 = config->m_item_effect_value5;
 		item->m_item_effect_value6 = config->m_item_effect_value6;
-		item->m_max_life_span = config->m_max_life_span;
-		item->m_level_limit = config->m_level_limit;
-		item->m_gender_limit = config->m_gender_limit;
+		item->m_durability = config->m_durability;
+		item->m_level_requirement = config->m_level_requirement;
+		item->m_gender_requirement = config->m_gender_requirement;
 		item->m_special_effect = config->m_special_effect;
-		item->m_speed = config->m_speed;
+		item->m_swing_speed = config->m_swing_speed;
 		item->m_display_id = config->m_display_id;
 
 		shopIndex++;

@@ -11,8 +11,10 @@ enum class ConfigCacheType : uint8_t
 	Skills        = 2,
 	Npcs          = 3,
 	Maps          = 4,
-	BalanceConfig = 5,
-	COUNT         = 6
+	BalanceConfig  = 5,
+	ColorPalette   = 6,
+	AttributeTypes = 7,
+	COUNT          = 8
 };
 
 class LocalCacheManager
@@ -61,8 +63,8 @@ private:
 		bool active;
 	};
 
-	CacheState  m_state[6]{};
-	Accumulator m_accum[6]{};
+	CacheState  m_state[8]{};
+	Accumulator m_accum[8]{};
 	bool m_bIsReplaying = false;
 
 	const char* _GetFilename(ConfigCacheType type) const;

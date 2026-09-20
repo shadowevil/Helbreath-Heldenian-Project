@@ -1,14 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(\"C:\\\\Users\\\\ShadowEvil\\\\source\\\\Repos3\\\\Helbreath-3.82\\\\build_game_ddraw.bat\")",
       "Bash(copy:*)",
-      "Bash(copy Effect_Lights.cpp Effect_Lights.cpp.bak)",
       "Bash(cmd /c:*)",
-      "Bash(del /Q \"C:\\\\Users\\\\ShadowEvil\\\\source\\\\Repos3\\\\Helbreath-3.82\\\\Sources\\\\Client\\\\replace_viewpoint.py\" \"C:\\\\Users\\\\ShadowEvil\\\\source\\\\Repos3\\\\Helbreath-3.82\\\\Sources\\\\Client\\\\replace_viewpoint_game.py\")",
-      "Bash(del \"C:\\\\Users\\\\ShadowEvil\\\\source\\\\Repos3\\\\Helbreath-3.82\\\\Sources\\\\Client\\\\Camera.h\")",
-      "Bash(del \"C:\\\\Users\\\\ShadowEvil\\\\source\\\\Repos3\\\\Helbreath-3.82\\\\Sources\\\\Client\\\\Camera.cpp\")",
-      "Bash(\"C:\\\\Users\\\\ShadowEvil\\\\source\\\\Repos3\\\\Helbreath-3.82\\\\build_game_sfml.bat\")",
       "Bash(grep:*)",
       "Bash(sqlite3:*)"
     ]

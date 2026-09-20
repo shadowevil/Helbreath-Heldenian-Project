@@ -14,7 +14,7 @@
 using namespace hb::shared::net;
 using namespace hb::client::sprite_id;
 static constexpr int POINTS_PER_MAJESTIC = 3;
-static constexpr int MIN_STAT_VALUE = 10;
+// m_game->m_base_stat_value is read from m_game->m_base_stat_value at runtime
 
 DialogBox_ChangeStatsMajestic::DialogBox_ChangeStatsMajestic(CGame* game)
 	: IDialogBox(DialogBoxId::ChangeStatsMajestic, game)
@@ -89,32 +89,32 @@ void DialogBox_ChangeStatsMajestic::on_draw()
 	draw_stat_row(sX, sY, 125, DRAW_DIALOGBOX_LEVELUP_SETTING4,
 		player().m_str, player().m_lu_str, mouse_x, mouse_y, 127,
 		(player().m_lu_str < 0),
-		can_afford && (player().m_str + player().m_lu_str - POINTS_PER_MAJESTIC >= MIN_STAT_VALUE));
+		can_afford && (player().m_str + player().m_lu_str - POINTS_PER_MAJESTIC >= m_game->m_base_stat_value));
 
 	draw_stat_row(sX, sY, 144, DRAW_DIALOGBOX_LEVELUP_SETTING5,
 		player().m_vit, player().m_lu_vit, mouse_x, mouse_y, 146,
 		(player().m_lu_vit < 0),
-		can_afford && (player().m_vit + player().m_lu_vit - POINTS_PER_MAJESTIC >= MIN_STAT_VALUE));
+		can_afford && (player().m_vit + player().m_lu_vit - POINTS_PER_MAJESTIC >= m_game->m_base_stat_value));
 
 	draw_stat_row(sX, sY, 163, DRAW_DIALOGBOX_LEVELUP_SETTING6,
 		player().m_dex, player().m_lu_dex, mouse_x, mouse_y, 165,
 		(player().m_lu_dex < 0),
-		can_afford && (player().m_dex + player().m_lu_dex - POINTS_PER_MAJESTIC >= MIN_STAT_VALUE));
+		can_afford && (player().m_dex + player().m_lu_dex - POINTS_PER_MAJESTIC >= m_game->m_base_stat_value));
 
 	draw_stat_row(sX, sY, 182, DRAW_DIALOGBOX_LEVELUP_SETTING7,
 		player().m_int, player().m_lu_int, mouse_x, mouse_y, 184,
 		(player().m_lu_int < 0),
-		can_afford && (player().m_int + player().m_lu_int - POINTS_PER_MAJESTIC >= MIN_STAT_VALUE));
+		can_afford && (player().m_int + player().m_lu_int - POINTS_PER_MAJESTIC >= m_game->m_base_stat_value));
 
 	draw_stat_row(sX, sY, 201, DRAW_DIALOGBOX_LEVELUP_SETTING8,
 		player().m_mag, player().m_lu_mag, mouse_x, mouse_y, 203,
 		(player().m_lu_mag < 0),
-		can_afford && (player().m_mag + player().m_lu_mag - POINTS_PER_MAJESTIC >= MIN_STAT_VALUE));
+		can_afford && (player().m_mag + player().m_lu_mag - POINTS_PER_MAJESTIC >= m_game->m_base_stat_value));
 
 	draw_stat_row(sX, sY, 220, DRAW_DIALOGBOX_LEVELUP_SETTING9,
 		player().m_charisma, player().m_lu_char, mouse_x, mouse_y, 222,
 		(player().m_lu_char < 0),
-		can_afford && (player().m_charisma + player().m_lu_char - POINTS_PER_MAJESTIC >= MIN_STAT_VALUE));
+		can_afford && (player().m_charisma + player().m_lu_char - POINTS_PER_MAJESTIC >= m_game->m_base_stat_value));
 
 	// Cancel button (left)
 	if (mouse_in(btn_cancel))
@@ -171,7 +171,7 @@ bool DialogBox_ChangeStatsMajestic::on_click()
 		// DOWN arrow — reduce stat by 3 (costs 1 majestic point)
 		if ((mouse_x >= sX + 210) && (mouse_x <= sX + 220) && (mouse_y >= sY + s.arrow_y) && (mouse_y <= sY + s.arrow_y + 6))
 		{
-			if (remaining > 0 && (s.current_stat + *s.pending - POINTS_PER_MAJESTIC >= MIN_STAT_VALUE))
+			if (remaining > 0 && (s.current_stat + *s.pending - POINTS_PER_MAJESTIC >= m_game->m_base_stat_value))
 			{
 				*s.pending -= POINTS_PER_MAJESTIC;
 				remaining--;

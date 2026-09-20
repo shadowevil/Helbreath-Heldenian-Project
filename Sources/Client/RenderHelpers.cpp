@@ -36,7 +36,7 @@ static bool ShouldSkipShadow(short owner_type)
 }
 
 // -----------------------------------------------------------------------
-void draw_equip_layer(hb::shared::sprite::SpriteCollection& sprites, int spriteIndex, int sX, int sY, int frame,
+void draw_equip_layer(CGame& game, hb::shared::sprite::SpriteCollection& sprites, int spriteIndex, int sX, int sY, int frame,
                     bool inv, int colorIndex)
 {
 	if (spriteIndex == -1) return;
@@ -51,7 +51,7 @@ void draw_equip_layer(hb::shared::sprite::SpriteCollection& sprites, int spriteI
 	}
 	else
 	{
-		auto c = GameColors::Items[colorIndex];
+		auto c = game.m_color_palette[colorIndex];
 		sprites[spriteIndex]->draw(sX, sY, frame,
 			hb::shared::sprite::DrawParams::tint(c.r, c.g, c.b));
 	}
@@ -74,7 +74,7 @@ void draw_weapon(CGame& game, hb::shared::sprite::SpriteCollection& sprites,
 	}
 	else
 	{
-		auto c = GameColors::Weapons[eq.m_weapon_color];
+		auto c = game.m_color_palette[eq.m_weapon_color];
 		sprites[eq.m_weapon_index]->draw(sX, sY, weaponFrame,
 			hb::shared::sprite::DrawParams::tint(c.r, c.g, c.b));
 	}
@@ -113,7 +113,7 @@ void draw_shield(CGame& game, hb::shared::sprite::SpriteCollection& sprites,
 	}
 	else
 	{
-		auto c = GameColors::Items[eq.m_shield_color];
+		auto c = game.m_color_palette[eq.m_shield_color];
 		sprites[eq.m_shield_index]->draw(sX, sY, frame,
 			hb::shared::sprite::DrawParams::tint(c.r, c.g, c.b));
 	}
@@ -192,10 +192,10 @@ static void DrawEquipmentStack(CGame& game, const EquipmentIndices& eq,
 
 	// Mantle behind body (order 0)
 	if (eq.m_mantle_index != -1 && mantleOrder[dir] == 0)
-		draw_equip_layer(equip, eq.m_mantle_index, sX, sY, dirFrame, inv, eq.m_mantle_color);
+		draw_equip_layer(game, equip, eq.m_mantle_index, sX, sY, dirFrame, inv, eq.m_mantle_color);
 
 	// Undies (cosmetic — from m_sprite)
-	draw_equip_layer(cosmetic, eq.m_undies_index, sX, sY, dirFrame, inv, 0);
+	draw_equip_layer(game, cosmetic, eq.m_undies_index, sX, sY, dirFrame, inv, 0);
 
 	// Hair (cosmetic — from m_sprite, only if no helm)
 	if (eq.m_hair_index != -1 && eq.m_helm_index == -1)
@@ -206,41 +206,41 @@ static void DrawEquipmentStack(CGame& game, const EquipmentIndices& eq,
 		}
 		else
 		{
-			const auto& hc = GameColors::Hair[state.m_appearance.hair_color];
+			const auto& hc = game.m_color_palette[state.m_appearance.hair_color];
 			cosmetic[eq.m_hair_index]->draw(sX, sY, dirFrame, hb::shared::sprite::DrawParams::tint(hc.r, hc.g, hc.b));
 		}
 	}
 
 	// Boots before pants if wearing skirt
 	if (eq.m_skirt_draw == 1)
-		draw_equip_layer(equip, eq.m_boots_index, sX, sY, dirFrame, inv, eq.m_boots_color);
+		draw_equip_layer(game, equip, eq.m_boots_index, sX, sY, dirFrame, inv, eq.m_boots_color);
 
 	// Pants
-	draw_equip_layer(equip, eq.m_pants_index, sX, sY, dirFrame, inv, eq.m_pants_color);
+	draw_equip_layer(game, equip, eq.m_pants_index, sX, sY, dirFrame, inv, eq.m_pants_color);
 
 	// Arm armor
-	draw_equip_layer(equip, eq.m_arm_armor_index, sX, sY, dirFrame, inv, eq.m_arm_color);
+	draw_equip_layer(game, equip, eq.m_arm_armor_index, sX, sY, dirFrame, inv, eq.m_arm_color);
 
 	// Boots after pants if not wearing skirt
 	if (eq.m_skirt_draw == 0)
-		draw_equip_layer(equip, eq.m_boots_index, sX, sY, dirFrame, inv, eq.m_boots_color);
+		draw_equip_layer(game, equip, eq.m_boots_index, sX, sY, dirFrame, inv, eq.m_boots_color);
 
 	// Body armor
-	draw_equip_layer(equip, eq.m_body_armor_index, sX, sY, dirFrame, inv, eq.m_armor_color);
+	draw_equip_layer(game, equip, eq.m_body_armor_index, sX, sY, dirFrame, inv, eq.m_armor_color);
 
 	// Helm
-	draw_equip_layer(equip, eq.m_helm_index, sX, sY, dirFrame, inv, eq.m_helm_color);
+	draw_equip_layer(game, equip, eq.m_helm_index, sX, sY, dirFrame, inv, eq.m_helm_color);
 
 	// Mantle over armor (order 2)
 	if (eq.m_mantle_index != -1 && mantleOrder[dir] == 2)
-		draw_equip_layer(equip, eq.m_mantle_index, sX, sY, dirFrame, inv, eq.m_mantle_color);
+		draw_equip_layer(game, equip, eq.m_mantle_index, sX, sY, dirFrame, inv, eq.m_mantle_color);
 
 	// Shield + glare (from m_equip_sprites)
 	draw_shield(game, equip, eq, sX, sY, dirFrame, inv);
 
 	// Mantle in front (order 1)
 	if (eq.m_mantle_index != -1 && mantleOrder[dir] == 1)
-		draw_equip_layer(equip, eq.m_mantle_index, sX, sY, dirFrame, inv, eq.m_mantle_color);
+		draw_equip_layer(game, equip, eq.m_mantle_index, sX, sY, dirFrame, inv, eq.m_mantle_color);
 }
 
 // -----------------------------------------------------------------------

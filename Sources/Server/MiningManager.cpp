@@ -125,7 +125,6 @@ void MiningManager::check_mining_action(int client_h, int dX, int dY)
 	uint32_t register_time;
 	int   dynamic_index, skill_level, result, item_id;
 	CItem* item;
-	uint16_t  weapon_type;
 
 	item_id = 0;
 
@@ -142,10 +141,9 @@ void MiningManager::check_mining_action(int client_h, int dX, int dY)
 	switch (type) {
 	case dynamic_object::Mineral1:
 	case dynamic_object::Mineral2:
-		weapon_type = m_game->m_client_list[client_h]->get_equipped_weapon_type();
-		if (weapon_type == 25) {
-		}
-		else return;
+	{
+		auto wc = m_game->m_client_list[client_h]->get_equipped_weapon_class();
+		if (wc != hb::shared::item::weapon_class::axe) return;
 
 		if (!m_game->m_client_list[client_h]->m_appearance.is_walking) return;
 
@@ -361,9 +359,8 @@ void MiningManager::check_mining_action(int client_h, int dX, int dY)
 			else {
 				m_game->m_map_list[m_game->m_client_list[client_h]->m_map_index]->set_item(m_game->m_client_list[client_h]->m_x,
 					m_game->m_client_list[client_h]->m_y, item);
-				m_game->send_event_to_near_client_type_b(MsgId::EventCommon, CommonType::ItemDrop, m_game->m_client_list[client_h]->m_map_index,
-					m_game->m_client_list[client_h]->m_x, m_game->m_client_list[client_h]->m_y,
-					item->m_id_num, 0, item->m_item_color, item->m_attribute); // v1.4
+				m_game->send_ground_item_event(CommonType::ItemDrop, m_game->m_client_list[client_h]->m_map_index,
+					m_game->m_client_list[client_h]->m_x, m_game->m_client_list[client_h]->m_y, item);
 			}
 
 			m_mineral[m_game->m_dynamic_object_manager->m_dynamic_object_list[dynamic_index]->m_v1]->m_remain--;
@@ -375,6 +372,7 @@ void MiningManager::check_mining_action(int client_h, int dX, int dY)
 				m_game->m_dynamic_object_manager->m_dynamic_object_list[dynamic_index] = 0;
 			}
 		}
+	}
 		break;
 
 	default:

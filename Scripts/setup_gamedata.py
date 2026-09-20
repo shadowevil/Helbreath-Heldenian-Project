@@ -49,25 +49,22 @@ def create_formula_tables(db, dry_run):
             ('max_mp',            'mag * 2 + angelic_mag * 2 + level * 2 + int * 0.5 + angelic_int * 0.5',                            'Maximum mana points'),
             ('max_sp',            'str * 2 + angelic_str * 2 + level * 2',                                                            'Maximum stamina points'),
             ('max_load',          'str * 5 + angelic_str * 5 + level * 5',                                                            'Maximum carry weight'),
-            ('level_exp',         'sum(1, level, i * (50 + i * trunc(i / 17) * trunc(i / 17)))',                                      'Total XP to reach level'),
-            ('level_up_pool',     '(level - 1) * levelup_stat_gain - (total_stats - base_stat_total)',                                'Available stat points from level-ups'),
-            ('max_stat_value',    'base_stat_value + creation_stat_bonus + levelup_stat_gain * max_level + angelic_bonus',             'Maximum value for a single stat'),
-            ('levelup_stat_gain', '3',                                                                                                 'Stat points per level'),
-            ('base_stat_total',   '70',                                                                                                'Starting total stats'),
-            ('angelic_bonus',     '16',                                                                                                'Angelic stat bonus'),
-            ('attack_delay',      'max(weapon_speed - trunc((str + angelic_str) / swing_str_divisor), 0)',                               'Weapon attack delay from STR'),
-            ('swing_time',        'swing_frames * (base_frame_time + attack_delay_value * delay_per_frame)',                             'Base swing duration in ms'),
-            ('swing_str_divisor', '13',                                                                                                  'STR points per 1 attack delay reduction'),
-            ('swing_frames',      '8',                                                                                                   'Animation frame count for attacks'),
-            ('base_frame_time',   '78',                                                                                                  'Base ms per animation frame'),
-            ('delay_per_frame',   '12',                                                                                                  'Extra ms per frame per attack_delay point'),
-            ('run_frame_time',    '39',                                                                                                  'Run animation frame time');
+            ('level_exp',         'level * (50 + level * trunc(level / 17) * trunc(level / 17))',                                      'XP cost for a single level'),
+            ('hp_regen_max_roll',       'vit',                                'HP regen dice ceiling'),
+            ('hp_regen_min_roll',       'vit / 2',                            'HP regen hard floor clamp'),
+            ('hp_regen_roll_variance',  '30 * vit / (vit + 60)',              'HP regen bonus variance (diminishing returns)'),
+            ('mp_regen_max_roll',       'mag + angelic_mag',                  'MP regen dice ceiling'),
+            ('mp_regen_min_roll',       '(mag + angelic_mag) / 2',            'MP regen hard floor clamp'),
+            ('mp_regen_roll_variance',  '30 * (mag + angelic_mag) / (mag + angelic_mag + 60)',  'MP regen bonus variance (diminishing returns)'),
+            ('sp_regen_max_roll',       'vit / 3',                            'SP regen dice ceiling'),
+            ('sp_regen_min_roll',       'vit / 6',                            'SP regen hard floor clamp'),
+            ('sp_regen_roll_variance',  '30 * vit / (vit + 180)',             'SP regen bonus variance (diminishing returns)');
     """
 
     if dry_run:
         print("[DRY-RUN] Would create formula tables and seed data:")
         print("  Tables: formulas, scaling_profiles")
-        print("  Formulas: max_hp, max_mp, max_sp, max_load, level_exp, level_up_pool, max_stat_value, levelup_stat_gain, base_stat_total, angelic_bonus, attack_delay, swing_time, swing_str_divisor, swing_frames, base_frame_time, delay_per_frame, run_frame_time")
+        print("  Formulas: max_hp, max_mp, max_sp, max_load, level_exp, hp_regen_*, mp_regen_*, sp_regen_*")
         return
 
     db.executescript(ddl)

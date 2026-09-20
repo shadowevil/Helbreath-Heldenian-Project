@@ -130,7 +130,7 @@ bool DialogBox_Slates::on_item_drop()
 	int item_id = CursorTarget::get_selected_id();
 	if (item_id < 0 || item_id >= hb::shared::limits::MaxItems) return false;
 	if (player().m_item_list[item_id] == nullptr) return false;
-	if (inventory_manager::get().is_locked(item_id)) return false;
+	if (inventory_manager::get().warn_if_locked(item_id)) return false;
 
 	// Check if other dialogs are blocking
 	if (m_game->get_dialog_box_manager().is_enabled(DialogBoxId::ItemDropExternal))

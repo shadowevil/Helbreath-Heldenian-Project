@@ -17,6 +17,7 @@
 #include <string>
 #include "Screen_OnGame.h"
 #include "AudioManager.h"
+#include "Item/ItemInstanceData.h"
 
 using namespace hb::shared::net;
 using namespace hb::shared::item;
@@ -27,10 +28,9 @@ namespace NetworkMessageHandlers {
 		int i, j;
 		uint64_t count;
 		char  name[hb::shared::limits::ItemNameLen]{}, equip_pos, gender_limit;
-		ItemType item_type;
 		bool  is_equipped;
 		short level_limit;
-		uint16_t cost, weight, cur_life_span, max_life_span;
+		uint16_t cost, weight, cur_durability, max_durability;
 		std::string txt;
 
 		char item_color;
@@ -41,13 +41,12 @@ namespace NetworkMessageHandlers {
 
 		memcpy(name, pkt->name, sizeof(pkt->name));
 		count = pkt->count;
-		item_type = static_cast<ItemType>(pkt->item_type);
 		equip_pos = static_cast<char>(pkt->equip_pos);
 		is_equipped = (pkt->is_equipped != 0);
 		level_limit = static_cast<short>(pkt->level_limit);
 		gender_limit = static_cast<char>(pkt->gender_limit);
-		cur_life_span = pkt->cur_lifespan;
-		max_life_span = pkt->max_lifespan;
+		cur_durability = pkt->cur_durability;
+		max_durability = pkt->max_durability;
 		weight = pkt->weight;
 		item_color = static_cast<char>(pkt->item_color);
 		cost = pkt->cost;
@@ -55,13 +54,14 @@ namespace NetworkMessageHandlers {
 		game->add_event_list(txt.c_str(), 10);
 
 		short item_id = pkt->item_id;
+		CItem* cfg_purchased = game->get_item_config(item_id);
 
-		if ((item_type == ItemType::Consume) || (item_type == ItemType::Arrow))
+		if (cfg_purchased && cfg_purchased->is_stackable())
 		{
 			for (i = 0; i < hb::shared::limits::MaxItems; i++)
 				if ((game->m_player->m_item_list[i] != 0) && (game->m_player->m_item_list[i]->m_id_num == item_id))
 				{
-					game->m_player->m_item_list[i]->m_count += count;
+					game->m_player->m_item_list[i]->m_instance.count += count;
 					return;
 				}
 		}
@@ -87,7 +87,7 @@ namespace NetworkMessageHandlers {
 			{
 				game->m_player->m_item_list[i] = std::make_unique<CItem>();
 				game->m_player->m_item_list[i]->m_id_num = item_id;
-				game->m_player->m_item_list[i]->m_count = count;
+				game->m_player->m_item_list[i]->m_instance.count = count;
 				game->m_player->m_item_list[i]->m_x = nX;
 				game->m_player->m_item_list[i]->m_y = nY;
 				{
@@ -101,9 +101,8 @@ namespace NetworkMessageHandlers {
 		}
 				inventory_manager::get().unlock_item(i);
 				game->m_is_item_equipped[i] = false;
-				game->m_player->m_item_list[i]->m_cur_life_span = cur_life_span;
-				game->m_player->m_item_list[i]->m_item_color = item_color;
-				game->m_player->m_item_list[i]->m_attribute = 0;
+				game->m_player->m_item_list[i]->m_instance.cur_durability = cur_durability;
+				game->m_player->m_item_list[i]->m_instance.item_color = item_color;
 
 				for (j = 0; j < hb::shared::limits::MaxItems; j++)
 					if (game->m_item_order[j] == -1) {
@@ -119,15 +118,13 @@ namespace NetworkMessageHandlers {
 	{
 		int i, j;
 		uint64_t count;
-		uint32_t attribute;
 		char  name[hb::shared::limits::ItemNameLen]{}, equip_pos;
-		ItemType item_type;
 		bool  is_equipped;
 		short level_limit, special_ev2;
 		std::string txt;
 
 		char gender_limit, item_color;
-		uint16_t weight, cur_life_span, max_life_span;
+		uint16_t weight, cur_durability, max_durability;
 
 		const auto* pkt = hb::net::PacketCast<hb::net::PacketNotifyItemObtained>(
 			data, sizeof(hb::net::PacketNotifyItemObtained));
@@ -135,34 +132,44 @@ namespace NetworkMessageHandlers {
 
 		memcpy(name, pkt->name, sizeof(pkt->name));
 		count = pkt->count;
-		item_type = static_cast<ItemType>(pkt->item_type);
 		equip_pos = static_cast<char>(pkt->equip_pos);
 		is_equipped = (pkt->is_equipped != 0);
 		level_limit = static_cast<short>(pkt->level_limit);
 		gender_limit = static_cast<char>(pkt->gender_limit);
-		cur_life_span = pkt->cur_lifespan;
-		max_life_span = pkt->max_lifespan;
+		cur_durability = pkt->cur_durability;
+		max_durability = pkt->max_durability;
 		weight = pkt->weight;
 		item_color = static_cast<char>(pkt->item_color);
 		special_ev2 = static_cast<short>(pkt->spec_value2);
-		attribute = pkt->attribute;
 
-		if (count == 1) txt = std::format(NOTIFYMSG_ITEMOBTAINED2, name);
-		else txt = std::format(NOTIFYMSG_ITEMOBTAINED1, count, name);
+		{
+			hb::shared::item::item_instance_data idata;
+			idata.count = static_cast<uint64_t>(count);
+			idata.custom_made = pkt->custom_made;
+			idata.prefix_type = pkt->prefix_type;
+			idata.prefix_value = pkt->prefix_value;
+			idata.secondary_type = pkt->secondary_type;
+			idata.secondary_value = pkt->secondary_value;
+			idata.enchant_bonus = pkt->enchant_bonus;
+			idata.special_effect_value2 = static_cast<int16_t>(pkt->spec_value2);
+			auto info = item_name_formatter::get().format(pkt->item_id, idata);
+			txt = std::format(NOTIFYMSG_ITEMOBTAINED2, info.name);
+		}
 
 		game->add_event_list(txt.c_str(), 10);
 		audio_manager::get().play_game_sound(sound_type::effect, 20, 0);
 
-		game->m_map_data->set_item(game->m_player->m_player_x, game->m_player->m_player_y, 0, 0, 0, false);
+		game->m_map_data->set_item(game->m_player->m_player_x, game->m_player->m_player_y, 0, {}, false);
 
 		short item_id = pkt->item_id;
+		CItem* cfg_obtained = game->get_item_config(item_id);
 
-		if ((item_type == ItemType::Consume) || (item_type == ItemType::Arrow))
+		if (cfg_obtained && cfg_obtained->is_stackable())
 		{
 			for (i = 0; i < hb::shared::limits::MaxItems; i++)
 				if ((game->m_player->m_item_list[i] != 0) && (game->m_player->m_item_list[i]->m_id_num == item_id))
 				{
-					game->m_player->m_item_list[i]->m_count += count;
+					game->m_player->m_item_list[i]->m_instance.count += count;
 					inventory_manager::get().unlock_item(i);
 					return;
 				}
@@ -189,7 +196,7 @@ namespace NetworkMessageHandlers {
 			{
 				game->m_player->m_item_list[i] = std::make_unique<CItem>();
 				game->m_player->m_item_list[i]->m_id_num = item_id;
-				game->m_player->m_item_list[i]->m_count = count;
+				game->m_player->m_item_list[i]->m_instance.count = count;
 				game->m_player->m_item_list[i]->m_x = nX;
 				game->m_player->m_item_list[i]->m_y = nY;
 				{
@@ -203,10 +210,10 @@ namespace NetworkMessageHandlers {
 		}
 				inventory_manager::get().unlock_item(i);
 				game->m_is_item_equipped[i] = false;
-				game->m_player->m_item_list[i]->m_cur_life_span = cur_life_span;
-				game->m_player->m_item_list[i]->m_item_color = item_color;
-				game->m_player->m_item_list[i]->m_item_special_effect_value2 = special_ev2;
-				game->m_player->m_item_list[i]->m_attribute = attribute;
+				game->m_player->m_item_list[i]->m_instance.cur_durability = cur_durability;
+				game->m_player->m_item_list[i]->m_instance.item_color = item_color;
+				game->m_player->m_item_list[i]->m_instance.special_effect_value2 = special_ev2;
+				game->m_player->m_item_list[i]->load_attributes_from(*pkt);
 
 				build_item_manager::get().update_available_recipes();
 
@@ -230,17 +237,28 @@ namespace NetworkMessageHandlers {
 
 		uint64_t total_count = pkt->count;
 		short item_id = pkt->item_id;
-		uint16_t cur_life_span = pkt->cur_lifespan;
-		uint16_t max_life_span = pkt->max_lifespan;
+		uint16_t cur_durability = pkt->cur_durability;
+		uint16_t max_durability = pkt->max_durability;
 		uint16_t weight = pkt->weight;
 		char item_color = static_cast<char>(pkt->item_color);
 		short special_ev2 = static_cast<short>(pkt->spec_value2);
-		uint32_t attribute = pkt->attribute;
+		// Attribute fields loaded directly from pkt via load_attributes_from
 
 		// One chat message for the entire batch
 		std::string txt;
-		if (total_count == 1) txt = std::format(NOTIFYMSG_ITEMOBTAINED2, name);
-		else txt = std::format(NOTIFYMSG_ITEMOBTAINED1, total_count, name);
+		{
+			hb::shared::item::item_instance_data idata;
+			idata.count = static_cast<uint64_t>(total_count);
+			idata.custom_made = pkt->custom_made;
+			idata.prefix_type = pkt->prefix_type;
+			idata.prefix_value = pkt->prefix_value;
+			idata.secondary_type = pkt->secondary_type;
+			idata.secondary_value = pkt->secondary_value;
+			idata.enchant_bonus = pkt->enchant_bonus;
+			idata.special_effect_value2 = special_ev2;
+			auto info = item_name_formatter::get().format(item_id, idata);
+			txt = std::format(NOTIFYMSG_ITEMOBTAINED2, info.name);
+		}
 		game->add_event_list(txt.c_str(), 10);
 		audio_manager::get().play_game_sound(sound_type::effect, 20, 0);
 
@@ -265,7 +283,7 @@ namespace NetworkMessageHandlers {
 				{
 					game->m_player->m_item_list[i] = std::make_unique<CItem>();
 					game->m_player->m_item_list[i]->m_id_num = item_id;
-					game->m_player->m_item_list[i]->m_count = 1;
+					game->m_player->m_item_list[i]->m_instance.count = 1;
 					game->m_player->m_item_list[i]->m_x = nX;
 					game->m_player->m_item_list[i]->m_y = nY;
 					{
@@ -279,12 +297,12 @@ namespace NetworkMessageHandlers {
 		}
 					inventory_manager::get().unlock_item(i);
 					game->m_is_item_equipped[i] = false;
-					game->m_player->m_item_list[i]->m_cur_life_span = cur_life_span;
-					game->m_player->m_item_list[i]->m_max_life_span = max_life_span;
+					game->m_player->m_item_list[i]->m_instance.cur_durability = cur_durability;
+					game->m_player->m_item_list[i]->m_durability = max_durability;
 					game->m_player->m_item_list[i]->m_weight = weight;
-					game->m_player->m_item_list[i]->m_item_color = item_color;
-					game->m_player->m_item_list[i]->m_item_special_effect_value2 = special_ev2;
-					game->m_player->m_item_list[i]->m_attribute = attribute;
+					game->m_player->m_item_list[i]->m_instance.item_color = item_color;
+					game->m_player->m_item_list[i]->m_instance.special_effect_value2 = special_ev2;
+					game->m_player->m_item_list[i]->load_attributes_from(*pkt);
 
 					for (int j = 0; j < hb::shared::limits::MaxItems; j++)
 					{
@@ -304,13 +322,13 @@ namespace NetworkMessageHandlers {
 			build_item_manager::get().update_available_recipes();
 	}
 
-	void HandleItemLifeSpanEnd(CGame* game, char* data)
+	void HandleItemDurabilityEnd(CGame* game, char* data)
 	{
 		short equip_pos, item_index;
 		std::string txt;
 
-		const auto* pkt = hb::net::PacketCast<hb::net::PacketNotifyItemLifeSpanEnd>(
-			data, sizeof(hb::net::PacketNotifyItemLifeSpanEnd));
+		const auto* pkt = hb::net::PacketCast<hb::net::PacketNotifyItemDurabilityEnd>(
+			data, sizeof(hb::net::PacketNotifyItemDurabilityEnd));
 		if (!pkt) return;
 		equip_pos = static_cast<short>(pkt->equip_pos);
 		item_index = static_cast<short>(pkt->item_index);
@@ -318,11 +336,11 @@ namespace NetworkMessageHandlers {
 		if (!game->m_player->m_item_list[item_index]) return;
 
 		auto itemInfo = item_name_formatter::get().format(game->m_player->m_item_list[item_index].get());
-		txt = std::format(NOTIFYMSG_ITEMLIFE_SPANEND1, itemInfo.name.c_str());
+		txt = std::format(NOTIFYMSG_ITEM_DURABILITY_END1, itemInfo.name.c_str());
 		game->add_event_list(txt.c_str(), 10);
 		game->m_item_equipment_status[game->m_player->m_item_list[item_index]->m_equip_pos] = -1;
 		game->m_is_item_equipped[item_index] = false;
-		game->m_player->m_item_list[item_index]->m_cur_life_span = 0;
+		game->m_player->m_item_list[item_index]->m_instance.cur_durability = 0;
 
 		audio_manager::get().play_game_sound(sound_type::effect, 10, 0);
 	}
@@ -348,8 +366,8 @@ namespace NetworkMessageHandlers {
 
 		{
 			short id = game->m_player->m_item_list[item_index]->m_id_num;
-			if (id == hb::shared::item::ItemId::AngelicPandentSTR || id == hb::shared::item::ItemId::AngelicPandentDEX ||
-				id == hb::shared::item::ItemId::AngelicPandentINT || id == hb::shared::item::ItemId::AngelicPandentMAG)
+			if (id == hb::shared::item::ItemId::AngelicPendantSTR || id == hb::shared::item::ItemId::AngelicPendantDEX ||
+				id == hb::shared::item::ItemId::AngelicPendantINT || id == hb::shared::item::ItemId::AngelicPendantMAG)
 				audio_manager::get().play_game_sound(sound_type::effect, 53, 0);
 			else
 				audio_manager::get().play_game_sound(sound_type::effect, 29, 0);
@@ -370,7 +388,7 @@ namespace NetworkMessageHandlers {
 		is_item_use_response = (pkt->notify != 0);
 		if (game->m_player->m_item_list[item_index] != 0)
 		{
-			game->m_player->m_item_list[item_index]->m_count = count;
+			game->m_player->m_item_list[item_index]->m_instance.count = count;
 			if (is_item_use_response == true) inventory_manager::get().unlock_item(item_index);
 		}
 	}
@@ -401,17 +419,13 @@ namespace NetworkMessageHandlers {
 			game->m_is_item_equipped[item_index] = false;
 		}
 
-		if (cfg && ((cfg->get_item_type() == ItemType::Consume) ||
-			(cfg->get_item_type() == ItemType::Arrow))) {
+		if (cfg && (cfg->is_stackable())) {
 			txt = std::format(NOTIFYMSG_ITEMDEPlETED_ERASEITEM2, itemInfo3.name.c_str());
 		}
 		else if (cfg) {
-			if (cfg->get_item_type() == ItemType::UseDeplete) {
-				if (is_use_item_result == true) {
-					txt = std::format(NOTIFYMSG_ITEMDEPlETED_ERASEITEM3, itemInfo3.name.c_str());
-				}
-			}
-			else if (cfg->get_item_type() == ItemType::Eat) {
+			auto eff = cfg->get_item_effect_type();
+			if (eff == ItemEffectType::HP || eff == ItemEffectType::SP || eff == ItemEffectType::MP || eff == ItemEffectType::HPStock) {
+				// Food/drink items — show eating message and sound
 				if (is_use_item_result == true) {
 					txt = std::format(NOTIFYMSG_ITEMDEPlETED_ERASEITEM4, itemInfo3.name.c_str());
 					if ((game->m_player->m_player_type >= 1) && (game->m_player->m_player_type <= 3))
@@ -420,7 +434,8 @@ namespace NetworkMessageHandlers {
 						audio_manager::get().play_game_sound(sound_type::character, 20, 0);
 				}
 			}
-			else if (cfg->get_item_type() == ItemType::UseDepleteDest) {
+			else if (cfg->get_item_type() == item_type::consumable || cfg->get_item_sub_type() == item_sub_type::target) {
+				// Generic consumable or target-use item — show destroyed message
 				if (is_use_item_result == true) {
 					txt = std::format(NOTIFYMSG_ITEMDEPlETED_ERASEITEM3, itemInfo3.name.c_str());
 				}
@@ -538,7 +553,7 @@ namespace NetworkMessageHandlers {
 		if (!game->m_player->m_item_list[item_id]) return;
 		life = pkt->life;
 
-		game->m_player->m_item_list[item_id]->m_cur_life_span = static_cast<uint16_t>(life);
+		game->m_player->m_item_list[item_id]->m_instance.cur_durability = static_cast<uint16_t>(life);
 		inventory_manager::get().unlock_item(item_id);
 		auto itemInfo5 = item_name_formatter::get().format(game->m_player->m_item_list[item_id].get());
 
@@ -696,7 +711,7 @@ namespace NetworkMessageHandlers {
 		txt = std::format(NOTIFYMSG_CANNOT_GIVE_ITEM2, itemInfo8.name.c_str(), name);
 
 		game->add_event_list(txt.c_str(), 10);
-		game->m_is_item_disabled[item_index] = false;
+		inventory_manager::get().unlock_item(item_index);
 	}
 
 	void HandleItemColorChange(CGame* game, char* data)
@@ -714,7 +729,7 @@ namespace NetworkMessageHandlers {
 		if (game->m_player->m_item_list[item_index] != 0) {
 			auto itemInfo9 = item_name_formatter::get().format(game->m_player->m_item_list[item_index].get());
 			if (item_color != -1) {
-				game->m_player->m_item_list[item_index]->m_item_color = static_cast<char>(item_color);
+				game->m_player->m_item_list[item_index]->m_instance.item_color = static_cast<char>(item_color);
 				txt = std::format(NOTIFYMSG_ITEMCOLOR_CHANGE1, itemInfo9.name.c_str());
 				game->add_event_list(txt.c_str(), 10);
 			}
@@ -769,10 +784,9 @@ namespace NetworkMessageHandlers {
 
 	void HandleSetExchangeItem(CGame* game, char* data)
 	{
-		short dir, cur_life, max_life, performance, item_id;
+		short dir, cur_durability, max_durability, performance, item_id;
 		int amount, i;
 		char color, item_name[hb::shared::limits::ItemNameLen], char_name[12];
-		uint32_t attribute;
 		std::memset(item_name, 0, sizeof(item_name));
 
 		const auto* pkt = hb::net::PacketCast<hb::net::PacketNotifyExchangeItem>(
@@ -781,12 +795,11 @@ namespace NetworkMessageHandlers {
 		dir = static_cast<short>(pkt->dir);
 		amount = pkt->amount;
 		color = static_cast<char>(pkt->color);
-		cur_life = pkt->cur_life;
-		max_life = pkt->max_life;
+		cur_durability = pkt->cur_durability;
+		max_durability = pkt->max_durability;
 		performance = pkt->performance;
 		memcpy(item_name, pkt->item_name, sizeof(pkt->item_name));
 		memcpy(char_name, pkt->char_name, sizeof(pkt->char_name));
-		attribute = pkt->attribute;
 		item_id = pkt->item_id;
 
 		auto* exDlg = game->get_dialog_box_manager().get_dialog_as<DialogBox_Exchange>(DialogBoxId::Exchange);
@@ -812,21 +825,26 @@ namespace NetworkMessageHandlers {
 		exDlg->m_slots[i].v2 = 0; // unused (was sprite_frame)
 		exDlg->m_slots[i].v3 = amount;
 		exDlg->m_slots[i].v4 = color;
-		exDlg->m_slots[i].v5 = static_cast<int>(cur_life);
-		exDlg->m_slots[i].v6 = static_cast<int>(max_life);
+		exDlg->m_slots[i].v5 = static_cast<int>(cur_durability);
+		exDlg->m_slots[i].v6 = static_cast<int>(max_durability);
 		exDlg->m_slots[i].v7 = static_cast<int>(performance);
 		exDlg->m_slots[i].str1.assign(item_name, strnlen(item_name, hb::shared::limits::ItemNameLen));
 		exDlg->m_slots[i].str2.assign(char_name, strnlen(char_name, hb::shared::limits::CharNameLen));
-		exDlg->m_slots[i].dw_v1 = attribute;
 		exDlg->m_slots[i].item_id = item_id;
+		exDlg->m_slots[i].item_data = {};
+		exDlg->m_slots[i].item_data.custom_made = pkt->custom_made;
+		exDlg->m_slots[i].item_data.prefix_type = pkt->prefix_type;
+		exDlg->m_slots[i].item_data.prefix_value = pkt->prefix_value;
+		exDlg->m_slots[i].item_data.secondary_type = pkt->secondary_type;
+		exDlg->m_slots[i].item_data.secondary_value = pkt->secondary_value;
+		exDlg->m_slots[i].item_data.enchant_bonus = pkt->enchant_bonus;
 	}
 
 	void HandleOpenExchangeWindow(CGame* game, char* data)
 	{
-		short dir, cur_life, max_life, performance, item_id;
+		short dir, cur_durability, max_durability, performance, item_id;
 		int amount;
 		char color, item_name[hb::shared::limits::ItemNameLen], char_name[12];
-		uint32_t attribute;
 		std::memset(item_name, 0, sizeof(item_name));
 
 		const auto* pkt = hb::net::PacketCast<hb::net::PacketNotifyExchangeItem>(
@@ -835,12 +853,11 @@ namespace NetworkMessageHandlers {
 		dir = static_cast<short>(pkt->dir);
 		amount = pkt->amount;
 		color = static_cast<char>(pkt->color);
-		cur_life = pkt->cur_life;
-		max_life = pkt->max_life;
+		cur_durability = pkt->cur_durability;
+		max_durability = pkt->max_durability;
 		performance = pkt->performance;
 		memcpy(item_name, pkt->item_name, sizeof(pkt->item_name));
 		memcpy(char_name, pkt->char_name, sizeof(pkt->char_name));
-		attribute = pkt->attribute;
 		item_id = pkt->item_id;
 
 		game->get_dialog_box_manager().enable_dialog_box(DialogBoxId::Exchange, 1, 0, 0, 0);
@@ -857,7 +874,7 @@ namespace NetworkMessageHandlers {
 			exDlg->m_slots[j].v7 = -1;
 			exDlg->m_slots[j].item_id = -1;
 			exDlg->m_slots[j].inv_slot = -1;
-			exDlg->m_slots[j].dw_v1 = 0;
+			exDlg->m_slots[j].item_data.clear();
 		}
 		int i;
 		if (dir >= 1000)  // Set the item I want to exchange
@@ -878,19 +895,25 @@ namespace NetworkMessageHandlers {
 		exDlg->m_slots[i].v2 = 0; // unused (was sprite_frame)
 		exDlg->m_slots[i].v3 = amount;
 		exDlg->m_slots[i].v4 = color;
-		exDlg->m_slots[i].v5 = static_cast<int>(cur_life);
-		exDlg->m_slots[i].v6 = static_cast<int>(max_life);
+		exDlg->m_slots[i].v5 = static_cast<int>(cur_durability);
+		exDlg->m_slots[i].v6 = static_cast<int>(max_durability);
 		exDlg->m_slots[i].v7 = static_cast<int>(performance);
 		exDlg->m_slots[i].str1.assign(item_name, strnlen(item_name, hb::shared::limits::ItemNameLen));
 		exDlg->m_slots[i].str2.assign(char_name, strnlen(char_name, hb::shared::limits::CharNameLen));
-		exDlg->m_slots[i].dw_v1 = attribute;
 		exDlg->m_slots[i].item_id = item_id;
+		exDlg->m_slots[i].item_data = {};
+		exDlg->m_slots[i].item_data.custom_made = pkt->custom_made;
+		exDlg->m_slots[i].item_data.prefix_type = pkt->prefix_type;
+		exDlg->m_slots[i].item_data.prefix_value = pkt->prefix_value;
+		exDlg->m_slots[i].item_data.secondary_type = pkt->secondary_type;
+		exDlg->m_slots[i].item_data.secondary_value = pkt->secondary_value;
+		exDlg->m_slots[i].item_data.enchant_bonus = pkt->enchant_bonus;
 	}
 
-	void HandleCurLifeSpan(CGame* game, char* data)
+	void HandleCurDurability(CGame* game, char* data)
 	{
-		const auto* pkt = hb::net::PacketCast<hb::net::PacketNotifyCurLifeSpan>(
-			data, sizeof(hb::net::PacketNotifyCurLifeSpan));
+		const auto* pkt = hb::net::PacketCast<hb::net::PacketNotifyCurDurability>(
+			data, sizeof(hb::net::PacketNotifyCurDurability));
 
 		if (!pkt)
 			return;
@@ -901,7 +924,7 @@ namespace NetworkMessageHandlers {
 		if (game->m_player->m_item_list[item_index] == nullptr)
 			return;
 
-		game->m_player->m_item_list[item_index]->m_cur_life_span = static_cast<uint16_t>(pkt->cur_lifespan);
+		game->m_player->m_item_list[item_index]->m_instance.cur_durability = static_cast<uint16_t>(pkt->cur_durability);
 	}
 
 	void HandleNotEnoughGold(CGame* game, char* data)
@@ -927,21 +950,20 @@ namespace NetworkMessageHandlers {
 	void HandleItemAttributeChange(CGame* game, char* data)
 	{
 		short v1;
-		uint32_t temp;
 		const auto* pkt = hb::net::PacketCast<hb::net::PacketNotifyItemAttributeChange>(
 			data, sizeof(hb::net::PacketNotifyItemAttributeChange));
 		if (!pkt) return;
 		v1 = static_cast<short>(pkt->item_index);
 		if (v1 < 0 || v1 >= hb::shared::limits::MaxItems) return;
 		if (!game->m_player->m_item_list[v1]) return;
-		temp = game->m_player->m_item_list[v1]->m_attribute;
-		game->m_player->m_item_list[v1]->m_attribute = pkt->attribute;
+		uint8_t old_enchant = game->m_player->m_item_list[v1]->m_instance.enchant_bonus;
+		game->m_player->m_item_list[v1]->load_attributes_from(*pkt);
 		if (pkt->spec_value1 != 0)
-			game->m_player->m_item_list[v1]->m_item_special_effect_value1 = static_cast<short>(pkt->spec_value1);
+			game->m_player->m_item_list[v1]->m_instance.special_effect_value1 = static_cast<short>(pkt->spec_value1);
 		if (pkt->spec_value2 != 0)
-			game->m_player->m_item_list[v1]->m_item_special_effect_value2 = static_cast<short>(pkt->spec_value2);
-		
-		if (temp == game->m_player->m_item_list[v1]->m_attribute)
+			game->m_player->m_item_list[v1]->m_instance.special_effect_value2 = static_cast<short>(pkt->spec_value2);
+
+		if (old_enchant == game->m_player->m_item_list[v1]->m_instance.enchant_bonus)
 		{
 			if (game->get_dialog_box_manager().is_enabled(DialogBoxId::ItemUpgrade) == true)
 			{
@@ -1016,10 +1038,10 @@ namespace NetworkMessageHandlers {
 		if (v1 < 0 || v1 >= hb::shared::limits::MaxItems) return;
 		if (!game->m_player->m_item_list[v1]) return;
 		if (pkt->item_id > 0) game->m_player->m_item_list[v1]->m_id_num = pkt->item_id;
-		game->m_player->m_item_list[v1]->m_cur_life_span = pkt->cur_lifespan;
-		game->m_player->m_item_list[v1]->m_item_color = pkt->item_color;
-		game->m_player->m_item_list[v1]->m_item_special_effect_value2 = pkt->spec_value2;
-		game->m_player->m_item_list[v1]->m_attribute = pkt->attribute;
+		game->m_player->m_item_list[v1]->m_instance.cur_durability = pkt->cur_durability;
+		game->m_player->m_item_list[v1]->m_instance.item_color = pkt->item_color;
+		game->m_player->m_item_list[v1]->m_instance.special_effect_value2 = pkt->spec_value2;
+		game->m_player->m_item_list[v1]->load_attributes_from(*pkt);
 		
 		if (game->get_dialog_box_manager().is_enabled(DialogBoxId::ItemUpgrade) == true)
 		{

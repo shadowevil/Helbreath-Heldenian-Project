@@ -49,7 +49,6 @@ CNpc::CNpc(const char * name5)
 	m_crop_skill = 0;
 
 	m_is_master  = false;
-	m_guild_guid = 0;
 	m_v1 = 0;
 
 	m_npc_item_type = 0;

@@ -46,7 +46,7 @@ void DialogBox_ItemDropAmount::on_draw()
 		if (m_game->get_dialog_box_manager().get_top_id() != DialogBoxId::ItemDropExternal)
 			hb::shared::text::draw_text(GameFont::Default, sX + 40, sY + 57, m_game->m_amount_string.c_str(), hb::shared::text::TextStyle::from_color(GameColors::UIWhite));
 
-		txt = std::format("__________ (0 ~ {})", player().m_item_list[m_item_index]->m_count);
+		txt = std::format("__________ (0 ~ {})", player().m_item_list[m_item_index]->m_instance.count);
 		put_string(sX + 38, sY + 62, txt.c_str(), GameColors::UILabel);
 		break;
 	}
@@ -66,7 +66,7 @@ void DialogBox_ItemDropAmount::on_draw()
 		put_string(sX + 30, sY + 35, DRAW_DIALOGBOX_QUERY_DROP_ITEM_AMOUNT3, GameColors::UILabel);
 		hb::shared::text::draw_text(GameFont::Default, sX + 40, sY + 57, m_game->m_amount_string.c_str(), hb::shared::text::TextStyle::from_color(GameColors::UIWhite));
 
-		txt = std::format("__________ (0 ~ {})", player().m_item_list[m_item_index]->m_count);
+		txt = std::format("__________ (0 ~ {})", player().m_item_list[m_item_index]->m_instance.count);
 		put_string(sX + 38, sY + 62, txt.c_str(), GameColors::UILabel);
 		break;
 	}

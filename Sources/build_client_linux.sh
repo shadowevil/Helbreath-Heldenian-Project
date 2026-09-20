@@ -22,7 +22,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-BUILD_DIR="$SCRIPT_DIR/Client/build"
+BUILD_DIR="$SCRIPT_DIR/Client/build_linux"
 DO_CLEAN=false
 BUILD_TYPE="Debug"
 

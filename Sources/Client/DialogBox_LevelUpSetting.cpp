@@ -1,6 +1,7 @@
 #include "DialogBox_LevelUpSetting.h"
 #include "Game.h"
 #include "lan_eng.h"
+#include <algorithm>
 #include <format>
 #include <string>
 #include "IInput.h"
@@ -74,24 +75,24 @@ void DialogBox_LevelUpSetting::on_draw()
 	else
 		put_string(sX + 73, sY + 102, txt.c_str(), GameColors::UIBlack);
 
-	// draw stat rows
+	// draw stat rows — can_increase checks base + pending against max
 	draw_stat_row(sX, sY, 125, DRAW_DIALOGBOX_LEVELUP_SETTING4, player().m_str, player().m_lu_str,
-	            mouse_x, mouse_y, 127, (player().m_str < m_game->m_max_stats), (player().m_lu_str > 0));
+	            mouse_x, mouse_y, 127, ((player().m_str + player().m_lu_str) < m_game->m_max_stats), (player().m_lu_str > 0));
 
 	draw_stat_row(sX, sY, 144, DRAW_DIALOGBOX_LEVELUP_SETTING5, player().m_vit, player().m_lu_vit,
-	            mouse_x, mouse_y, 146, (player().m_vit < m_game->m_max_stats), (player().m_lu_vit > 0));
+	            mouse_x, mouse_y, 146, ((player().m_vit + player().m_lu_vit) < m_game->m_max_stats), (player().m_lu_vit > 0));
 
 	draw_stat_row(sX, sY, 163, DRAW_DIALOGBOX_LEVELUP_SETTING6, player().m_dex, player().m_lu_dex,
-	            mouse_x, mouse_y, 165, (player().m_dex < m_game->m_max_stats), (player().m_lu_dex > 0));
+	            mouse_x, mouse_y, 165, ((player().m_dex + player().m_lu_dex) < m_game->m_max_stats), (player().m_lu_dex > 0));
 
 	draw_stat_row(sX, sY, 182, DRAW_DIALOGBOX_LEVELUP_SETTING7, player().m_int, player().m_lu_int,
-	            mouse_x, mouse_y, 184, (player().m_int < m_game->m_max_stats), (player().m_lu_int > 0));
+	            mouse_x, mouse_y, 184, ((player().m_int + player().m_lu_int) < m_game->m_max_stats), (player().m_lu_int > 0));
 
 	draw_stat_row(sX, sY, 201, DRAW_DIALOGBOX_LEVELUP_SETTING8, player().m_mag, player().m_lu_mag,
-	            mouse_x, mouse_y, 203, (player().m_mag < m_game->m_max_stats), (player().m_lu_mag > 0));
+	            mouse_x, mouse_y, 203, ((player().m_mag + player().m_lu_mag) < m_game->m_max_stats), (player().m_lu_mag > 0));
 
 	draw_stat_row(sX, sY, 220, DRAW_DIALOGBOX_LEVELUP_SETTING9, player().m_charisma, player().m_lu_char,
-	            mouse_x, mouse_y, 222, (player().m_charisma < m_game->m_max_stats), (player().m_lu_char > 0));
+	            mouse_x, mouse_y, 222, ((player().m_charisma + player().m_lu_char) < m_game->m_max_stats), (player().m_lu_char > 0));
 
 	// Close button
 	if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) &&
@@ -125,19 +126,39 @@ bool DialogBox_LevelUpSetting::handle_stat_click(short mouse_x, short mouse_y, s
 
 	// + button
 	if ((mouse_x >= sX + 195) && (mouse_x <= sX + 205) && (mouse_y >= sY + y_offset) && (mouse_y <= sY + y_offset + 6) &&
-	    (current_stat <= m_game->m_max_stats) && (player().m_lu_point > 0))
+	    ((current_stat + pending_change) < m_game->m_max_stats) && (player().m_lu_point > 0))
 	{
-		if (hb::shared::input::is_ctrl_down())
+		int room = m_game->m_max_stats - (current_stat + pending_change);
+		if (hb::shared::input::is_ctrl_down() && hb::shared::input::is_shift_down())
 		{
-			if ((player().m_lu_point >= 5) && !majestic_open)
+			int add = std::min({ player().m_lu_point, room });
+			if ((add > 0) && !majestic_open)
 			{
-				player().m_lu_point -= 5;
-				pending_change += 5;
+				player().m_lu_point -= add;
+				pending_change += static_cast<int16_t>(add);
+			}
+		}
+		else if (hb::shared::input::is_ctrl_down())
+		{
+			int add = std::min({ 5, player().m_lu_point, room });
+			if ((add > 0) && !majestic_open)
+			{
+				player().m_lu_point -= add;
+				pending_change += static_cast<int16_t>(add);
+			}
+		}
+		else if (hb::shared::input::is_shift_down())
+		{
+			int add = std::min({ 10, player().m_lu_point, room });
+			if ((add > 0) && !majestic_open)
+			{
+				player().m_lu_point -= add;
+				pending_change += static_cast<int16_t>(add);
 			}
 		}
 		else
 		{
-			if ((player().m_lu_point > 0) && !majestic_open)
+			if ((player().m_lu_point > 0) && (room > 0) && !majestic_open)
 			{
 				player().m_lu_point--;
 				pending_change++;
@@ -151,12 +172,29 @@ bool DialogBox_LevelUpSetting::handle_stat_click(short mouse_x, short mouse_y, s
 	if ((mouse_x >= sX + 210) && (mouse_x <= sX + 220) && (mouse_y >= sY + y_offset) && (mouse_y <= sY + y_offset + 6) &&
 	    (pending_change > 0))
 	{
-		if (hb::shared::input::is_ctrl_down())
+		if (hb::shared::input::is_ctrl_down() && hb::shared::input::is_shift_down())
 		{
-			if ((pending_change >= 5) && !majestic_open)
+			if ((pending_change > 0) && !majestic_open)
 			{
-				pending_change -= 5;
-				player().m_lu_point += 5;
+				player().m_lu_point += pending_change;
+				pending_change = 0;
+			}
+		} else if(hb::shared::input::is_ctrl_down())
+		{
+			int remove = std::min(static_cast<int>(pending_change), 5);
+			if ((remove > 0) && !majestic_open)
+			{
+				pending_change -= static_cast<int16_t>(remove);
+				player().m_lu_point += remove;
+			}
+		}
+		else if (hb::shared::input::is_shift_down())
+		{
+			int remove = std::min(static_cast<int>(pending_change), 10);
+			if ((remove > 0) && !majestic_open)
+			{
+				pending_change -= static_cast<int16_t>(remove);
+				player().m_lu_point += remove;
 			}
 		}
 		else

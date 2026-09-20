@@ -16,7 +16,9 @@ using namespace std;
 #include "PasswordHash.h"
 #include "../../Dependencies/Shared/Packet/SharedPackets.h"
 #include "Log.h"
+#include "ServerLogChannels.h"
 #include "Item/ItemEnums.h"
+#include "CharacterClass.h"
 #include "version_info.h"
 #include "Game.h"
 #include <filesystem>
@@ -131,8 +133,10 @@ void LoginServer::request_login(int h, char* data)
 	{
 	case LogIn::Ok:
 	{
-		// Send balance config BEFORE login response — login response closes the socket
+		// Send configs BEFORE login response — login response closes the socket
 		send_balance_config(h);
+		send_server_config(h);
+		send_color_palette(h);
 
 		char data[512] = {};
 		char* cp2 = data;
@@ -220,7 +224,7 @@ LogIn LoginServer::AccountLogIn(string acc, string pass, std::vector<AccountDbCh
 						entry.appearance.armor_item_id = static_cast<int16_t>(item.item_id);
 						entry.appearance.armor_display_id = config->m_display_id;
 						entry.appearance.armor_color = color;
-						entry.appearance.hide_armor = (config->m_appearance_value >= 100);
+						entry.appearance.hide_armor = (config->m_hide_armor != 0);
 						break;
 					case EquipPos::FullBody:
 						entry.appearance.armor_item_id = static_cast<int16_t>(item.item_id);
@@ -232,13 +236,13 @@ LogIn LoginServer::AccountLogIn(string acc, string pass, std::vector<AccountDbCh
 						entry.appearance.arm_display_id = config->m_display_id;
 						entry.appearance.arm_color = color;
 						break;
-					case EquipPos::Pants:
+					case EquipPos::Leggings:
 						entry.appearance.pants_item_id = static_cast<int16_t>(item.item_id);
 						entry.appearance.pants_display_id = config->m_display_id;
 						entry.appearance.pants_color = color;
-						entry.appearance.is_skirt = (config->m_appearance_value == 1);
+						entry.appearance.is_skirt = (config->m_is_skirt != 0);
 						break;
-					case EquipPos::Leggings:
+					case EquipPos::Boots:
 						entry.appearance.boots_item_id = static_cast<int16_t>(item.item_id);
 						entry.appearance.boots_display_id = config->m_display_id;
 						entry.appearance.boots_color = color;
@@ -304,6 +308,29 @@ void LoginServer::response_character(int h, char* data)
 	if (string(world_name) != WORLDNAMELS)
 		return;
 
+	// Validate creation stats against server config
+	{
+		int total = str + vit + dex + intl + mag + chr;
+		int expected_total = G_pGame->m_base_stat_total;
+		int min_stat = G_pGame->m_base_stat_value;
+		int max_stat = min_stat + G_pGame->m_max_creation_stat_value;
+
+		if (total != expected_total
+			|| str < min_stat || str > max_stat
+			|| vit < min_stat || vit > max_stat
+			|| dex < min_stat || dex > max_stat
+			|| intl < min_stat || intl > max_stat
+			|| mag < min_stat || mag > max_stat
+			|| chr < min_stat || chr > max_stat)
+		{
+			hb::logger::warn<hb::log_channel::security>(
+				"Invalid creation stats from account '{}': total={} expected={} stats=({},{},{},{},{},{})",
+				acc, total, expected_total, (int)str, (int)vit, (int)dex, (int)intl, (int)mag, (int)chr);
+			send_login_msg(LogResMsg::NewCharacterFailed, LogResMsg::NewCharacterFailed, 0, 0, h);
+			return;
+		}
+	}
+
 	hb::logger::log("Request create new Character: {}", name);
 
 	std::vector<AccountDbCharacterSummary> chars;
@@ -353,9 +380,6 @@ void LoginServer::response_character(int h, char* data)
 	std::snprintf(state.character_name, sizeof(state.character_name), "%s", name);
 	std::snprintf(state.profile, sizeof(state.profile), "__________");
 	std::snprintf(state.location, sizeof(state.location), "NONE");
-	std::snprintf(state.guild_name, sizeof(state.guild_name), "NONE");
-	state.guild_guid = -1;
-	state.guild_rank = -1;
 	std::snprintf(state.map_name, sizeof(state.map_name), "default");
 	state.map_x = -1;
 	state.map_y = -1;
@@ -409,9 +433,6 @@ void LoginServer::response_character(int h, char* data)
 	state.quest_completed = 0;
 	state.special_event_id = 200081;
 	state.super_attack_left = 0;
-	state.fightzone_number = 0;
-	state.reserve_time = 0;
-	state.fightzone_ticket_number = 0;
 	state.special_ability_time = SpecialAbilityTimeSec;
 	std::snprintf(state.locked_map_name, sizeof(state.locked_map_name), "NONE");
 	state.locked_map_time = 0;
@@ -429,56 +450,62 @@ void LoginServer::response_character(int h, char* data)
 
 	bool ok = InsertCharacterState(db, state);
 
-	// Starter item IDs from gamedata.db
-	constexpr int ITEM_DAGGER = 1;
-	constexpr int ITEM_BIG_RED_POTION = 92;    // Health potion
-	constexpr int ITEM_BIG_BLUE_POTION = 94;   // Mana potion
-	constexpr int ITEM_MAP = 104;
-	constexpr int ITEM_RECALL_SCROLL = 114;
-	constexpr int ITEM_KNEE_TROUSERS_M = 460;  // Shorts for males
-	constexpr int ITEM_BODICE_W = 473;         // Bodice for females
+	// Validate and collect creation items for this class + gender
+	int player_class = static_cast<int>(req->class_type);
+	if (!hb::shared::character_class::is_valid_player_class(player_class))
+	{
+		hb::logger::warn<hb::log_channel::security>(
+			"Invalid class_type {} from account '{}'", player_class, acc);
+		CloseAccountDatabase(db);
+		send_login_msg(LogResMsg::NewCharacterFailed, LogResMsg::NewCharacterFailed, 0, 0, h);
+		return;
+	}
 
 	std::vector<AccountDbItemRow> items;
-	auto addItem = [&](int item_id, int item_color) {
+	for (const auto& entry : G_pGame->m_creation_items)
+	{
+		// Skip if not for this class (and not "all")
+		if (entry.class_type != hb::shared::character_class::all
+			&& entry.class_type != player_class)
+			continue;
+
+		// Skip if gender-restricted and doesn't match
+		if (entry.gender_limit != 0 && entry.gender_limit != gender)
+			continue;
+
+		// Validate item_id exists in config
+		if (entry.item_id <= 0 || entry.item_id >= MaxItemTypes
+			|| G_pGame->m_item_config_list[entry.item_id] == nullptr)
+		{
+			hb::logger::warn("Creation item_id {} not found in item config, skipping", entry.item_id);
+			continue;
+		}
+
 		AccountDbItemRow item = {};
 		item.slot = static_cast<int>(items.size());
-		item.item_id = item_id;
-		item.count = 1;
+		item.item_id = entry.item_id;
+		item.count = entry.count;
 		item.touch_effect_type = 0;
 		item.touch_effect_value1 = 0;
 		item.touch_effect_value2 = 0;
 		item.touch_effect_value3 = 0;
-		item.item_color = item_color;
+		item.item_color = entry.item_color;
 		item.spec_effect_value1 = 0;
 		item.spec_effect_value2 = 0;
 		item.spec_effect_value3 = 0;
-		item.cur_life_span = 300;
-		item.attribute = 0;
+		item.cur_durability = (entry.durability > 0)
+			? entry.durability
+			: G_pGame->m_item_config_list[entry.item_id]->m_durability;
+		item.custom_made = 0;
+		item.prefix_type = 0;
+		item.prefix_value = 0;
+		item.secondary_type = 0;
+		item.secondary_value = 0;
+		item.enchant_bonus = 0;
 		item.pos_x = 40;
 		item.pos_y = 30;
-		item.is_equipped = 0;
+		item.is_equipped = entry.is_equipped;
 		items.push_back(item);
-	};
-
-	addItem(ITEM_DAGGER, 0);
-	addItem(ITEM_RECALL_SCROLL, 0);
-	addItem(ITEM_BIG_RED_POTION, 0);
-	addItem(ITEM_BIG_BLUE_POTION, 0);
-	addItem(ITEM_MAP, 0);
-
-	// Gender-specific clothing: males get shorts, females get bodice
-	if (gender == 1) {
-		addItem(ITEM_KNEE_TROUSERS_M, 0);
-	} else {
-		addItem(ITEM_BODICE_W, 0);
-	}
-
-	const char* equipStatus = "00000110000000000000000000000000000000000000000000";
-	const size_t equipLen = std::strlen(equipStatus);
-	for (auto& item : items) {
-		if (item.slot < static_cast<int>(equipLen) && equipStatus[item.slot] == '1') {
-			item.is_equipped = 1;
-		}
 	}
 
 	std::vector<AccountDbIndexedValue> positionsX;
@@ -493,7 +520,14 @@ void LoginServer::response_character(int h, char* data)
 		equip.index = i;
 		pos_x.value = 40;
 		pos_y.value = 30;
-		equip.value = (i < static_cast<int>(equipLen) && equipStatus[i] == '1') ? 1 : 0;
+		// Derive equip status from the items we just built
+		equip.value = 0;
+		for (const auto& it : items) {
+			if (it.slot == i) {
+				equip.value = it.is_equipped;
+				break;
+			}
+		}
 		positionsX.push_back(pos_x);
 		positionsY.push_back(pos_y);
 		equips.push_back(equip);
@@ -801,6 +835,68 @@ void LoginServer::send_balance_config(int h)
 	std::memcpy(buf.data() + sizeof(hb::net::PacketHeader), serialized.data(), serialized.size());
 
 	G_pGame->_lclients[h]->sock->send_msg(buf.data(), static_cast<int>(buf.size()));
+}
+
+void LoginServer::send_server_config(int h)
+{
+	if (!G_pGame->_lclients[h]) return;
+
+	hb::net::PacketServerConfigUpdate pkt{};
+	pkt.header.msg_id = MsgId::ServerConfigUpdate;
+	pkt.header.msg_type = MsgType::Confirm;
+	pkt.max_stats = static_cast<int16_t>(G_pGame->m_max_stat_value);
+	pkt.max_level = static_cast<int32_t>(G_pGame->m_max_level);
+	pkt.max_bank_items = static_cast<int16_t>(G_pGame->m_max_bank_items);
+	pkt.base_stat_value = static_cast<int16_t>(G_pGame->m_base_stat_value);
+	pkt.max_creation_stat_value = static_cast<int16_t>(G_pGame->m_max_creation_stat_value);
+	pkt.creation_stat_points = static_cast<int16_t>(G_pGame->m_creation_stat_points);
+
+	G_pGame->_lclients[h]->sock->send_msg(reinterpret_cast<char*>(&pkt), sizeof(pkt));
+}
+
+void LoginServer::send_color_palette(int h)
+{
+	if (!G_pGame->_lclients[h]) return;
+	if (G_pGame->m_color_palette.empty()) return;
+
+	constexpr size_t headerSize = sizeof(hb::net::PacketColorPaletteConfigHeader);
+	constexpr size_t entrySize = sizeof(hb::net::PacketColorPaletteConfigEntry);
+	constexpr size_t maxEntriesPerPacket = (7000 - headerSize) / entrySize;
+
+	size_t totalColors = G_pGame->m_color_palette.size();
+	size_t colorsSent = 0;
+	uint16_t packetIndex = 0;
+
+	while (colorsSent < totalColors)
+	{
+		std::vector<char> buf(headerSize + maxEntriesPerPacket * entrySize, 0);
+
+		auto* pktHeader = reinterpret_cast<hb::net::PacketColorPaletteConfigHeader*>(buf.data());
+		pktHeader->header.msg_id = MsgId::ColorPaletteConfigContents;
+		pktHeader->header.msg_type = MsgType::Confirm;
+		pktHeader->totalColors = static_cast<uint16_t>(totalColors);
+		pktHeader->packetIndex = packetIndex;
+
+		auto* entries = reinterpret_cast<hb::net::PacketColorPaletteConfigEntry*>(buf.data() + headerSize);
+		uint16_t entriesInPacket = 0;
+
+		for (size_t i = colorsSent; i < totalColors && entriesInPacket < maxEntriesPerPacket; i++)
+		{
+			entries[entriesInPacket].colorId = G_pGame->m_color_palette[i].color_id;
+			entries[entriesInPacket].r = G_pGame->m_color_palette[i].r;
+			entries[entriesInPacket].g = G_pGame->m_color_palette[i].g;
+			entries[entriesInPacket].b = G_pGame->m_color_palette[i].b;
+			entriesInPacket++;
+		}
+
+		pktHeader->colorCount = entriesInPacket;
+		size_t packetSize = headerSize + (entriesInPacket * entrySize);
+
+		G_pGame->_lclients[h]->sock->send_msg(buf.data(), static_cast<int>(packetSize));
+
+		colorsSent += entriesInPacket;
+		packetIndex++;
+	}
 }
 
 void LoginServer::request_enter_game(int h, char* data)

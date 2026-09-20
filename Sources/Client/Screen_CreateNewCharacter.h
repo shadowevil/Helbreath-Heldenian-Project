@@ -15,11 +15,12 @@ class Screen_CreateNewCharacter : public IGameScreen
 public:
     SCREEN_TYPE(Screen_CreateNewCharacter)
 
+    GameMode get_game_mode() const override { return GameMode::CreateNewCharacter; }
+
     explicit Screen_CreateNewCharacter(CGame* game);
     ~Screen_CreateNewCharacter() override = default;
 
     void on_initialize() override;
-    void on_uninitialize() override;
     void on_update() override;
     void on_render() override;
     bool on_net_response(uint16_t response_type, char* data) override;

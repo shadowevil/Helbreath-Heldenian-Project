@@ -85,10 +85,10 @@ namespace net {
 		uint8_t padding[2];
 	};
 
-	struct HB_PACKED PacketNotifyCurLifeSpan {
+	struct HB_PACKED PacketNotifyCurDurability {
 		PacketHeader header;
 		int32_t item_index;
-		int32_t cur_lifespan;
+		int32_t cur_durability;
 		uint8_t padding[2];
 	};
 
@@ -97,11 +97,9 @@ namespace net {
 		uint16_t seconds_left;
 	};
 
-	struct HB_PACKED PacketNotifyReqGuildNameAnswer {
+	struct HB_PACKED PacketNotifyLevelUpPoints {
 		PacketHeader header;
-		int16_t guild_rank;
-		int16_t index;
-		char guild_name[hb::shared::limits::GuildNameLen];
+		uint16_t lu_point;
 	};
 
 	struct HB_PACKED PacketNotifyItemUpgradeFail {
@@ -118,7 +116,12 @@ namespace net {
 	struct HB_PACKED PacketNotifyItemAttributeChange {
 		PacketHeader header;
 		int16_t item_index;
-		uint32_t attribute;
+		uint8_t custom_made;
+		uint8_t prefix_type;
+		uint8_t prefix_value;
+		uint8_t secondary_type;
+		uint8_t secondary_value;
+		uint8_t enchant_bonus;
 		uint32_t spec_value1;
 		uint32_t spec_value2;
 	};
@@ -127,10 +130,15 @@ namespace net {
 		PacketHeader header;
 		int16_t item_index;
 		uint8_t item_type;
-		int16_t cur_lifespan;
+		int16_t cur_durability;
 		uint8_t item_color;
 		uint8_t spec_value2;
-		uint32_t attribute;
+		uint8_t custom_made;
+		uint8_t prefix_type;
+		uint8_t prefix_value;
+		uint8_t secondary_type;
+		uint8_t secondary_value;
+		uint8_t enchant_bonus;
 		char item_name[hb::shared::limits::ItemNameLen];
 		int16_t item_id;
 	};
@@ -178,7 +186,7 @@ namespace net {
 	struct HB_PACKED PacketNotifyDamageMove {
 		PacketHeader header;
 		uint8_t dir;
-		int16_t amount;
+		int32_t amount;
 		uint8_t weapon;
 	};
 
@@ -272,11 +280,6 @@ namespace net {
 		int8_t item_index;
 	};
 
-	struct HB_PACKED PacketNotifyFightZoneReserve {
-		PacketHeader header;
-		int32_t result;
-	};
-
 	struct HB_PACKED PacketNotifySpellSkill {
 		PacketHeader header;
 		uint8_t magic_mastery[kMaxMagicType];
@@ -344,13 +347,19 @@ namespace net {
 		uint8_t is_equipped;
 		int16_t level_limit;
 		uint8_t gender_limit;
-		uint16_t cur_lifespan;
+		uint16_t cur_durability;
 		uint16_t weight;
 		uint8_t item_color;
 		uint8_t spec_value2;
-		uint32_t attribute;
+		uint8_t custom_made;
+		uint8_t prefix_type;
+		uint8_t prefix_value;
+		uint8_t secondary_type;
+		uint8_t secondary_value;
+		uint8_t enchant_bonus;
 		int16_t item_id;           // Item ID for config lookup
-		uint16_t max_lifespan;     // Maximum durability
+		uint16_t max_durability;
+
 	};
 
 	struct HB_PACKED PacketNotifyItemPurchased {
@@ -363,12 +372,12 @@ namespace net {
 		uint8_t is_equipped;
 		int16_t level_limit;
 		uint8_t gender_limit;
-		uint16_t cur_lifespan;
+		uint16_t cur_durability;
 		uint16_t weight;
 		uint8_t item_color;
 		uint16_t cost;
 		int16_t item_id;           // Item ID for config lookup
-		uint16_t max_lifespan;     // Maximum durability
+		uint16_t max_durability;
 	};
 
 	struct HB_PACKED PacketNotifyItemToBank {
@@ -382,15 +391,20 @@ namespace net {
 		uint8_t is_equipped;
 		int16_t level_limit;
 		uint8_t gender_limit;
-		uint16_t cur_lifespan;
+		uint16_t cur_durability;
 		uint16_t weight;
 		uint8_t item_color;
 		int16_t item_effect_value2;
-		uint32_t attribute;
+		uint8_t custom_made;
+		uint8_t prefix_type;
+		uint8_t prefix_value;
+		uint8_t secondary_type;
+		uint8_t secondary_value;
+		uint8_t enchant_bonus;
 		uint8_t spec_effect_value2;
 		uint8_t padding;
 		int16_t item_id;           // Item ID for config lookup
-		uint16_t max_lifespan;     // Maximum durability
+		uint16_t max_durability;
 	};
 
 	struct HB_PACKED PacketNotifyRatingPlayer {
@@ -528,16 +542,6 @@ namespace net {
 		char text[32];
 	};
 
-	struct HB_PACKED PacketNotifyQueryDismissGuildPermission {
-		PacketHeader header;
-		char name[hb::shared::limits::CharNameLen];
-	};
-
-	struct HB_PACKED PacketNotifyQueryJoinGuildPermission {
-		PacketHeader header;
-		char name[hb::shared::limits::CharNameLen];
-	};
-
 	struct HB_PACKED PacketNotifyTimeChange {
 		PacketHeader header;
 		uint8_t sprite_alpha;
@@ -547,7 +551,6 @@ namespace net {
 	struct HB_PACKED PacketNotifyHP {
 		PacketHeader header;
 		uint32_t hp;
-		uint32_t hunger;
 		uint8_t padding[2];
 	};
 
@@ -596,7 +599,7 @@ namespace net {
 		uint8_t padding[2];
 	};
 
-	struct HB_PACKED PacketNotifyItemLifeSpanEnd {
+	struct HB_PACKED PacketNotifyItemDurabilityEnd {
 		PacketHeader header;
 		int16_t equip_pos;
 		int16_t item_index;
@@ -663,12 +666,17 @@ namespace net {
 		int16_t dir;
 		int32_t amount;
 		uint8_t color;
-		int16_t cur_life;
-		int16_t max_life;
+		int16_t cur_durability;
+		int16_t max_durability;
 		int16_t performance;
 		char item_name[hb::shared::limits::ItemNameLen];
 		char char_name[hb::shared::limits::CharNameLen];
-		uint32_t attribute;
+		uint8_t custom_made;
+		uint8_t prefix_type;
+		uint8_t prefix_value;
+		uint8_t secondary_type;
+		uint8_t secondary_value;
+		uint8_t enchant_bonus;
 		int16_t item_id;
 	};
 
@@ -687,8 +695,6 @@ namespace net {
 		uint32_t exp;
 		uint32_t kill_count;
 		char killer_name[hb::shared::limits::CharNameLen];
-		char killer_guild[hb::shared::limits::GuildNameLen];
-		int16_t killer_rank;
 		int16_t war_contribution;
 	};
 
@@ -840,61 +846,6 @@ namespace net {
 		int32_t v6;
 		int32_t v7;
 		int32_t v8;
-	};
-
-	struct HB_PACKED PacketNotifyCannotJoinMoreGuildsMan {
-		PacketHeader header;
-		char name[hb::shared::limits::CharNameLen];
-	};
-
-	struct HB_PACKED PacketNotifyNewGuildsMan {
-		PacketHeader header;
-		char name[hb::shared::limits::CharNameLen];
-	};
-
-	struct HB_PACKED PacketNotifyDismissGuildsMan {
-		PacketHeader header;
-		char name[hb::shared::limits::CharNameLen];
-	};
-
-	struct HB_PACKED PacketNotifyJoinGuildApprove {
-		PacketHeader header;
-		char guild_name[hb::shared::limits::GuildNameLen];
-		int16_t rank;
-	};
-
-	struct HB_PACKED PacketNotifyJoinGuildReject {
-		PacketHeader header;
-		char guild_name[hb::shared::limits::GuildNameLen];
-		int16_t rank;
-		char location[hb::shared::limits::MapNameLen];
-	};
-
-	struct HB_PACKED PacketNotifyDismissGuildApprove {
-		PacketHeader header;
-		char guild_name[hb::shared::limits::GuildNameLen];
-		int16_t rank;
-		char location[hb::shared::limits::MapNameLen];
-	};
-
-	struct HB_PACKED PacketNotifyDismissGuildReject {
-		PacketHeader header;
-		char guild_name[hb::shared::limits::GuildNameLen];
-		int16_t rank;
-		char location[hb::shared::limits::MapNameLen];
-	};
-
-	struct HB_PACKED PacketNotifyGuildDisbanded {
-		PacketHeader header;
-		char guild_name[hb::shared::limits::GuildNameLen];
-		char location[hb::shared::limits::MapNameLen];
-	};
-
-	struct HB_PACKED PacketNotifyBanGuildMan {
-		PacketHeader header;
-		char guild_name[hb::shared::limits::GuildNameLen];
-		int16_t rank;
-		char location[hb::shared::limits::MapNameLen];
 	};
 
 	struct HB_PACKED PacketNotifyTotalUsers {

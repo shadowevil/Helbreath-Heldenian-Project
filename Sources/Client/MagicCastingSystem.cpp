@@ -78,6 +78,15 @@ void magic_casting_system::begin_cast(int magic_no)
 	if (magic_no < 0 || magic_no >= 100) return;
 	if ((m_game->m_player->m_magic_mastery[magic_no] == 0) || (m_game->m_magic_cfg_list[magic_no] == 0)) return;
 
+	// INT requirement check — covers hotkey/shortcut paths that bypass the dialog click handler
+	int int_req = m_game->m_magic_cfg_list[magic_no]->m_value_2;
+	int player_int = m_game->m_player->m_int + m_game->m_player->m_angelic_int;
+	if (int_req > player_int)
+	{
+		m_game->add_event_list(DLGBOX_CLICK_MAGIC3, 10);
+		return;
+	}
+
 	// Casting
 	if (m_game->m_player->m_hp <= 0) return;
 	if (m_game->on_game()->m_is_get_pointing_mode == true) return;

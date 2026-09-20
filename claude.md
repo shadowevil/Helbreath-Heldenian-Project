@@ -11,15 +11,15 @@ powershell -ExecutionPolicy Bypass -File Sources\build.ps1 -Target Server -Confi
 - Delete `build_*.log` before building for clean logs.
 - Output: `Sources\Debug\Game_SFML_x64.exe` (client), `Sources\Debug\Server.exe` (server).
 - x64 platform. `Sources\Helbreath.sln`. C++20 server and client.
-- 78 LNK4099 warnings (missing SFML/freetype PDBs) are cosmetic — ignore.
+- LNK4099 warnings (missing SFML/freetype PDBs) are cosmetic — ignore.
 - SFML 3 libs are bundled in `Sources/Dependencies/SFML/`. To rebuild from source: `Scripts\build_sfml.bat`
 
 ### Linux (CMake — Server)
 ```bash
-./Sources/build_linux.sh                 # Incremental debug build
-./Sources/build_linux.sh release         # Release build
-./Sources/build_linux.sh clean           # Delete build directory
-./Sources/build_linux.sh clean release   # Clean then rebuild release
+./Sources/build_server_linux.sh                 # Incremental debug build
+./Sources/build_server_linux.sh release         # Release build
+./Sources/build_server_linux.sh clean           # Delete build directory
+./Sources/build_server_linux.sh clean release   # Clean then rebuild release
 ```
 - CMakeLists.txt: `Sources/Server/CMakeLists.txt`
 - Output: `Sources/Debug/HelbreathServer` or `Sources/Release/HelbreathServer` (mirrors Windows layout)
@@ -44,7 +44,11 @@ powershell -ExecutionPolicy Bypass -File Sources\build.ps1 -Target Server -Confi
 
 ## Workflow
 
-**Never use git commands. The user handles all git operations. Backups use `.bak_<guid>` files via `bak.py`.**
+**Never use git commands for version control. The user handles all git operations. Backups use `.bak_<guid>` files via `bak.py`.**
+
+**Exception:** `git diff` is allowed (and encouraged) as a **read-only verification tool** after refactoring. Use it to confirm no logic was accidentally lost or altered. This is verification, not version control.
+
+For complex or multi-step tasks, maintain a session context file (`session_context.md` in the memory directory) with: current task, key decisions, files being worked on, and constraints. This survives context compaction. Delete it when the task is complete.
 
 Two modes. **Default to Mode 1.** Use Mode 2 only when justified.
 
@@ -56,9 +60,11 @@ bak.py guard <files>  →  Read/Edit tools  →  Build  →  bak.py commit (or r
 
 1. **Guard** — `python bak.py guard <file1> [file2 ...]` — creates versioned checkpoint (.bak_<guid>).
 2. **Edit** — Read and Edit tools.
-3. **Build** — `powershell -ExecutionPolicy Bypass -File Sources/build.ps1 -Target All -Config Debug`
-4. **If build succeeds** — `python bak.py commit` — deletes all .bak files, accepts changes.
-5. **If build fails** — choose:
+3. **Simplify** — Run `/simplify` (a built-in skill that reviews changed code for reuse opportunities, quality issues, and efficiency problems, then fixes what it finds).
+4. **Verify** — For refactors, run `git diff` on changed files to confirm no logic was lost or altered.
+5. **Build** — `powershell -ExecutionPolicy Bypass -File Sources/build.ps1 -Target All -Config Debug`
+6. **If build succeeds** — `python bak.py commit` — deletes all .bak files, accepts changes.
+7. **If build fails** — choose:
    - `guard` again to checkpoint, then fix and rebuild (layer the fix).
    - `revert <id>` to undo a specific checkpoint, retry from previous.
    - `revert <id> <file1> [file2 ...]` to revert specific files from a checkpoint.
@@ -78,21 +84,7 @@ See `CLAUDE_WORKFLOW.md` for script pattern, regex safety rules, and verificatio
 2. `--verify` — scan for Shared/SFMLEngine collisions, C++ keyword conflicts, duplicate targets.
 3. Only then run without flags to apply. See `PLANS/BulkScript_DryRun_Standards.md` for full spec.
 
-### `bak.py` Commands
-
-| Command | Purpose |
-|---------|---------|
-| `bak.py guard <files>` | Create versioned checkpoint (.bak_<guid>). Warns if files already have checkpoints (`--force` to override) |
-| `bak.py status` | List checkpoints with dirty/clean status (exit 1 if any) |
-| `bak.py revert <id>` | Revert all files from checkpoint `<id>`. Warns if files have other layers (`--force` to override) |
-| `bak.py revert <id> <files>` | Revert specific files from checkpoint `<id>` |
-| `bak.py commit` | Delete all .bak* files (accept current state) |
-
-Safety rules:
-- `revert` **always requires a checkpoint ID** — no implicit "most recent" behavior.
-- `guard` warns if a file already has a `.bak_*` from another checkpoint. Use `--force` to proceed.
-- `revert` warns if a file has `.bak_*` layers from other checkpoints. Use `--force` to proceed.
-- GUID collision check on `guard` — ensures new checkpoint ID is unique.
+Run `python bak.py --help` for full command reference (guard, status, revert, commit).
 
 ## Code Search
 
@@ -180,72 +172,18 @@ Key rules:
 - **Wire protocol structs**: Exception — Hungarian without `m_` to match binary format.
 - Legacy code retains old conventions until actively refactored. Do not reformat untouched code.
 
-After every `bak.py commit`, update `CHANGELOG.md` with a brief bullet list of changes under category headers. See `CLAUDE_CHANGELOG.md` for format guide and examples.
+After every `bak.py commit`, update `CHANGELOG.md` with a brief summary. When the user requests a Discord post, write a player-facing changelog instead. See `CLAUDE_CHANGELOG.md` for both formats.
 
 ## Logging
 
-Shared logging system in `Sources/Dependencies/Shared/Log/`. Uses `std::format` and multi-channel file output.
+`#include "Log.h"` → `hb::logger::error`, `warn`, `log`, `debug`. Channel logging with `hb::logger::log<log_channel::security>(...)`. Server has 15 channels, client has 2. **Client and Server only** — Shared/ must not use the logging system; use `std::printf` or standard I/O there. See `CLAUDE_LOGGING.md` for full reference (files, code examples, channel list, initialization).
 
-### Files
+## Agent Teams
 
-| File | Purpose |
-|------|---------|
-| `Log/Log.h` | **Public API** — include this to log. Provides `hb::logger::error`, `warn`, `log`, `debug` |
-| `Log/LogLevel.h` | Level constants (`error=0, warn=1, log=2, debug=3`) and `level_name()` |
-| `Log/LogBackend.h` | `log_backend` base class — multi-channel file writer, virtual `write_console()` |
-| `Log/LogBackend.cpp` | Implementation — timestamp formatting, per-channel + main dual-write, mutex-protected |
-| `Server/ServerLogChannels.h` | Server channel enum (15 channels: main, events, security, pvp, network, chat, etc.) |
-| `Server/ServerLog.cpp` | Server wiring — `server_log_backend` subclass routes to `ServerConsole` |
-| `Client/ClientLogChannels.h` | Client channel enum (2 channels: main, network) |
-| `Client/ClientLog.cpp` | Client wiring — console output only in `_DEBUG` builds |
-
-### How to Include
-
-**Basic logging (channel 0 / main)** — only need `Log.h`:
-```cpp
-#include "Log.h"
-
-hb::logger::error("SQLite open failed: {}", sqlite3_errmsg(db));
-hb::logger::warn("Unexpected value: {}", val);
-hb::logger::log("Player '{}' connected", name);
-hb::logger::debug("Tick took {}ms", elapsed);
-```
-
-**Logging to a specific channel** — also include the channels header and `using` declaration:
-```cpp
-#include "Log.h"
-#include "ServerLogChannels.h"   // or "ClientLogChannels.h"
-
-using hb::log_channel;
-
-hb::logger::warn<log_channel::security>("Swing hack: IP={} player={}", ip, name);
-hb::logger::log<log_channel::chat>("[ChatMsg] {}: {}", sender, message);
-hb::logger::log<log_channel::events>("Player '{}' crafting '{}'", name, item);
-```
-
-### Channel Behavior
-
-- Channel 0 (`main`) is the default when no template argument is given.
-- Non-zero channels write to **both** their own log file and the main log file.
-- Each channel maps to a separate `.log` file (e.g. `security` → `hackevents.log`, `chat` → `chat.log`).
-- Format: `[HH:MM:SS.mmm] [LEVEL] [channel_name] message` (channel name omitted for main).
-
-### Server Channels (`hb::log_channel`)
-
-`main`, `events`, `security`, `pvp`, `network`, `log_events`, `chat`, `commands`, `drops`, `trade`, `shop`, `crafting`, `upgrades`, `bank`, `items_misc`
-
-### Client Channels (`hb::log_channel`)
-
-`main`, `network`
-
-### Initialization / Shutdown
-
-Already wired in both targets — do not call manually:
-- **Server**: `hb::logger::initialize("gamelogs/")` in `Wmain.cpp`, `shutdown()` on exit.
-- **Client**: `hb::logger::initialize("logs")` in `Game.cpp`, `shutdown()` on exit.
+When teams are enabled, follow the structured coordinator/wing model. See `CLAUDE_AGENTS.md` for full roles, communication rules, and workflow phases.
 
 ## Testing
 
 No automated tests. Manual: run server, then client with configs in `Binaries/`.
 For network changes, rebuild both client and server.
-Both targets can be tested on Linux — server with `build_linux.sh`, client with `build_client_linux.sh`.
+Both targets can be tested on Linux — server with `build_server_linux.sh`, client with `build_client_linux.sh`.

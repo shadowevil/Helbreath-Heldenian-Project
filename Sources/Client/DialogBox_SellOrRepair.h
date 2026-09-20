@@ -10,6 +10,7 @@ public:
 	void on_draw() override;
 	bool on_click() override;
 	bool on_enable(int type, int64_t v1, int v2, const char* string) override;
+	bool on_disable() override;
 
 	enum class mode : uint8_t
 	{
@@ -21,7 +22,7 @@ public:
 
 	mode m_mode{mode::sell};
 	int m_item_index{};
-	int m_price{};
+	int m_sell_price{};
 	int m_secondary_price{};
 	int m_item_count{};
 

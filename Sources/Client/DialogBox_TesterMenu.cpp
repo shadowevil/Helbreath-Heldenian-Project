@@ -305,7 +305,7 @@ bool DialogBox_TesterMenu::on_click_level_picker(short sX, short sY)
 		int bx = btn_start_x + i * (btn_w + btn_gap);
 		if (mouse_x >= bx && mouse_x <= bx + btn_w && mouse_y >= btn_y && mouse_y <= btn_y + 18)
 		{
-			m_selected_level = std::clamp(m_selected_level + deltas[i], 1, 180);
+			m_selected_level = std::clamp(m_selected_level + deltas[i], 1, m_game->m_max_level);
 			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
 			return true;
 		}

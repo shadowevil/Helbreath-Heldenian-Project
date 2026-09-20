@@ -40,7 +40,7 @@ bool GameCmdSpawn::execute(CGame* game, int client_h, const char* args)
 
 		// is_summoned=false so NPCs give EXP/drops, bypass_mob_limit=true so they don't count toward map limit
 		if (game->create_new_npc(npc_id, unique_name, map_name, 0, 0, hb::server::npc::MoveType::Random,
-			&tX, &tY, nullptr, nullptr, 0, -1, false, false, false, false, 0, true))
+			&tX, &tY, nullptr, nullptr, 0, -1, false, false, false, false, true))
 		{
 			spawned++;
 		}

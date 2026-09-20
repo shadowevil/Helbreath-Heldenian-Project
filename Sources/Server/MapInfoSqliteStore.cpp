@@ -466,7 +466,7 @@ bool LoadMapBaseSettings(sqlite3* db, const char* map_name, CMap* map)
 		int col = 0;
 		CopyColumnText(stmt, col++, map->m_location_name, sizeof(map->m_location_name));
 		map->m_maximum_object = sqlite3_column_int(stmt, col++);
-		map->m_level_limit = sqlite3_column_int(stmt, col++);
+		map->m_level_requirement = sqlite3_column_int(stmt, col++);
 		map->m_upper_level_limit = sqlite3_column_int(stmt, col++);
 		map->m_type = static_cast<char>(sqlite3_column_int(stmt, col++));
 		map->m_random_mob_generator = sqlite3_column_int(stmt, col++) != 0;

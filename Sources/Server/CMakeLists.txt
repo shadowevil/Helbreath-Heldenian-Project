@@ -33,6 +33,7 @@ set(SERVER_SOURCES
     CombatManager.cpp
     CommonTypes.cpp
     CraftingManager.cpp
+    RegenManager.cpp
     DelayEventManager.cpp
     DynamicObjectManager.cpp
     EntityManager.cpp

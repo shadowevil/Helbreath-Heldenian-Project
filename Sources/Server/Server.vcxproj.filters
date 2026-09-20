@@ -129,6 +129,9 @@
     <ClInclude Include="CombatManager.h">
       <Filter>World</Filter>
     </ClInclude>
+    <ClInclude Include="RegenManager.h">
+      <Filter>World</Filter>
+    </ClInclude>
     <ClInclude Include="Fish.h">
       <Filter>Data Types</Filter>
     </ClInclude>
@@ -176,9 +179,7 @@
       <Filter>Database</Filter>
     </ClInclude>
     <ClInclude Include="GlobalDef.h" />
-    <ClInclude Include="GuildsMan.h">
-      <Filter>Data Types</Filter>
-    </ClInclude>
+
     <ClInclude Include="Item.h">
       <Filter>Data Types</Filter>
     </ClInclude>
@@ -502,6 +503,9 @@
       <Filter>World</Filter>
     </ClCompile>
     <ClCompile Include="CombatManager.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="RegenManager.cpp">
       <Filter>World</Filter>
     </ClCompile>
     <ClCompile Include="Game.cpp" />

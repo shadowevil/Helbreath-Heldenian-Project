@@ -111,9 +111,6 @@ bool DialogBox_ItemDrop::on_click()
 	// No button - cancel
 	if (mouse_in(btn_no))
 	{
-		for (int i = 0; i < game_limits::max_sell_list; i++)
-			inventory_manager::get().unlock_item(i);
-
 		disable_this_dialog();
 		return true;
 	}

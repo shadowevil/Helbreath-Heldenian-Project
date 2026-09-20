@@ -178,6 +178,7 @@ namespace NetworkMessageHandlers {
 		game->m_player->m_hp = pkt->hp;
 		game->m_player->m_mp = pkt->mp;
 		game->m_player->m_sp = pkt->sp;
+		game->m_player->m_stats_initialized = true;
 		game->m_player->m_ac = pkt->ac;
 		game->m_player->m_thac0 = pkt->thac0;
 		game->m_player->m_level = pkt->level;
@@ -225,15 +226,46 @@ namespace NetworkMessageHandlers {
 			game->m_player->m_hunter = true;
 		}
 
-		game->m_player->m_guild_name.assign(pkt->guild_name, strnlen(pkt->guild_name, sizeof(pkt->guild_name)));
-		if (game->m_player->m_guild_name == "NONE")
-			game->m_player->m_guild_name.clear();
-		std::replace(game->m_player->m_guild_name.begin(), game->m_player->m_guild_name.end(), '_', ' ');
-		game->m_player->m_guild_rank = pkt->guild_rank;
 		game->m_player->m_super_attack_left = pkt->super_attack_left;
-		game->on_game()->m_fightzone_number = pkt->fightzone_number;
 		game->m_max_stats = pkt->max_stats;
 		game->m_max_level = pkt->max_level;
 		game->m_max_bank_items = pkt->max_bank_items;
+	}
+
+	void HandleServerConfigUpdate(CGame* game, char* data)
+	{
+		const auto* pkt = hb::net::PacketCast<hb::net::PacketServerConfigUpdate>(
+			data, sizeof(hb::net::PacketServerConfigUpdate));
+		if (!pkt) return;
+
+		game->m_max_stats = pkt->max_stats;
+		game->m_max_level = pkt->max_level;
+		game->m_max_bank_items = pkt->max_bank_items;
+		game->m_base_stat_value = pkt->base_stat_value;
+		game->m_max_creation_stat_value = pkt->max_creation_stat_value;
+		game->m_creation_stat_points = pkt->creation_stat_points;
+
+		// During login (no player yet), only store config values
+		if (!game->m_player) return;
+
+		game->set_top_msg((char*)"Server configuration has been updated.", 5);
+
+		// Clamp any pending level-up allocations that would exceed the new max
+		auto& p = *game->m_player;
+		struct { int base; int16_t& pending; } stat_pairs[] = {
+			{ p.m_str, p.m_lu_str }, { p.m_vit, p.m_lu_vit },
+			{ p.m_dex, p.m_lu_dex }, { p.m_int, p.m_lu_int },
+			{ p.m_mag, p.m_lu_mag }, { p.m_charisma, p.m_lu_char }
+		};
+		for (auto& [base, pending] : stat_pairs)
+		{
+			int overflow = (base + pending) - game->m_max_stats;
+			if (overflow > 0 && pending > 0)
+			{
+				int16_t reduce = static_cast<int16_t>(std::min(static_cast<int>(pending), overflow));
+				pending -= reduce;
+				p.m_lu_point += reduce;
+			}
+		}
 	}
 }

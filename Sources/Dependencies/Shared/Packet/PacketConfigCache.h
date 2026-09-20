@@ -26,6 +26,8 @@ namespace net {
 		char npcConfigHash[65];
 		char mapConfigHash[65];
 		char balanceConfigHash[65];
+		char colorPaletteConfigHash[65];
+		char attributeTypeConfigHash[65];
 	};
 
 	struct HB_PACKED PacketResponseConfigCacheStatus {
@@ -36,6 +38,8 @@ namespace net {
 		uint8_t npcCacheValid;
 		uint8_t mapCacheValid;
 		uint8_t balanceCacheValid;
+		uint8_t colorPaletteCacheValid;
+		uint8_t attributeTypeCacheValid;
 	};
 
 	struct HB_PACKED PacketNotifyConfigReload {
@@ -46,6 +50,18 @@ namespace net {
 		uint8_t reloadNpcs;
 		uint8_t reloadMaps;
 		uint8_t reloadBalance;
+		uint8_t reloadColorPalette;
+		uint8_t reloadAttributeTypes;
+	};
+
+	struct HB_PACKED PacketServerConfigUpdate {
+		PacketHeader header;
+		int16_t max_stats;
+		int32_t max_level;
+		int16_t max_bank_items;
+		int16_t base_stat_value;
+		int16_t max_creation_stat_value;
+		int16_t creation_stat_points;
 	};
 
 	struct HB_PACKED PacketRequestConfigData {
@@ -56,6 +72,8 @@ namespace net {
 		uint8_t requestNpcs;
 		uint8_t requestMaps;
 		uint8_t requestBalance;
+		uint8_t requestColorPalette;
+		uint8_t requestAttributeTypes;
 	};
 
 	struct HB_PACKED PacketMapConfigHeader {

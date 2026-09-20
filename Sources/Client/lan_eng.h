@@ -379,7 +379,7 @@
 #define	NOTIFY_MSG_HANDLER72	" You took the whole admission ticket."
 #define	NOTIFY_MSG_HANDLER73	" Your reservation of the arena {} succeeded."
 
-
+#define	NOTIFY_MSG_ITEM_LOCKED	"This item is currently in use."
 
 #define	RESERVE_FIGHTZONE_RESPONSE_HANDLER1	"You were successful on booking arena!"
 #define	RESERVE_FIGHTZONE_RESPONSE_HANDLER2	"Failed on booking arena."
@@ -716,7 +716,7 @@
 #define	UPDATE_SCREEN_ONGAME7	"Too far to give the Item."
 #define	UPDATE_SCREEN_ONGAME8	"The quantity you enter is not correct."
 #define	UPDATE_SCREEN_ONGAME9	"You entered more quantity that you can carry."
-#define	UPDATE_SCREEN_ONGAME10	"Endurance: {}/{}"
+#define	UPDATE_SCREEN_ONGAME10	"Durability: {}/{}"
 #define	UPDATE_SCREEN_ONGAME12	"Press F1 for help."
 #define	UPDATE_SCREEN_ONGAME13	"Logging out...{}"
 #define	UPDATE_SCREEN_ONGAME14	"Restarting game...{}"
@@ -822,7 +822,7 @@
 
 #define	DRAW_DIALOGBOX_EXCHANGE1	"My Item"
 #define	DRAW_DIALOGBOX_EXCHANGE2	"Quantity: {}"
-#define	DRAW_DIALOGBOX_EXCHANGE3	"Endurance: {}/{}"
+#define	DRAW_DIALOGBOX_EXCHANGE3	"Durability: {}/{}"
 #define	DRAW_DIALOGBOX_EXCHANGE5	"{}'s item"
 
 #define	DRAW_DIALOGBOX_EXCHANGE9	"Please wait until other player decides"
@@ -1117,7 +1117,7 @@
 
 
 #define	DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM1	"{} {}"
-#define	DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM2	"Endurance: {}"
+#define	DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM2	"Durability: {}"
 #define	DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM3	"Value: {} Gold"
 #define	DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM4	"Do you want to sell?"
 #define	DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM6	"Cost: {} Gold"
@@ -1132,7 +1132,7 @@
 #define	DRAW_DIALOGBOX_SHOP3	"PRICE"
 #define	DRAW_DIALOGBOX_SHOP6	"Weight"
 #define	DRAW_DIALOGBOX_SHOP7	": {} Gold"
-#define	DRAW_DIALOGBOX_SHOP8	": {} Stone"
+#define	DRAW_DIALOGBOX_SHOP8	": {:.2f} Stone"
 #define	DRAW_DIALOGBOX_SHOP9	"Damage"
 #define	DRAW_DIALOGBOX_SHOP10	"Speed(Min.~Max.)"
 #define	DRAW_DIALOGBOX_SHOP11	"*Your STR should be at least {} to use this item."
@@ -1150,6 +1150,13 @@
 #define	DRAW_DIALOGBOX_SHOP25	": above {}"
 #define	DRAW_DIALOGBOX_SHOP26	"(Warning!) Your level is too low for this item."
 #define	DRAW_DIALOGBOX_SHOP27	"Quantity:"
+#define	DRAW_DIALOGBOX_SHOP28	"Restores Hunger: {}-{}"
+#define	TOOLTIP_WEIGHT			"Weight: {:.2f} stone"
+#define	TOOLTIP_WEIGHT_STACK	"Weight: {:.2f} stones ({:.2f})"
+#define	TOOLTIP_USAGES			"Usages: {}/{}"
+#define	TOOLTIP_RESTORES_HP		"Restores HP: {}-{}"
+#define	TOOLTIP_RESTORES_MP		"Restores MP: {}-{}"
+#define	TOOLTIP_RESTORES_SP		"Restores SP: {}-{}"
 
 
 
@@ -1224,6 +1231,7 @@
 
 #define	DLGBOX_CLICK_MAGIC1	"Your hands must be free for casting magic."
 #define	DLGBOX_CLICK_MAGIC2	"Can't cast while using a skill."
+#define	DLGBOX_CLICK_MAGIC3	"Insufficient Intelligence to cast this spell."
 
 
 #define	TALKING_TO_GUILDHALL_OFFICER	"Talking to Guildhall Officer..."
@@ -1347,7 +1355,7 @@
 #define	NOTIFYMSG_ITEMDEPlETED_ERASEITEM6	"Item {}: was broken."
 
 
-#define	NOTIFYMSG_ITEMLIFE_SPANEND1	"Item {}: exhausted!"
+#define	NOTIFYMSG_ITEM_DURABILITY_END1	"Item {}: exhausted!"
 
 
 #define	NOTIFYMSG_ITEMOBTAINED1	"You got {} {}."

@@ -13,6 +13,7 @@
 #include "Packet/SharedPackets.h"
 #include "PacketSendHelpers.h"
 #include "AudioManager.h"
+#include "BalanceConstants.h"
 
 
 using namespace hb::shared::net;
@@ -119,39 +120,34 @@ void DialogBox_Bank::draw_item_details(short sX, short sY, short size_x, int ite
 	}
 
 	// Level limit
-	if (cfg->m_level_limit != 0) {
+	if (cfg->m_level_requirement != 0) {
 		loc += 15;
-		auto buf = std::format("{}: {}", DRAW_DIALOGBOX_SHOP24, cfg->m_level_limit);
+		auto buf = std::format("{}: {}", DRAW_DIALOGBOX_SHOP24, cfg->m_level_requirement);
 		put_aligned_string(sX + 70, sX + size_x, sY + loc, buf.c_str(), GameColors::UIDisabled);
 	}
 
 	// Weight for equipment (use cfg base weight, apply light attribute from item)
 	int bank_light = item->get_light_percent();
 	int eff_weight = (bank_light > 0) ? cfg->m_weight * (100 - bank_light) / 100 : cfg->m_weight;
+	int wups = hb::shared::balance::weight_units_per_stone;
 	if ((cfg->get_equip_pos() != EquipPos::None) &&
-		(eff_weight >= 1100)) {
+		(eff_weight >= hb::shared::balance::equip_str_threshold)) {
 		loc += 15;
 		int _wWeight = 0;
-		if (eff_weight % 100) _wWeight = 1;
-		auto strReq = std::format(DRAW_DIALOGBOX_SHOP15, eff_weight / 100 + _wWeight);
+		if (eff_weight % wups) _wWeight = 1;
+		auto strReq = std::format(DRAW_DIALOGBOX_SHOP15, eff_weight / wups + _wWeight);
 		put_aligned_string(sX + 70, sX + size_x, sY + loc, strReq.c_str(), GameColors::UIDisabled);
 	}
 
 	// draw item sprite
-	char item_color = item->m_item_color;
+	char item_color = item->m_instance.item_color;
 	auto bank_draw = m_game->get_item_draw(cfg->m_display_id, item_atlas::pack, cfg->sprite_is_female());
 	if (item_color == 0) {
 		bank_draw.sprite->draw(sX + 60, sY + 68, bank_draw.frame);
 	}
 	else {
-		if ((cfg->get_equip_pos() == EquipPos::LeftHand) ||
-			(cfg->get_equip_pos() == EquipPos::RightHand) ||
-			(cfg->get_equip_pos() == EquipPos::TwoHand)) {
-			bank_draw.sprite->draw(sX + 60, sY + 68, bank_draw.frame, hb::shared::sprite::DrawParams::tint(GameColors::Weapons[item_color].r, GameColors::Weapons[item_color].g, GameColors::Weapons[item_color].b));
-		}
-		else {
-			bank_draw.sprite->draw(sX + 60, sY + 68, bank_draw.frame, hb::shared::sprite::DrawParams::tint(GameColors::Items[item_color].r, GameColors::Items[item_color].g, GameColors::Items[item_color].b));
-		}
+		const auto& tint = m_game->m_color_palette[item_color];
+		bank_draw.sprite->draw(sX + 60, sY + 68, bank_draw.frame, hb::shared::sprite::DrawParams::tint(tint.r, tint.g, tint.b));
 	}
 }
 
@@ -304,9 +300,8 @@ bool DialogBox_Bank::on_item_drop()
 		return false;
 	}
 
-	if (((cfg->get_item_type() == ItemType::Consume) ||
-		(cfg->get_item_type() == ItemType::Arrow)) &&
-		(player().m_item_list[give.item_index]->m_count > 1))
+	if ((cfg->is_stackable()) &&
+		(player().m_item_list[give.item_index]->m_instance.count > 1))
 	{
 		auto* dropDlg = m_game->get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal);
 		dropDlg->m_x = mouse_x - 140;
@@ -318,7 +313,7 @@ bool DialogBox_Bank::on_item_drop()
 		dropDlg->m_drop_target_id = give.item_index;
 		std::memset(dropDlg->m_target_name, 0, sizeof(dropDlg->m_target_name));
 		m_game->get_dialog_box_manager().enable_dialog_box(DialogBoxId::ItemDropExternal, give.item_index,
-			static_cast<int64_t>(player().m_item_list[give.item_index]->m_count), 0);
+			static_cast<int64_t>(player().m_item_list[give.item_index]->m_instance.count), 0);
 	}
 	else
 	{

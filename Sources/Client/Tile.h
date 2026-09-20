@@ -9,6 +9,7 @@
 #include <string>
 #include "Appearance.h"
 #include "PlayerStatusData.h"
+#include "Item/ItemInstanceData.h"
 #include <cstdint>
 
 class CTile
@@ -31,8 +32,7 @@ public:
 		m_dead_owner_time = 0;
 
 		m_item_id = 0;
-		m_item_attr = 0;
-		m_item_color       = 0;
+		m_item.clear();
 
 		m_dynamic_object_type  = 0;
 		m_dynamic_object_frame = 0;
@@ -89,7 +89,6 @@ public:
 	uint32_t m_dynamic_object_time;
 
 	int   m_chat_msg;
-	int   m_item_color; // v1.4
 	int   m_effect_type;
 	int   m_effect_frame, m_effect_total_frame;
 	int   m_dead_chat_msg;
@@ -110,8 +109,8 @@ public:
 	short m_v3;								// +B50
 	short m_dynamic_object_type;
 
-	short m_item_id;
-	uint32_t m_item_attr;
+	int16_t m_item_id = 0;                       // Item ID (lookup key — separate from instance data)
+	hb::shared::item::item_instance_data m_item;
 
 	char  m_dead_owner_frame;
 	direction m_dead_dir;

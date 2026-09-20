@@ -17,11 +17,12 @@ class Screen_TestPrimitives : public IGameScreen
 public:
 	SCREEN_TYPE(Screen_TestPrimitives)
 
+    GameMode get_game_mode() const override { return GameMode::TestPrimitives; }
+
 	explicit Screen_TestPrimitives(CGame* game);
 	~Screen_TestPrimitives() override = default;
 
 	void on_initialize() override;
-	void on_uninitialize() override;
 	void on_update() override;
 	void on_render() override;
 

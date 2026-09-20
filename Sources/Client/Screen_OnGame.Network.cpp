@@ -1,7 +1,6 @@
 // Screen_OnGame.Network.cpp: Network message dispatch for gameplay screen
 //
 // Routes game server messages to existing handler functions.
-// Guild response handlers are owned by this screen.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -11,7 +10,6 @@
 #include "NetworkMessageManager.h"
 #include "TeleportManager.h"
 #include "ShopManager.h"
-#include "DialogBox_GuildMenu.h"
 #include "Player.h"
 #include "Packet/SharedPackets.h"
 #include "ClientMessages.h"
@@ -22,6 +20,7 @@ using namespace hb::client::net;
 
 namespace NetworkMessageHandlers {
 	void HandlePlayerCharacterContents(CGame* game, char* data);
+	void HandleServerConfigUpdate(CGame* game, char* data);
 }
 
 bool Screen_OnGame::on_game_msg(uint32_t msg_id, uint16_t msg_type, char* data, uint32_t msg_size)
@@ -30,14 +29,6 @@ bool Screen_OnGame::on_game_msg(uint32_t msg_id, uint16_t msg_type, char* data, 
 	case MsgId::Notify:
 		if (m_network_message_manager)
 			m_network_message_manager->process_message(MsgId::Notify, data, msg_size);
-		return true;
-
-	case MsgId::ResponseCreateNewGuild:
-		handle_create_new_guild_response(data);
-		return true;
-
-	case MsgId::ResponseDisbandGuild:
-		handle_disband_guild_response(data);
 		return true;
 
 	case MsgId::ResponseMotion:
@@ -68,6 +59,10 @@ bool Screen_OnGame::on_game_msg(uint32_t msg_id, uint16_t msg_type, char* data, 
 		NetworkMessageHandlers::HandlePlayerCharacterContents(m_game, data);
 		return true;
 
+	case MsgId::ServerConfigUpdate:
+		NetworkMessageHandlers::HandleServerConfigUpdate(m_game, data);
+		return true;
+
 	case MsgId::ResponseCivilRight:
 		m_game->civil_right_admission_handler(data);
 		return true;
@@ -78,10 +73,6 @@ bool Screen_OnGame::on_game_msg(uint32_t msg_id, uint16_t msg_type, char* data, 
 
 	case MsgId::ResponsePanning:
 		m_game->response_panning_handler(data);
-		return true;
-
-	case MsgId::ResponseFightZoneReserve:
-		m_game->reserve_fightzone_response_handler(data);
 		return true;
 
 	case MSGID_RESPONSE_SHOP_CONTENTS:
@@ -110,37 +101,4 @@ bool Screen_OnGame::on_game_msg(uint32_t msg_id, uint16_t msg_type, char* data, 
 	}
 
 	return false;
-}
-
-void Screen_OnGame::handle_create_new_guild_response(char* data)
-{
-	const auto* header = hb::net::PacketCast<hb::net::PacketHeader>(
-		data, sizeof(hb::net::PacketHeader));
-	if (!header) return;
-	switch (header->msg_type) {
-	case MsgType::Confirm:
-		m_game->m_player->m_guild_rank = 0;
-		get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode = DialogBox_GuildMenu::mode::guild_created;
-		break;
-	case MsgType::Reject:
-		m_game->m_player->m_guild_rank = -1;
-		get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode = DialogBox_GuildMenu::mode::create_failed;
-		break;
-	}
-}
-
-void Screen_OnGame::handle_disband_guild_response(char* data)
-{
-	const auto* header = hb::net::PacketCast<hb::net::PacketHeader>(
-		data, sizeof(hb::net::PacketHeader));
-	if (!header) return;
-	switch (header->msg_type) {
-	case MsgType::Confirm:
-		m_game->m_player->m_guild_rank = -1;
-		get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode = DialogBox_GuildMenu::mode::disband_success;
-		break;
-	case MsgType::Reject:
-		get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode = DialogBox_GuildMenu::mode::disband_failed;
-		break;
-	}
 }

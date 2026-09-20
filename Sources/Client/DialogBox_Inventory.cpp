@@ -60,11 +60,8 @@ void DialogBox_Inventory::draw_inventory_item(CItem* item, int itemIdx, int base
 	CItem* cfg = m_game->get_item_config(item->m_id_num);
 	if (cfg == nullptr) return;
 
-	char item_color = item->m_item_color;
+	char item_color = item->m_instance.item_color;
 	bool disabled = inventory_manager::get().is_locked(itemIdx);
-	bool is_weapon = (cfg->get_equip_pos() == EquipPos::LeftHand) ||
-	                 (cfg->get_equip_pos() == EquipPos::RightHand) ||
-	                 (cfg->get_equip_pos() == EquipPos::TwoHand);
 
 	int drawX = baseX + ITEM_OFFSET_X + item->m_x;
 	int drawY = baseY + ITEM_OFFSET_Y + item->m_y;
@@ -73,8 +70,8 @@ void DialogBox_Inventory::draw_inventory_item(CItem* item, int itemIdx, int base
 	int16_t frame = inv_draw.frame;
 	uint32_t time = m_game->m_cur_time;
 
-	// Select color arrays (weapons use different color set)
-	const hb::shared::render::Color* colors = is_weapon ? GameColors::Weapons : GameColors::Items;
+	// Unified color palette — index already encodes correct color for weapons and armor
+	const auto* colors = m_game->m_color_palette.data();
 
 	if (item_color == 0)
 	{
@@ -98,10 +95,10 @@ void DialogBox_Inventory::draw_inventory_item(CItem* item, int itemIdx, int base
 	}
 
 	// Show item count for consumables and arrows
-	if ((cfg->get_item_type() == ItemType::Consume) || (cfg->get_item_type() == ItemType::Arrow))
+	if (cfg->is_stackable())
 	{
 		std::string countBuf;
-		countBuf = m_game->format_comma_number(item->m_count);
+		countBuf = m_game->format_comma_number(item->m_instance.count);
 		hb::shared::text::draw_text(GameFont::Default, baseX + COUNT_OFFSET_X + item->m_x, baseY + COUNT_OFFSET_Y + item->m_y, countBuf.c_str(), hb::shared::text::TextStyle::with_shadow(GameColors::UIDescription));
 	}
 }
@@ -198,9 +195,9 @@ bool DialogBox_Inventory::on_click()
 				if (item == nullptr) continue;
 				CItem* cfg = m_game->get_item_config(item->m_id_num);
 				if (cfg != nullptr &&
-				    cfg->get_item_type() == ItemType::UseSkillEnableDialogBox &&
+				    cfg->get_item_type() == hb::shared::item::item_type::tool &&
 				    item->m_id_num == 236 &&
-				    item->m_cur_life_span > 0)
+				    item->m_instance.cur_durability > 0)
 				{
 					enable_dialog_box(DialogBoxId::Manufacture, 3, 0, 0);
 					add_event_list(BDLBBOX_DOUBLE_CLICK_INVENTORY12, 10);
@@ -277,18 +274,17 @@ bool DialogBox_Inventory::on_double_click()
 		return true;
 	}
 
-	// Handle consumable/depletable items
-	if (cfg->get_item_type() == ItemType::UseDeplete ||
-		cfg->get_item_type() == ItemType::UsePerm ||
-		cfg->get_item_type() == ItemType::Arrow ||
-		cfg->get_item_type() == ItemType::Eat)
+	// Handle consumable/depletable items (excludes target sub-type which uses pointing mode instead)
+	if ((cfg->get_item_type() == hb::shared::item::item_type::consumable ||
+		cfg->get_item_sub_type() == hb::shared::item::item_sub_type::ammo) &&
+		cfg->get_item_sub_type() != hb::shared::item::item_sub_type::target)
 	{
 		if (!inventory_manager::get().check_item_operation_enabled(item_id)) return true;
 
 		// Check damage cooldown for scrolls
 		if ((m_game->m_cur_time - m_game->m_damaged_time) < 10000)
 		{
-			if (cfg->m_item_effect_type == hb::shared::item::to_int(hb::shared::item::ItemEffectType::ShowLocation))
+			if (cfg->get_item_effect_type() == hb::shared::item::ItemEffectType::ShowLocation)
 			{
 				std::string G_cTxt;
 				G_cTxt = std::format(BDLBBOX_DOUBLE_CLICK_INVENTORY3, itemInfo.name.c_str());
@@ -303,8 +299,7 @@ bool DialogBox_Inventory::on_double_click()
 			send_game_packet(pkt);
 		}
 
-		if (cfg->get_item_type() == ItemType::UseDeplete ||
-			cfg->get_item_type() == ItemType::Eat)
+		if (cfg->get_item_type() == hb::shared::item::item_type::consumable)
 		{
 			inventory_manager::get().lock_item(item_id);
 			m_game->on_game()->m_item_using_status = true;
@@ -312,7 +307,7 @@ bool DialogBox_Inventory::on_double_click()
 	}
 
 	// Handle skill items (pointing mode)
-	if (cfg->get_item_type() == ItemType::UseSkill)
+	if (cfg->get_item_type() == hb::shared::item::item_type::tool && cfg->get_item_sub_type() != hb::shared::item::item_sub_type::target && cfg->get_item_sub_type() != hb::shared::item::item_sub_type::crafting)
 	{
 		if (m_game->is_item_on_hand())
 		{
@@ -324,7 +319,7 @@ bool DialogBox_Inventory::on_double_click()
 			add_event_list(BDLBBOX_DOUBLE_CLICK_INVENTORY5, 10);
 			return true;
 		}
-		if (player().m_item_list[item_id]->m_cur_life_span == 0)
+		if (player().m_item_list[item_id]->m_instance.cur_durability == 0)
 		{
 			add_event_list(BDLBBOX_DOUBLE_CLICK_INVENTORY6, 10);
 		}
@@ -339,7 +334,7 @@ bool DialogBox_Inventory::on_double_click()
 	}
 
 	// Handle deplete-dest items (use on other items)
-	if (cfg->get_item_type() == ItemType::UseDepleteDest)
+	if (cfg->get_item_sub_type() == hb::shared::item::item_sub_type::target)
 	{
 		if (m_game->is_item_on_hand())
 		{
@@ -351,7 +346,7 @@ bool DialogBox_Inventory::on_double_click()
 			add_event_list(BDLBBOX_DOUBLE_CLICK_INVENTORY13, 10);
 			return true;
 		}
-		if (player().m_item_list[item_id]->m_cur_life_span == 0)
+		if (player().m_item_list[item_id]->m_instance.cur_durability == 0)
 		{
 			add_event_list(BDLBBOX_DOUBLE_CLICK_INVENTORY6, 10);
 		}
@@ -366,7 +361,7 @@ bool DialogBox_Inventory::on_double_click()
 	}
 
 	// Handle skill items that enable dialog boxes (alchemy pot, anvil, crafting, slates)
-	if (cfg->get_item_type() == ItemType::UseSkillEnableDialogBox)
+	if (cfg->get_item_sub_type() == hb::shared::item::item_sub_type::crafting)
 	{
 		if (m_game->is_item_on_hand())
 		{
@@ -378,7 +373,7 @@ bool DialogBox_Inventory::on_double_click()
 			add_event_list(BDLBBOX_DOUBLE_CLICK_INVENTORY5, 10);
 			return true;
 		}
-		if (player().m_item_list[item_id]->m_cur_life_span == 0)
+		if (player().m_item_list[item_id]->m_instance.cur_durability == 0)
 		{
 			add_event_list(BDLBBOX_DOUBLE_CLICK_INVENTORY6, 10);
 		}
@@ -430,7 +425,7 @@ bool DialogBox_Inventory::on_double_click()
 	}
 
 	// Auto-equip equipment items
-	if (cfg->get_item_type() == ItemType::Equip)
+	if (cfg->get_item_type() == hb::shared::item::item_type::equipment)
 	{
 		CursorTarget::set_selection(SelectedObjectType::Item, static_cast<short>(item_id), 0, 0);
 		m_game->get_dialog_box_manager().get_dialog_box(DialogBoxId::CharacterInfo)->on_item_drop();
@@ -495,7 +490,7 @@ PressResult DialogBox_Inventory::on_press()
 				{
 					CItem* point_cfg = m_game->get_item_config(player().m_item_list[m_game->on_game()->m_point_command_type]->m_id_num);
 					if (point_cfg != nullptr &&
-						point_cfg->get_item_type() == ItemType::UseDepleteDest)
+						point_cfg->get_item_sub_type() == hb::shared::item::item_sub_type::target)
 					{
 						m_game->point_command_handler(0, 0, item_id);
 						m_game->on_game()->m_is_get_pointing_mode = false;
@@ -532,7 +527,7 @@ bool DialogBox_Inventory::on_item_drop()
 		add_event_list(BITEMDROP_INVENTORY1, 10);
 		return false;
 	}
-	if (inventory_manager::get().is_locked(selected_id)) return false;
+	if (inventory_manager::get().warn_if_locked(selected_id)) return false;
 
 	// Calculate new position in inventory grid
 	short sX = m_x;
@@ -588,37 +583,23 @@ bool DialogBox_Inventory::on_item_drop()
 			}
 	}
 
-	// If item was equipped, unequip it
+	// If item was equipped, unequip it — server will send Notify::ItemReleased with message + sound
 	if (m_game->m_is_item_equipped[selected_id])
 	{
 		CItem* cfg = m_game->get_item_config(player().m_item_list[selected_id]->m_id_num);
 		if (cfg == nullptr) return false;
 
-		std::string txt;
-		auto itemInfo2 = item_name_formatter::get().format(player().m_item_list[selected_id].get());
-		txt = std::format(ITEM_EQUIPMENT_RELEASED, itemInfo2.name.c_str());
-		add_event_list(txt.c_str(), 10);
-
-		{
-			short id = player().m_item_list[selected_id]->m_id_num;
-			if (id == hb::shared::item::ItemId::AngelicPandentSTR || id == hb::shared::item::ItemId::AngelicPandentDEX ||
-				id == hb::shared::item::ItemId::AngelicPandentINT || id == hb::shared::item::ItemId::AngelicPandentMAG)
-				audio_manager::get().play_game_sound(sound_type::effect, 53, 0);
-			else
-				audio_manager::get().play_game_sound(sound_type::effect, 29, 0);
-		}
-
 		// Remove Angelic Stats
-		if (cfg->m_equip_pos >= 11 &&
-			cfg->get_item_type() == ItemType::Equip)
+		if (cfg->get_equip_pos() >= EquipPos::LeftFinger &&
+			cfg->get_item_type() == hb::shared::item::item_type::equipment)
 		{
-			if (player().m_item_list[selected_id]->m_id_num == hb::shared::item::ItemId::AngelicPandentSTR)
+			if (player().m_item_list[selected_id]->m_id_num == hb::shared::item::ItemId::AngelicPendantSTR)
 				player().m_angelic_str = 0;
-			else if (player().m_item_list[selected_id]->m_id_num == hb::shared::item::ItemId::AngelicPandentDEX)
+			else if (player().m_item_list[selected_id]->m_id_num == hb::shared::item::ItemId::AngelicPendantDEX)
 				player().m_angelic_dex = 0;
-			else if (player().m_item_list[selected_id]->m_id_num == hb::shared::item::ItemId::AngelicPandentINT)
+			else if (player().m_item_list[selected_id]->m_id_num == hb::shared::item::ItemId::AngelicPendantINT)
 				player().m_angelic_int = 0;
-			else if (player().m_item_list[selected_id]->m_id_num == hb::shared::item::ItemId::AngelicPandentMAG)
+			else if (player().m_item_list[selected_id]->m_id_num == hb::shared::item::ItemId::AngelicPendantMAG)
 				player().m_angelic_mag = 0;
 		}
 

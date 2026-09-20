@@ -82,7 +82,9 @@ public:
 	int  m_hp, m_max_hp;						// Hit Point 
 	uint32_t  m_exp;                    // ? ? . ExpDice  .
 
-	int  m_hit_dice;				// Hit Dice.   HP .
+	int  m_hp_min;
+	int  m_hp_max;
+	int  m_hold_resist;
 	int  m_defense_ratio;			// Defense Ratio
 	int  m_hit_ratio;				// HitRatio
 	int  m_magic_hit_ratio;
@@ -97,9 +99,9 @@ public:
 	char m_action_limit;            // 1 Move   .    2    . 3 Dummy.  ,
 
 	char m_size;					// 0: Small-Medium 1: Large
-	char m_attack_dice_throw;
-	char m_attack_dice_range;
-	char m_attack_bonus;
+	int m_min_damage;
+	int m_max_damage;
+	int m_attack_bonus;
 	char m_bravery;
 	char m_resist_magic;
 	char m_magic_level;
@@ -171,8 +173,7 @@ case 8:  "Hi-Explosive"
 	int	  m_build_count;			// ?      .  m_min_bravery.
 	int   m_mana_stock;
 	bool  m_is_master;
-	int   m_guild_guid;
-	
+
 	char m_crop_type;
 	char m_crop_skill;
 

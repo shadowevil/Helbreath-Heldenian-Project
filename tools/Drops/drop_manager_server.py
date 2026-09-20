@@ -17,8 +17,16 @@ from urllib.parse import urlparse, parse_qs
 import os
 
 PORT = 8888
-DB_PATH = Path(__file__).parent / '../../Binaries/Server/gameconfigs.db'
+DB_PATH = Path(__file__).parent / '../../Binaries/Server/gamedata.db'
+CONFIG_PATH = Path(__file__).parent / '../../Binaries/Server/server_config.json'
 CHANGELOG_PATH = Path(__file__).parent / 'changelog.txt'
+
+# Maps frontend setting keys to server_config.json paths
+_SETTING_TO_CONFIG = {
+    "primary-drop-rate": "primary",
+    "gold-drop-rate": "gold",
+    "secondary-drop-rate": "secondary",
+}
 
 
 class ReuseAddrTCPServer(socketserver.TCPServer):
@@ -94,74 +102,83 @@ class DropManagerHandler(http.server.SimpleHTTPRequestHandler):
         return sqlite3.connect(str(DB_PATH.resolve()))
     
     def get_items(self):
-        conn = self.get_conn()
-        cursor = conn.cursor()
-        cursor.execute("SELECT item_id, name FROM items ORDER BY name")
-        items = [{"id": row[0], "name": row[1]} for row in cursor.fetchall()]
-        conn.close()
-        return items
+        try:
+            conn = self.get_conn()
+            cursor = conn.cursor()
+            cursor.execute("SELECT item_id, name FROM items ORDER BY name")
+            items = [{"id": row[0], "name": row[1]} for row in cursor.fetchall()]
+            conn.close()
+            return items
+        except sqlite3.OperationalError:
+            return []
     
     def get_npcs(self):
-        conn = self.get_conn()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT dt.drop_table_id, dt.name, dt.description
-            FROM drop_tables dt
-            ORDER BY dt.drop_table_id
-        """)
-        npcs = []
-        for row in cursor.fetchall():
-            # Strip 'drops_' prefix for cleaner display
-            name = row[1]
-            if name.startswith('drops_'):
-                name = name[6:]  # Remove 'drops_' prefix
-            npcs.append({"id": row[0], "name": name, "description": row[2]})
-        conn.close()
-        return npcs
+        try:
+            conn = self.get_conn()
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT dt.drop_table_id, dt.name, dt.description
+                FROM drop_tables dt
+                ORDER BY dt.drop_table_id
+            """)
+            npcs = []
+            for row in cursor.fetchall():
+                # Strip 'drops_' prefix for cleaner display
+                name = row[1]
+                if name.startswith('drops_'):
+                    name = name[6:]  # Remove 'drops_' prefix
+                npcs.append({"id": row[0], "name": name, "description": row[2]})
+            conn.close()
+            return npcs
+        except sqlite3.OperationalError:
+            return []
     
     def get_drops(self):
-        conn = self.get_conn()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT de.drop_table_id, de.tier, de.item_id, de.weight, de.min_count, de.max_count, i.name
-            FROM drop_entries de
-            LEFT JOIN items i ON de.item_id = i.item_id
-            ORDER BY de.drop_table_id, de.tier, de.weight DESC
-        """)
-        drops = []
-        for row in cursor.fetchall():
-            item_id = row[2]
-            item_name = row[6]
-            if item_id == 0:
-                item_name = "Nothing"
-            elif not item_name:
-                item_name = f"Unknown({item_id})"
-                
-            drops.append({
-                "drop_table_id": row[0],
-                "tier": row[1],
-                "item_id": item_id,
-                "weight": row[3],
-                "min_count": row[4],
-                "max_count": row[5],
-                "item_name": item_name
-            })
-        conn.close()
-        return drops
+        try:
+            conn = self.get_conn()
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT de.drop_table_id, de.tier, de.item_id, de.weight, de.min_count, de.max_count, i.name
+                FROM drop_entries de
+                LEFT JOIN items i ON de.item_id = i.item_id
+                ORDER BY de.drop_table_id, de.tier, de.weight DESC
+            """)
+            drops = []
+            for row in cursor.fetchall():
+                item_id = row[2]
+                item_name = row[6]
+                if item_id == 0:
+                    item_name = "Nothing"
+                elif not item_name:
+                    item_name = f"Unknown({item_id})"
+
+                drops.append({
+                    "drop_table_id": row[0],
+                    "tier": row[1],
+                    "item_id": item_id,
+                    "weight": row[3],
+                    "min_count": row[4],
+                    "max_count": row[5],
+                    "item_name": item_name
+                })
+            conn.close()
+            return drops
+        except sqlite3.OperationalError:
+            return []
     
     def get_config(self):
-        conn = self.get_conn()
-        cursor = conn.cursor()
-        
-        # Get settings
-        cursor.execute("SELECT key, value FROM settings")
-        settings = {row[0]: row[1] for row in cursor.fetchall()}
-        
-        conn.close()
-        return {
-            "settings": settings,
-            "global_drops": []
-        }
+        """Read drop rate settings from server_config.json."""
+        settings = {}
+        try:
+            with open(str(CONFIG_PATH.resolve()), 'r', encoding='utf-8') as f:
+                cfg = json.load(f)
+            rates = cfg.get("drop_rates", {})
+            for setting_key, config_key in _SETTING_TO_CONFIG.items():
+                if config_key in rates:
+                    settings[setting_key] = str(rates[config_key])
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass
+        return {"settings": settings, "global_drops": []}
     
     def add_drop(self, data):
         try:
@@ -223,32 +240,33 @@ class DropManagerHandler(http.server.SimpleHTTPRequestHandler):
             return {"success": False, "error": str(e)}
     
     def update_settings(self, data):
-        """Update settings in the database and log to changelog"""
+        """Update drop rate settings in server_config.json and log to changelog."""
         try:
-            conn = self.get_conn()
-            cursor = conn.cursor()
-            
+            config_file = str(CONFIG_PATH.resolve())
+            with open(config_file, 'r', encoding='utf-8') as f:
+                cfg = json.load(f)
+
+            rates = cfg.setdefault("drop_rates", {})
             changes = []
             for key, value in data.items():
-                # Get old value
-                cursor.execute("SELECT value FROM settings WHERE key = ?", (key,))
-                row = cursor.fetchone()
-                old_value = row[0] if row else 'N/A'
-                
-                # Update or insert
-                cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", (key, str(value)))
-                changes.append(f"  {key}: {old_value} → {value}")
-            
-            conn.commit()
-            conn.close()
-            
+                config_key = _SETTING_TO_CONFIG.get(key)
+                if not config_key:
+                    continue
+                old_value = rates.get(config_key, 'N/A')
+                rates[config_key] = float(value)
+                changes.append(f"  {key}: {old_value} -> {value}")
+
+            with open(config_file, 'w', encoding='utf-8') as f:
+                json.dump(cfg, f, indent='\t', ensure_ascii=False)
+                f.write('\n')
+
             # Auto-log to changelog
             if changes:
                 from datetime import datetime
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 entry = f"[{timestamp}] Settings updated:\n" + "\n".join(changes) + "\n\n"
                 self._append_changelog(entry)
-            
+
             return {"success": True}
         except Exception as e:
             return {"success": False, "error": str(e)}

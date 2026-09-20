@@ -45,7 +45,13 @@ namespace net {
 	struct HB_PACKED PacketMapDataItem {
 		std::int16_t item_id;
 		std::uint8_t color;
-		std::uint32_t attribute;
+		std::uint8_t custom_made;
+		std::uint8_t prefix_type;
+		std::uint8_t prefix_value;
+		std::uint8_t secondary_type;
+		std::uint8_t secondary_value;
+		std::uint8_t enchant_bonus;
+		std::int16_t count;
 	};
 
 	struct HB_PACKED PacketMapDataDynamicObject {

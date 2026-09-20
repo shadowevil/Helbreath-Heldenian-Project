@@ -14,7 +14,6 @@ namespace hb::shared::limits
 	constexpr int AccountNameLen       = 11;   // 10 chars + null (wire size is 10)
 	constexpr int AccountPassLen       = 11;   // 10 chars + null (wire size is 10)
 	constexpr int AccountEmailLen      = 51;   // 50 chars + null
-	constexpr int GuildNameLen         = 21;   // 20 chars + null
 	constexpr int MapNameLen           = 11;   // 10 chars + null
 	constexpr int MapDisplayNameLen    = 31;   // 30 chars + null
 	constexpr int MaxMagicType         = 100;
@@ -23,7 +22,6 @@ namespace hb::shared::limits
 	constexpr int PlayerMaxLevel       = 180;
 	constexpr int MaxItems             = 50;
 	constexpr int MaxBankItems         = 1000;
-	constexpr int MaxGuildsmen         = 128;
 	constexpr int MaxBuildItems        = 300;
 	constexpr int MaxPartyMembers      = 9;
 	constexpr int MaxCharactersPerAccount = 4;

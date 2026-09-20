@@ -10,7 +10,6 @@
 #include "ItemManager.h"
 #include "MagicManager.h"
 #include "SkillManager.h"
-#include "GuildManager.h"
 #include "QuestManager.h"
 #include "LootManager.h"
 #include "Packet/SharedPackets.h"
@@ -313,7 +312,6 @@ void WarManager::select_crusade_duty_handler(int client_h, int duty)
 {
 
 	if (m_game->m_client_list[client_h] == 0) return;
-	if ((m_game->m_client_list[client_h]->m_guild_rank != 0) && (duty == 3)) return;
 
 	if (m_game->m_last_crusade_winner == m_game->m_client_list[client_h]->m_side &&
 		m_game->m_client_list[client_h]->m_crusade_guid == 0 && duty == 3) {
@@ -479,7 +477,7 @@ void WarManager::check_commander_construction_point(int client_h)
 	case 2:
 		for(int i = 0; i < MaxClients; i++)
 			if ((m_game->m_client_list[i] != 0) && (m_game->m_client_list[i]->m_crusade_duty == 3) &&
-				(m_game->m_client_list[i]->m_guild_guid == m_game->m_client_list[client_h]->m_guild_guid)) {
+				(m_game->m_client_list[i]->m_side == m_game->m_client_list[client_h]->m_side)) {
 				m_game->m_client_list[i]->m_construction_point += m_game->m_client_list[client_h]->m_construction_point;
 				m_game->m_client_list[i]->m_war_contribution += (m_game->m_client_list[client_h]->m_construction_point / 10);
 
@@ -944,20 +942,7 @@ void WarManager::map_status_handler(int client_h, int mode, const char* map_name
 
 	switch (mode) {
 	case 1:
-		if (m_game->m_client_list[client_h]->m_crusade_duty == 0) return;
-
-		for(int i = 0; i < MaxGuilds; i++)
-			if ((m_game->m_guild_teleport_loc[i].m_v1 != 0) && (m_game->m_guild_teleport_loc[i].m_v1 == m_game->m_client_list[client_h]->m_guild_guid)) {
-				m_game->send_notify_msg(0, client_h, Notify::TcLoc, m_game->m_guild_teleport_loc[i].m_dest_x, m_game->m_guild_teleport_loc[i].m_dest_y,
-					0, m_game->m_guild_teleport_loc[i].m_dest_map_name, m_game->m_guild_teleport_loc[i].m_dest_x2, m_game->m_guild_teleport_loc[i].m_dest_y2,
-					0, 0, 0, 0, m_game->m_guild_teleport_loc[i].m_dest_map_name2);
-				std::memset(m_game->m_client_list[client_h]->m_construct_map_name, 0, sizeof(m_game->m_client_list[client_h]->m_construct_map_name));
-				memcpy(m_game->m_client_list[client_h]->m_construct_map_name, m_game->m_guild_teleport_loc[i].m_dest_map_name2, 10);
-				m_game->m_client_list[client_h]->m_construct_loc_x = m_game->m_guild_teleport_loc[i].m_dest_x2;
-				m_game->m_client_list[client_h]->m_construct_loc_y = m_game->m_guild_teleport_loc[i].m_dest_y2;
-				return;
-			}
-
+		// Guild teleport locations removed
 		break;
 
 	case 3:
@@ -1189,39 +1174,7 @@ void WarManager::request_summon_war_unit_handler(int client_h, int dX, int dY, c
 			case 37:
 			case 38:
 			case 39:
-				if (strcmp(m_game->m_client_list[client_h]->m_construct_map_name, m_game->m_client_list[client_h]->m_map_name) != 0) ret = true;
-				if (abs(m_game->m_client_list[client_h]->m_x - m_game->m_client_list[client_h]->m_construct_loc_x) > 10) ret = true;
-				if (abs(m_game->m_client_list[client_h]->m_y - m_game->m_client_list[client_h]->m_construct_loc_y) > 10) ret = true;
-
-				if (ret) {
-					m_game->m_map_list[m_game->m_client_list[client_h]->m_map_index]->set_naming_value_empty(naming_value);
-					m_game->send_notify_msg(0, client_h, Notify::cannot_construct, 2, 0, 0, 0);
-					return;
-				}
-
-				{
-					bool found = false;
-					for(int i = 0; i < MaxGuilds; i++)
-						if (m_game->m_guild_teleport_loc[i].m_v1 == m_game->m_client_list[client_h]->m_guild_guid) {
-							m_game->m_guild_teleport_loc[i].m_time = time;
-							if (m_game->m_guild_teleport_loc[i].m_v2 >= MaxConstructNum) {
-								m_game->m_map_list[m_game->m_client_list[client_h]->m_map_index]->set_naming_value_empty(naming_value);
-								m_game->send_notify_msg(0, client_h, Notify::cannot_construct, 3, 0, 0, 0);
-								return;
-							}
-							else {
-								m_game->m_guild_teleport_loc[i].m_v2++;
-								found = true;
-								break;
-							}
-						}
-
-					if (!found) {
-						m_game->m_map_list[m_game->m_client_list[client_h]->m_map_index]->set_naming_value_empty(naming_value);
-						m_game->send_notify_msg(0, client_h, Notify::cannot_construct, 3, 0, 0, 0);
-						return;
-					}
-				}
+				// Guild construct location checks removed
 				break;
 			case 43:
 			case 44:
@@ -1269,10 +1222,10 @@ void WarManager::request_summon_war_unit_handler(int client_h, int dX, int dY, c
 
 			int npc_config_id = m_game->get_npc_config_id_by_name(npc_name);
 			if (mode == 0) {
-				ret = m_game->create_new_npc(npc_config_id, name, m_game->m_map_list[m_game->m_client_list[client_h]->m_map_index]->m_name, 0, 0, MoveType::Follow, &tX, &tY, npc_way_point, 0, 0, -1, false, false, false, false, m_game->m_client_list[client_h]->m_guild_guid);
+				ret = m_game->create_new_npc(npc_config_id, name, m_game->m_map_list[m_game->m_client_list[client_h]->m_map_index]->m_name, 0, 0, MoveType::Follow, &tX, &tY, npc_way_point, 0, 0, -1, false, false, false, false);
 				if (m_game->m_entity_manager != 0) m_game->m_entity_manager->set_npc_follow_mode(name, m_game->m_client_list[client_h]->m_char_name, hb::shared::owner_class::Player);
 			}
-			else ret = m_game->create_new_npc(npc_config_id, name, m_game->m_map_list[m_game->m_client_list[client_h]->m_map_index]->m_name, 0, 0, MoveType::Guard, &tX, &tY, npc_way_point, 0, 0, -1, false, false, false, false, m_game->m_client_list[client_h]->m_guild_guid);
+			else ret = m_game->create_new_npc(npc_config_id, name, m_game->m_map_list[m_game->m_client_list[client_h]->m_map_index]->m_name, 0, 0, MoveType::Guard, &tX, &tY, npc_way_point, 0, 0, -1, false, false, false, false);
 
 			if (ret == false) {
 				// NameValue .
@@ -1289,230 +1242,17 @@ void WarManager::request_summon_war_unit_handler(int client_h, int dX, int dY, c
 
 void WarManager::request_guild_teleport_handler(int client_h)
 {
-	
-	char map_name[11];
-
-	if (m_game->m_client_list[client_h] == 0) return;
-	if (m_game->m_client_list[client_h]->m_locked_map_time != 0) {
-		m_game->send_notify_msg(0, client_h, Notify::LockedMap, m_game->m_client_list[client_h]->m_locked_map_time, 0, 0, m_game->m_client_list[client_h]->m_locked_map_name);
-		return;
-	}
-
-	// if a guild teleport is set when its not a crusade, log the hacker
-	if (!m_game->m_is_crusade_mode) {
-		try
-		{
-			hb::logger::warn<log_channel::security>("Crusade teleport hack: IP={} player={}, setting teleport while crusade disabled", m_game->m_client_list[client_h]->m_ip_address, m_game->m_client_list[client_h]->m_char_name);
-			m_game->delete_client(client_h, true, true);
-		}
-		catch (...)
-		{
-		}
-		return;
-	}
-
-	// if a player is using guild teleport and he is not in a guild, log the hacker
-	if (m_game->m_client_list[client_h]->m_crusade_duty == 0) {
-		try
-		{
-			hb::logger::warn<log_channel::security>("Crusade teleport hack: IP={} player={}, teleporting without guild", m_game->m_client_list[client_h]->m_ip_address, m_game->m_client_list[client_h]->m_char_name);
-			m_game->delete_client(client_h, true, true);
-		}
-		catch (...)
-		{
-		}
-		return;
-	}
-
-	if ((m_game->m_client_list[client_h]->m_map_index == m_game->m_middleland_map_index) &&
-		m_game->m_middleland_map_index != -1)
-		return;
-
-	for(int i = 0; i < MaxGuilds; i++)
-		if (m_game->m_guild_teleport_loc[i].m_v1 == m_game->m_client_list[client_h]->m_guild_guid) {
-			std::memset(map_name, 0, sizeof(map_name));
-			strcpy(map_name, m_game->m_guild_teleport_loc[i].m_dest_map_name);
-
-			//testcode
-			hb::logger::log("ReqGuildTeleport: {} {} {} {}", m_game->m_client_list[client_h]->m_guild_guid, m_game->m_guild_teleport_loc[i].m_dest_x, m_game->m_guild_teleport_loc[i].m_dest_y, map_name);
-
-			// !!! request_teleport_handler m_map_name
-			m_game->request_teleport_handler(client_h, "2   ", map_name, m_game->m_guild_teleport_loc[i].m_dest_x, m_game->m_guild_teleport_loc[i].m_dest_y);
-			return;
-		}
-
-	switch (m_game->m_client_list[client_h]->m_side) {
-	case 1:
-		break;
-	case 2:
-		break;
-	}
+	// Guild teleport system removed
 }
 
-void WarManager::request_set_guild_teleport_loc_handler(int client_h, int dX, int dY, int guild_guid, const char* map_name)
+void WarManager::request_set_guild_teleport_loc_handler(int, int, int, int, const char*)
 {
-	
-	int index;
-	uint32_t temp, time;
-
-	if (m_game->m_client_list[client_h] == 0) return;
-	if (m_game->m_client_list[client_h]->m_is_on_server_change) return;
-
-	// if a player is teleporting and its not a crusade, log the hacker
-	if (!m_game->m_is_crusade_mode) {
-		try
-		{
-			hb::logger::warn<log_channel::security>("Crusade teleport hack: IP={} player={}, setting point outside crusade", m_game->m_client_list[client_h]->m_ip_address, m_game->m_client_list[client_h]->m_char_name);
-			m_game->delete_client(client_h, true, true);
-		}
-		catch (...)
-		{
-
-		}
-		return;
-	}
-
-	// if a player is teleporting and its not a crusade, log the hacker
-	if (m_game->m_client_list[client_h]->m_crusade_duty != 3) {
-		try
-		{
-			hb::logger::warn<log_channel::security>("Crusade teleport hack: IP={} player={}, setting point as non-guildmaster", m_game->m_client_list[client_h]->m_ip_address, m_game->m_client_list[client_h]->m_char_name);
-			m_game->delete_client(client_h, true, true);
-		}
-		catch (...)
-		{
-
-		}
-		return;
-	}
-
-	if (dY < 100) dY = 100;
-	if (dY > 600) dY = 600;
-
-	time = GameClock::GetTimeMS();
-
-	//testcode
-	hb::logger::log("SetGuildTeleportLoc: {} {} {} {}", guild_guid, map_name, dX, dY);
-
-	// GUID       .
-	for(int i = 0; i < MaxGuilds; i++)
-		if (m_game->m_guild_teleport_loc[i].m_v1 == guild_guid) {
-			if ((m_game->m_guild_teleport_loc[i].m_dest_x == dX) && (m_game->m_guild_teleport_loc[i].m_dest_y == dY) && (strcmp(m_game->m_guild_teleport_loc[i].m_dest_map_name, map_name) == 0)) {
-				m_game->m_guild_teleport_loc[i].m_time = time;
-				return;
-			}
-			else {
-				m_game->m_guild_teleport_loc[i].m_dest_x = dX;
-				m_game->m_guild_teleport_loc[i].m_dest_y = dY;
-				std::memset(m_game->m_guild_teleport_loc[i].m_dest_map_name, 0, sizeof(m_game->m_guild_teleport_loc[i].m_dest_map_name));
-				strcpy(m_game->m_guild_teleport_loc[i].m_dest_map_name, map_name);
-				m_game->m_guild_teleport_loc[i].m_time = time;
-				return;
-			}
-		}
-
-	temp = 0;
-	index = -1;
-	for(int i = 0; i < MaxGuilds; i++) {
-		if (m_game->m_guild_teleport_loc[i].m_v1 == 0) {
-
-			m_game->m_guild_teleport_loc[i].m_v1 = guild_guid;
-			m_game->m_guild_teleport_loc[i].m_dest_x = dX;
-			m_game->m_guild_teleport_loc[i].m_dest_y = dY;
-			std::memset(m_game->m_guild_teleport_loc[i].m_dest_map_name, 0, sizeof(m_game->m_guild_teleport_loc[i].m_dest_map_name));
-			strcpy(m_game->m_guild_teleport_loc[i].m_dest_map_name, map_name);
-			m_game->m_guild_teleport_loc[i].m_time = time;
-			return;
-		}
-		else {
-			if (temp < (time - m_game->m_guild_teleport_loc[i].m_time)) {
-				temp = (time - m_game->m_guild_teleport_loc[i].m_time);
-				index = i;
-			}
-		}
-	}
-
-	// .         (index)   .
-	if (index == -1) return;
-
-	////testcode
-	//PutLogList("(X) No more GuildTeleportLoc Space! Replaced.");
-
-	//m_game->m_guild_teleport_loc[i].m_v1 = guild_guid;
-	//m_game->m_guild_teleport_loc[i].m_dest_x = dX;
-	//m_game->m_guild_teleport_loc[i].m_dest_y = dY;
-	//std::memset(m_game->m_guild_teleport_loc[i].m_dest_map_name, 0, sizeof(m_game->m_guild_teleport_loc[i].m_dest_map_name));
-	//strcpy(m_game->m_guild_teleport_loc[i].m_dest_map_name, map_name);
-	//m_game->m_guild_teleport_loc[i].m_time = time;
+	// Guild teleport system removed
 }
 
-void WarManager::request_set_guild_construct_loc_handler(int client_h, int dX, int dY, int guild_guid, const char* map_name)
+void WarManager::request_set_guild_construct_loc_handler(int, int, int, int, const char*)
 {
-	int index;
-	uint32_t temp, time;
-
-	if (m_game->m_client_list[client_h] == 0) return;
-	if (m_game->m_client_list[client_h]->m_is_on_server_change) return;
-
-	time = GameClock::GetTimeMS();
-
-	//testcode
-	hb::logger::log("SetGuildConstructLoc: {} {} {} {}", guild_guid, map_name, dX, dY);
-
-	// GUID       .
-	for(int i = 0; i < MaxGuilds; i++)
-	{
-		if (m_game->m_guild_teleport_loc[i].m_v1 == guild_guid) {
-			if ((m_game->m_guild_teleport_loc[i].m_dest_x2 == dX) && (m_game->m_guild_teleport_loc[i].m_dest_y2 == dY) && (strcmp(m_game->m_guild_teleport_loc[i].m_dest_map_name2, map_name) == 0)) {
-				m_game->m_guild_teleport_loc[i].m_time2 = time;
-				return;
-			}
-			else {
-				m_game->m_guild_teleport_loc[i].m_dest_x2 = dX;
-				m_game->m_guild_teleport_loc[i].m_dest_y2 = dY;
-				std::memset(m_game->m_guild_teleport_loc[i].m_dest_map_name2, 0, sizeof(m_game->m_guild_teleport_loc[i].m_dest_map_name2));
-				strcpy(m_game->m_guild_teleport_loc[i].m_dest_map_name2, map_name);
-				m_game->m_guild_teleport_loc[i].m_time2 = time;
-				return;
-			}
-		}
-	}
-
-	temp = 0;
-	index = -1;
-	for(int i = 0; i < MaxGuilds; i++) {
-		{
-			if (m_game->m_guild_teleport_loc[i].m_v1 == 0) {
-
-				m_game->m_guild_teleport_loc[i].m_v1 = guild_guid;
-				m_game->m_guild_teleport_loc[i].m_dest_x2 = dX;
-				m_game->m_guild_teleport_loc[i].m_dest_y2 = dY;
-				std::memset(m_game->m_guild_teleport_loc[i].m_dest_map_name2, 0, sizeof(m_game->m_guild_teleport_loc[i].m_dest_map_name2));
-				strcpy(m_game->m_guild_teleport_loc[i].m_dest_map_name2, map_name);
-				m_game->m_guild_teleport_loc[i].m_time2 = time;
-				return;
-			}
-			else {
-				if (temp < (time - m_game->m_guild_teleport_loc[i].m_time2)) {
-					temp = (time - m_game->m_guild_teleport_loc[i].m_time2);
-					index = i;
-				}
-			}
-		}
-	}
-
-	// .         (index)   .
-	//if (index == -1) return;
-
-	////testcode
-	//PutLogList("(X) No more GuildConstructLoc Space! Replaced.");
-
-	//m_game->m_guild_teleport_loc[i].m_v1 = guild_guid;
-	//m_game->m_guild_teleport_loc[i].m_dest_x2 = dX;
-	//m_game->m_guild_teleport_loc[i].m_dest_y2 = dY;
-	//std::memset(m_game->m_guild_teleport_loc[i].m_dest_map_name2, 0, sizeof(m_game->m_guild_teleport_loc[i].m_dest_map_name2));
-	//strcpy(m_game->m_guild_teleport_loc[i].m_dest_map_name, map_name);
-	//m_game->m_guild_teleport_loc[i].m_time2 = time;
+	// Guild construct loc system removed
 }
 
 void WarManager::set_heldenian_mode()
@@ -2474,7 +2214,7 @@ void WarManager::get_occupy_flag_handler(int client_h)
 				}
 
 				// EKNum .
-				item->m_item_special_effect_value1 = ek_num;
+				item->m_instance.special_effect_value1 = ek_num;
 
 				// testcode  .
 				hb::logger::log<log_channel::events>("Flag captured: player={} flag_ek={} player_ek={}", m_game->m_client_list[client_h]->m_char_name, ek_num, m_game->m_client_list[client_h]->m_enemy_kill_count);
@@ -2636,7 +2376,6 @@ bool WarManager::set_occupy_flag(char map_index, int dX, int dY, int side, int e
 		(m_game->m_heldenian_initiated == 1)) return false;
 	if ((m_game->m_heldenian_type == 1) && (m_game->m_bt_field_map_index == -1)) return false;
 	if ((m_game->m_heldenian_type == 2) && (m_game->m_godh_map_index == -1)) return false;
-	if ((m_game->m_client_list[client_h]->m_guild_rank == 0)) return false;
 
 	tile = (class CTile*)(m_game->m_map_list[map_index]->m_tile + dX + dY * m_game->m_map_list[map_index]->m_size_y);
 	if (tile->m_attribute != 0) return false;
@@ -2679,7 +2418,7 @@ bool WarManager::set_occupy_flag(char map_index, int dX, int dY, int side, int e
 	ek_num = 1;
 	index = m_game->m_map_list[map_index]->register_occupy_flag(dX, dY, side, ek_num, dynamic_object_index);
 	if (index < 0) {
-		if (dynamic_object_index > MaxGuilds)
+		if (dynamic_object_index > 1000)
 			return true;
 	}
 
@@ -2719,89 +2458,6 @@ bool WarManager::set_occupy_flag(char map_index, int dX, int dY, int side, int e
 
 void WarManager::fightzone_reserve_handler(int client_h, char* data, size_t msg_size)
 {
-	int fightzone_num, enable_reserve_time;
-	uint64_t gold_count;
-	uint16_t msg_result;
-	int     ret, result = 1, cannot_reserve_day;
-	hb::time::local_time SysTime{};
-
-	if (m_game->m_client_list[client_h] == 0) return;
-	if (m_game->m_client_list[client_h]->m_is_init_complete == false) return;
-
-	SysTime = hb::time::local_time::now();
-
-	enable_reserve_time = 2 * 20 * 60 - ((SysTime.hour % 2) * 20 * 60 + SysTime.minute * 20) - 5 * 20;
-
-	gold_count = m_game->m_item_manager->get_item_count_by_id(client_h, hb::shared::item::ItemId::Gold);
-
-	const auto* pkt = hb::net::PacketCast<hb::net::PacketRequestFightzoneReserve>(
-		data, sizeof(hb::net::PacketRequestFightzoneReserve));
-	if (!pkt) return;
-	fightzone_num = pkt->fightzone;
-
-	// fightzone  .
-	if ((fightzone_num < 1) || (fightzone_num > MaxFightZone)) return;
-
-	// 2 4 6 8  1 3 5 7
-	// ex) 1 => {1 + 1 () + 1 (  )} %2 == 1
-
-	cannot_reserve_day = (SysTime.day + m_game->m_client_list[client_h]->m_side + fightzone_num) % 2;
-	if (enable_reserve_time <= 0) {
-		msg_result = MsgType::Reject;
-		result = 0;
-	}
-	else if (m_game->m_fight_zone_reserve[fightzone_num - 1] != 0) {
-		msg_result = MsgType::Reject;
-		result = -1;
-	}
-	else if (gold_count < 1500) {
-		// Gold    .
-		msg_result = MsgType::Reject;
-		result = -2;
-	}
-	else if (cannot_reserve_day) {
-		msg_result = MsgType::Reject;
-		result = -3;
-	}
-	else if (m_game->m_client_list[client_h]->m_fightzone_number != 0) {
-		msg_result = MsgType::Reject;
-		result = -4;
-	}
-	else {
-
-		msg_result = MsgType::Confirm;
-
-		m_game->m_item_manager->set_item_count_by_id(client_h, hb::shared::item::ItemId::Gold, gold_count - 1500);
-		m_game->calc_total_weight(client_h);
-
-		m_game->m_fight_zone_reserve[fightzone_num - 1] = client_h;
-
-		m_game->m_client_list[client_h]->m_fightzone_number = fightzone_num;
-		m_game->m_client_list[client_h]->m_reserve_time = SysTime.month * 10000 + SysTime.day * 100 + SysTime.hour;
-
-		if (SysTime.hour % 2)	m_game->m_client_list[client_h]->m_reserve_time += 1;
-		else					m_game->m_client_list[client_h]->m_reserve_time += 2;
-		hb::logger::log<log_channel::events>("Fight zone ticket reserved: player={} ticket={}", m_game->m_client_list[client_h]->m_char_name, m_game->m_client_list[client_h]->m_reserve_time);
-
-		m_game->m_client_list[client_h]->m_fightzone_ticket_number = 50;
-		result = 1;
-	}
-
-	hb::net::PacketResponseFightzoneReserve resp{};
-	resp.header.msg_id = MsgId::ResponseFightZoneReserve;
-	resp.header.msg_type = msg_result;
-	resp.result = result;
-
-	ret = m_game->m_client_list[client_h]->m_socket->send_msg(reinterpret_cast<char*>(&resp), sizeof(resp));
-
-	switch (ret) {
-	case sock::Event::QueueFull:
-	case sock::Event::SocketError:
-	case sock::Event::CriticalError:
-	case sock::Event::SocketClosed:
-		m_game->delete_client(client_h, true, true);
-		return;
-	}
 }
 
 void WarManager::fightzone_reserve_processor()
@@ -2810,74 +2466,4 @@ void WarManager::fightzone_reserve_processor()
 
 void WarManager::get_fightzone_ticket_handler(int client_h)
 {
-	int   ret, erase_req, month, day, hour;
-	char item_name[hb::shared::limits::ItemNameLen];
-	CItem* item;
-
-	if (m_game->m_client_list[client_h] == 0) return;
-
-	if (m_game->m_client_list[client_h]->m_fightzone_ticket_number <= 0) {
-		m_game->m_client_list[client_h]->m_fightzone_number *= -1;
-		m_game->send_notify_msg(0, client_h, Notify::FightZoneReserve, -1, 0, 0, 0);
-		return;
-	}
-
-	std::memset(item_name, 0, sizeof(item_name));
-
-	if (m_game->m_client_list[client_h]->m_fightzone_number == 1)
-		strcpy(item_name, "ArenaTicket");
-	else  std::snprintf(item_name, sizeof(item_name), "ArenaTicket(%d)", m_game->m_client_list[client_h]->m_fightzone_number);
-
-	item = new CItem;
-	if (m_game->m_item_manager->init_item_attr(item, item_name) == false) {
-		delete item;
-		return;
-	}
-
-	if (m_game->m_item_manager->add_client_item_list(client_h, item, &erase_req)) {
-		if (m_game->m_client_list[client_h]->m_cur_weight_load < 0) m_game->m_client_list[client_h]->m_cur_weight_load = 0;
-
-		m_game->m_client_list[client_h]->m_fightzone_ticket_number = m_game->m_client_list[client_h]->m_fightzone_ticket_number - 1;
-
-		item->set_touch_effect_type(TouchEffectType::Date);
-
-		month = m_game->m_client_list[client_h]->m_reserve_time / 10000;
-		day = (m_game->m_client_list[client_h]->m_reserve_time - month * 10000) / 100;
-		hour = m_game->m_client_list[client_h]->m_reserve_time - month * 10000 - day * 100;
-
-		item->m_touch_effect_value1 = month;
-		item->m_touch_effect_value2 = day;
-		item->m_touch_effect_value3 = hour;
-
-		hb::logger::log<log_channel::events>("Fight zone ticket obtained: player={} ticket={}({})({})", m_game->m_client_list[client_h]->m_char_name, item->m_touch_effect_value1, item->m_touch_effect_value2, item->m_touch_effect_value3);
-
-		ret = m_game->m_item_manager->send_item_notify_msg(client_h, Notify::ItemObtained, item, 0);
-
-		m_game->calc_total_weight(client_h);
-
-		switch (ret) {
-		case sock::Event::QueueFull:
-		case sock::Event::SocketError:
-		case sock::Event::CriticalError:
-		case sock::Event::SocketClosed:
-			m_game->delete_client(client_h, true, true);
-			return;
-		}
-	}
-	else {
-		delete item;
-
-		m_game->calc_total_weight(client_h);
-
-		ret = m_game->m_item_manager->send_item_notify_msg(client_h, Notify::CannotCarryMoreItem, 0, 0);
-
-		switch (ret) {
-		case sock::Event::QueueFull:
-		case sock::Event::SocketError:
-		case sock::Event::CriticalError:
-		case sock::Event::SocketClosed:
-			m_game->delete_client(client_h, true, true);
-			return;
-		}
-	}
 }

@@ -35,8 +35,6 @@ Screen_SelectCharacter::Screen_SelectCharacter(CGame* game)
 
 void Screen_SelectCharacter::on_initialize()
 {
-    GameModeManager::set_current_mode(GameMode::SelectCharacter);
-
     weather_manager::get().set_ambient_light(1);
 
     m_game->m_arrow_pressed = 0;
@@ -124,11 +122,6 @@ void Screen_SelectCharacter::on_initialize()
     m_controls.discard_pending_input(init_input);
     m_prev_input = init_input;
 }
-
-void Screen_SelectCharacter::on_uninitialize()
-{
-}
-
 void Screen_SelectCharacter::on_update()
 {
     uint32_t time = GameClock::get_time_ms();

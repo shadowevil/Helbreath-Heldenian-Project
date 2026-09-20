@@ -90,7 +90,7 @@ CMap::CMap(class CGame* game)
 
 	m_game = game;
 
-	m_level_limit = 0;
+	m_level_requirement = 0;
 	m_upper_level_limit = 0; // v1.4
 	m_mineral_generator = false;
 
@@ -386,34 +386,22 @@ bool CMap::set_item(short sX, short sY, CItem* item)
 	return true;
 }
 
-CItem* CMap::get_item(short sX, short sY, short* remain_item_id, char* remain_item_color, uint32_t* remain_item_attr) //v1.4 color
+CItem* CMap::get_item(short sX, short sY, CItem** remain)
 {
-	class CTile* tile;
-	CItem* item;
-	
+	if ((sX < 0) || (sX >= m_size_x) || (sY < 0) || (sY >= m_size_y)) return nullptr;
 
-	if ((sX < 0) || (sX >= m_size_x) || (sY < 0) || (sY >= m_size_y)) return 0;
+	CTile* tile = (m_tile + sX + sY * m_size_x);
+	if (tile->m_total_item == 0) return nullptr;
 
-	tile = (class CTile*)(m_tile + sX + sY * m_size_x);
-	item = tile->m_item[0];
-	if (tile->m_total_item == 0) return 0;
+	CItem* item = tile->m_item[0];
 
-	for(int i = 0; i <= TilePerItems - 2; i++)
+	for (int i = 0; i <= TilePerItems - 2; i++)
 		tile->m_item[i] = tile->m_item[i + 1];
 	tile->m_total_item--;
-	tile->m_item[tile->m_total_item] = 0;
+	tile->m_item[tile->m_total_item] = nullptr;
 
-	if (tile->m_item[0] == 0) {
-		*remain_item_id = 0;
-		*remain_item_color = 0;
-		*remain_item_attr = 0;
-	}
-	else
-	{
-		*remain_item_id = tile->m_item[0]->m_id_num;
-		*remain_item_color = tile->m_item[0]->m_item_color;
-		*remain_item_attr = tile->m_item[0]->m_attribute;
-	}
+	if (remain)
+		*remain = tile->m_item[0]; // next item on tile, or nullptr if empty
 
 	return item;
 }

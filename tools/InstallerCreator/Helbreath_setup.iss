@@ -3,12 +3,12 @@
 
 [Setup]
 AppName=Helbreath
-AppVersion=0.2.9
+AppVersion=0.2.11
 AppPublisher=Helbreath
 DefaultDirName={autopf}\Helbreath
 DefaultGroupName=Helbreath
 OutputDir=C:\Users\ShadowEvil\source\Repos3\Helbreath-3.82\tools\InstallerCreator
-OutputBaseFilename=Helbreath_v0.2.9_setup
+OutputBaseFilename=Helbreath_v0.2.11_setup
 Compression=lzma2
 SolidCompression=yes
 SetupIconFile=compiler:SetupClassicIcon.ico

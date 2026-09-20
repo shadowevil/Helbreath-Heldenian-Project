@@ -23,7 +23,6 @@ Screen_Test::Screen_Test(CGame* game)
 
 void Screen_Test::on_initialize()
 {
-	GameModeManager::set_current_mode(GameMode::Test);
 	m_scrollOffset = 0;
 
 	// Preload bitmap fonts for testing (normally done in Screen_Loading)
@@ -36,17 +35,12 @@ void Screen_Test::load_bitmap_fonts()
 	if (hb::shared::text::is_bitmap_font_loaded(GameFont::Bitmap1))
 		return;
 
-	// load sprfonts sprites
-	hb::shared::sprite::SpriteLoader::open_pak("sprfonts", [&](hb::shared::sprite::SpriteLoader& loader) {
+	// load sprite_fonts sprites
+	hb::shared::sprite::SpriteLoader::open_pak("sprite_fonts", [&](hb::shared::sprite::SpriteLoader& loader) {
 		m_game->m_sprite[InterfaceFont1] = loader.get_sprite(0, false);
 		m_game->m_sprite[InterfaceFont2] = loader.get_sprite(1, false);
-	});
-
-	// load interface2 sprites (for number font and SPRFONTS2)
-	// ADDINTERFACE is sprite 0, SPRFONTS2 is sprite 1
-	hb::shared::sprite::SpriteLoader::open_pak("interface2", [&](hb::shared::sprite::SpriteLoader& loader) {
-		m_game->m_sprite[InterfaceAddInterface] = loader.get_sprite(0, false);
-		m_game->m_sprite[InterfaceSprFonts2] = loader.get_sprite(1, false);
+		m_game->m_sprite[InterfaceSprFonts] = loader.get_sprite(2, false);
+		m_game->m_sprite[InterfaceSprFonts3] = loader.get_sprite(3, false);
 	});
 
 	// Create bitmap fonts from the loaded sprites
@@ -65,30 +59,25 @@ void Screen_Test::load_bitmap_fonts()
 			m_game->m_sprite[InterfaceFont2].get(), ' ', '~', 0);
 	}
 
-	// Number font: Digits '0' to '9', frame offset 6 in ADDINTERFACE sprite
-	if (m_game->m_sprite[InterfaceAddInterface])
+	// Number font: Digits '0' to '9', frame offset 30 in sprite_fonts sprite 2
+	if (m_game->m_sprite[InterfaceSprFonts])
 	{
 		hb::shared::text::load_bitmap_font(GameFont::Numbers,
-			m_game->m_sprite[InterfaceAddInterface].get(), '0', '9', 6,
+			m_game->m_sprite[InterfaceSprFonts].get(), '0', '9', 30,
 			GameFont::GetFontSpacing(GameFont::Numbers));
 	}
 
-	// SPRFONTS2: Characters ' ' (32) to '~' (126), with 3 different sizes
-	if (m_game->m_sprite[InterfaceSprFonts2])
+	// SPRFONTS3: Characters ' ' (32) to '~' (126), with 3 different sizes
+	if (m_game->m_sprite[InterfaceSprFonts3])
 	{
 		for (int idx = 0; idx < 3; idx++)
 		{
 			int fontId = GameFont::SprFont3_0 + idx;
 			hb::shared::text::load_bitmap_font_dynamic(fontId,
-				m_game->m_sprite[InterfaceSprFonts2].get(), ' ', '~', 95 * idx);
+				m_game->m_sprite[InterfaceSprFonts3].get(), ' ', '~', 95 * idx);
 		}
 	}
 }
-
-void Screen_Test::on_uninitialize()
-{
-}
-
 void Screen_Test::on_update()
 {
 	// ESC to quit

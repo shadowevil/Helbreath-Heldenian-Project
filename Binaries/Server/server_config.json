@@ -8,9 +8,9 @@
 	"timing": {
 		"client_timeout_ms": 30000,
 		"stamina_regen_ms": 10000,
-		"poison_damage_ms": 12000,
+		"poison_damage_ms": 8000,
 		"health_regen_ms": 15000,
-		"mana_regen_ms": 20000,
+		"mana_regen_ms": 15000,
 		"hunger_consume_ms": 60000,
 		"summon_duration_ms": 300000,
 		"autosave_ms": 600000,
@@ -25,9 +25,11 @@
 	},
 	"character": {
 		"base_stat_value": 10,
-		"creation_stat_bonus": 4,
+		"max_creation_stat_value": 4,
+		"creation_stat_points": 10,
 		"levelup_stat_gain": 3,
 		"max_level": 180,
+		"max_stat_value": 200,
 		"starting_luck": 10
 	},
 	"gameplay": {

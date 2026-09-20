@@ -576,6 +576,16 @@ void DialogBox_SysMenu::draw_graphics_tab(short sX, short sY)
 
 	lineY += 18;
 
+	// --- Map Zoom ---
+	if (is_item_visible(lineY))
+	{
+		put_string(labelX, lineY, "Map Zoom:", GameColors::UILabel);
+		put_string(labelX + 1, lineY, "Map Zoom:", GameColors::UILabel);
+		draw_toggle(smallBoxX, lineY, config_manager::get().is_zoom_map_enabled());
+	}
+
+	lineY += 18;
+
 #ifdef _DEBUG
 	// Tile Grid (simple dark lines) - DEBUG ONLY
 	if (is_item_visible(lineY))
@@ -1206,6 +1216,19 @@ bool DialogBox_SysMenu::on_click_graphics(short sX, short sY)
 			bool enabled = config_manager::get().is_background_fps_throttle_enabled();
 			config_manager::get().set_background_fps_throttle_enabled(!enabled);
 			hb::shared::render::Window::get()->set_background_fps_limit(enabled ? 0 : 5);
+			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
+			return true;
+		}
+	}
+
+	lineY += 18;
+
+	// --- Map Zoom toggle ---
+	if (is_item_visible(lineY))
+	{
+		if (is_in_toggle_area(smallBoxX, lineY)) {
+			bool enabled = config_manager::get().is_zoom_map_enabled();
+			config_manager::get().set_zoom_map_enabled(!enabled);
 			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
 			return true;
 		}

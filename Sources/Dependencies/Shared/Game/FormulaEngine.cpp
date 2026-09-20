@@ -382,6 +382,91 @@ double formula_engine::evaluate_node(const ast_node* node, const stat_map& stats
 			return static_cast<double>(static_cast<int64_t>(val));
 		}
 
+		// Built-in: floor(x)
+		if (name == "floor")
+		{
+			if (node->children.size() != 1)
+				throw std::runtime_error("floor() requires exactly 1 argument");
+			return std::floor(evaluate_node(node->children[0].get(), stats, depth));
+		}
+
+		// Built-in: ceil(x)
+		if (name == "ceil")
+		{
+			if (node->children.size() != 1)
+				throw std::runtime_error("ceil() requires exactly 1 argument");
+			return std::ceil(evaluate_node(node->children[0].get(), stats, depth));
+		}
+
+		// Built-in: round(x)
+		if (name == "round")
+		{
+			if (node->children.size() != 1)
+				throw std::runtime_error("round() requires exactly 1 argument");
+			return std::round(evaluate_node(node->children[0].get(), stats, depth));
+		}
+
+		// Built-in: abs(x)
+		if (name == "abs")
+		{
+			if (node->children.size() != 1)
+				throw std::runtime_error("abs() requires exactly 1 argument");
+			return std::abs(evaluate_node(node->children[0].get(), stats, depth));
+		}
+
+		// Built-in: sqrt(x)
+		if (name == "sqrt")
+		{
+			if (node->children.size() != 1)
+				throw std::runtime_error("sqrt() requires exactly 1 argument");
+			return std::sqrt(evaluate_node(node->children[0].get(), stats, depth));
+		}
+
+		// Built-in: log(x) — natural logarithm
+		if (name == "log")
+		{
+			if (node->children.size() != 1)
+				throw std::runtime_error("log() requires exactly 1 argument");
+			return std::log(evaluate_node(node->children[0].get(), stats, depth));
+		}
+
+		// Built-in: log2(x)
+		if (name == "log2")
+		{
+			if (node->children.size() != 1)
+				throw std::runtime_error("log2() requires exactly 1 argument");
+			return std::log2(evaluate_node(node->children[0].get(), stats, depth));
+		}
+
+		// Built-in: log10(x)
+		if (name == "log10")
+		{
+			if (node->children.size() != 1)
+				throw std::runtime_error("log10() requires exactly 1 argument");
+			return std::log10(evaluate_node(node->children[0].get(), stats, depth));
+		}
+
+		// Built-in: pow(base, exp)
+		if (name == "pow")
+		{
+			if (node->children.size() != 2)
+				throw std::runtime_error("pow() requires exactly 2 arguments");
+			double base = evaluate_node(node->children[0].get(), stats, depth);
+			double exp = evaluate_node(node->children[1].get(), stats, depth);
+			return std::pow(base, exp);
+		}
+
+		// Built-in: clamp(value, lo, hi)
+		if (name == "clamp")
+		{
+			if (node->children.size() != 3)
+				throw std::runtime_error("clamp() requires exactly 3 arguments");
+			double val = evaluate_node(node->children[0].get(), stats, depth);
+			double lo = evaluate_node(node->children[1].get(), stats, depth);
+			double hi = evaluate_node(node->children[2].get(), stats, depth);
+			return std::clamp(val, lo, hi);
+		}
+
 		// Built-in: min(a, b)
 		if (name == "min")
 		{
@@ -512,11 +597,7 @@ validation_result formula_engine::validate() const
 
 	// 2. Required formulas exist
 	static const std::vector<std::string> required = {
-		"max_hp", "max_mp", "max_sp", "max_load", "level_exp",
-		"level_up_pool", "max_stat_value", "levelup_stat_gain",
-		"base_stat_total", "angelic_bonus",
-		"attack_delay", "swing_time", "swing_str_divisor",
-		"swing_frames", "base_frame_time", "delay_per_frame", "run_frame_time"
+		"max_hp", "max_mp", "max_sp", "max_load", "level_exp"
 	};
 	for (const auto& req : required)
 	{
@@ -604,10 +685,24 @@ validation_result formula_engine::validate() const
 					vr.errors.push_back(msg);
 					hb::logger::error("{}", msg);
 				}
-				else if (n->name == "trunc" && argc != 1)
+				else if ((n->name == "trunc" || n->name == "floor" || n->name == "ceil" || n->name == "round" || n->name == "abs" || n->name == "sqrt" || n->name == "log" || n->name == "log2" || n->name == "log10") && argc != 1)
 				{
 					vr.success = false;
-					std::string msg = "Formula '" + id + "': trunc() requires 1 arg, got " + std::to_string(argc);
+					std::string msg = "Formula '" + id + "': " + n->name + "() requires 1 arg, got " + std::to_string(argc);
+					vr.errors.push_back(msg);
+					hb::logger::error("{}", msg);
+				}
+				else if (n->name == "pow" && argc != 2)
+				{
+					vr.success = false;
+					std::string msg = "Formula '" + id + "': pow() requires 2 args, got " + std::to_string(argc);
+					vr.errors.push_back(msg);
+					hb::logger::error("{}", msg);
+				}
+				else if (n->name == "clamp" && argc != 3)
+				{
+					vr.success = false;
+					std::string msg = "Formula '" + id + "': clamp() requires 3 args, got " + std::to_string(argc);
 					vr.errors.push_back(msg);
 					hb::logger::error("{}", msg);
 				}
@@ -643,7 +738,7 @@ validation_result formula_engine::validate() const
 			if (n->type == ast_type::func_call)
 			{
 				// Check if it's a known built-in or scaling profile
-				if (n->name != "sum" && n->name != "min" && n->name != "max" && n->name != "trunc")
+				if (n->name != "sum" && n->name != "min" && n->name != "max" && n->name != "trunc" && n->name != "floor" && n->name != "ceil" && n->name != "round" && n->name != "abs" && n->name != "sqrt" && n->name != "log" && n->name != "log2" && n->name != "log10" && n->name != "pow" && n->name != "clamp")
 				{
 					if (!m_scaling_profiles.count(n->name))
 					{
@@ -674,13 +769,10 @@ validation_result formula_engine::validate() const
 		sample["angelic_mag"] = 0;
 		sample["angelic_int"] = 0;
 		sample["angelic_dex"] = 0;
-		sample["angelic_chr"] = 0;
 		sample["total_stats"] = 120;
 		sample["base_stat_value"] = 10;
-		sample["creation_stat_bonus"] = 4;
+		sample["max_creation_stat_value"] = 4;
 		sample["max_level"] = 180;
-		sample["weapon_speed"] = 30;
-		sample["attack_delay_value"] = 5;
 
 		for (const auto& [id, f] : m_formulas)
 		{

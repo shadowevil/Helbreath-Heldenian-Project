@@ -2,13 +2,16 @@
 #include "ConfigManager.h"
 #include "CursorTarget.h"
 #include "Game.h"
+#include "GameFonts.h"
 #include "PacketSendHelpers.h"
+#include "TextLibExt.h"
 
 #include "InventoryManager.h"
 #include "ItemNameFormatter.h"
 #include "ItemSpriteMetadata.h"
 #include "lan_eng.h"
 #include "SharedCalculations.h"
+#include "BalanceConstants.h"
 #include <format>
 #include <string>
 #include "IInput.h"
@@ -49,35 +52,35 @@ static bool check_item_collision(auto&& sprite, int sprite_x, int sprite_y,
 // draw order: first entry drawn first (bottom layer), last entry drawn last (top layer).
 // Collision checks iterate in reverse so topmost-drawn item has highest click priority.
 static constexpr EquipSlotLayout MaleEquipSlots[] = {
-	{ EquipPos::Back,        41,  137, false },
-	{ EquipPos::Pants,      171,  290, false },
-	{ EquipPos::Arms,       171,  290, false },
-	{ EquipPos::Leggings,   171,  290, false },
-	{ EquipPos::Body,       171,  290, false },
-	{ EquipPos::FullBody,   171,  290, false },
-	{ EquipPos::LeftHand,    90,  170, true  },
-	{ EquipPos::RightHand,   57,  186, true  },
-	{ EquipPos::TwoHand,     57,  186, true  },
-	{ EquipPos::Neck,        35,  120, false },
-	{ EquipPos::RightFinger, 32,  193, false },
-	{ EquipPos::LeftFinger,  98,  182, false },
-	{ EquipPos::Head,        72,  135, false },
+	{ EquipPos::Back,        41,  137 },
+	{ EquipPos::Leggings,      171,  290 },
+	{ EquipPos::Arms,       171,  290 },
+	{ EquipPos::Boots,   171,  290 },
+	{ EquipPos::Body,       171,  290 },
+	{ EquipPos::FullBody,   171,  290 },
+	{ EquipPos::LeftHand,    90,  170 },
+	{ EquipPos::RightHand,   57,  186 },
+	{ EquipPos::TwoHand,     57,  186 },
+	{ EquipPos::Neck,        35,  120 },
+	{ EquipPos::RightFinger, 32,  193 },
+	{ EquipPos::LeftFinger,  92,  174 },
+	{ EquipPos::Head,        72,  135 },
 };
 
 static constexpr EquipSlotLayout FemaleEquipSlots[] = {
-	{ EquipPos::Back,        45,  143, false },
-	{ EquipPos::Pants,      171,  290, false },
-	{ EquipPos::Arms,       171,  290, false },
-	{ EquipPos::Leggings,   171,  290, false },
-	{ EquipPos::Body,       171,  290, false },
-	{ EquipPos::FullBody,   171,  290, false },
-	{ EquipPos::LeftHand,    84,  175, true  },
-	{ EquipPos::RightHand,   60,  191, true  },
-	{ EquipPos::TwoHand,     60,  191, true  },
-	{ EquipPos::Neck,        35,  120, false },
-	{ EquipPos::RightFinger, 32,  193, false },
-	{ EquipPos::LeftFinger,  98,  182, false },
-	{ EquipPos::Head,        72,  139, false },
+	{ EquipPos::Back,        45,  143 },
+	{ EquipPos::Leggings,      171,  290 },
+	{ EquipPos::Arms,       171,  290 },
+	{ EquipPos::Boots,   171,  290 },
+	{ EquipPos::Body,       171,  290 },
+	{ EquipPos::FullBody,   171,  290 },
+	{ EquipPos::LeftHand,    84,  175 },
+	{ EquipPos::RightHand,   60,  191 },
+	{ EquipPos::TwoHand,     60,  191 },
+	{ EquipPos::Neck,        35,  120 },
+	{ EquipPos::RightFinger, 32,  193 },
+	{ EquipPos::LeftFinger,  92,  174 },
+	{ EquipPos::Head,        72,  139 },
 };
 
 DialogBox_Character::DialogBox_Character(CGame* game)
@@ -128,7 +131,7 @@ static EquipPos FindHoverSlot(CGame* game, const EquipSlotLayout* slots, int slo
 
 // Helper: render equipped item with optional hover highlight
 void DialogBox_Character::draw_equipped_item(hb::shared::item::EquipPos equipPos, int drawX, int drawY,
-	const char* equip_poi_status, bool useWeaponColors, bool highlight, int spriteOffset)
+	const char* equip_poi_status, bool highlight, int spriteOffset)
 {
 	int itemIdx = equip_poi_status[static_cast<int>(equipPos)];
 	if (itemIdx == -1) return;
@@ -137,11 +140,11 @@ void DialogBox_Character::draw_equipped_item(hb::shared::item::EquipPos equipPos
 	CItem* cfg = m_game->get_item_config(item->m_id_num);
 	if (cfg == nullptr) return;
 
-	char item_color = item->m_item_color;
+	char item_color = item->m_instance.item_color;
 	bool disabled = inventory_manager::get().is_locked(itemIdx);
 
-	// Select color array based on item type (weapons use different colors)
-	const hb::shared::render::Color* colors = useWeaponColors ? GameColors::Weapons : GameColors::Items;
+	// Unified color palette — index already encodes correct color for weapons and armor
+	const auto* palette = m_game->m_color_palette.data();
 
 	bool is_female = (spriteOffset == 40);
 	auto equip_draw = m_game->get_item_draw(cfg->m_display_id, item_atlas::equip, is_female);
@@ -153,14 +156,14 @@ void DialogBox_Character::draw_equipped_item(hb::shared::item::EquipPos equipPos
 		if (item_color == 0)
 			sprite->draw(drawX, drawY, frame);
 		else
-			sprite->draw(drawX, drawY, frame, hb::shared::sprite::DrawParams::tint(colors[item_color].r, colors[item_color].g, colors[item_color].b));
+			sprite->draw(drawX, drawY, frame, hb::shared::sprite::DrawParams::tint(palette[item_color].r, palette[item_color].g, palette[item_color].b));
 	}
 	else
 	{
 		if (item_color == 0)
 			sprite->draw(drawX, drawY, frame, hb::shared::sprite::DrawParams::alpha_blend(0.25f));
 		else
-			sprite->draw(drawX, drawY, frame, hb::shared::sprite::DrawParams::tinted_alpha(colors[item_color].r, colors[item_color].g, colors[item_color].b, 0.7f));
+			sprite->draw(drawX, drawY, frame, hb::shared::sprite::DrawParams::tinted_alpha(palette[item_color].r, palette[item_color].g, palette[item_color].b, 0.7f));
 	}
 
 	if (highlight)
@@ -257,7 +260,7 @@ void DialogBox_Character::on_draw()
 	infoBuf += txt2;
 	put_aligned_string(sX + 24, sX + 252, sY + 52, infoBuf.c_str(), GameColors::UIDarkRed);
 
-	// Citizenship / Guild status
+	// Citizenship status
 	std::string statusBuf;
 	if (!player().m_citizen)
 	{
@@ -268,13 +271,6 @@ void DialogBox_Character::on_draw()
 		statusBuf = player().m_hunter
 			? (player().m_aresden ? DEF_MSG_ARECIVIL : DEF_MSG_ELVCIVIL)
 			: (player().m_aresden ? DEF_MSG_ARESOLDIER : DEF_MSG_ELVSOLDIER);
-
-		if (player().m_guild_rank >= 0)
-		{
-			statusBuf += "(";
-			statusBuf += player().m_guild_name;
-			statusBuf += player().m_guild_rank == 0 ? DEF_MSG_GUILDMASTER1 : DEF_MSG_GUILDSMAN1;
-		}
 	}
 	put_aligned_string(sX, sX + 275, sY + 69, statusBuf.c_str(), GameColors::UILabel);
 
@@ -317,7 +313,7 @@ void DialogBox_Character::on_draw()
 
 	// Max load
 	int total_weight = inventory_manager::get().calc_total_weight();
-	valueBuf = std::format("{}/{}", (total_weight / 100), max_load);
+	valueBuf = std::format("{:.2f}/{}", CItem::weight_to_stones(total_weight), max_load);
 	put_aligned_string(sX + 180, sX + 250, sY + 240, valueBuf.c_str(), GameColors::UILabel);
 
 	// Enemy Kills
@@ -366,7 +362,7 @@ void DialogBox_Character::draw_male_character(short sX, short sY, short mouse_x,
 	// Hair (if no helmet)
 	if (equip_poi_status[to_int(EquipPos::Head)] == -1)
 	{
-		const auto& hc = GameColors::Hair[player().m_playerAppearance.hair_color];
+		const auto& hc = m_game->m_color_palette[player().m_playerAppearance.hair_color];
 		m_game->m_sprite[ItemEquipPivotPoint + 18]->draw(sX + 171, sY + 290, player().m_playerAppearance.hair_style, hb::shared::sprite::DrawParams::tint(hc.r, hc.g, hc.b));
 	}
 
@@ -383,7 +379,7 @@ void DialogBox_Character::draw_male_character(short sX, short sY, short mouse_x,
 	for (const auto& slot : MaleEquipSlots)
 	{
 		draw_equipped_item(slot.equipPos, sX + slot.offsetX, sY + slot.offsetY,
-			equip_poi_status, slot.useWeaponColors, slot.equipPos == hoverSlot);
+			equip_poi_status, slot.equipPos == hoverSlot);
 	}
 
 }
@@ -397,7 +393,7 @@ void DialogBox_Character::draw_female_character(short sX, short sY, short mouse_
 	// Hair (if no helmet) - female hair is at +18+40 = +58
 	if (equip_poi_status[to_int(EquipPos::Head)] == -1)
 	{
-		const auto& hc = GameColors::Hair[player().m_playerAppearance.hair_color];
+		const auto& hc = m_game->m_color_palette[player().m_playerAppearance.hair_color];
 		m_game->m_sprite[ItemEquipPivotPoint + 18 + 40]->draw(sX + 171, sY + 290, player().m_playerAppearance.hair_style, hb::shared::sprite::DrawParams::tint(hc.r, hc.g, hc.b));
 	}
 
@@ -406,10 +402,10 @@ void DialogBox_Character::draw_female_character(short sX, short sY, short mouse_
 
 	// Check for skirt in pants slot (sprite 12, frame 0 = skirt)
 	bool skirt = false;
-	if (equip_poi_status[to_int(EquipPos::Pants)] != -1)
+	if (equip_poi_status[to_int(EquipPos::Leggings)] != -1)
 	{
-		CItem* cfg = m_game->get_item_config(player().m_item_list[equip_poi_status[to_int(EquipPos::Pants)]]->m_id_num);
-		if (cfg != nullptr && player().m_item_list[equip_poi_status[to_int(EquipPos::Pants)]]->m_id_num == 479) // Skirt (W)
+		CItem* cfg = m_game->get_item_config(player().m_item_list[equip_poi_status[to_int(EquipPos::Leggings)]]->m_id_num);
+		if (cfg != nullptr && player().m_item_list[equip_poi_status[to_int(EquipPos::Leggings)]]->m_id_num == 479) // Skirt (W)
 			skirt = true;
 	}
 
@@ -421,14 +417,14 @@ void DialogBox_Character::draw_female_character(short sX, short sY, short mouse_
 
 	// If wearing skirt, pre-draw boots under the skirt
 	if (skirt)
-		draw_equipped_item(EquipPos::Leggings, sX + 171, sY + 290, equip_poi_status, false, hoverSlot == EquipPos::Leggings, 40);
+		draw_equipped_item(EquipPos::Boots, sX + 171, sY + 290, equip_poi_status, hoverSlot == EquipPos::Boots, 40);
 
 	// Equipment slots (draw order from table)
 	for (const auto& slot : FemaleEquipSlots)
 	{
-		if (skirt && slot.equipPos == EquipPos::Leggings) continue; // already drawn
+		if (skirt && slot.equipPos == EquipPos::Boots) continue; // already drawn
 		draw_equipped_item(slot.equipPos, sX + slot.offsetX, sY + slot.offsetY,
-			equip_poi_status, slot.useWeaponColors, slot.equipPos == hoverSlot, 40);
+			equip_poi_status, slot.equipPos == hoverSlot, 40);
 	}
 
 }
@@ -485,10 +481,9 @@ bool DialogBox_Character::on_double_click()
 		return false;
 
 	// Skip consumables, arrows, and stacked items
-	if (cfg->get_item_type() == ItemType::Eat ||
-		cfg->get_item_type() == ItemType::Consume ||
-		cfg->get_item_type() == ItemType::Arrow ||
-		item->m_count > 1)
+	if (cfg->get_item_type() == hb::shared::item::item_type::consumable ||
+		cfg->get_item_sub_type() == hb::shared::item::item_sub_type::ammo ||
+		item->m_instance.count > 1)
 		return false;
 
 	// Check if at repair shop
@@ -507,34 +502,20 @@ bool DialogBox_Character::on_double_click()
 	}
 	else
 	{
-		// Release (unequip) the item
+		// Release (unequip) the item — server will send Notify::ItemReleased with message + sound
 		if (m_game->m_is_item_equipped[item_id])
 		{
-			std::string G_cTxt;
-			auto itemInfo = item_name_formatter::get().format(item);
-			G_cTxt = std::format(ITEM_EQUIPMENT_RELEASED, itemInfo.name.c_str());
-			add_event_list(G_cTxt.c_str(), 10);
-
-			{
-				short id = item->m_id_num;
-				if (id == hb::shared::item::ItemId::AngelicPandentSTR || id == hb::shared::item::ItemId::AngelicPandentDEX ||
-					id == hb::shared::item::ItemId::AngelicPandentINT || id == hb::shared::item::ItemId::AngelicPandentMAG)
-					audio_manager::get().play_game_sound(sound_type::effect, 53, 0);
-				else
-					audio_manager::get().play_game_sound(sound_type::effect, 29, 0);
-			}
-
 			// Remove Angelic Stats
-			if (cfg->m_equip_pos >= 11 &&
-				cfg->get_item_type() == ItemType::Equip)
+			if (cfg->get_equip_pos() >= EquipPos::LeftFinger &&
+				cfg->get_item_type() == hb::shared::item::item_type::equipment)
 			{
-				if (item->m_id_num == hb::shared::item::ItemId::AngelicPandentSTR)
+				if (item->m_id_num == hb::shared::item::ItemId::AngelicPendantSTR)
 					player().m_angelic_str = 0;
-				else if (item->m_id_num == hb::shared::item::ItemId::AngelicPandentDEX)
+				else if (item->m_id_num == hb::shared::item::ItemId::AngelicPendantDEX)
 					player().m_angelic_dex = 0;
-				else if (item->m_id_num == hb::shared::item::ItemId::AngelicPandentINT)
+				else if (item->m_id_num == hb::shared::item::ItemId::AngelicPendantINT)
 					player().m_angelic_int = 0;
-				else if (item->m_id_num == hb::shared::item::ItemId::AngelicPandentMAG)
+				else if (item->m_id_num == hb::shared::item::ItemId::AngelicPendantMAG)
 					player().m_angelic_mag = 0;
 			}
 

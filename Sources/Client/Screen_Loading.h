@@ -14,11 +14,12 @@ class Screen_Loading : public IGameScreen
 public:
     SCREEN_TYPE(Screen_Loading)
 
+    GameMode get_game_mode() const override { return GameMode::Loading; }
+
     explicit Screen_Loading(CGame* game);
     ~Screen_Loading() override = default;
 
     void on_initialize() override;
-    void on_uninitialize() override;
     void on_update() override;
     void on_render() override;
 

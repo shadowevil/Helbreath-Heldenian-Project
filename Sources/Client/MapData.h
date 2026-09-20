@@ -12,6 +12,7 @@
 #include <errno.h>
 #include "CommonTypes.h"
 #include "Tile.h"
+#include "Item/ItemInstanceData.h"
 #include "ActionID.h"
 #include "Game.h"
 #include "TileSpr.h"
@@ -46,7 +47,7 @@ public:
 	bool set_dynamic_object(short sX, short sY, uint16_t id, short type, bool is_event);
 	bool is_teleport_loc(short sX, short sY);
 	bool get_is_locatable(short sX, short sY);
-	bool set_item(short sX, short sY, short i_dnum, char item_color, uint32_t item_attr, bool drop_effect = true);
+	bool set_item(short sX, short sY, short item_id, const hb::shared::item::item_instance_data& data, bool drop_effect = true);
 	int  object_frame_counter(const std::string& player_name, short view_point_x, short view_point_y);
 
 	class CTile m_data[hb::client::config::MapDataSizeX][hb::client::config::MapDataSizeY];

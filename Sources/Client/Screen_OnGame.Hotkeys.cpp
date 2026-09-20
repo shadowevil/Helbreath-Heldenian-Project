@@ -13,7 +13,6 @@
 #include "ConfigManager.h"
 #include "HotkeyManager.h"
 #include "DialogBox_ChatHistory.h"
-#include "DialogBox_GuildMenu.h"
 #include "DialogBox_ItemDropAmount.h"
 #include "InventoryManager.h"
 #include "lan_eng.h"
@@ -23,7 +22,6 @@
 #include <string>
 
 using namespace hb::shared::net;
-using hb::shared::item::ItemType;
 namespace MouseButton = hb::shared::input::MouseButton;
 
 // ============== Hotkey Registration (Ctrl+letter combos fire on key-up) ==============
@@ -134,7 +132,6 @@ bool Screen_OnGame::on_key_down(KeyCode key)
 
 	// Filter out keys that have no action
 	switch (key) {
-	case KeyCode::F10:
 	case KeyCode::PageDown:
 	case KeyCode::LWin:
 	case KeyCode::RWin:
@@ -152,15 +149,23 @@ bool Screen_OnGame::on_key_down(KeyCode key)
 	// Action keys — fire on initial key press for responsive input
 	switch (key) {
 	case KeyCode::NumpadAdd:
+	case KeyCode::Equal:
 		if (text_input_manager::get().is_active() == false)
 			config_manager::get().set_zoom_map_enabled(true);
 		return true;
 	case KeyCode::NumpadSubtract:
+	case KeyCode::Hyphen:
 		if (text_input_manager::get().is_active() == false)
 			config_manager::get().set_zoom_map_enabled(false);
 		return true;
 	case KeyCode::F1:
-		m_game->use_shortcut(1);
+		if (get_dialog_box_manager().is_enabled(DialogBoxId::Help) == false)
+			get_dialog_box_manager().enable_dialog_box(DialogBoxId::Help, 0, 0, 0);
+		else
+		{
+			get_dialog_box_manager().disable_dialog_box(DialogBoxId::Help);
+			get_dialog_box_manager().disable_dialog_box(DialogBoxId::Text);
+		}
 		return true;
 	case KeyCode::F2:
 		m_game->use_shortcut(2);
@@ -219,6 +224,11 @@ bool Screen_OnGame::on_key_down(KeyCode key)
 		if (get_dialog_box_manager().is_enabled(DialogBoxId::ChatHistory) == false)
 			get_dialog_box_manager().enable_dialog_box(DialogBoxId::ChatHistory, 0, 0, 0);
 		else get_dialog_box_manager().disable_dialog_box(DialogBoxId::ChatHistory);
+		return true;
+	case KeyCode::F10:
+		if (get_dialog_box_manager().is_enabled(DialogBoxId::SystemMenu) == false)
+			get_dialog_box_manager().enable_dialog_box(DialogBoxId::SystemMenu, 0, 0, 0);
+		else get_dialog_box_manager().disable_dialog_box(DialogBoxId::SystemMenu);
 		return true;
 	case KeyCode::F11:
 		m_game->create_screen_shot();
@@ -312,7 +322,7 @@ void Screen_OnGame::hotkey_use_health_potion()
 		if ((m_game->m_player->m_item_list[i] != 0) && (!inventory_manager::get().is_locked(i)))
 		{
 			CItem* cfg = m_game->get_item_config(m_game->m_player->m_item_list[i]->m_id_num);
-			if (cfg && cfg->get_item_type() == ItemType::Consume && cfg->m_item_effect_type == hb::shared::item::to_int(hb::shared::item::ItemEffectType::HP))
+			if (cfg && cfg->get_item_type() == hb::shared::item::item_type::consumable && cfg->get_item_effect_type() == hb::shared::item::ItemEffectType::HP)
 			{
 				{
 					auto pkt = hb::net::make_common_command(CommonType::ReqUseItem, m_game->m_player->m_player_x, m_game->m_player->m_player_y);
@@ -345,7 +355,7 @@ void Screen_OnGame::hotkey_use_mana_potion()
 		if ((m_game->m_player->m_item_list[i] != 0) && (!inventory_manager::get().is_locked(i)))
 		{
 			CItem* cfg = m_game->get_item_config(m_game->m_player->m_item_list[i]->m_id_num);
-			if (cfg && cfg->get_item_type() == ItemType::Consume && cfg->m_item_effect_type == hb::shared::item::to_int(hb::shared::item::ItemEffectType::MP))
+			if (cfg && cfg->get_item_type() == hb::shared::item::item_type::consumable && cfg->get_item_effect_type() == hb::shared::item::ItemEffectType::MP)
 			{
 				{
 					auto pkt = hb::net::make_common_command(CommonType::ReqUseItem, m_game->m_player->m_player_x, m_game->m_player->m_player_y);
@@ -467,8 +477,7 @@ void Screen_OnGame::hotkey_special_ability()
 
 void Screen_OnGame::hotkey_load_backup_chat()
 {
-	if (((get_dialog_box_manager().is_enabled(DialogBoxId::GuildMenu) == true) && (get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode == DialogBox_GuildMenu::mode::create_guild) && (get_dialog_box_manager().get_top_id() == DialogBoxId::GuildMenu)) ||
-		((get_dialog_box_manager().is_enabled(DialogBoxId::ItemDropExternal) == true) && (get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal)->m_mode == DialogBox_ItemDropAmount::mode::input) && (get_dialog_box_manager().get_top_id() == DialogBoxId::ItemDropExternal)))
+	if ((get_dialog_box_manager().is_enabled(DialogBoxId::ItemDropExternal) == true) && (get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal)->m_mode == DialogBox_ItemDropAmount::mode::input) && (get_dialog_box_manager().get_top_id() == DialogBoxId::ItemDropExternal))
 	{
 		return;
 	}

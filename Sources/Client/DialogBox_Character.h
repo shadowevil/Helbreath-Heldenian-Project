@@ -7,7 +7,6 @@ struct EquipSlotLayout
 	hb::shared::item::EquipPos equipPos;
 	int offsetX;
 	int offsetY;
-	bool useWeaponColors;
 };
 
 class DialogBox_Character : public IDialogBox
@@ -27,7 +26,7 @@ private:
 	// Helper methods
 	void draw_stat(int x1, int x2, int y, int baseStat, int angelicBonus);
 	void draw_equipped_item(hb::shared::item::EquipPos equipPos, int drawX, int drawY,
-		const char* equip_poi_status, bool useWeaponColors, bool highlight, int spriteOffset = 0);
+		const char* equip_poi_status, bool highlight, int spriteOffset = 0);
 	void draw_hover_button(int sX, int sY, int btnX, int btnY,
 		short mouse_x, short mouse_y, int hoverFrame, int normalFrame);
 	void draw_male_character(short sX, short sY, short mouse_x, short mouse_y,

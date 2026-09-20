@@ -23,12 +23,6 @@ void Overlay_WaitInitData::on_initialize()
     m_dwStartTime = GameClock::get_time_ms();
     m_iFrameCount = 0;
 }
-
-void Overlay_WaitInitData::on_uninitialize()
-{
-    // Nothing to clean up
-}
-
 void Overlay_WaitInitData::on_update()
 {
     uint32_t time = GameClock::get_time_ms();
@@ -67,9 +61,7 @@ void Overlay_WaitInitData::on_render()
     if (elapsed >= 3000)
     {
         int dlgX, dlgY;
-        get_centered_dialog_pos(InterfaceNdGame4, 2, dlgX, dlgY);
-
-        draw_new_dialog_box(InterfaceNdGame4, dlgX, dlgY, 2);
+        draw_centered_dialog_box(InterfaceNdGame4, 2, dlgX, dlgY);
 
         G_cTxt = std::format("Waiting for response... {}sec", elapsed / 1000);
         hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 54, dlgY + 65, G_cTxt.c_str(), hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));

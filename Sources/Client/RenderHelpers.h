@@ -21,7 +21,7 @@ namespace RenderHelpers
 	// with optional color tint. Does nothing if spriteIndex == -1.
 	// sprites: the SpriteCollection to draw from (m_sprite for cosmetics, m_equip_sprites for equipment)
 	// frame: usually (dir-1)*equipFrameMul + animFrame
-	void draw_equip_layer(hb::shared::sprite::SpriteCollection& sprites, int spriteIndex, int sX, int sY, int frame,
+	void draw_equip_layer(CGame& game, hb::shared::sprite::SpriteCollection& sprites, int spriteIndex, int sX, int sY, int frame,
 	                    bool inv, int colorIndex);
 
 	// draw weapon sprite with color tint + dk_glare overlay.

@@ -90,7 +90,7 @@ namespace net {
 		PacketHeader header;
 		std::uint16_t object_id;
 		std::uint8_t dir;
-		std::uint8_t v1;
+		std::int32_t v1;
 		std::uint8_t v2;
 		std::int16_t x;
 		std::int16_t y;
@@ -100,7 +100,7 @@ namespace net {
 		PacketHeader header;
 		std::uint16_t object_id;
 		std::uint8_t dir;
-		std::int16_t v1;
+		std::int32_t v1;
 		std::uint8_t v2;
 	};
 
@@ -145,6 +145,29 @@ namespace net {
 		std::int16_t v2;
 		std::int16_t v3;
 		std::uint32_t v4;
+	};
+
+	struct HB_PACKED PacketEventGroundItem {
+		PacketHeader header;
+		std::int16_t x;
+		std::int16_t y;
+		std::int16_t item_id;
+		std::int16_t count;
+		std::int16_t item_color;
+		std::int16_t touch_effect_type;
+		std::int16_t touch_effect_value1;
+		std::int16_t touch_effect_value2;
+		std::int16_t touch_effect_value3;
+		std::int16_t special_effect_value1;
+		std::int16_t special_effect_value2;
+		std::int16_t special_effect_value3;
+		std::uint16_t cur_durability;
+		std::uint8_t custom_made;
+		std::uint8_t prefix_type;
+		std::uint8_t prefix_value;
+		std::uint8_t secondary_type;
+		std::uint8_t secondary_value;
+		std::uint8_t enchant_bonus;
 	};
 	HB_PACK_END
 }

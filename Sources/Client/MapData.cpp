@@ -56,6 +56,14 @@ CMapData::CMapData(class CGame* game)
 {
 	int i;
 	m_game = game;
+	m_map_size_x = 0;
+	m_map_size_y = 0;
+	m_rect_x = 0;
+	m_rect_y = 0;
+	m_pivot_x = 0;
+	m_pivot_y = 0;
+	m_frame_check_time = 0;
+	m_frame_adjust_time = 0;
 	std::fill(std::begin(m_object_id_cache_loc_x), std::end(m_object_id_cache_loc_x), 0);
 	std::fill(std::begin(m_object_id_cache_loc_y), std::end(m_object_id_cache_loc_y), 0);
 	m_dynamic_object_frame_time = m_frame_time = GameClock::get_time_ms();
@@ -2516,20 +2524,20 @@ int CMapData::object_frame_counter(const std::string& player_name, short view_po
 							{
 								int16_t wid = m_data[dX][dY].m_appearance.weapon_item_id;
 								CItem* wcfg = (wid > 0) ? m_game->get_item_config(wid) : nullptr;
-								weapon_type = wcfg ? static_cast<int>(wcfg->m_appearance_value) : 0;
-								if ((weapon_type >= 1) && (weapon_type <= 2))
+								weapon_type = wcfg ? wcfg->get_weapon_class() : hb::shared::item::weapon_class::none;
+								if (weapon_type == hb::shared::item::weapon_class::dagger || weapon_type == hb::shared::item::weapon_class::short_sword)
 								{
 									audio_manager::get().play_game_sound(sound_type::character, 1, dist, lPan);
 								}
-								else if ((weapon_type >= 3) && (weapon_type <= 19))
+								else if (weapon_type == hb::shared::item::weapon_class::long_sword || weapon_type == hb::shared::item::weapon_class::fencing)
 								{
 									audio_manager::get().play_game_sound(sound_type::character, 2, dist, lPan);
 								}
-								else if ((weapon_type >= 20) && (weapon_type <= 39))
+								else if (weapon_type == hb::shared::item::weapon_class::axe || weapon_type == hb::shared::item::weapon_class::hammer || weapon_type == hb::shared::item::weapon_class::wand)
 								{
 									audio_manager::get().play_game_sound(sound_type::character, 18, dist, lPan);
 								}
-								else if ((weapon_type >= 40) && (weapon_type <= 59))
+								else if (weapon_type == hb::shared::item::weapon_class::bow)
 								{
 									audio_manager::get().play_game_sound(sound_type::character, 3, dist, lPan);
 								}
@@ -2600,9 +2608,7 @@ int CMapData::object_frame_counter(const std::string& player_name, short view_po
 										if (m_data[dX][dY].m_v3 >= 20) audio_manager::get().play_game_sound(sound_type::effect, 43, dist, lPan); // Son "loup�"
 									}
 									int16_t wid2 = m_data[dX][dY].m_appearance.weapon_item_id;
-								CItem* wcfg2 = (wid2 > 0) ? m_game->get_item_config(wid2) : nullptr;
-								int weapon_appr = wcfg2 ? static_cast<int>(wcfg2->m_appearance_value) : 0;
-								if (weapon_appr == 15) // StormBlade
+								if (wid2 == 845) // StormBringer
 									{
 										m_game->m_effect_manager->add_effect(EffectType::STORM_BLADE, m_pivot_x + dX, m_pivot_y + dY
 											, m_pivot_x + dX + m_data[dX][dY].m_v1, m_pivot_y + dY + m_data[dX][dY].m_v2
@@ -2656,29 +2662,29 @@ int CMapData::object_frame_counter(const std::string& player_name, short view_po
 							{
 								int16_t wid3 = m_data[dX][dY].m_appearance.weapon_item_id;
 								CItem* wcfg3 = (wid3 > 0) ? m_game->get_item_config(wid3) : nullptr;
-								weapon_type = wcfg3 ? static_cast<int>(wcfg3->m_appearance_value) : 0;
-								if ((weapon_type >= 1) && (weapon_type <= 2))
+								weapon_type = wcfg3 ? wcfg3->get_weapon_class() : hb::shared::item::weapon_class::none;
+								if (weapon_type == hb::shared::item::weapon_class::dagger || weapon_type == hb::shared::item::weapon_class::short_sword)
 								{
 									if (m_data[dX][dY].m_animation.m_current_frame == 5)
 									{
 										audio_manager::get().play_game_sound(sound_type::character, 1, dist, lPan);
 									}
 								}
-								else if ((weapon_type >= 3) && (weapon_type <= 19))
+								else if (weapon_type == hb::shared::item::weapon_class::long_sword || weapon_type == hb::shared::item::weapon_class::fencing)
 								{
 									if (m_data[dX][dY].m_animation.m_current_frame == 5)
 									{
 										audio_manager::get().play_game_sound(sound_type::character, 2, dist, lPan);
 									}
 								}
-								else if ((weapon_type >= 20) && (weapon_type <= 39))
+								else if (weapon_type == hb::shared::item::weapon_class::axe || weapon_type == hb::shared::item::weapon_class::hammer || weapon_type == hb::shared::item::weapon_class::wand)
 								{
 									if (m_data[dX][dY].m_animation.m_current_frame == 2)
 									{
 										audio_manager::get().play_game_sound(sound_type::character, 18, dist, lPan);
 									}
 								}
-								else if ((weapon_type >= 40) && (weapon_type <= 59))
+								else if (weapon_type == hb::shared::item::weapon_class::bow)
 								{
 									if (m_data[dX][dY].m_animation.m_current_frame == 3)
 									{
@@ -3518,8 +3524,8 @@ int CMapData::object_frame_counter(const std::string& player_name, short view_po
 									m_game->m_effect_manager->add_effect(EffectType::MAGE_HERO_SET, m_pivot_x + dX, m_pivot_y + dY
 										, m_pivot_x + dX, m_pivot_y + dY, 0, 1);
 								}
-								if (m_data[dX][dY].m_v1 >= 70) // effet gros sorts autour du caster
-									m_game->m_effect_manager->add_effect(EffectType::BUFF_EFFECT_LIGHT, (m_pivot_x + dX) * 32, (m_pivot_y + dY) * 32, 0, 0, 0, 0);
+								//if (m_data[dX][dY].m_v1 >= 70) // effet gros sorts autour du caster
+								//	m_game->m_effect_manager->add_effect(EffectType::BUFF_EFFECT_LIGHT, (m_pivot_x + dX) * 32, (m_pivot_y + dY) * 32, 0, 0, 0, 0);
 								if (m_data[dX][dY].m_v1 == 82) // lumi�re si MassMagicMissile autour du caster
 								{
 									m_game->m_effect_manager->add_effect(EffectType::MASS_MM_AURA_CASTER, (m_pivot_x + dX) * 32, (m_pivot_y + dY) * 32, 0, 0, 0, 0);
@@ -3945,7 +3951,7 @@ int CMapData::object_frame_counter(const std::string& player_name, short view_po
 }
 
 
-bool CMapData::set_item(short sX, short sY, short i_dnum, char item_color, uint32_t item_attr, bool drop_effect)
+bool CMapData::set_item(short sX, short sY, short item_id, const hb::shared::item::item_instance_data& data, bool drop_effect)
 {
 	int dX, dY;
 	int abs_x, abs_y, dist;
@@ -3958,9 +3964,8 @@ bool CMapData::set_item(short sX, short sY, short i_dnum, char item_color, uint3
 	dX = sX - m_pivot_x;
 	dY = sY - m_pivot_y;
 
-	m_data[dX][dY].m_item_id = i_dnum;
-	m_data[dX][dY].m_item_attr = item_attr;
-	m_data[dX][dY].m_item_color = item_color;
+	m_data[dX][dY].m_item_id = item_id;
+	m_data[dX][dY].m_item = data;
 
 	abs_x = abs(((m_game->m_Camera.get_x() / 32) + VIEW_CENTER_TILE_X()) - sX);
 	abs_y = abs(((m_game->m_Camera.get_y() / 32) + VIEW_CENTER_TILE_Y()) - sY);
@@ -3968,7 +3973,7 @@ bool CMapData::set_item(short sX, short sY, short i_dnum, char item_color, uint3
 	if (abs_x > abs_y) dist = abs_x;
 	else dist = abs_y;
 
-	if (i_dnum != 0)
+	if (item_id != 0)
 	{
 		if (drop_effect == true)
 		{

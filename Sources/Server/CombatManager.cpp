@@ -1,5 +1,6 @@
 #include "CombatManager.h"
 #include "Game.h"
+#include <algorithm>
 #include "StatusEffectManager.h"
 #include "WarManager.h"
 #include "SkillManager.h"
@@ -12,6 +13,7 @@
 #include "DynamicObjectManager.h"
 #include "Packet/SharedPackets.h"
 #include "SharedCalculations.h"
+#include "BalanceConstants.h"
 #include "Log.h"
 #include "ServerLogChannels.h"
 
@@ -21,6 +23,7 @@ using hb::log_channel;
 using namespace hb::shared::action;
 using namespace hb::server::net;
 using namespace hb::server::config;
+using hb::shared::item::to_int;
 using namespace hb::shared::item;
 using namespace hb::shared::direction;
 namespace sock = hb::shared::net::socket;
@@ -50,15 +53,6 @@ void CombatManager::remove_from_target(short target_h, char target_type, int cod
 
 	for(int i = 0; i < MaxNpcs; i++)
 		if (m_game->m_npc_list[i] != 0) {
-			if ((m_game->m_npc_list[i]->m_guild_guid != 0) && (target_type == hb::shared::owner_class::Player) &&
-				(m_game->m_client_list[target_h]->m_guild_guid == m_game->m_npc_list[i]->m_guild_guid)) {
-
-				if (m_game->m_npc_list[i]->m_action_limit == 0) {
-					m_game->m_npc_list[i]->m_is_summoned = true;
-					m_game->m_npc_list[i]->m_summoned_time = time;
-				}
-			}
-
 			if ((m_game->m_npc_list[i]->m_target_index == target_h) &&
 				(m_game->m_npc_list[i]->m_target_type == target_type)) {
 
@@ -133,12 +127,6 @@ void CombatManager::client_killed_handler(int client_h, int attacker_h, char att
 	if (m_game->m_client_list[client_h]->m_is_init_complete == false) return;
 	if (m_game->m_client_list[client_h]->m_is_killed) return;
 
-	// 2002-7-4
-	if (memcmp(m_game->m_map_list[m_game->m_client_list[client_h]->m_map_index]->m_name, "fight", 5) == 0) {
-		m_game->m_client_list[client_h]->m_fightzone_dead_time = GameClock::GetTimeMS();
-		hb::logger::log("Fight zone dead time: {}", m_game->m_client_list[client_h]->m_fightzone_dead_time);
-	}
-
 	m_game->m_client_list[client_h]->m_is_killed = true;
 	// HP 0.
 	m_game->m_client_list[client_h]->m_hp = 0;
@@ -203,7 +191,7 @@ void CombatManager::client_killed_handler(int client_h, int attacker_h, char att
 
 	m_game->send_notify_msg(0, client_h, Notify::Killed, 0, 0, 0, attacker_name);
 	if (attacker_type == hb::shared::owner_class::Player) {
-		attacker_weapon = m_game->m_client_list[attacker_h]->get_equipped_weapon_type();
+		attacker_weapon = to_int(m_game->m_client_list[attacker_h]->get_equipped_weapon_class());
 	}
 	else attacker_weapon = 1;
 	m_game->send_event_to_near_client_type_a(client_h, hb::shared::owner_class::Player, MsgId::EventMotion, Type::Dying, damage, attacker_weapon, 0);
@@ -244,51 +232,25 @@ void CombatManager::client_killed_handler(int client_h, int attacker_h, char att
 			}
 		}
 		else {
-			if (m_game->m_client_list[client_h]->m_guild_rank == -1) {
-				if (memcmp(m_game->m_client_list[attacker_h]->m_location, "NONE", 4) == 0) {
-					if (m_game->m_client_list[client_h]->m_player_kill_count == 0) {
-						m_game->m_loot_manager->apply_pk_penalty(attacker_h, client_h);
-					}
-					else {
-
-					}
+			if (memcmp(m_game->m_client_list[attacker_h]->m_location, "NONE", 4) == 0) {
+				if (m_game->m_client_list[client_h]->m_player_kill_count == 0) {
+					m_game->m_loot_manager->apply_pk_penalty(attacker_h, client_h);
 				}
 				else {
-					if (memcmp(m_game->m_client_list[client_h]->m_location, m_game->m_client_list[attacker_h]->m_location, 10) == 0) {
-						if (m_game->m_client_list[client_h]->m_player_kill_count == 0) {
-							m_game->m_loot_manager->apply_pk_penalty(attacker_h, client_h);
-						}
-						else {
-							m_game->m_loot_manager->pk_kill_reward_handler(attacker_h, client_h);
-						}
-					}
-					else {
-						m_game->m_loot_manager->enemy_kill_reward_handler(attacker_h, client_h);
-					}
+
 				}
 			}
 			else {
-				// , ,   -> PK /   ->
-				if (memcmp(m_game->m_client_list[attacker_h]->m_location, "NONE", 4) == 0) {
+				if (memcmp(m_game->m_client_list[client_h]->m_location, m_game->m_client_list[attacker_h]->m_location, 10) == 0) {
 					if (m_game->m_client_list[client_h]->m_player_kill_count == 0) {
 						m_game->m_loot_manager->apply_pk_penalty(attacker_h, client_h);
 					}
 					else {
-
+						m_game->m_loot_manager->pk_kill_reward_handler(attacker_h, client_h);
 					}
 				}
 				else {
-					if (memcmp(m_game->m_client_list[client_h]->m_location, m_game->m_client_list[attacker_h]->m_location, 10) == 0) {
-						if (m_game->m_client_list[client_h]->m_player_kill_count == 0) {
-							m_game->m_loot_manager->apply_pk_penalty(attacker_h, client_h);
-						}
-						else {
-							m_game->m_loot_manager->pk_kill_reward_handler(attacker_h, client_h);
-						}
-					}
-					else {
-						m_game->m_loot_manager->enemy_kill_reward_handler(attacker_h, client_h);
-					}
+					m_game->m_loot_manager->enemy_kill_reward_handler(attacker_h, client_h);
 				}
 			}
 		}
@@ -354,24 +316,6 @@ void CombatManager::client_killed_handler(int client_h, int attacker_h, char att
 			// Slaughterer 
 			m_game->m_loot_manager->apply_combat_killed_penalty(client_h, 12, is_s_aattacked);
 		}
-		if (m_game->m_npc_list[attacker_h]->m_guild_guid != 0) {
-
-			if (m_game->m_npc_list[attacker_h]->m_side != m_game->m_client_list[client_h]->m_side) {
-				for(int i = 1; i < MaxClients; i++)
-					if ((m_game->m_client_list[i] != 0) && (m_game->m_client_list[i]->m_guild_guid == m_game->m_npc_list[attacker_h]->m_guild_guid) &&
-						(m_game->m_client_list[i]->m_crusade_duty == 3)) {
-						m_game->m_client_list[i]->m_construction_point += (m_game->m_client_list[client_h]->m_level / 2);
-
-						if (m_game->m_client_list[i]->m_construction_point > m_game->m_max_construction_points)
-							m_game->m_client_list[i]->m_construction_point = m_game->m_max_construction_points;
-
-						//testcode
-						hb::logger::log("Enemy player killed by NPC, construction +{}", (m_game->m_client_list[client_h]->m_level / 2));
-						m_game->send_notify_msg(0, i, Notify::ConstructionPoint, m_game->m_client_list[i]->m_construction_point, m_game->m_client_list[i]->m_war_contribution, 0, 0);
-						return;
-					}
-			}
-		}
 		char txt[128];
 		std::memset(txt, 0, sizeof(txt));
 		std::snprintf(txt, sizeof(txt), "%s killed %s", m_game->m_npc_list[attacker_h]->m_npc_name, m_game->m_client_list[client_h]->m_char_name);
@@ -419,7 +363,7 @@ void CombatManager::effect_damage_spot(short attacker_h, char attacker_type, sho
 			item_index = m_game->m_client_list[attacker_h]->m_item_equipment_status[to_int(EquipPos::RightHand)];
 			if ((item_index != -1) && (m_game->m_client_list[attacker_h]->m_item_list[item_index] != 0)) {
 				if (m_game->m_client_list[attacker_h]->m_item_list[item_index]->m_id_num == 732 || m_game->m_client_list[attacker_h]->m_item_list[item_index]->m_id_num == 738) {
-					damage *= (int)1.2;
+					damage = damage * 12 / 10;
 				}
 				if (m_game->m_client_list[attacker_h]->m_item_list[item_index]->m_id_num == 863 || m_game->m_client_list[attacker_h]->m_item_list[item_index]->m_id_num == 864) {
 					if (m_game->m_client_list[attacker_h]->m_rating > 0) {
@@ -537,10 +481,7 @@ void CombatManager::effect_damage_spot(short attacker_h, char attacker_type, sho
 				}
 				else {
 					if (m_game->m_map_list[m_game->m_client_list[attacker_h]->m_map_index]->m_is_fight_zone) {
-						if (m_game->m_client_list[attacker_h]->m_guild_guid != m_game->m_client_list[target_h]->m_guild_guid) {
 
-						}
-						else return;
 					}
 					else return;
 				}
@@ -615,13 +556,13 @@ void CombatManager::effect_damage_spot(short attacker_h, char attacker_type, sho
 			}
 			if (damage <= 0) damage = 0;
 
-			remain_life = m_game->m_client_list[target_h]->m_item_list[index]->m_cur_life_span;
+			remain_life = m_game->m_client_list[target_h]->m_item_list[index]->m_instance.cur_durability;
 			if (remain_life <= damage) {
 				m_game->m_item_manager->item_deplete_handler(target_h, index, true);
 			}
 			else {
-				m_game->m_client_list[target_h]->m_item_list[index]->m_cur_life_span -= damage;
-				m_game->send_notify_msg(0, target_h, Notify::CurLifeSpan, index, m_game->m_client_list[target_h]->m_item_list[index]->m_cur_life_span, 0, 0);
+				m_game->m_client_list[target_h]->m_item_list[index]->m_instance.cur_durability -= damage;
+				m_game->send_notify_msg(0, target_h, Notify::CurDurability, index, m_game->m_client_list[target_h]->m_item_list[index]->m_instance.cur_durability, 0, 0);
 			}
 		}
 
@@ -910,7 +851,8 @@ void CombatManager::effect_damage_spot(short attacker_h, char attacker_type, sho
 void CombatManager::effect_damage_spot_damage_move(short attacker_h, char attacker_type, short target_h, char target_type, short atk_x, short atk_y, short v1, short v2, short v3, bool exp, int attr)
 {
 	int damage, side_condition, index, remain_life, temp, max_super_attack;
-	uint32_t time, weapon_type;
+	uint32_t time;
+	weapon_class::weapon_class wc;
 	char attacker_side;
 	direction damage_move_dir;
 	double tmp1, tmp2, tmp3;
@@ -966,8 +908,8 @@ void CombatManager::effect_damage_spot_damage_move(short attacker_h, char attack
 			damage += 4;
 		}
 
-		weapon_type = m_game->m_client_list[attacker_h]->get_equipped_weapon_type();
-		if (weapon_type == 34) {
+		wc = m_game->m_client_list[attacker_h]->get_equipped_weapon_class();
+		if (wc == weapon_class::wand) {
 			damage += damage / 3;
 		}
 
@@ -1026,9 +968,6 @@ void CombatManager::effect_damage_spot_damage_move(short attacker_h, char attack
 				}
 				else {
 					if (m_game->m_map_list[m_game->m_client_list[attacker_h]->m_map_index]->m_is_fight_zone) {
-						if (m_game->m_client_list[attacker_h]->m_guild_guid != m_game->m_client_list[target_h]->m_guild_guid) {
-						}
-						else return;
 					}
 					else return;
 				}
@@ -1103,13 +1042,13 @@ void CombatManager::effect_damage_spot_damage_move(short attacker_h, char attack
 			}
 			if (damage <= 0) damage = 0;
 
-			remain_life = m_game->m_client_list[target_h]->m_item_list[index]->m_cur_life_span;
+			remain_life = m_game->m_client_list[target_h]->m_item_list[index]->m_instance.cur_durability;
 			if (remain_life <= damage) {
 				m_game->m_item_manager->item_deplete_handler(target_h, index, true);
 			}
 			else {
-				m_game->m_client_list[target_h]->m_item_list[index]->m_cur_life_span -= damage;
-				m_game->send_notify_msg(0, target_h, Notify::CurLifeSpan, index, m_game->m_client_list[target_h]->m_item_list[index]->m_cur_life_span, 0, 0);
+				m_game->m_client_list[target_h]->m_item_list[index]->m_instance.cur_durability -= damage;
+				m_game->send_notify_msg(0, target_h, Notify::CurDurability, index, m_game->m_client_list[target_h]->m_item_list[index]->m_instance.cur_durability, 0, 0);
 			}
 		}
 
@@ -1404,7 +1343,7 @@ void CombatManager::effect_hp_up_spot(short attacker_h, char attacker_type, shor
 		if (m_game->m_npc_list[target_h] == 0) return;
 		if (m_game->m_npc_list[target_h]->m_hp <= 0) return;
 		if (m_game->m_npc_list[target_h]->m_is_killed) return;
-		max_hp = m_game->m_npc_list[target_h]->m_hit_dice * 4;
+		max_hp = m_game->m_npc_list[target_h]->m_max_hp;
 		if (m_game->m_npc_list[target_h]->m_hp < max_hp) {
 			m_game->m_npc_list[target_h]->m_hp += hp;
 			if (m_game->m_npc_list[target_h]->m_hp > max_hp) m_game->m_npc_list[target_h]->m_hp = max_hp;
@@ -1669,6 +1608,15 @@ void CombatManager::poison_effect(int client_h, int v1)
 	if (m_game->m_client_list[client_h]->m_is_killed) return;
 	if (m_game->m_client_list[client_h]->m_is_init_complete == false) return;
 
+	// GM mode: instantly cure poison instead of taking damage
+	if (m_game->m_client_list[client_h]->m_is_gm_mode)
+	{
+		m_game->m_client_list[client_h]->m_is_poisoned = false;
+		m_game->m_status_effect_manager->set_poison_flag(client_h, hb::shared::owner_class::Player, false);
+		m_game->send_notify_msg(0, client_h, Notify::MagicEffectOff, hb::shared::magic::Poison, 0, 0, 0);
+		return;
+	}
+
 	poison_level = m_game->m_client_list[client_h]->m_poison_level;
 
 	damage = m_game->dice(1, poison_level);
@@ -1757,20 +1705,13 @@ int CombatManager::get_player_relationship_raw(int client_h, int opponent_h)
 			}
 		}
 		else {
-			if ((memcmp(m_game->m_client_list[client_h]->m_guild_name, m_game->m_client_list[opponent_h]->m_guild_name, 20) == 0) &&
-				(memcmp(m_game->m_client_list[client_h]->m_guild_name, "NONE", 4) != 0)) {
-				if (m_game->m_client_list[opponent_h]->m_guild_rank == 0)
-					ret = 5;
-				else ret = 3;
+			// Guild system removed - same-faction players are allies (ret=1), different faction are enemies
+			if ((memcmp(m_game->m_client_list[client_h]->m_location, m_game->m_client_list[opponent_h]->m_location, 10) == 0) &&
+				(memcmp(m_game->m_client_list[client_h]->m_location, "NONE", 4) != 0) &&
+				(memcmp(m_game->m_client_list[opponent_h]->m_location, "NONE", 4) != 0)) {
+				ret = 4;
 			}
-			else
-				if ((memcmp(m_game->m_client_list[client_h]->m_location, m_game->m_client_list[opponent_h]->m_location, 10) == 0) &&
-					(memcmp(m_game->m_client_list[client_h]->m_guild_name, "NONE", 4) != 0) &&
-					(memcmp(m_game->m_client_list[opponent_h]->m_guild_name, "NONE", 4) != 0) &&
-					(memcmp(m_game->m_client_list[client_h]->m_guild_name, m_game->m_client_list[opponent_h]->m_guild_name, 20) != 0)) {
-					ret = 4;
-				}
-				else ret = 1;
+			else ret = 1;
 		}
 	}
 
@@ -1811,16 +1752,14 @@ EntityRelationship CombatManager::get_player_relationship(int owner_h, int viewe
 
 void CombatManager::check_attack_type(int client_h, short* spType)
 {
-	uint16_t type;
-
 	if (m_game->m_client_list[client_h] == 0) return;
-	type = m_game->m_client_list[client_h]->get_equipped_weapon_type();
+	auto wc = m_game->m_client_list[client_h]->get_equipped_weapon_class();
 
 	switch (*spType) {
 	case 2:
 		// Effect  .
 		if (m_game->m_client_list[client_h]->m_arrow_index == -1) *spType = 0;
-		if (type < 40) *spType = 1;
+		if (wc != weapon_class::bow) *spType = 1;
 		break;
 
 	case 20:
@@ -1852,7 +1791,7 @@ void CombatManager::check_attack_type(int client_h, short* spType)
 		if (m_game->m_client_list[client_h]->m_super_attack_left <= 0)  *spType = 2;
 		if (m_game->m_client_list[client_h]->m_skill_mastery[6] < 100) *spType = 2;
 		if (m_game->m_client_list[client_h]->m_arrow_index == -1)      *spType = 0;
-		if (type < 40) *spType = 1;
+		if (wc != weapon_class::bow) *spType = 1;
 		break;
 
 	case 26:
@@ -1870,10 +1809,6 @@ void CombatManager::check_attack_type(int client_h, short* spType)
 void CombatManager::check_fire_bluring(char map_index, int sX, int sY)
 {
 	int item_num;
-	char  item_color;
-	CItem* item;
-	short id_num;
-	uint32_t attr;
 
 	for(int ix = sX - 1; ix <= sX + 1; ix++)
 		for(int iy = sY - 1; iy <= sY + 1; iy++) {
@@ -1881,50 +1816,37 @@ void CombatManager::check_fire_bluring(char map_index, int sX, int sY)
 
 			switch (item_num) {
 			case 355:
-				item = m_game->m_map_list[map_index]->get_item(ix, iy, &id_num, &item_color, &attr);
-				if (item != 0) delete item;
+			{
+				CItem* remain = nullptr;
+				CItem* item = m_game->m_map_list[map_index]->get_item(ix, iy, &remain);
+				if (item != nullptr) delete item;
 				m_game->m_dynamic_object_manager->add_dynamic_object_list(0, 0, dynamic_object::Fire, map_index, ix, iy, 6000);
 
-				m_game->send_event_to_near_client_type_b(MsgId::EventCommon, CommonType::SetItem, map_index,
-					ix, iy, id_num, 0, item_color, attr);
+				m_game->send_ground_item_event(CommonType::SetItem, map_index, ix, iy, remain);
 				break;
+			}
 			}
 		}
 }
 
 int CombatManager::get_weapon_skill_type(int client_h)
 {
-	uint16_t weapon_type;
-
 	if (m_game->m_client_list[client_h] == 0) return 0;
 
-	weapon_type = m_game->m_client_list[client_h]->get_equipped_weapon_type();
+	auto wc = m_game->m_client_list[client_h]->get_equipped_weapon_class();
 
-	if (weapon_type == 0) {
-		return 5;
+	switch (wc) {
+	case weapon_class::none:        return 5;  // hand combat
+	case weapon_class::dagger:      return 7;  // short sword / dagger
+	case weapon_class::short_sword: return 7;  // short sword
+	case weapon_class::long_sword:  return 8;  // long sword
+	case weapon_class::fencing:     return 9;  // fencing
+	case weapon_class::axe:         return 10; // axe
+	case weapon_class::hammer:      return 14; // hammer / club
+	case weapon_class::wand:        return 21; // staff / wand
+	case weapon_class::bow:         return 6;  // archery
+	default:                        return 1;
 	}
-	else if ((weapon_type >= 1) && (weapon_type <= 2)) {
-		return 7;
-	}
-	else if ((weapon_type > 2) && (weapon_type < 20)) {
-		if (weapon_type == 7)
-			return 9;
-		else return 8;
-	}
-	else if ((weapon_type >= 20) && (weapon_type < 30)) {
-		return 10;
-	}
-	else if ((weapon_type >= 30) && (weapon_type < 35)) {
-		return 14;
-	}
-	else if ((weapon_type >= 35) && (weapon_type < 40)) {
-		return 21;
-	}
-	else if (weapon_type >= 40) {
-		return 6;
-	}
-
-	return 1;
 }
 
 int CombatManager::get_combo_attack_bonus(int skill, int combo_count)
@@ -1985,75 +1907,75 @@ void CombatManager::armor_life_decrement(int attacker_h, int target_h, char owne
 
 	temp = m_game->m_client_list[target_h]->m_item_equipment_status[to_int(EquipPos::Body)];
 	if ((temp != -1) && (m_game->m_client_list[target_h]->m_item_list[temp] != 0)) {
-		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span > 0) {
-			if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span < static_cast<uint16_t>(value))
-				m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span = 0;
+		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability > 0) {
+			if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability < static_cast<uint16_t>(value))
+				m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability = 0;
 			else
-				m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span -= value;
-			m_game->send_notify_msg(0, target_h, Notify::CurLifeSpan, temp, m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span, 0, 0);
+				m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability -= value;
+			m_game->send_notify_msg(0, target_h, Notify::CurDurability, temp, m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability, 0, 0);
 		}
-		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span == 0) {
-			m_game->send_notify_msg(0, target_h, Notify::ItemLifeSpanEnd, m_game->m_client_list[target_h]->m_item_list[temp]->m_equip_pos, temp, 0, 0);
-			m_game->m_item_manager->release_item_handler(target_h, temp, true);
-		}
-	}
-
-	temp = m_game->m_client_list[target_h]->m_item_equipment_status[to_int(EquipPos::Pants)];
-	if ((temp != -1) && (m_game->m_client_list[target_h]->m_item_list[temp] != 0)) {
-		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span > 0) {
-			if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span < static_cast<uint16_t>(value))
-				m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span = 0;
-			else
-				m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span -= value;
-			m_game->send_notify_msg(0, target_h, Notify::CurLifeSpan, temp, m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span, 0, 0);
-		}
-		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span == 0) {
-			m_game->send_notify_msg(0, target_h, Notify::ItemLifeSpanEnd, m_game->m_client_list[target_h]->m_item_list[temp]->m_equip_pos, temp, 0, 0);
+		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability == 0) {
+			m_game->send_notify_msg(0, target_h, Notify::ItemDurabilityEnd, m_game->m_client_list[target_h]->m_item_list[temp]->m_equip_pos, temp, 0, 0);
 			m_game->m_item_manager->release_item_handler(target_h, temp, true);
 		}
 	}
 
 	temp = m_game->m_client_list[target_h]->m_item_equipment_status[to_int(EquipPos::Leggings)];
 	if ((temp != -1) && (m_game->m_client_list[target_h]->m_item_list[temp] != 0)) {
-		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span > 0) {
-			if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span < static_cast<uint16_t>(value))
-				m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span = 0;
+		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability > 0) {
+			if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability < static_cast<uint16_t>(value))
+				m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability = 0;
 			else
-				m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span -= value;
-			m_game->send_notify_msg(0, target_h, Notify::CurLifeSpan, temp, m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span, 0, 0);
+				m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability -= value;
+			m_game->send_notify_msg(0, target_h, Notify::CurDurability, temp, m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability, 0, 0);
 		}
-		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span == 0) {
-			m_game->send_notify_msg(0, target_h, Notify::ItemLifeSpanEnd, m_game->m_client_list[target_h]->m_item_list[temp]->m_equip_pos, temp, 0, 0);
+		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability == 0) {
+			m_game->send_notify_msg(0, target_h, Notify::ItemDurabilityEnd, m_game->m_client_list[target_h]->m_item_list[temp]->m_equip_pos, temp, 0, 0);
+			m_game->m_item_manager->release_item_handler(target_h, temp, true);
+		}
+	}
+
+	temp = m_game->m_client_list[target_h]->m_item_equipment_status[to_int(EquipPos::Boots)];
+	if ((temp != -1) && (m_game->m_client_list[target_h]->m_item_list[temp] != 0)) {
+		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability > 0) {
+			if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability < static_cast<uint16_t>(value))
+				m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability = 0;
+			else
+				m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability -= value;
+			m_game->send_notify_msg(0, target_h, Notify::CurDurability, temp, m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability, 0, 0);
+		}
+		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability == 0) {
+			m_game->send_notify_msg(0, target_h, Notify::ItemDurabilityEnd, m_game->m_client_list[target_h]->m_item_list[temp]->m_equip_pos, temp, 0, 0);
 			m_game->m_item_manager->release_item_handler(target_h, temp, true);
 		}
 	}
 
 	temp = m_game->m_client_list[target_h]->m_item_equipment_status[to_int(EquipPos::Arms)];
 	if ((temp != -1) && (m_game->m_client_list[target_h]->m_item_list[temp] != 0)) {
-		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span > 0) {
-			if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span < static_cast<uint16_t>(value))
-				m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span = 0;
+		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability > 0) {
+			if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability < static_cast<uint16_t>(value))
+				m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability = 0;
 			else
-				m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span -= value;
-			m_game->send_notify_msg(0, target_h, Notify::CurLifeSpan, temp, m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span, 0, 0);
+				m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability -= value;
+			m_game->send_notify_msg(0, target_h, Notify::CurDurability, temp, m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability, 0, 0);
 		}
-		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span == 0) {
-			m_game->send_notify_msg(0, target_h, Notify::ItemLifeSpanEnd, m_game->m_client_list[target_h]->m_item_list[temp]->m_equip_pos, temp, 0, 0);
+		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability == 0) {
+			m_game->send_notify_msg(0, target_h, Notify::ItemDurabilityEnd, m_game->m_client_list[target_h]->m_item_list[temp]->m_equip_pos, temp, 0, 0);
 			m_game->m_item_manager->release_item_handler(target_h, temp, true);
 		}
 	}
 
 	temp = m_game->m_client_list[target_h]->m_item_equipment_status[to_int(EquipPos::Head)];
 	if ((temp != -1) && (m_game->m_client_list[target_h]->m_item_list[temp] != 0)) {
-		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span > 0) {
-			if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span < static_cast<uint16_t>(value))
-				m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span = 0;
+		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability > 0) {
+			if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability < static_cast<uint16_t>(value))
+				m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability = 0;
 			else
-				m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span -= value;
-			m_game->send_notify_msg(0, target_h, Notify::CurLifeSpan, temp, m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span, 0, 0);
+				m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability -= value;
+			m_game->send_notify_msg(0, target_h, Notify::CurDurability, temp, m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability, 0, 0);
 		}
-		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span == 0) {
-			m_game->send_notify_msg(0, target_h, Notify::ItemLifeSpanEnd, m_game->m_client_list[target_h]->m_item_list[temp]->m_equip_pos, temp, 0, 0);
+		if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability == 0) {
+			m_game->send_notify_msg(0, target_h, Notify::ItemDurabilityEnd, m_game->m_client_list[target_h]->m_item_list[temp]->m_equip_pos, temp, 0, 0);
 			m_game->m_item_manager->release_item_handler(target_h, temp, true);
 		}
 	}
@@ -2119,14 +2041,10 @@ bool CombatManager::check_client_attack_frequency(int client_h, uint32_t client_
 		constexpr int TOLERANCE_MS = 50;
 
 		const auto& status = m_game->m_client_list[client_h]->m_status;
-		int base_swing = hb::shared::calc::swing_time(m_game->m_formula_engine,
-			hb::shared::calc::attack_delay_value{(double)status.attack_delay});
-		int frames = hb::shared::calc::swing_frames(m_game->m_formula_engine);
-		int bft = hb::shared::calc::base_frame_time(m_game->m_formula_engine);
-		int rft = hb::shared::calc::run_frame_time(m_game->m_formula_engine);
+		int base_swing = hb::shared::calc::swing_time(status.attack_delay);
 		int effective_swing = base_swing;
-		if (status.frozen) effective_swing += frames * (bft >> 2);
-		if (status.haste)  effective_swing -= frames * static_cast<int>(rft / 2.3);
+		if (status.frozen) effective_swing += hb::shared::balance::swing_frames * (hb::shared::balance::base_frame_time >> 2);
+		if (status.haste)  effective_swing -= hb::shared::balance::swing_frames * static_cast<int>(hb::shared::balance::run_frame_time / 2.3);
 
 		int expectedSwingTime = effective_swing;
 		int threshold = expectedSwingTime - TOLERANCE_MS;
@@ -2148,10 +2066,10 @@ bool CombatManager::check_client_attack_frequency(int client_h, uint32_t client_
 	return false;
 }
 
-bool CombatManager::calculate_endurance_decrement(short target_h, short attacker_h, char attacker_type, char target_type, int armor_type)
+bool CombatManager::calculate_durability_decrement(short target_h, short attacker_h, char attacker_type, char target_type, int armor_type)
 {
 	int down_value = 1, hammer_chance = 100, item_index;
-	uint16_t weapon_type = 0;
+	auto wc = weapon_class::none;
 
 	if (m_game->m_client_list[target_h] == 0) return false;
 
@@ -2159,11 +2077,11 @@ bool CombatManager::calculate_endurance_decrement(short target_h, short attacker
 	if (attacker_type == hb::shared::owner_class::Player) {
 		if (attacker_h > MaxClients) return false;
 		if (m_game->m_client_list[attacker_h] == 0) return false;
-		weapon_type = m_game->m_client_list[attacker_h]->get_equipped_weapon_type();
+		wc = m_game->m_client_list[attacker_h]->get_equipped_weapon_class();
 		if ((target_type == hb::shared::owner_class::Player) && (m_game->m_client_list[target_h]->m_side != m_game->m_client_list[attacker_h]->m_side)) {
 			switch (m_game->m_client_list[attacker_h]->m_using_weapon_skill) {
 			case 14:
-				if ((weapon_type == 31) || (weapon_type == 32)) {
+				if (wc == weapon_class::hammer) {
 					item_index = m_game->m_client_list[attacker_h]->m_item_equipment_status[to_int(EquipPos::TwoHand)];
 					if ((item_index != -1) && (m_game->m_client_list[attacker_h]->m_item_list[item_index] != 0)) {
 						if (m_game->m_client_list[attacker_h]->m_item_list[item_index]->m_id_num == 761) { // BattleHammer
@@ -2203,30 +2121,30 @@ bool CombatManager::calculate_endurance_decrement(short target_h, short attacker
 			break;
 		}
 	}
-	if (m_game->m_client_list[target_h]->m_item_list[armor_type]->m_cur_life_span > 0) {
-		if (m_game->m_client_list[target_h]->m_item_list[armor_type]->m_cur_life_span < static_cast<uint16_t>(down_value))
-			m_game->m_client_list[target_h]->m_item_list[armor_type]->m_cur_life_span = 0;
+	if (m_game->m_client_list[target_h]->m_item_list[armor_type]->m_instance.cur_durability > 0) {
+		if (m_game->m_client_list[target_h]->m_item_list[armor_type]->m_instance.cur_durability < static_cast<uint16_t>(down_value))
+			m_game->m_client_list[target_h]->m_item_list[armor_type]->m_instance.cur_durability = 0;
 		else
-			m_game->m_client_list[target_h]->m_item_list[armor_type]->m_cur_life_span -= down_value;
-		m_game->send_notify_msg(0, target_h, Notify::CurLifeSpan, armor_type, m_game->m_client_list[target_h]->m_item_list[armor_type]->m_cur_life_span, 0, 0);
+			m_game->m_client_list[target_h]->m_item_list[armor_type]->m_instance.cur_durability -= down_value;
+		m_game->send_notify_msg(0, target_h, Notify::CurDurability, armor_type, m_game->m_client_list[target_h]->m_item_list[armor_type]->m_instance.cur_durability, 0, 0);
 	}
-	if (m_game->m_client_list[target_h]->m_item_list[armor_type]->m_cur_life_span == 0) {
-		m_game->m_client_list[target_h]->m_item_list[armor_type]->m_cur_life_span = 0;
-		m_game->send_notify_msg(0, target_h, Notify::ItemLifeSpanEnd, m_game->m_client_list[target_h]->m_item_list[armor_type]->m_equip_pos, armor_type, 0, 0);
+	if (m_game->m_client_list[target_h]->m_item_list[armor_type]->m_instance.cur_durability == 0) {
+		m_game->m_client_list[target_h]->m_item_list[armor_type]->m_instance.cur_durability = 0;
+		m_game->send_notify_msg(0, target_h, Notify::ItemDurabilityEnd, m_game->m_client_list[target_h]->m_item_list[armor_type]->m_equip_pos, armor_type, 0, 0);
 		m_game->m_item_manager->release_item_handler(target_h, armor_type, true);
 		return true;
 	}
 	if ((attacker_type == hb::shared::owner_class::Player) && (target_type == hb::shared::owner_class::Player) && (m_game->m_client_list[attacker_h]->m_using_weapon_skill == 14) && (hammer_chance == 100)) {
-		if (m_game->m_client_list[target_h]->m_item_list[armor_type]->m_max_life_span < 2000) {
-			hammer_chance = m_game->dice(6, (m_game->m_client_list[target_h]->m_item_list[armor_type]->m_max_life_span - m_game->m_client_list[target_h]->m_item_list[armor_type]->m_cur_life_span));
+		if (m_game->m_client_list[target_h]->m_item_list[armor_type]->m_durability < 2000) {
+			hammer_chance = m_game->dice(6, (m_game->m_client_list[target_h]->m_item_list[armor_type]->m_durability - m_game->m_client_list[target_h]->m_item_list[armor_type]->m_instance.cur_durability));
 		}
 		else {
-			hammer_chance = m_game->dice(4, (m_game->m_client_list[target_h]->m_item_list[armor_type]->m_max_life_span - m_game->m_client_list[target_h]->m_item_list[armor_type]->m_cur_life_span));
+			hammer_chance = m_game->dice(4, (m_game->m_client_list[target_h]->m_item_list[armor_type]->m_durability - m_game->m_client_list[target_h]->m_item_list[armor_type]->m_instance.cur_durability));
 		}
-		if ((weapon_type == 31) || (weapon_type == 32)) {
+		if (wc == weapon_class::hammer) {
 			item_index = m_game->m_client_list[attacker_h]->m_item_equipment_status[to_int(EquipPos::TwoHand)];
 			if ((item_index != -1) && (m_game->m_client_list[attacker_h]->m_item_list[item_index] != 0)) {
-				if (m_game->m_client_list[attacker_h]->m_item_list[item_index]->m_id_num == 761) { // BattleHammer 
+				if (m_game->m_client_list[attacker_h]->m_item_list[item_index]->m_id_num == 761) { // BattleHammer
 					hammer_chance -= hammer_chance >> 1;
 				}
 				if (m_game->m_client_list[attacker_h]->m_item_list[item_index]->m_id_num == 762) { // GiantBattleHammer
@@ -2248,7 +2166,7 @@ bool CombatManager::calculate_endurance_decrement(short target_h, short attacker
 				hammer_chance = 0;
 				break;
 			}
-			if (m_game->m_client_list[target_h]->m_item_list[armor_type]->m_cur_life_span < hammer_chance) {
+			if (m_game->m_client_list[target_h]->m_item_list[armor_type]->m_instance.cur_durability < hammer_chance) {
 				m_game->m_item_manager->release_item_handler(target_h, armor_type, true);
 				m_game->send_notify_msg(0, target_h, Notify::ItemReleased, m_game->m_client_list[target_h]->m_item_list[armor_type]->m_equip_pos, armor_type, 0, 0);
 			}
@@ -2264,7 +2182,7 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 	direction attacker_dir, target_dir;
 	short  weapon_index, attacker_weapon, dX, dY, sX, sY, atk_x, atk_y, tgt_x, tgt_y;
 	uint32_t  time;
-	uint16_t   weapon_type;
+	weapon_class::weapon_class wc;
 	double tmp1, tmp2, tmp3;
 	bool   killed;
 	bool   normal_missile_attack;
@@ -2286,7 +2204,7 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 	std::memset(attacker_name, 0, sizeof(attacker_name));
 	attacker_sa = 0;
 	attacker_s_avalue = 0;
-	weapon_type = 0;
+	wc = weapon_class::none;
 
 	switch (attacker_type) {
 	case hb::shared::owner_class::Player:
@@ -2307,10 +2225,10 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 		iAP_SM = 0;
 		iAP_L = 0;
 
-		weapon_type = m_game->m_client_list[attacker_h]->get_equipped_weapon_type();
+		wc = m_game->m_client_list[attacker_h]->get_equipped_weapon_class();
 
 		skill_used = m_game->m_client_list[attacker_h]->m_using_weapon_skill;
-		if ((is_dash) && (m_game->m_client_list[attacker_h]->m_skill_mastery[skill_used] != 100) && (weapon_type != 25) && (weapon_type != 27)) {
+		if ((is_dash) && (m_game->m_client_list[attacker_h]->m_skill_mastery[skill_used] != 100) && (wc != weapon_class::axe)) {
 			try
 			{
 				hb::logger::warn<log_channel::security>("Fullswing hack: IP={} player={}, dashing with weapon skill {}", m_game->m_client_list[attacker_h]->m_ip_address, m_game->m_client_list[attacker_h]->m_char_name, m_game->m_client_list[attacker_h]->m_skill_mastery[skill_used]);
@@ -2325,7 +2243,7 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 
 		attacker_side = m_game->m_client_list[attacker_h]->m_side;
 
-		if (weapon_type == 0) {
+		if (wc == weapon_class::none) {
 			iAP_SM = iAP_L = m_game->dice(1, ((m_game->m_client_list[attacker_h]->m_str + m_game->m_client_list[attacker_h]->m_angelic_str) / 12));
 			if (iAP_SM <= 0) iAP_SM = 1;
 			if (iAP_L <= 0) iAP_L = 1;
@@ -2333,7 +2251,7 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 			m_game->m_client_list[attacker_h]->m_using_weapon_skill = 5;
 
 		}
-		else if ((weapon_type >= 1) && (weapon_type < 40)) {
+		else if (wc != weapon_class::bow) {
 			iAP_SM = m_game->dice(m_game->m_client_list[attacker_h]->m_attack_dice_throw_sm, m_game->m_client_list[attacker_h]->m_attack_dice_range_sm);
 			iAP_L = m_game->dice(m_game->m_client_list[attacker_h]->m_attack_dice_throw_l, m_game->m_client_list[attacker_h]->m_attack_dice_range_l);
 
@@ -2356,7 +2274,7 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 			tmp3 = tmp1 + (tmp1 * (tmp2 / 100.0f));
 			iAP_L = (int)(tmp3 + 0.5f);
 		}
-		else if (weapon_type >= 40) {
+		else if (wc == weapon_class::bow) {
 			iAP_SM = m_game->dice(m_game->m_client_list[attacker_h]->m_attack_dice_throw_sm, m_game->m_client_list[attacker_h]->m_attack_dice_range_sm);
 			iAP_L = m_game->dice(m_game->m_client_list[attacker_h]->m_attack_dice_throw_l, m_game->m_client_list[attacker_h]->m_attack_dice_range_l);
 
@@ -2543,12 +2461,11 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 		iAP_SM = 0;
 		iAP_L = 0;
 
-		if (m_game->m_npc_list[attacker_h]->m_attack_dice_throw >= 0)
+		int npc_min = m_game->m_npc_list[attacker_h]->m_min_damage;
+		int npc_max = m_game->m_npc_list[attacker_h]->m_max_damage;
+		if (npc_max > 0)
 		{
-			iAP_L = iAP_SM = m_game->dice(
-				static_cast<uint32_t>(m_game->m_npc_list[attacker_h]->m_attack_dice_throw),
-				static_cast<uint32_t>(m_game->m_npc_list[attacker_h]->m_attack_dice_range)
-			);
+			iAP_L = iAP_SM = npc_min + (rand() % (npc_max - npc_min + 1));
 		}
 
 		attacker_hit_ratio = m_game->m_npc_list[attacker_h]->m_hit_ratio;
@@ -2613,11 +2530,8 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 			}
 			else {
 				if (m_game->m_map_list[m_game->m_client_list[attacker_h]->m_map_index]->m_is_fight_zone) {
-					if (m_game->m_client_list[attacker_h]->m_guild_guid == m_game->m_client_list[target_h]->m_guild_guid) return 0;
-					else {
-						iAP_SM = iAP_SM / 2;
-						iAP_L = iAP_L / 2;
-					}
+					iAP_SM = iAP_SM / 2;
+					iAP_L = iAP_L / 2;
 				}
 				else return 0;
 			}
@@ -2647,7 +2561,7 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 				break;
 			}
 
-			if ((weapon_type == 25) && (m_game->m_npc_list[target_h]->m_action_limit == 5) && (m_game->m_npc_list[target_h]->m_build_count > 0)) {
+			if ((wc == weapon_class::axe) && (m_game->m_npc_list[target_h]->m_action_limit == 5) && (m_game->m_npc_list[target_h]->m_build_count > 0)) {
 				if (m_game->m_client_list[attacker_h]->m_crusade_duty != 2) break;
 
 				switch (m_game->m_npc_list[target_h]->m_type) {
@@ -2690,7 +2604,7 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 				}
 				return 0;
 			}
-			if ((weapon_type == 27) && (m_game->m_npc_list[target_h]->m_crop_type != 0) && (m_game->m_npc_list[target_h]->m_action_limit == 5) && (m_game->m_npc_list[target_h]->m_build_count > 0)) {
+			if ((wc == weapon_class::axe) && (m_game->m_npc_list[target_h]->m_crop_type != 0) && (m_game->m_npc_list[target_h]->m_action_limit == 5) && (m_game->m_npc_list[target_h]->m_build_count > 0)) {
 				farming_skill = m_game->m_client_list[attacker_h]->m_skill_mastery[2];
 				crop_skill = m_game->m_npc_list[target_h]->m_crop_skill;
 				if (farming_skill < 20) return 0;
@@ -2755,7 +2669,7 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 		}
 	}
 
-	if (weapon_type >= 40) {
+	if (wc == weapon_class::bow) {
 		switch (m_game->m_map_list[m_game->m_client_list[attacker_h]->m_map_index]->m_weather_status) {
 		case 0:	break;
 		case 1:	attacker_hit_ratio -= (attacker_hit_ratio / 20); break;
@@ -2791,16 +2705,25 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 					if (m_game->m_client_list[attacker_h]->m_item_list[m_game->m_client_list[attacker_h]->m_arrow_index] == 0)
 						return 0;
 
+					int arrow_id_num = m_game->m_client_list[attacker_h]->m_item_list[m_game->m_client_list[attacker_h]->m_arrow_index]->m_id_num;
+
 					if (arrow_use != true)
-						m_game->m_client_list[attacker_h]->m_item_list[m_game->m_client_list[attacker_h]->m_arrow_index]->m_count--;
-					if (m_game->m_client_list[attacker_h]->m_item_list[m_game->m_client_list[attacker_h]->m_arrow_index]->m_count <= 0) {
+						m_game->m_client_list[attacker_h]->m_item_list[m_game->m_client_list[attacker_h]->m_arrow_index]->m_instance.count--;
+					if (m_game->m_client_list[attacker_h]->m_item_list[m_game->m_client_list[attacker_h]->m_arrow_index]->m_instance.count <= 0) {
 
 						m_game->m_item_manager->item_deplete_handler(attacker_h, m_game->m_client_list[attacker_h]->m_arrow_index, false);
 						m_game->m_client_list[attacker_h]->m_arrow_index = m_game->m_item_manager->get_arrow_item_index(attacker_h);
 					}
 					else {
-						m_game->send_notify_msg(0, attacker_h, Notify::set_item_count, m_game->m_client_list[attacker_h]->m_arrow_index, m_game->m_client_list[attacker_h]->m_item_list[m_game->m_client_list[attacker_h]->m_arrow_index]->m_count, false, 0);
+						m_game->send_notify_msg(0, attacker_h, Notify::set_item_count, m_game->m_client_list[attacker_h]->m_arrow_index, m_game->m_client_list[attacker_h]->m_item_list[m_game->m_client_list[attacker_h]->m_arrow_index]->m_instance.count, false, 0);
 						m_game->calc_total_weight(attacker_h);
+					}
+
+					// Poison arrows apply poison (same as weapon poison prefix, sa=61)
+					if (arrow_id_num == hb::shared::item::ItemId::PoisonArrow)
+					{
+						attacker_sa = 61;
+						attacker_s_avalue = 20;
 					}
 				}
 				if (protect == 1) return 0;
@@ -2890,14 +2813,14 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 			case 0: break;
 			case 1:
 				if ((m_game->m_client_list[attacker_h]->m_super_attack_left > 0) && (attack_mode >= 20)) {
-					iAP_SM += m_game->m_client_list[attacker_h]->m_special_weapon_effect_value;
-					iAP_L += m_game->m_client_list[attacker_h]->m_special_weapon_effect_value;
+					iAP_SM += m_game->m_client_list[attacker_h]->m_special_weapon_effect_value * m_game->m_prefix_multiplier[1];
+					iAP_L += m_game->m_client_list[attacker_h]->m_special_weapon_effect_value * m_game->m_prefix_multiplier[1];
 				}
 				break;
 
 			case 2:
 				attacker_sa = 61;
-				attacker_s_avalue = m_game->m_client_list[attacker_h]->m_special_weapon_effect_value * 5;
+				attacker_s_avalue = m_game->m_client_list[attacker_h]->m_special_weapon_effect_value * m_game->m_prefix_multiplier[2];
 				break;
 
 			case 3:
@@ -2968,12 +2891,12 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 					}
 					break;
 				case 2:
-					if ((m_game->m_client_list[target_h]->m_damage_absorption_armor[to_int(EquipPos::Pants)] +
-						m_game->m_client_list[target_h]->m_damage_absorption_armor[to_int(EquipPos::Leggings)]) > 0) {
-						if ((m_game->m_client_list[target_h]->m_damage_absorption_armor[to_int(EquipPos::Pants)] +
-							m_game->m_client_list[target_h]->m_damage_absorption_armor[to_int(EquipPos::Leggings)]) >= 80)
+					if ((m_game->m_client_list[target_h]->m_damage_absorption_armor[to_int(EquipPos::Leggings)] +
+						m_game->m_client_list[target_h]->m_damage_absorption_armor[to_int(EquipPos::Boots)]) > 0) {
+						if ((m_game->m_client_list[target_h]->m_damage_absorption_armor[to_int(EquipPos::Leggings)] +
+							m_game->m_client_list[target_h]->m_damage_absorption_armor[to_int(EquipPos::Boots)]) >= 80)
 							tmp1 = 80.0f;
-						else tmp1 = (double)(m_game->m_client_list[target_h]->m_damage_absorption_armor[to_int(EquipPos::Pants)] + m_game->m_client_list[target_h]->m_damage_absorption_armor[to_int(EquipPos::Leggings)]);
+						else tmp1 = (double)(m_game->m_client_list[target_h]->m_damage_absorption_armor[to_int(EquipPos::Leggings)] + m_game->m_client_list[target_h]->m_damage_absorption_armor[to_int(EquipPos::Boots)]);
 						tmp2 = (double)iAP_SM;
 						tmp3 = (tmp1 / 100.0f) * tmp2;
 
@@ -3019,12 +2942,12 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 
 						temp = m_game->m_client_list[target_h]->m_item_equipment_status[to_int(EquipPos::LeftHand)];
 						if ((temp != -1) && (m_game->m_client_list[target_h]->m_item_list[temp] != 0)) {
-							if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span > 0) {
-								m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span--;
-								m_game->send_notify_msg(0, target_h, Notify::CurLifeSpan, temp, m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span, 0, 0);
+							if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability > 0) {
+								m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability--;
+								m_game->send_notify_msg(0, target_h, Notify::CurDurability, temp, m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability, 0, 0);
 							}
-							if (m_game->m_client_list[target_h]->m_item_list[temp]->m_cur_life_span == 0) {
-								m_game->send_notify_msg(0, target_h, Notify::ItemLifeSpanEnd, m_game->m_client_list[target_h]->m_item_list[temp]->m_equip_pos, temp, 0, 0);
+							if (m_game->m_client_list[target_h]->m_item_list[temp]->m_instance.cur_durability == 0) {
+								m_game->send_notify_msg(0, target_h, Notify::ItemDurabilityEnd, m_game->m_client_list[target_h]->m_item_list[temp]->m_equip_pos, temp, 0, 0);
 								m_game->m_item_manager->release_item_handler(target_h, temp, true);
 							}
 						}
@@ -3032,7 +2955,7 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 				}
 
 				iAP_SM = iAP_SM - (iAP_Abs_Armor + iAP_Abs_Shield);
-				if (iAP_SM <= 0) iAP_SM = 1;
+				if (iAP_SM < 0) iAP_SM = 0;
 
 				if ((attacker_type == hb::shared::owner_class::Player) && (m_game->m_client_list[attacker_h] != 0) && (m_game->m_client_list[attacker_h]->m_is_special_ability_enabled)) {
 					switch (m_game->m_client_list[attacker_h]->m_special_ability_type) {
@@ -3076,7 +2999,7 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 						if (m_game->m_client_list[attacker_h]->m_item_equipment_status[to_int(EquipPos::TwoHand)] != -1)
 							weapon_index = m_game->m_client_list[attacker_h]->m_item_equipment_status[to_int(EquipPos::TwoHand)];
 						else weapon_index = m_game->m_client_list[attacker_h]->m_item_equipment_status[to_int(EquipPos::RightHand)];
-						if (weapon_index != -1)	m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_cur_life_span = 0;
+						if (weapon_index != -1)	m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_instance.cur_durability = 0;
 						break;
 					case 51:
 						if (hit_point == m_game->m_client_list[target_h]->m_special_ability_equip_pos)
@@ -3097,19 +3020,19 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 				case 1:
 					temp = m_game->m_client_list[target_h]->m_item_equipment_status[to_int(EquipPos::Body)];
 					if ((temp != -1) && (m_game->m_client_list[target_h]->m_item_list[temp] != 0)) {
-						calculate_endurance_decrement(target_h, attacker_h, attacker_type, target_type, temp);
+						calculate_durability_decrement(target_h, attacker_h, attacker_type, target_type, temp);
 					}
 					break;
 
 				case 2:
-					temp = m_game->m_client_list[target_h]->m_item_equipment_status[to_int(EquipPos::Pants)];
+					temp = m_game->m_client_list[target_h]->m_item_equipment_status[to_int(EquipPos::Leggings)];
 					if ((temp != -1) && (m_game->m_client_list[target_h]->m_item_list[temp] != 0)) {
-						calculate_endurance_decrement(target_h, attacker_h, attacker_type, target_type, temp);
+						calculate_durability_decrement(target_h, attacker_h, attacker_type, target_type, temp);
 					}
 					else {
-						temp = m_game->m_client_list[target_h]->m_item_equipment_status[to_int(EquipPos::Leggings)];
+						temp = m_game->m_client_list[target_h]->m_item_equipment_status[to_int(EquipPos::Boots)];
 						if ((temp != -1) && (m_game->m_client_list[target_h]->m_item_list[temp] != 0)) {
-							calculate_endurance_decrement(target_h, attacker_h, attacker_type, target_type, temp);
+							calculate_durability_decrement(target_h, attacker_h, attacker_type, target_type, temp);
 						}
 					}
 					break;
@@ -3117,14 +3040,14 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 				case 3:
 					temp = m_game->m_client_list[target_h]->m_item_equipment_status[to_int(EquipPos::Arms)];
 					if ((temp != -1) && (m_game->m_client_list[target_h]->m_item_list[temp] != 0)) {
-						calculate_endurance_decrement(target_h, attacker_h, attacker_type, target_type, temp);
+						calculate_durability_decrement(target_h, attacker_h, attacker_type, target_type, temp);
 					}
 					break;
 
 				case 4:
 					temp = m_game->m_client_list[target_h]->m_item_equipment_status[to_int(EquipPos::Head)];
 					if ((temp != -1) && (m_game->m_client_list[target_h]->m_item_list[temp] != 0)) {
-						calculate_endurance_decrement(target_h, attacker_h, attacker_type, target_type, temp);
+						calculate_durability_decrement(target_h, attacker_h, attacker_type, target_type, temp);
 					}
 					break;
 				}
@@ -3200,7 +3123,7 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 						m_game->send_notify_msg(0, target_h, Notify::Hp, 0, 0, 0, 0);
 
 						if (attacker_type == hb::shared::owner_class::Player)
-							attacker_weapon = m_game->m_client_list[attacker_h]->get_equipped_weapon_type();
+							attacker_weapon = to_int(m_game->m_client_list[attacker_h]->get_equipped_weapon_class());
 						else attacker_weapon = 1;
 
 						if ((attacker_type == hb::shared::owner_class::Player) && (m_game->m_map_list[m_game->m_client_list[attacker_h]->m_map_index]->m_is_fight_zone))
@@ -3348,7 +3271,7 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 			if (m_game->m_npc_list[target_h]->m_hp <= 0) {
 				m_game->m_entity_manager->on_entity_killed(target_h, attacker_h, attacker_type, damage);
 				killed = true;
-				killed_dice = m_game->m_npc_list[target_h]->m_hit_dice;
+				killed_dice = std::max(1, m_game->m_npc_list[target_h]->m_max_hp / 5);
 			}
 			else {
 				bool skip_counter =
@@ -3420,10 +3343,10 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 					m_game->m_npc_list[target_h]->m_time = time;
 
 				if (attacker_type == hb::shared::owner_class::Player)
-					attacker_weapon = m_game->m_client_list[attacker_h]->get_equipped_weapon_type();
+					attacker_weapon = to_int(m_game->m_client_list[attacker_h]->get_equipped_weapon_class());
 				else attacker_weapon = 1;
 
-				if ((weapon_type < 40) && (m_game->m_npc_list[target_h]->m_action_limit == 4)) {
+				if ((wc != weapon_class::bow) && (m_game->m_npc_list[target_h]->m_action_limit == 4)) {
 					do {
 						if (tgt_x == atk_x) {
 							if (tgt_y == atk_y)     break;
@@ -3512,7 +3435,7 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 					m_game->m_delay_event_manager->remove_from_delay_event_list(target_h, hb::shared::owner_class::Npc, hb::shared::magic::HoldObject);
 				}
 				else if (m_game->m_npc_list[target_h]->m_magic_effect_status[hb::shared::magic::HoldObject] == 2) {
-					if ((m_game->m_npc_list[target_h]->m_hit_dice > 50) && (m_game->dice(1, 10) == 5)) {
+					if (m_game->m_npc_list[target_h]->m_hold_resist > 0 && m_game->dice(1, 100) <= static_cast<uint32_t>(m_game->m_npc_list[target_h]->m_hold_resist)) {
 						m_game->m_npc_list[target_h]->m_magic_effect_status[hb::shared::magic::HoldObject] = 0;
 						m_game->m_delay_event_manager->remove_from_delay_event_list(target_h, hb::shared::owner_class::Npc, hb::shared::magic::HoldObject);
 					}
@@ -3570,9 +3493,9 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 				}
 
 				if ((m_game->m_client_list[attacker_h]->m_item_list[weapon_index] != 0) &&
-					(m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_max_life_span != 0)) {
+					(m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_durability != 0)) {
 					wep_life_off = 1;
-					if ((weapon_type >= 1) && (weapon_type < 40)) {
+					if (wc != weapon_class::none && wc != weapon_class::bow) {
 						switch (m_game->m_map_list[m_game->m_client_list[attacker_h]->m_map_index]->m_weather_status) {
 						case 0:	break;
 						case 1:	if (m_game->dice(1, 3) == 1) wep_life_off++; break;
@@ -3581,20 +3504,20 @@ uint32_t CombatManager::calculate_attack_effect(short target_h, char target_type
 						}
 					}
 
-					if (m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_cur_life_span < wep_life_off)
-						m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_cur_life_span = 0;
-					else m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_cur_life_span -= wep_life_off;
+					if (m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_instance.cur_durability < wep_life_off)
+						m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_instance.cur_durability = 0;
+					else m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_instance.cur_durability -= wep_life_off;
 
-					m_game->send_notify_msg(0, attacker_h, Notify::CurLifeSpan, weapon_index, m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_cur_life_span, 0, 0);
+					m_game->send_notify_msg(0, attacker_h, Notify::CurDurability, weapon_index, m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_instance.cur_durability, 0, 0);
 
-					if (m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_cur_life_span == 0) {
-						m_game->send_notify_msg(0, attacker_h, Notify::ItemLifeSpanEnd, m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_equip_pos, weapon_index, 0, 0);
+					if (m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_instance.cur_durability == 0) {
+						m_game->send_notify_msg(0, attacker_h, Notify::ItemDurabilityEnd, m_game->m_client_list[attacker_h]->m_item_list[weapon_index]->m_equip_pos, weapon_index, 0, 0);
 						m_game->m_item_manager->release_item_handler(attacker_h, weapon_index, true);
 					}
 				}
 			}
 			else {
-				if (weapon_type == 0) {
+				if (wc == weapon_class::none) {
 					m_game->m_skill_manager->calculate_ssn_skill_index(attacker_h, 5, 1);
 				}
 			}

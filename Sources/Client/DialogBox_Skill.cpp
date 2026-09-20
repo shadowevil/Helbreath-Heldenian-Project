@@ -76,8 +76,8 @@ void DialogBox_Skill::on_draw()
 				}
 
 				if (m_game->on_game()->m_down_skill_index == (i + m_scroll_position))
-					m_game->m_sprite[InterfaceAddInterface]->draw(sX + 215, sY + 47 + i * 15, 21, hb::shared::sprite::DrawParams::tint(GameColors::UIWhite.r, GameColors::UIWhite.g, GameColors::UIWhite.b));
-				else m_game->m_sprite[InterfaceAddInterface]->draw(sX + 215, sY + 47 + i * 15, 20, hb::shared::sprite::DrawParams::tint(1, 1, 1));
+					m_game->m_sprite[InterfaceNdGame2]->draw(sX + 220, sY + 49 + i * 15, 26, hb::shared::sprite::DrawParams::tint(GameColors::UIWhite.r, GameColors::UIWhite.g, GameColors::UIWhite.b));
+				else m_game->m_sprite[InterfaceNdGame2]->draw(sX + 220, sY + 49 + i * 15, 25, hb::shared::sprite::DrawParams::tint(1, 1, 1));
 			}
 
 		total_lines = 0;

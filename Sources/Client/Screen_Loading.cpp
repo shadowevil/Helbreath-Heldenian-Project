@@ -26,20 +26,13 @@ Screen_Loading::Screen_Loading(CGame* game)
 
 void Screen_Loading::on_initialize()
 {
-    GameModeManager::set_current_mode(GameMode::Loading);
     m_iLoadingStage = 0;
 
     // Pre-load the loading screen sprite so it can render immediately
-    hb::shared::sprite::SpriteLoader::open_pak("interface/new-dialog", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open_pak("interface/intermediate_screens", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[InterfaceNdLoading] = loader.get_sprite(0, false);
     });
 }
-
-void Screen_Loading::on_uninitialize()
-{
-    // Nothing to clean up - resources are owned by CGame
-}
-
 void Screen_Loading::on_update()
 {
     // Process one loading stage per frame
@@ -83,12 +76,6 @@ void Screen_Loading::on_render()
 //=============================================================================
 void Screen_Loading::LoadStage_Interface()
 {
-    // load interface sprites
-    hb::shared::sprite::SpriteLoader::open_pak("interface/interface", [&](hb::shared::sprite::SpriteLoader& loader) {
-        m_game->m_sprite[MouseCursor] = loader.get_sprite(0, false);
-        m_game->m_sprite[InterfaceSprFonts] = loader.get_sprite(1, false);
-    });
-
     hb::shared::sprite::SpriteLoader::open_pak("interface/newmaps", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[InterfaceNewMaps1] = loader.get_sprite(0, false);
         m_game->m_sprite[InterfaceNewMaps2] = loader.get_sprite(1, false);
@@ -97,54 +84,39 @@ void Screen_Loading::LoadStage_Interface()
         m_game->m_sprite[InterfaceNewMaps5] = loader.get_sprite(4, false);
     });
 
-    hb::shared::sprite::SpriteLoader::open_pak("interface/logindialog", [&](hb::shared::sprite::SpriteLoader& loader) {
-        m_game->m_sprite[InterfaceNdLogin] = loader.get_sprite(0, false);
-    });
-
-    hb::shared::sprite::SpriteLoader::open_pak("interface/new-dialog", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open_pak("interface/intermediate_screens", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[InterfaceNdMainMenu] = loader.get_sprite(1, false);
         m_game->m_sprite[InterfaceNdQuit] = loader.get_sprite(2, false);
         m_game->m_sprite[InterfaceNdNewAccount] = loader.get_sprite(2, false);
+        m_game->m_sprite[InterfaceNdLogin] = loader.get_sprite(4, false);
+        m_game->m_sprite[InterfaceNdSelectChar] = loader.get_sprite(5, false);
+        m_game->m_sprite[InterfaceNdNewChar] = loader.get_sprite(6, false);
     });
 
-    hb::shared::sprite::SpriteLoader::open_pak("interface/gamedialog", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open_pak("interface/game_dialogs", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[InterfaceNdGame1] = loader.get_sprite(0, false);
         m_game->m_sprite[InterfaceNdGame2] = loader.get_sprite(1, false);
         m_game->m_sprite[InterfaceNdGame3] = loader.get_sprite(2, false);
         m_game->m_sprite[InterfaceNdGame4] = loader.get_sprite(3, false);
         m_game->m_sprite[InterfaceNdCrusade] = loader.get_sprite(4, false);
-        m_game->m_sprite[InterfaceNdIconPanel] = loader.get_sprite(6, false);
-        m_game->m_sprite[InterfaceNdInventory] = loader.get_sprite(7, false);
-        m_game->m_sprite[InterfaceNdSelectChar] = loader.get_sprite(8, false);
-        m_game->m_sprite[InterfaceNdNewChar] = loader.get_sprite(9, false);
-        m_game->m_sprite[InterfaceNdNewExchange] = loader.get_sprite(10, false);
-    });
-
-    hb::shared::sprite::SpriteLoader::open_pak("interface/partysprite", [&](hb::shared::sprite::SpriteLoader& loader) {
-        m_game->m_sprite[InterfaceNdPartyStatus] = loader.get_sprite(0, false);
-    });
-
-    hb::shared::sprite::SpriteLoader::open_pak("interface/dialogtext", [&](hb::shared::sprite::SpriteLoader& loader) {
-        m_game->m_sprite[InterfaceNdText] = loader.get_sprite(0, false);
-        m_game->m_sprite[InterfaceNdButton] = loader.get_sprite(1, false);
+        m_game->m_sprite[InterfaceNdIconPanel] = loader.get_sprite(5, false);
+        m_game->m_sprite[InterfaceNdInventory] = loader.get_sprite(6, false);
+        m_game->m_sprite[InterfaceNdNewExchange] = loader.get_sprite(7, false);
+        m_game->m_sprite[MouseCursor] = loader.get_sprite(8, false);
+        m_game->m_sprite[InterfaceNdText] = loader.get_sprite(9, false);
+        m_game->m_sprite[InterfaceNdButton] = loader.get_sprite(10, false);
     });
 
     make_sprite("interface/telescope", InterfaceGuideMap, 32, false);
     make_sprite("interface/telescope2", InterfaceGuideMap + 35, 4, false);
     make_sprite("interface/monster", InterfaceMonster, 1, false);
 
-    // load interface2 sprites in one batch
-    hb::shared::sprite::SpriteLoader::open_pak("interface/interface2", [&](hb::shared::sprite::SpriteLoader& loader) {
-        m_game->m_sprite[InterfaceAddInterface] = loader.get_sprite(0, false);
-        m_game->m_sprite[InterfaceSprFonts2] = loader.get_sprite(1, false);
-        m_game->m_sprite[InterfaceF1HelpWindows] = loader.get_sprite(2, false);
-        m_game->m_sprite[InterfaceCrafting] = loader.get_sprite(3, false);
-    });
-
-    // load sprfonts sprites in one batch
-    hb::shared::sprite::SpriteLoader::open_pak("interface/sprfonts", [&](hb::shared::sprite::SpriteLoader& loader) {
+    // load sprite_fonts sprites (font1, font2, sprfonts + number font, sprfonts2)
+    hb::shared::sprite::SpriteLoader::open_pak("interface/sprite_fonts", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[InterfaceFont1] = loader.get_sprite(0, false);
         m_game->m_sprite[InterfaceFont2] = loader.get_sprite(1, false);
+        m_game->m_sprite[InterfaceSprFonts] = loader.get_sprite(2, false);
+        m_game->m_sprite[InterfaceSprFonts3] = loader.get_sprite(3, false);
     });
 
     // Create and register bitmap fonts with TextLib
@@ -161,20 +133,20 @@ void Screen_Loading::LoadStage_Interface()
         hb::shared::text::load_bitmap_font_dynamic(GameFont::Bitmap2, m_game->m_sprite[InterfaceFont2].get(), ' ', '~', 0);
     }
 
-    // Number font: Digits '0' to '9', frame offset 6 in ADDINTERFACE sprite
-    if (m_game->m_sprite[InterfaceAddInterface])
+    // Number font: Digits '0' to '9', frame offset 30 in InterfaceSprFonts
+    if (m_game->m_sprite[InterfaceSprFonts])
     {
-        hb::shared::text::load_bitmap_font(GameFont::Numbers, m_game->m_sprite[InterfaceAddInterface].get(),
-            '0', '9', 6, GameFont::GetFontSpacing(GameFont::Numbers));
+        hb::shared::text::load_bitmap_font(GameFont::Numbers, m_game->m_sprite[InterfaceSprFonts].get(),
+            '0', '9', 30, GameFont::GetFontSpacing(GameFont::Numbers));
     }
 
-    // SPRFONTS2: Characters ' ' (32) to '~' (126), with 3 different sizes (types 0, 1, 2)
+    // SPRFONTS3: Characters ' ' (32) to '~' (126), with 3 different sizes (types 0, 1, 2)
     // Each type has 95 frames offset
-    if (m_game->m_sprite[InterfaceSprFonts2])
+    if (m_game->m_sprite[InterfaceSprFonts3])
     {
-        hb::shared::text::load_bitmap_font_dynamic(GameFont::SprFont3_0, m_game->m_sprite[InterfaceSprFonts2].get(), ' ', '~', 0);
-        hb::shared::text::load_bitmap_font_dynamic(GameFont::SprFont3_1, m_game->m_sprite[InterfaceSprFonts2].get(), ' ', '~', 95);
-        hb::shared::text::load_bitmap_font_dynamic(GameFont::SprFont3_2, m_game->m_sprite[InterfaceSprFonts2].get(), ' ', '~', 190);
+        hb::shared::text::load_bitmap_font_dynamic(GameFont::SprFont3_0, m_game->m_sprite[InterfaceSprFonts3].get(), ' ', '~', 0);
+        hb::shared::text::load_bitmap_font_dynamic(GameFont::SprFont3_1, m_game->m_sprite[InterfaceSprFonts3].get(), ' ', '~', 95);
+        hb::shared::text::load_bitmap_font_dynamic(GameFont::SprFont3_2, m_game->m_sprite[InterfaceSprFonts3].get(), ' ', '~', 190);
     }
 
     m_iLoadingStage = 4;
@@ -266,18 +238,14 @@ void Screen_Loading::LoadStage_Tiles3()
 //=============================================================================
 void Screen_Loading::LoadStage_Equipment1()
 {
-    // Male equipment (body, hair, underwear)
-    hb::shared::sprite::SpriteLoader::open_pak("interface/item-equipm", [&](hb::shared::sprite::SpriteLoader& loader) {
+    // Equipment models (body, hair, underwear) — male 0-2, female 3-5
+    hb::shared::sprite::SpriteLoader::open_pak("interface/equip_models", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[ItemEquipPivotPoint + 0] = loader.get_sprite(0, false);
         m_game->m_sprite[ItemEquipPivotPoint + 18] = loader.get_sprite(1, false);
         m_game->m_sprite[ItemEquipPivotPoint + 19] = loader.get_sprite(2, false);
-    });
-
-    // Female equipment (body, hair, underwear)
-    hb::shared::sprite::SpriteLoader::open_pak("interface/item-equipw", [&](hb::shared::sprite::SpriteLoader& loader) {
-        m_game->m_sprite[ItemEquipPivotPoint + 40] = loader.get_sprite(0, false);
-        m_game->m_sprite[ItemEquipPivotPoint + 58] = loader.get_sprite(1, false);
-        m_game->m_sprite[ItemEquipPivotPoint + 59] = loader.get_sprite(2, false);
+        m_game->m_sprite[ItemEquipPivotPoint + 40] = loader.get_sprite(3, false);
+        m_game->m_sprite[ItemEquipPivotPoint + 58] = loader.get_sprite(4, false);
+        m_game->m_sprite[ItemEquipPivotPoint + 59] = loader.get_sprite(5, false);
     });
 
     // Player body sprites

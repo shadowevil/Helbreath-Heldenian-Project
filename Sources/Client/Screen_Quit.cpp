@@ -20,9 +20,6 @@ Screen_Quit::Screen_Quit(CGame* game)
 
 void Screen_Quit::on_initialize()
 {
-    // Set current mode for code that checks GameModeManager::get_mode()
-    GameModeManager::set_current_mode(GameMode::Quit);
-
     m_dwStartTime = GameClock::get_time_ms();
 
     // Close game socket
@@ -31,12 +28,6 @@ void Screen_Quit::on_initialize()
         m_game->m_g_sock.reset();
     }
 }
-
-void Screen_Quit::on_uninitialize()
-{
-    // Nothing to clean up
-}
-
 void Screen_Quit::on_update()
 {
     uint32_t elapsed = GameClock::get_time_ms() - m_dwStartTime;

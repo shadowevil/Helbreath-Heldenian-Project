@@ -15,7 +15,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-BUILD_DIR="$SCRIPT_DIR/Server/build"
+BUILD_DIR="$SCRIPT_DIR/Server/build_linux"
 DO_CLEAN=false
 BUILD_TYPE="Debug"
 

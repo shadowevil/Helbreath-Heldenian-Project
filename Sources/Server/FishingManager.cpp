@@ -151,7 +151,7 @@ int FishingManager::check_fish(int client_h, char map_index, short dX, short dY)
 				m_game->m_client_list[client_h]->m_fish_chance = 1;
 				m_game->m_client_list[client_h]->m_skill_using_status[1] = true;
 
-				m_game->send_notify_msg(0, client_h, Notify::EventFishMode, (m_fish[m_game->m_dynamic_object_manager->m_dynamic_object_list[i]->m_owner]->m_item->m_price / 2), 0,
+				m_game->send_notify_msg(0, client_h, Notify::EventFishMode, (m_fish[m_game->m_dynamic_object_manager->m_dynamic_object_list[i]->m_owner]->m_item->m_sell_price / 2), 0,
 					0, m_fish[m_game->m_dynamic_object_manager->m_dynamic_object_list[i]->m_owner]->m_item->m_name);
 
 				m_fish[m_game->m_dynamic_object_manager->m_dynamic_object_list[i]->m_owner]->m_engaging_count++;
@@ -224,9 +224,8 @@ void FishingManager::req_get_fish_this_time_handler(int client_h)
 			m_game->m_client_list[client_h]->m_y,
 			item);
 
-		m_game->send_event_to_near_client_type_b(MsgId::EventCommon, CommonType::ItemDrop, m_game->m_client_list[client_h]->m_map_index,
-			m_game->m_client_list[client_h]->m_x, m_game->m_client_list[client_h]->m_y,
-			item->m_id_num, 0, item->m_item_color, item->m_attribute); // v1.4 color
+		m_game->send_ground_item_event(CommonType::ItemDrop, m_game->m_client_list[client_h]->m_map_index,
+			m_game->m_client_list[client_h]->m_x, m_game->m_client_list[client_h]->m_y, item);
 
 		m_game->send_notify_msg(0, client_h, Notify::FishSuccess, 0, 0, 0, 0);
 		fish_h = m_game->m_client_list[client_h]->m_allocated_fish;

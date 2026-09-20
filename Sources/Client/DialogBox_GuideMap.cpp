@@ -35,6 +35,9 @@ void DialogBox_GuideMap::draw_border(short sX, short sY)
 
 void DialogBox_GuideMap::draw_zoomed_map(short sX, short sY)
 {
+	if (m_game->m_map_data->m_map_size_x == 0 || m_game->m_map_data->m_map_size_y == 0)
+		return;
+
 	int m_iMaxMapIndex = InterfaceGuideMap + m_game->m_map_index + 1;
 	uint32_t time = m_game->m_cur_time;
 
@@ -70,6 +73,9 @@ void DialogBox_GuideMap::draw_zoomed_map(short sX, short sY)
 
 void DialogBox_GuideMap::draw_full_map(short sX, short sY)
 {
+	if (m_game->m_map_data->m_map_size_x == 0 || m_game->m_map_data->m_map_size_y == 0)
+		return;
+
 	int m_iMinMapIndex = InterfaceGuideMap;
 	int m_iMinMapSquare = m_game->m_map_index;
 	uint32_t time = m_game->m_cur_time;

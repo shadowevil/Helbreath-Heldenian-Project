@@ -96,6 +96,10 @@ private:
     // apply user preference in windowed mode.
     void apply_cursor_grab();
 
+    // Center the window on the monitor it currently occupies.
+    // Fullscreen: position at monitor origin. Windowed: center in work area.
+    void center_on_current_monitor();
+
     // Cross-platform helpers — use platform wrappers on Windows, SFML on Linux.
     void get_desktop_size(int& width, int& height) const;
     void move_window(int x, int y, int width, int height);

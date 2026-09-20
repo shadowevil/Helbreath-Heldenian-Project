@@ -1,5 +1,6 @@
 #pragma once
 #include "IDialogBox.h"
+#include "Item/ItemInstanceData.h"
 #include <string>
 #include <cstdint>
 
@@ -26,7 +27,7 @@ public:
 	struct ExchangeSlot {
 		int v1 = -1, v2 = -1, v3 = -1, v4 = -1, v5 = -1, v6 = -1, v7 = -1;
 		int item_id = -1, inv_slot = -1;
-		uint32_t dw_v1 = 0;
+		hb::shared::item::item_instance_data item_data;
 		std::string str1, str2;
 	};
 

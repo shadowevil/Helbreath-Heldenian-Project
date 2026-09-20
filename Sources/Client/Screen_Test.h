@@ -18,11 +18,12 @@ class Screen_Test : public IGameScreen
 public:
 	SCREEN_TYPE(Screen_Test)
 
+    GameMode get_game_mode() const override { return GameMode::Test; }
+
 	explicit Screen_Test(CGame* game);
 	~Screen_Test() override = default;
 
 	void on_initialize() override;
-	void on_uninitialize() override;
 	void on_update() override;
 	void on_render() override;
 

@@ -13,7 +13,6 @@
 #include "GameFonts.h"
 #include "TextLibExt.h"
 #include "TextFieldRenderer.h"
-#include "InputStateHelper.h"
 #include "Packet/SharedPackets.h"
 #include "AudioManager.h"
 
@@ -27,7 +26,6 @@ Screen_Login::Screen_Login(CGame* game)
 
 void Screen_Login::on_initialize()
 {
-    GameModeManager::set_current_mode(GameMode::Login);
     m_game->m_arrow_pressed = 0;
 
     m_controls.set_screen_size(LOGICAL_WIDTH(), LOGICAL_HEIGHT());
@@ -95,16 +93,9 @@ void Screen_Login::on_initialize()
     m_controls.set_focus_order({TXT_NAME, TXT_PASSWORD, BTN_LOGIN, BTN_CANCEL});
     m_controls.set_focus(TXT_NAME);
 }
-
-void Screen_Login::on_uninitialize()
-{
-}
-
 void Screen_Login::on_update()
 {
-    cc::input_state input;
-    hb::client::fill_input_state(input);
-    m_controls.update(input, GameClock::get_time_ms());
+    update_controls(m_controls);
 
     if (m_controls.escape_pressed())
         m_game->change_game_mode(GameMode::MainMenu);
@@ -207,6 +198,11 @@ bool Screen_Login::on_net_response(uint16_t response_type, char* data)
 
     case LogResMsg::NotExistingAccount:
         std::snprintf(m_game->m_msg, sizeof(m_game->m_msg), "%s", "12");
+        m_game->change_game_mode(GameMode::LogResMsg);
+        return true;
+
+    case LogResMsg::PasswordMismatch:
+        std::snprintf(m_game->m_msg, sizeof(m_game->m_msg), "%s", "11");
         m_game->change_game_mode(GameMode::LogResMsg);
         return true;
 

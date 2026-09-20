@@ -15,6 +15,8 @@ namespace NetworkMessageHandlers {
 	void HandleSP(CGame* game, char* data);
 	void HandleExp(CGame* game, char* data);
 	void HandleLevelUp(CGame* game, char* data);
+	void HandleLevelUpPoints(CGame* game, char* data);
+	void HandleForceStatRefresh(CGame* game, char* data);
 
 	// Exchange
 	void HandleExchangeItemComplete(CGame* game, char* data);
@@ -77,7 +79,7 @@ namespace NetworkMessageHandlers {
 	void HandleItemPurchased(CGame* game, char* data);
 	void HandleItemObtained(CGame* game, char* data);
 	void HandleItemObtainedBulk(CGame* game, char* data);
-	void HandleItemLifeSpanEnd(CGame* game, char* data);
+	void HandleItemDurabilityEnd(CGame* game, char* data);
 	void HandleItemReleased(CGame* game, char* data);
 	void HandleSetItemCount(CGame* game, char* data);
 	void HandleItemDepleted_EraseItem(CGame* game, char* data);
@@ -95,7 +97,7 @@ namespace NetworkMessageHandlers {
 	void HandleItemColorChange(CGame* game, char* data);
 	void HandleSetExchangeItem(CGame* game, char* data);
 	void HandleOpenExchangeWindow(CGame* game, char* data);
-	void HandleCurLifeSpan(CGame* game, char* data);
+	void HandleCurDurability(CGame* game, char* data);
 	void HandleNotEnoughGold(CGame* game, char* data);
 	void HandleCannotCarryMoreItem(CGame* game, char* data);
 	void HandleItemAttributeChange(CGame* game, char* data);
@@ -136,24 +138,6 @@ namespace NetworkMessageHandlers {
 	void handle_low_portion_skill(CGame* game, char* data);
 	void handle_no_matching_portion(CGame* game, char* data);
 
-	// Guild
-	void handle_create_new_guild_response(CGame* game, char* data);
-	void handle_disband_guild_response(CGame* game, char* data);
-	void handle_guild_disbanded(CGame* game, char* data);
-	void handle_new_guilds_man(CGame* game, char* data);
-	void handle_dismiss_guilds_man(CGame* game, char* data);
-	void handle_cannot_join_more_guilds_man(CGame* game, char* data);
-	void handle_join_guild_approve(CGame* game, char* data);
-	void handle_join_guild_reject(CGame* game, char* data);
-	void handle_dismiss_guild_approve(CGame* game, char* data);
-	void handle_dismiss_guild_reject(CGame* game, char* data);
-	void handle_query_join_guild_permission(CGame* game, char* data);
-	void handle_query_dismiss_guild_permission(CGame* game, char* data);
-	void handle_req_guild_name_answer(CGame* game, char* data);
-	void handle_no_guild_master_level(CGame* game, char* data);
-	void handle_success_ban_guild_man(CGame* game, char* data);
-	void handle_cannot_ban_guild_man(CGame* game, char* data);
-
 	// Combat
 	void HandleSpellInterrupted(CGame* game, char* data);
 	void HandleKilled(CGame* game, char* data);
@@ -184,6 +168,7 @@ namespace NetworkMessageHandlers {
 	void HandleSpellSkill(CGame* game, char* data);
 	void HandleStateChangeSuccess(CGame* game, char* data);
 	void HandleStateChangeFailed(CGame* game, char* data);
+	void HandleForceMasteryRefresh(CGame* game, char* data);
 	void HandleSettingFailed(CGame* game, char* data);
 	void HandleSpecialAbilityStatus(CGame* game, char* data);
 	void HandleSpecialAbilityEnabled(CGame* game, char* data);
@@ -223,7 +208,6 @@ namespace NetworkMessageHandlers {
 	void HandleChangePlayMode(CGame* game, char* data);
 	void HandleForceRecallTime(CGame* game, char* data);
 	void HandleNoRecall(CGame* game, char* data);
-	void HandleFightZoneReserve(CGame* game, char* data);
 	void HandleLoteryLost(CGame* game, char* data);
 	void HandleNotFlagSpot(CGame* game, char* data);
 	void HandleNpcTalk(CGame* game, char* data);
@@ -252,14 +236,16 @@ bool NetworkMessageManager::process_message(uint32_t msg_id, char* data, uint32_
 		case Notify::Sp: NetworkMessageHandlers::HandleSP(m_game, data); return true;
 		case Notify::Exp: NetworkMessageHandlers::HandleExp(m_game, data); return true;
 		case Notify::LevelUp: NetworkMessageHandlers::HandleLevelUp(m_game, data); return true;
+		case Notify::LevelUpPoints: NetworkMessageHandlers::HandleLevelUpPoints(m_game, data); return true;
+		case Notify::ForceStatRefresh: NetworkMessageHandlers::HandleForceStatRefresh(m_game, data); return true;
 
 		// Items - Purchased/Obtained
 		case Notify::ItemPurchased: NetworkMessageHandlers::HandleItemPurchased(m_game, data); return true;
 		case Notify::ItemObtained: NetworkMessageHandlers::HandleItemObtained(m_game, data); return true;
 		case Notify::ItemObtainedBulk: NetworkMessageHandlers::HandleItemObtainedBulk(m_game, data); return true;
 
-		// Items - LifeSpan/Released
-		case Notify::ItemLifeSpanEnd: NetworkMessageHandlers::HandleItemLifeSpanEnd(m_game, data); return true;
+		// Items - Durability/Released
+		case Notify::ItemDurabilityEnd: NetworkMessageHandlers::HandleItemDurabilityEnd(m_game, data); return true;
 		case Notify::ItemReleased: NetworkMessageHandlers::HandleItemReleased(m_game, data); return true;
 
 		// Items - Count/Depleted
@@ -287,7 +273,7 @@ bool NetworkMessageManager::process_message(uint32_t msg_id, char* data, uint32_
 		case Notify::ItemColorChange: NetworkMessageHandlers::HandleItemColorChange(m_game, data); return true;
 		case Notify::set_exchange_item: NetworkMessageHandlers::HandleSetExchangeItem(m_game, data); return true;
 		case Notify::OpenExchangeWindow: NetworkMessageHandlers::HandleOpenExchangeWindow(m_game, data); return true;
-		case Notify::CurLifeSpan: NetworkMessageHandlers::HandleCurLifeSpan(m_game, data); return true;
+		case Notify::CurDurability: NetworkMessageHandlers::HandleCurDurability(m_game, data); return true;
 
 		// Items - Upgrade/Attribute/Errors
 		case Notify::NotEnoughGold: NetworkMessageHandlers::HandleNotEnoughGold(m_game, data); return true;
@@ -307,24 +293,6 @@ bool NetworkMessageManager::process_message(uint32_t msg_id, char* data, uint32_
 		// Exchange
 		case Notify::ExchangeItemComplete: NetworkMessageHandlers::HandleExchangeItemComplete(m_game, data); return true;
 		case Notify::cancel_exchange_item: NetworkMessageHandlers::HandleCancelExchangeItem(m_game, data); return true;
-
-		// Guild - Notify Messages
-		case Notify::GuildDisbanded: NetworkMessageHandlers::handle_guild_disbanded(m_game, data); return true;
-		case Notify::NewGuildsman: NetworkMessageHandlers::handle_new_guilds_man(m_game, data); return true;
-		case Notify::DismissGuildsman: NetworkMessageHandlers::handle_dismiss_guilds_man(m_game, data); return true;
-		case Notify::CannotJoinMoreGuildsman: NetworkMessageHandlers::handle_cannot_join_more_guilds_man(m_game, data); return true;
-		case Notify::ReqGuildNameAnswer: NetworkMessageHandlers::handle_req_guild_name_answer(m_game, data); return true;
-		case Notify::QueryJoinGuildReqPermission: NetworkMessageHandlers::handle_query_join_guild_permission(m_game, data); return true;
-		case Notify::QueryDismissGuildReqPermission: NetworkMessageHandlers::handle_query_dismiss_guild_permission(m_game, data); return true;
-		case Notify::NoGuildMasterLevel: NetworkMessageHandlers::handle_no_guild_master_level(m_game, data); return true;
-		case Notify::SuccessBanGuildman: NetworkMessageHandlers::handle_success_ban_guild_man(m_game, data); return true;
-		case Notify::CannotBanGuildman: NetworkMessageHandlers::handle_cannot_ban_guild_man(m_game, data); return true;
-
-		// Guild - Common Type Messages
-		case CommonType::JoinGuildApprove: NetworkMessageHandlers::handle_join_guild_approve(m_game, data); return true;
-		case CommonType::JoinGuildReject: NetworkMessageHandlers::handle_join_guild_reject(m_game, data); return true;
-		case CommonType::DismissGuildApprove: NetworkMessageHandlers::handle_dismiss_guild_approve(m_game, data); return true;
-		case CommonType::DismissGuildReject: NetworkMessageHandlers::handle_dismiss_guild_reject(m_game, data); return true;
 
 		// Combat
 		case Notify::Killed: NetworkMessageHandlers::HandleKilled(m_game, data); return true;
@@ -350,6 +318,7 @@ bool NetworkMessageManager::process_message(uint32_t msg_id, char* data, uint32_
 		case Notify::SpellSkill: NetworkMessageHandlers::HandleSpellSkill(m_game, data); return true;
 		case Notify::SpellInterrupted: NetworkMessageHandlers::HandleSpellInterrupted(m_game, data); return true;
 		case Notify::StateChangeSuccess: NetworkMessageHandlers::HandleStateChangeSuccess(m_game, data); return true;
+		case Notify::ForceMasteryRefresh: NetworkMessageHandlers::HandleForceMasteryRefresh(m_game, data); return true;
 		case Notify::StateChangeFailed: NetworkMessageHandlers::HandleStateChangeFailed(m_game, data); return true;
 		case Notify::SettingFailed: NetworkMessageHandlers::HandleSettingFailed(m_game, data); return true;
 		case Notify::SpecialAbilityStatus: NetworkMessageHandlers::HandleSpecialAbilityStatus(m_game, data); return true;
@@ -473,7 +442,6 @@ bool NetworkMessageManager::process_message(uint32_t msg_id, char* data, uint32_
 		case Notify::ForceRecallTime: NetworkMessageHandlers::HandleForceRecallTime(m_game, data); return true;
 		case Notify::NoRecall: NetworkMessageHandlers::HandleNoRecall(m_game, data); return true;
 		case Notify::TeleportApproved: teleport_manager::get().on_auth_approved(); return true;
-		case Notify::FightZoneReserve: NetworkMessageHandlers::HandleFightZoneReserve(m_game, data); return true;
 		case Notify::LoteryLost: NetworkMessageHandlers::HandleLoteryLost(m_game, data); return true;
 		case Notify::NotFlagSpot: NetworkMessageHandlers::HandleNotFlagSpot(m_game, data); return true;
 		case Notify::NpcTalk: NetworkMessageHandlers::HandleNpcTalk(m_game, data); return true;

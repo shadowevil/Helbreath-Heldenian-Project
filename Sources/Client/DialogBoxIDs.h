@@ -49,7 +49,7 @@ namespace DialogBoxId
 		ChangeStatsMajestic = 42,
 		StatusOverlay = 49,
 		Resurrect = 50,
-		GuildHallMenu = 51,
+		CommandHallMenu = 51,
 		RepairAll = 52,
 #ifdef TESTER_ONLY
 		// TESTER MENU — dialog IDs (tester builds only)

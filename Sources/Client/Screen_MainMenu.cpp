@@ -7,7 +7,6 @@
 #include "GameModeManager.h"
 #include "IInput.h"
 #include "GlobalDef.h"
-#include "InputStateHelper.h"
 #include "AudioManager.h"
 using namespace hb::client::sprite_id;
 
@@ -18,7 +17,6 @@ Screen_MainMenu::Screen_MainMenu(CGame* game)
 
 void Screen_MainMenu::on_initialize()
 {
-    GameModeManager::set_current_mode(GameMode::MainMenu);
     m_game->m_sprite.remove(InterfaceNdLoading);
     m_game->m_arrow_pressed = 0;
 
@@ -53,16 +51,9 @@ void Screen_MainMenu::on_initialize()
     m_controls.set_focus_order({BTN_LOGIN, BTN_NEW_ACCOUNT, BTN_QUIT});
     m_controls.set_focus(BTN_LOGIN);
 }
-
-void Screen_MainMenu::on_uninitialize()
-{
-}
-
 void Screen_MainMenu::on_update()
 {
-    cc::input_state input;
-    hb::client::fill_input_state(input);
-    m_controls.update(input, GameClock::get_time_ms());
+    update_controls(m_controls);
 }
 
 void Screen_MainMenu::on_render()

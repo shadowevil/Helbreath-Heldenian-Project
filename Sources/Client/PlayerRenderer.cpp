@@ -539,9 +539,8 @@ hb::shared::sprite::BoundRect CPlayerRenderer::draw_magic(int indexX, int indexY
 	{
 		m_game.check_active_aura(sX, sY, time, state.m_owner_type);
 
-		// Spell casting ground effect (effect5 sprite 7)
-		if (m_game.m_effect_sprites[30])
-			m_game.m_effect_sprites[30]->draw(sX, sY + 8, state.m_frame % 16, hb::shared::sprite::DrawParams::additive());
+		// Spell casting ground effect
+		m_game.m_effect_sprites[30]->draw(sX, sY + 8, state.m_frame % 16, hb::shared::sprite::DrawParams::additive());
 
 		// draw all equipment layers — equipFrameMul=16 for magic
 		RenderHelpers::draw_player_layers(m_game, eq, state, sX, sY, inv, mantle_draw_order, 16, admin_invis);

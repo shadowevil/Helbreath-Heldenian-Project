@@ -234,6 +234,14 @@ void GameModeManager::apply_screen_change()
             m_game->m_active_screen = m_pCurrentScreen.get();
             m_pCurrentScreen->on_initialize();
 
+            // Auto-register game mode from screen
+            GameMode screen_mode = m_pCurrentScreen->get_game_mode();
+            if (screen_mode != GameMode::Null)
+                m_currentMode = screen_mode;
+
+            // Apply screen's preferred transition timing for fade-in
+            m_config.fade_in_duration = m_pCurrentScreen->get_fade_in_duration();
+
             // Apply user's configured display settings on every screen transition
             hb::shared::render::IWindow* window = hb::shared::render::Window::get();
             if (window)

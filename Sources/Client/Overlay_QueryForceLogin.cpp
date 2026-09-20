@@ -11,7 +11,6 @@
 #include "ASIOSocket.h"
 #include "TextLibExt.h"
 #include "GameFonts.h"
-#include "InputStateHelper.h"
 #include "Packet/SharedPackets.h"
 #include "AudioManager.h"
 
@@ -85,16 +84,9 @@ void Overlay_QueryForceLogin::on_initialize()
     m_controls.set_focus_order({BTN_YES, BTN_NO});
     m_controls.set_focus(BTN_NO);  // Safe default
 }
-
-void Overlay_QueryForceLogin::on_uninitialize()
-{
-}
-
 void Overlay_QueryForceLogin::on_update()
 {
-    cc::input_state input;
-    hb::client::fill_input_state(input);
-    m_controls.update(input, GameClock::get_time_ms());
+    update_controls(m_controls);
 
     if (m_controls.escape_pressed())
     {
@@ -107,17 +99,14 @@ void Overlay_QueryForceLogin::on_render()
 {
     uint32_t elapsed = GameClock::get_time_ms() - m_dwStartTime;
 
-    int dlgX, dlgY;
-    get_centered_dialog_pos(InterfaceNdGame4, 2, dlgX, dlgY);
-
     // Double shadow effect after initial animation period (600ms)
     if (elapsed >= 600)
     {
         m_game->m_Renderer->draw_rect_filled(0, 0, LOGICAL_MAX_X(), LOGICAL_MAX_Y(), hb::shared::render::Color::Black(128));
     }
 
-    // draw dialog box
-    draw_new_dialog_box(InterfaceNdGame4, dlgX, dlgY, 2);
+    int dlgX, dlgY;
+    draw_centered_dialog_box(InterfaceNdGame4, 2, dlgX, dlgY);
 
     // Title
     hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 96, dlgY + 30, "Character on Use", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));

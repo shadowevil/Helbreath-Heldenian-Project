@@ -4,6 +4,7 @@
 #include "CommonTypes.h"
 #include "RenderHelpers.h"
 #include "GameFonts.h"
+#include "TextFieldRenderer.h"
 #include "TextLibExt.h"
 #include "Benchmark.h"
 #include "performance_monitor.h"
@@ -12,9 +13,11 @@
 #include "PacketSendHelpers.h"
 
 #include "SharedCalculations.h"
+#include "BalanceConstants.h"
 #include "Log.h"
 #include "ClientLogChannels.h"
 #include "ItemSpriteMetadata.h"
+#include "Item/ItemInstanceData.h"
 
 #include <algorithm>
 #include <charconv>
@@ -96,8 +99,6 @@
 #include "DialogBox_Skill.h"
 #include "DialogBox_Bank.h"
 #include "DialogBox_Magic.h"
-#include "DialogBox_GuildMenu.h"
-#include "DialogBox_GuildOperation.h"
 #include "DialogBox_SellList.h"
 #include "DialogBox_Party.h"
 #include "DialogBox_ItemDropAmount.h"
@@ -116,6 +117,9 @@ using namespace hb::shared::item;
 using namespace hb::client::config;
 using namespace hb::client::sprite_id;
 
+namespace NetworkMessageHandlers {
+	void HandleServerConfigUpdate(CGame* game, char* data);
+}
 
 // Drawing order arrays moved to RenderHelpers.cpp (declared extern in RenderHelpers.h)
 
@@ -192,6 +196,16 @@ CGame::CGame(hb::shared::types::NativeInstance native_instance, int icon_resourc
 	m_item_drop_cnt = 0;
 	std::fill(std::begin(m_item_drop_id), std::end(m_item_drop_id), short{ 0 });
 	m_item_drop = false;
+
+	// Initialize attribute multiplier fallbacks (hardcoded defaults matching original values)
+	std::memset(m_prefix_multiplier, 0, sizeof(m_prefix_multiplier));
+	std::memset(m_secondary_multiplier, 0, sizeof(m_secondary_multiplier));
+	m_prefix_multiplier[1] = 1; m_prefix_multiplier[2] = 5; m_prefix_multiplier[6] = 4;
+	m_prefix_multiplier[7] = 1; m_prefix_multiplier[8] = 7; m_prefix_multiplier[9] = 1;
+	m_prefix_multiplier[10] = 3; m_prefix_multiplier[11] = 1; m_prefix_multiplier[12] = 1;
+	for (int i = 1; i <= 7; i++) m_secondary_multiplier[i] = 7;
+	m_secondary_multiplier[8] = 3; m_secondary_multiplier[9] = 3; m_secondary_multiplier[10] = 1;
+	m_secondary_multiplier[11] = 10; m_secondary_multiplier[12] = 10;
 
 	combat_system::get().set_game(*this);
 	inventory_manager::get().set_game(this);
@@ -284,6 +298,7 @@ bool CGame::on_initialize()
 	weather_manager::get().initialize();
 	ChatManager::get().initialize();
 	item_name_formatter::get().set_item_configs(m_item_config_list);
+	item_name_formatter::get().set_multipliers(m_prefix_multiplier, m_secondary_multiplier);
 	LocalCacheManager::get().initialize();
 
 	return true;
@@ -879,7 +894,9 @@ bool CGame::cache_process_item_config(char* data, uint32_t msg_size)
 		item->m_id_num = entry.itemId;
 		std::snprintf(item->m_name, sizeof(item->m_name), "%s", entry.name);
 		item->m_item_type = entry.itemType;
+		item->m_item_sub_type = entry.itemSubType;
 		item->m_equip_pos = entry.equipPos;
+		item->m_weapon_class = entry.weaponClass;
 		item->m_item_effect_type = entry.effectType;
 		item->m_item_effect_value1 = entry.effectValue1;
 		item->m_item_effect_value2 = entry.effectValue2;
@@ -887,20 +904,23 @@ bool CGame::cache_process_item_config(char* data, uint32_t msg_size)
 		item->m_item_effect_value4 = entry.effectValue4;
 		item->m_item_effect_value5 = entry.effectValue5;
 		item->m_item_effect_value6 = entry.effectValue6;
-		item->m_max_life_span = entry.maxLifeSpan;
+		item->m_durability = entry.durability;
 		item->m_special_effect = entry.specialEffect;
-		item->m_is_for_sale = (entry.price >= 0);
-		item->m_price = static_cast<uint32_t>(entry.price >= 0 ? entry.price : -entry.price);
+		item->m_sell_price = entry.sellPrice;
 		item->m_weight = entry.weight;
-		item->m_appearance_value = entry.apprValue;
-		item->m_speed = entry.speed;
-		item->m_level_limit = entry.levelLimit;
-		item->m_gender_limit = entry.genderLimit;
+		item->m_swing_speed = entry.swingSpeed;
+		item->m_level_requirement = entry.levelRequirement;
+		item->m_gender_requirement = entry.genderRequirement;
 		item->m_special_effect_value1 = entry.specialEffectValue1;
 		item->m_special_effect_value2 = entry.specialEffectValue2;
 		item->m_related_skill = entry.relatedSkill;
-		item->m_category = entry.category;
-		item->m_item_color = entry.itemColor;
+		item->m_hide_armor = entry.hideArmor;
+		item->m_is_skirt = entry.isSkirt;
+		item->m_stackable = entry.stackable;
+		item->m_is_dyeable = entry.isDyeable;
+		item->m_armor_class = entry.armorClass;
+		item->m_set_id = entry.setId;
+		item->m_instance.item_color = entry.itemColor;
 		item->m_display_id = entry.displayId;
 	}
 
@@ -1169,6 +1189,99 @@ bool CGame::cache_process_balance_config(char* data, uint32_t msg_size)
 	return true;
 }
 
+bool CGame::cache_process_color_palette(char* data, uint32_t msg_size)
+{
+	LocalCacheManager::get().accumulate_packet(ConfigCacheType::ColorPalette, data, msg_size);
+
+	constexpr size_t headerSize = sizeof(hb::net::PacketColorPaletteConfigHeader);
+	constexpr size_t entrySize = sizeof(hb::net::PacketColorPaletteConfigEntry);
+
+	if (msg_size < headerSize) return false;
+
+	const auto* pktHeader = reinterpret_cast<const hb::net::PacketColorPaletteConfigHeader*>(data);
+	uint16_t colorCount = pktHeader->colorCount;
+	uint16_t totalColors = pktHeader->totalColors;
+
+	if (msg_size < headerSize + colorCount * entrySize) return false;
+
+	const auto* entries = reinterpret_cast<const hb::net::PacketColorPaletteConfigEntry*>(data + headerSize);
+
+	for (uint16_t i = 0; i < colorCount; i++)
+	{
+		uint8_t id = entries[i].colorId;
+		m_color_palette[id] = hb::shared::render::Color(entries[i].r, entries[i].g, entries[i].b);
+	}
+
+	// Check if all packets received
+	// Use packet index to determine: if this is the last packet, finalize
+	uint16_t lastEntryId = (colorCount > 0) ? entries[colorCount - 1].colorId : 0;
+	size_t entriesProcessed = pktHeader->packetIndex * ((7000 - headerSize) / entrySize) + colorCount;
+
+	if (entriesProcessed >= totalColors && !LocalCacheManager::get().is_replaying())
+	{
+		LocalCacheManager::get().finalize_and_save(ConfigCacheType::ColorPalette);
+	}
+
+	m_color_palette_loaded = true;
+	hb::logger::log<hb::log_channel::network>("Color palette loaded ({} entries in packet, {} total)", colorCount, totalColors);
+
+	return true;
+}
+
+bool CGame::cache_process_attribute_types(char* data, uint32_t msg_size)
+{
+	LocalCacheManager::get().accumulate_packet(ConfigCacheType::AttributeTypes, data, msg_size);
+
+	constexpr size_t headerSize = sizeof(hb::net::PacketAttributeTypeConfigHeader);
+
+	if (msg_size < headerSize) return false;
+
+	const auto* pktHeader = reinterpret_cast<const hb::net::PacketAttributeTypeConfigHeader*>(data);
+	uint16_t entryCount = pktHeader->entryCount;
+	uint8_t entryType = pktHeader->entryType;
+
+	if (entryType == 0)
+	{
+		// Prefix entries
+		constexpr size_t entrySize = sizeof(hb::net::PacketAttributePrefixTypeEntry);
+		if (msg_size < headerSize + entryCount * entrySize) return false;
+
+		const auto* entries = reinterpret_cast<const hb::net::PacketAttributePrefixTypeEntry*>(data + headerSize);
+		for (uint16_t i = 0; i < entryCount; i++)
+		{
+			if (entries[i].prefix_id < 16)
+				m_prefix_multiplier[entries[i].prefix_id] = entries[i].multiplier;
+		}
+	}
+	else if (entryType == 1)
+	{
+		// Secondary entries
+		constexpr size_t entrySize = sizeof(hb::net::PacketAttributeSecondaryTypeEntry);
+		if (msg_size < headerSize + entryCount * entrySize) return false;
+
+		const auto* entries = reinterpret_cast<const hb::net::PacketAttributeSecondaryTypeEntry*>(data + headerSize);
+		for (uint16_t i = 0; i < entryCount; i++)
+		{
+			if (entries[i].secondary_id < 16)
+				m_secondary_multiplier[entries[i].secondary_id] = entries[i].multiplier;
+		}
+	}
+
+	// Finalize cache after receiving data (both prefix and secondary come as separate packets)
+	if (!LocalCacheManager::get().is_replaying())
+	{
+		// For attribute types we get at most 2 packets (prefix + secondary).
+		// Finalize after the secondary packet (entryType==1) or if only one type was sent.
+		if (entryType == 1)
+			LocalCacheManager::get().finalize_and_save(ConfigCacheType::AttributeTypes);
+	}
+
+	m_attribute_types_loaded = true;
+	hb::logger::log<hb::log_channel::network>("Attribute types loaded (type={}, {} entries)", entryType, entryCount);
+
+	return true;
+}
+
 void CGame::game_recv_msg_handler(uint32_t msg_size, char* data)
 {
 	const auto* header = hb::net::PacketCast<hb::net::PacketHeader>(data, sizeof(hb::net::PacketHeader));
@@ -1333,8 +1446,40 @@ void CGame::game_recv_msg_handler(uint32_t msg_size, char* data)
 			need_balance = true;
 		}
 
-		if (need_items || need_magic || need_skills || need_npcs || need_maps || need_balance) {
-			request_configs_from_server(need_items, need_magic, need_skills, need_npcs, need_maps, need_balance);
+		bool need_color_palette = false;
+		if (cachePkt->colorPaletteCacheValid) {
+			bool replay_ok = LocalCacheManager::get().replay_from_cache(ConfigCacheType::ColorPalette,
+				[](char* p, uint32_t s, void* c) -> bool {
+					return static_cast<ReplayCtx*>(c)->game->cache_process_color_palette(p, s);
+				}, &ctx);
+			if (!replay_ok || !m_color_palette_loaded) {
+				LocalCacheManager::get().reset_accumulator(ConfigCacheType::ColorPalette);
+				need_color_palette = true;
+			}
+		}
+		else {
+			LocalCacheManager::get().reset_accumulator(ConfigCacheType::ColorPalette);
+			need_color_palette = true;
+		}
+
+		bool need_attribute_types = false;
+		if (cachePkt->attributeTypeCacheValid) {
+			bool replay_ok = LocalCacheManager::get().replay_from_cache(ConfigCacheType::AttributeTypes,
+				[](char* p, uint32_t s, void* c) -> bool {
+					return static_cast<ReplayCtx*>(c)->game->cache_process_attribute_types(p, s);
+				}, &ctx);
+			if (!replay_ok || !m_attribute_types_loaded) {
+				LocalCacheManager::get().reset_accumulator(ConfigCacheType::AttributeTypes);
+				need_attribute_types = true;
+			}
+		}
+		else {
+			LocalCacheManager::get().reset_accumulator(ConfigCacheType::AttributeTypes);
+			need_attribute_types = true;
+		}
+
+		if (need_items || need_magic || need_skills || need_npcs || need_maps || need_balance || need_color_palette || need_attribute_types) {
+			request_configs_from_server(need_items, need_magic, need_skills, need_npcs, need_maps, need_balance, need_color_palette, need_attribute_types);
 			m_config_request_time = GameClock::get_time_ms();
 		}
 		else {
@@ -1371,6 +1516,14 @@ void CGame::game_recv_msg_handler(uint32_t msg_size, char* data)
 			LocalCacheManager::get().reset_accumulator(ConfigCacheType::BalanceConfig);
 			m_formula_engine.clear();
 		}
+		if (reloadPkt->reloadColorPalette) {
+			LocalCacheManager::get().reset_accumulator(ConfigCacheType::ColorPalette);
+			m_color_palette_loaded = false;
+		}
+		if (reloadPkt->reloadAttributeTypes) {
+			LocalCacheManager::get().reset_accumulator(ConfigCacheType::AttributeTypes);
+			m_attribute_types_loaded = false;
+		}
 
 		set_top_msg((char*)"Administration kicked off a config reload, some lag may occur.", 5);
 	}
@@ -1403,6 +1556,13 @@ void CGame::game_recv_msg_handler(uint32_t msg_size, char* data)
 		break;
 	case MsgId::BalanceConfigContents:
 		cache_process_balance_config(data, msg_size);
+		break;
+	case MsgId::ColorPaletteConfigContents:
+		cache_process_color_palette(data, msg_size);
+		check_configs_ready_and_enter_game();
+		break;
+	case MsgId::AttributeTypeConfigContents:
+		cache_process_attribute_types(data, msg_size);
 		break;
 	case MsgId::ResponseInitPlayer:
 		init_player_response_handler(data);
@@ -1485,6 +1645,10 @@ void CGame::init_player_response_handler(char* data)
 			LocalCacheManager::get().get_hash(ConfigCacheType::Maps).c_str());
 		std::snprintf(req.balanceConfigHash, sizeof(req.balanceConfigHash), "%s",
 			LocalCacheManager::get().get_hash(ConfigCacheType::BalanceConfig).c_str());
+		std::snprintf(req.colorPaletteConfigHash, sizeof(req.colorPaletteConfigHash), "%s",
+			LocalCacheManager::get().get_hash(ConfigCacheType::ColorPalette).c_str());
+		std::snprintf(req.attributeTypeConfigHash, sizeof(req.attributeTypeConfigHash), "%s",
+			LocalCacheManager::get().get_hash(ConfigCacheType::AttributeTypes).c_str());
 		send_game_packet(req);
 		change_game_mode(GameMode::WaitingInitData);
 	}
@@ -1569,24 +1733,18 @@ void CGame::common_event_handler(char* data)
 
 	switch (event_type) {
 	case CommonType::ItemDrop:
-	{
-		const auto* pkt = hb::net::PacketCast<hb::net::PacketEventCommonItem>(data, sizeof(hb::net::PacketEventCommonItem));
-		if (!pkt) return;
-		dw_v4 = pkt->v4;
-	}
-	if ((v1 == hb::shared::item::ItemId::Gold) && (v2 == 0)) {
-		m_effect_manager->add_effect(EffectType::GOLD_DROP, sX, sY, 0, 0, 0);
-	}
-	m_map_data->set_item(sX, sY, v1, static_cast<char>(v3), dw_v4);
-	break;
-
 	case CommonType::SetItem:
 	{
-		const auto* pkt = hb::net::PacketCast<hb::net::PacketEventCommonItem>(data, sizeof(hb::net::PacketEventCommonItem));
+		const auto* pkt = hb::net::PacketCast<hb::net::PacketEventGroundItem>(
+			data, sizeof(hb::net::PacketEventGroundItem));
 		if (!pkt) return;
-		dw_v4 = pkt->v4;
+		auto idata = hb::shared::item::item_instance_data::from_ground_item_packet(*pkt);
+		short item_id = pkt->item_id;
+		bool is_drop = (event_type == CommonType::ItemDrop);
+		if (is_drop && item_id == hb::shared::item::ItemId::Gold)
+			m_effect_manager->add_effect(EffectType::GOLD_DROP, sX, sY, 0, 0, 0);
+		m_map_data->set_item(sX, sY, item_id, idata, is_drop);
 	}
-	m_map_data->set_item(sX, sY, v1, static_cast<char>(v3), dw_v4, false); // v1.4 color
 	break;
 
 	case CommonType::Magic:
@@ -1598,10 +1756,6 @@ void CGame::common_event_handler(char* data)
 	m_effect_manager->add_effect(static_cast<EffectType>(v3), sX, sY, v1, v2, 0, dw_v4);
 	break;
 
-	case CommonType::ClearGuildName:
-		if (auto* on_game = GameModeManager::get_active_screen_as<Screen_OnGame>())
-			on_game->get_guild_manager().clear_name_cache();
-		break;
 	}
 }
 
@@ -1611,11 +1765,7 @@ Screen_OnGame* CGame::on_game()
 	return get_active_screen_as<Screen_OnGame>();
 }
 
-// create_new_guild_response_handler MOVED to Screen_OnGame.Network.cpp
 // init_player_characteristics MOVED to NetworkMessages_Player.cpp
-// disband_guild_response_handler MOVED to Screen_OnGame.Network.cpp
-
-// put_guild_operation_list / shift_guild_operation_list REMOVED — use DialogBox_GuildOperation::put/shift
 
 // enable_dialog_box / disable_dialog_box wrappers REMOVED — callers use get_dialog_box_manager() directly
 
@@ -1651,7 +1801,7 @@ void CGame::request_full_object_data(uint16_t object_id)
 
 void CGame::read_map_data(short pivot_x, short pivot_y, const char* packet_data)
 {
-	char header_byte = 0, item_color = 0;
+	char header_byte = 0;
 	direction move_dir = direction{};
 	std::string name;
 	short total_entries = 0, map_x = 0, map_y = 0, owner_type = 0, dynamic_type = 0;
@@ -1660,8 +1810,6 @@ void CGame::read_map_data(short pivot_x, short pivot_y, const char* packet_data)
 	hb::shared::entity::PlayerAppearance appearance;
 	uint16_t object_id = 0;
 	uint16_t dynamic_object_id = 0;
-	short item_id = 0;
-	uint32_t item_attr = 0;
 
 	const char* cursor = packet_data;
 	m_vdl_x = pivot_x; // Valid Data Loc-X
@@ -1751,11 +1899,18 @@ void CGame::read_map_data(short pivot_x, short pivot_y, const char* packet_data)
 		{
 			const auto* item = hb::net::PacketCast<hb::net::PacketMapDataItem>(cursor, sizeof(hb::net::PacketMapDataItem));
 			if (!item) return;
-			item_id = item->item_id;
-			item_color = static_cast<char>(item->color);
-			item_attr = item->attribute;
+			hb::shared::item::item_instance_data idata;
+			short map_item_id = item->item_id;
+			idata.count = static_cast<uint64_t>(std::max<std::int16_t>(item->count, 0));
+			idata.item_color = static_cast<int8_t>(item->color);
+			idata.custom_made = item->custom_made;
+			idata.prefix_type = item->prefix_type;
+			idata.prefix_value = item->prefix_value;
+			idata.secondary_type = item->secondary_type;
+			idata.secondary_value = item->secondary_value;
+			idata.enchant_bonus = item->enchant_bonus;
 			cursor += sizeof(hb::net::PacketMapDataItem);
-			m_map_data->set_item(pivot_x + map_x, pivot_y + map_y, item_id, item_color, item_attr, false);
+			m_map_data->set_item(pivot_x + map_x, pivot_y + map_y, map_item_id, idata, false);
 		}
 		if (header_byte & 0x08) // Dynamic object
 		{
@@ -1940,6 +2095,27 @@ void CGame::log_recv_msg_handler(char* data, uint32_t msg_size)
 	if (header && header->msg_id == MsgId::BalanceConfigContents)
 	{
 		cache_process_balance_config(data, msg_size);
+		return;
+	}
+
+	// Intercept color palette — sent before login response
+	if (header && header->msg_id == MsgId::ColorPaletteConfigContents)
+	{
+		cache_process_color_palette(data, msg_size);
+		return;
+	}
+
+	// Intercept attribute types — sent before login response
+	if (header && header->msg_id == MsgId::AttributeTypeConfigContents)
+	{
+		cache_process_attribute_types(data, msg_size);
+		return;
+	}
+
+	// Intercept server config — sent before login response
+	if (header && header->msg_id == MsgId::ServerConfigUpdate)
+	{
+		NetworkMessageHandlers::HandleServerConfigUpdate(this, data);
 		return;
 	}
 
@@ -2276,7 +2452,7 @@ hb::shared::sprite::BoundRect CGame::draw_object_on_move_for_menu(int indexX, in
 		if (color == 0)
 			m_sprite[idx]->draw(sX, sY, dirFrame);
 		else
-			m_sprite[idx]->draw(sX, sY, dirFrame, hb::shared::sprite::DrawParams::tint(GameColors::Items[color].r, GameColors::Items[color].g, GameColors::Items[color].b));
+			m_sprite[idx]->draw(sX, sY, dirFrame, hb::shared::sprite::DrawParams::tint(m_color_palette[color].r, m_color_palette[color].g, m_color_palette[color].b));
 	};
 
 	auto drawEquipLayer = [&](int idx, int color) {
@@ -2284,7 +2460,7 @@ hb::shared::sprite::BoundRect CGame::draw_object_on_move_for_menu(int indexX, in
 		if (color == 0)
 			m_equip_sprites[idx]->draw(sX, sY, dirFrame);
 		else
-			m_equip_sprites[idx]->draw(sX, sY, dirFrame, hb::shared::sprite::DrawParams::tint(GameColors::Items[color].r, GameColors::Items[color].g, GameColors::Items[color].b));
+			m_equip_sprites[idx]->draw(sX, sY, dirFrame, hb::shared::sprite::DrawParams::tint(m_color_palette[color].r, m_color_palette[color].g, m_color_palette[color].b));
 	};
 
 	auto drawWeapon = [&]() {
@@ -2292,7 +2468,7 @@ hb::shared::sprite::BoundRect CGame::draw_object_on_move_for_menu(int indexX, in
 		if (eq.weaponColor == 0)
 			m_equip_sprites[eq.weapon]->draw(sX, sY, dirFrame);
 		else
-			m_equip_sprites[eq.weapon]->draw(sX, sY, dirFrame, hb::shared::sprite::DrawParams::tint(GameColors::Weapons[eq.weaponColor].r, GameColors::Weapons[eq.weaponColor].g, GameColors::Weapons[eq.weaponColor].b));
+			m_equip_sprites[eq.weapon]->draw(sX, sY, dirFrame, hb::shared::sprite::DrawParams::tint(m_color_palette[eq.weaponColor].r, m_color_palette[eq.weaponColor].g, m_color_palette[eq.weaponColor].b));
 	};
 
 	auto drawMantle = [&](int order) {
@@ -2331,7 +2507,7 @@ hb::shared::sprite::BoundRect CGame::draw_object_on_move_for_menu(int indexX, in
 	// Hair (cosmetic, from m_sprite, only if no helm)
 	if (eq.hair != -1 && eq.helm == -1)
 	{
-		const auto& hc = GameColors::Hair[hairColor];
+		const auto& hc = m_color_palette[hairColor];
 		m_sprite[eq.hair]->draw(sX, sY, dirFrame, hb::shared::sprite::DrawParams::tint(hc.r, hc.g, hc.b));
 	}
 
@@ -2408,7 +2584,7 @@ void CGame::init_item_list(char* packet_data)
 		const auto& entry = itemEntries[i];
 		m_player->m_item_list[i] = std::make_unique<CItem>();
 		m_player->m_item_list[i]->m_id_num = entry.item_id;
-		m_player->m_item_list[i]->m_count = entry.count;
+		m_player->m_item_list[i]->m_instance.count = entry.count;
 		m_player->m_item_list[i]->m_x = 40;
 		m_player->m_item_list[i]->m_y = 30;
 		if (entry.is_equipped == 0) m_is_item_equipped[i] = false;
@@ -2418,24 +2594,24 @@ void CGame::init_item_list(char* packet_data)
 		{
 			m_item_equipment_status[cfg->m_equip_pos] = i;
 		}
-		m_player->m_item_list[i]->m_cur_life_span = entry.cur_lifespan;
-		m_player->m_item_list[i]->m_item_color = entry.item_color;
-		m_player->m_item_list[i]->m_item_special_effect_value2 = static_cast<short>(entry.spec_value2); // v1.41
-		m_player->m_item_list[i]->m_attribute = entry.attribute;
+		m_player->m_item_list[i]->m_instance.cur_durability = entry.cur_durability;
+		m_player->m_item_list[i]->m_instance.item_color = entry.item_color;
+		m_player->m_item_list[i]->m_instance.special_effect_value2 = static_cast<short>(entry.spec_value2); // v1.41
+		m_player->m_item_list[i]->load_attributes_from(entry);
 		m_item_order[i] = i;
 		// Snoopy: Add Angelic Stats
-		if (cfg && (cfg->get_item_type() == ItemType::Equip)
+		if (cfg && (cfg->get_item_type() == hb::shared::item::item_type::equipment)
 			&& (m_is_item_equipped[i] == true)
-			&& (cfg->m_equip_pos >= 11))
+			&& (cfg->get_equip_pos() >= EquipPos::LeftFinger))
 		{
-			angel_value = (m_player->m_item_list[i]->m_attribute & 0xF0000000) >> 28;
-			if (m_player->m_item_list[i]->m_id_num == hb::shared::item::ItemId::AngelicPandentSTR)
+			angel_value = m_player->m_item_list[i]->m_instance.enchant_bonus;
+			if (m_player->m_item_list[i]->m_id_num == hb::shared::item::ItemId::AngelicPendantSTR)
 				m_player->m_angelic_str = 1 + angel_value;
-			else if (m_player->m_item_list[i]->m_id_num == hb::shared::item::ItemId::AngelicPandentDEX)
+			else if (m_player->m_item_list[i]->m_id_num == hb::shared::item::ItemId::AngelicPendantDEX)
 				m_player->m_angelic_dex = 1 + angel_value;
-			else if (m_player->m_item_list[i]->m_id_num == hb::shared::item::ItemId::AngelicPandentINT)
+			else if (m_player->m_item_list[i]->m_id_num == hb::shared::item::ItemId::AngelicPendantINT)
 				m_player->m_angelic_int = 1 + angel_value;
-			else if (m_player->m_item_list[i]->m_id_num == hb::shared::item::ItemId::AngelicPandentMAG)
+			else if (m_player->m_item_list[i]->m_id_num == hb::shared::item::ItemId::AngelicPendantMAG)
 				m_player->m_angelic_mag = 1 + angel_value;
 		}
 	}
@@ -2455,13 +2631,13 @@ void CGame::init_item_list(char* packet_data)
 		const auto& entry = bankEntries[i];
 		m_player->m_bank_list[i] = std::make_unique<CItem>();
 		m_player->m_bank_list[i]->m_id_num = entry.item_id;
-		m_player->m_bank_list[i]->m_count = entry.count;
+		m_player->m_bank_list[i]->m_instance.count = entry.count;
 		m_player->m_bank_list[i]->m_x = 40;
 		m_player->m_bank_list[i]->m_y = 30;
-		m_player->m_bank_list[i]->m_cur_life_span = entry.cur_lifespan;
-		m_player->m_bank_list[i]->m_item_color = entry.item_color;
-		m_player->m_bank_list[i]->m_item_special_effect_value2 = static_cast<short>(entry.spec_value2); // v1.41
-		m_player->m_bank_list[i]->m_attribute = entry.attribute;
+		m_player->m_bank_list[i]->m_instance.cur_durability = entry.cur_durability;
+		m_player->m_bank_list[i]->m_instance.item_color = entry.item_color;
+		m_player->m_bank_list[i]->m_instance.special_effect_value2 = static_cast<short>(entry.spec_value2); // v1.41
+		m_player->m_bank_list[i]->load_attributes_from(entry);
 	}
 
 	const auto* mastery = reinterpret_cast<const hb::net::PacketResponseMasteryData*>(bankEntries + total_items);
@@ -2983,14 +3159,12 @@ void CGame::civil_right_admission_handler(char* data)
 }
 
 
-bool CGame::check_item_by_type(ItemType type)
+bool CGame::has_item_with_sub_type(hb::shared::item::item_sub_type::item_sub_type sub_type)
 {
-	int i;
-
-	for (i = 0; i < hb::shared::limits::MaxItems; i++)
+	for (int i = 0; i < hb::shared::limits::MaxItems; i++)
 		if (m_player->m_item_list[i] != 0) {
 			CItem* cfg = get_item_config(m_player->m_item_list[i]->m_id_num);
-			if (cfg && cfg->get_item_type() == type) return true;
+			if (cfg && cfg->get_item_sub_type() == sub_type) return true;
 		}
 
 	return false;
@@ -3036,9 +3210,8 @@ bool CGame::is_item_on_hand() // Snoopy: Fixed to remove ShieldCast
 			CItem* cfg = get_item_config(m_player->m_item_list[i]->m_id_num);
 			if (cfg && cfg->get_equip_pos() == EquipPos::RightHand)
 			{
-				// Wands (appearance_value 34-39) don't count as "item on hand" for combat
-				uint8_t appr_val = static_cast<uint8_t>(cfg->m_appearance_value);
-				if ((appr_val >= 34) && (appr_val < 40)) return false;
+				// Wands don't count as "item on hand" for combat
+				if (cfg->get_weapon_class() == hb::shared::item::weapon_class::wand) return false;
 				else return true;
 			}
 		}
@@ -3252,7 +3425,7 @@ bool CGame::try_replay_cache_for_config(int type)
 	return false;
 }
 
-void CGame::request_configs_from_server(bool items, bool magic, bool skills, bool npcs, bool maps, bool balance)
+void CGame::request_configs_from_server(bool items, bool magic, bool skills, bool npcs, bool maps, bool balance, bool color_palette, bool attribute_types)
 {
 	if (!m_g_sock) return;
 	hb::net::PacketRequestConfigData pkt{};
@@ -3264,6 +3437,8 @@ void CGame::request_configs_from_server(bool items, bool magic, bool skills, boo
 	pkt.requestNpcs = npcs ? 1 : 0;
 	pkt.requestMaps = maps ? 1 : 0;
 	pkt.requestBalance = balance ? 1 : 0;
+	pkt.requestColorPalette = color_palette ? 1 : 0;
+	pkt.requestAttributeTypes = attribute_types ? 1 : 0;
 	m_g_sock->send_msg(reinterpret_cast<char*>(&pkt), sizeof(pkt));
 }
 
@@ -3428,40 +3603,7 @@ void CGame::handle_key_down(KeyCode _key)
 	if (screen) screen->on_key_down(_key);
 }
 
-void CGame::reserve_fightzone_response_handler(char* data)
-{
-	const auto* pkt = hb::net::PacketCast<hb::net::PacketResponseFightzoneReserve>(
-		data, sizeof(hb::net::PacketResponseFightzoneReserve));
-	if (!pkt) return;
-	switch (pkt->header.msg_type) {
-	case MsgType::Confirm:
-		add_event_list(RESERVE_FIGHTZONE_RESPONSE_HANDLER1, 10);
-		get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode = DialogBox_GuildMenu::mode::fightzone_reserved;
-		on_game()->m_fightzone_number = on_game()->m_fightzone_number_temp;
-		break;
-
-	case MsgType::Reject:
-		add_event_list(RESERVE_FIGHTZONE_RESPONSE_HANDLER2, 10);
-		on_game()->m_fightzone_number_temp = 0;
-
-		if (pkt->result == 0) {
-			get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode = DialogBox_GuildMenu::mode::fightzone_won;
-		}
-		else if (pkt->result == -1) {
-			get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode = DialogBox_GuildMenu::mode::fightzone_lost;
-		}
-		else if (pkt->result == -2) {
-			get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode = DialogBox_GuildMenu::mode::fightzone_draw;
-		}
-		else if (pkt->result == -3) {
-			get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode = DialogBox_GuildMenu::mode::fightzone_denied;
-		}
-		else if (pkt->result == -4) {
-			get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode = DialogBox_GuildMenu::mode::fightzone_canceled;
-		}
-		break;
-	}
-}
+// reserve_fightzone_response_handler removed with guild/fightzone system
 
 
 // UpdateScreen_OnLogResMsg removed - replaced by Overlay_LogResMsg
@@ -3491,8 +3633,7 @@ void CGame::retrieve_item_handler(char* data)
 			add_event_list(txt.c_str(), 10);
 
 			CItem* cfg_bank = get_item_config(m_player->m_bank_list[bank_item_index]->m_id_num);
-			bool stackable = cfg_bank && ((cfg_bank->get_item_type() == ItemType::Consume) ||
-				(cfg_bank->get_item_type() == ItemType::Arrow));
+			bool stackable = cfg_bank && (cfg_bank->is_stackable());
 
 			if (stackable && m_player->m_item_list[item_index] != 0)
 			{
@@ -4128,7 +4269,7 @@ void CGame::npc_talk_handler(char* packet_data)
 
 void CGame::point_command_handler(int indexX, int indexY, char item_id)
 {
-	char temp[31];
+	char temp[hb::shared::limits::ItemNameLen]{};
 	if ((on_game()->m_point_command_type >= 100) && (on_game()->m_point_command_type < 200))
 	{
 		// get target object ID for auto-aim (lag compensation)
@@ -4165,7 +4306,7 @@ void CGame::point_command_handler(int indexX, int indexY, char item_id)
 		}
 
 		CItem* cfg_pt = get_item_config(m_player->m_item_list[on_game()->m_point_command_type]->m_id_num);
-		if (cfg_pt && cfg_pt->get_item_type() == ItemType::UseSkill)
+		if (cfg_pt && cfg_pt->get_item_type() == hb::shared::item::item_type::tool)
 			on_game()->m_skill_using_status = true;
 	}
 	else if (on_game()->m_point_command_type == 200) // Normal Hand
@@ -4500,12 +4641,6 @@ void CGame::command_processor(short mouse_x, short mouse_y, short tile_x, short 
 				{
 				}
 
-				if ((CursorTarget::GetSelectedType() == SelectedObjectType::DialogBox) &&
-					(CursorTarget::get_selected_id() == 7) && (get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode == DialogBox_GuildMenu::mode::create_guild))
-				{
-					text_input_manager::get().end_input();
-					get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode = DialogBox_GuildMenu::mode::confirm_cancel;
-				}
 				// Query Drop Item Amount
 				if ((CursorTarget::GetSelectedType() == SelectedObjectType::DialogBox) &&
 					(CursorTarget::get_selected_id() == 17) && (get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal)->m_mode == DialogBox_ItemDropAmount::mode::input))
@@ -4544,15 +4679,6 @@ void CGame::command_processor(short mouse_x, short mouse_y, short tile_x, short 
 			CursorTarget::set_cursor_status(CursorStatus::Null);
 			switch (CursorTarget::GetSelectedType()) {
 			case SelectedObjectType::DialogBox:
-				if ((CursorTarget::GetSelectedType() == SelectedObjectType::DialogBox) &&
-					(CursorTarget::get_selected_id() == 7) && (get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode == DialogBox_GuildMenu::mode::confirm_cancel))
-				{
-					dialog_x = get_dialog_box_manager().get_dialog_box(DialogBoxId::GuildMenu)->m_x;
-					dialog_y = get_dialog_box_manager().get_dialog_box(DialogBoxId::GuildMenu)->m_y;
-					text_input_manager::get().start_input(dialog_x + 75, dialog_y + 140, 21, m_player->m_guild_name);
-					get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode = DialogBox_GuildMenu::mode::create_guild;
-				}
-
 				if ((CursorTarget::GetSelectedType() == SelectedObjectType::DialogBox) &&
 					(CursorTarget::get_selected_id() == 17) && (get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal)->m_mode == DialogBox_ItemDropAmount::mode::selected))
 				{	// Query Drop Item Amount
@@ -4683,6 +4809,12 @@ void CGame::command_processor(short mouse_x, short mouse_y, short tile_x, short 
 		return;
 	}
 	if (m_player->m_hp <= 0) return;
+
+	// Block all movement and input while a teleport is in progress.
+	// Without this, the player can walk off the teleport tile during the
+	// auth wait or fade, causing the server-side search_teleport_dest to fail.
+	if (teleport_manager::get().is_active())
+		return;
 
 	if (m_player->m_damage_move != 0)
 	{
@@ -5612,6 +5744,10 @@ bool CGame::process_right_click(short mouse_x, short mouse_y, short tile_x, shor
 
 void CGame::process_motion_commands(uint16_t action_type)
 {
+	// Block all movement during an active teleport to prevent walking off
+	// the teleport tile or sending stale movement to the server.
+	if (teleport_manager::get().is_active()) return;
+
 	direction move_dir = direction{};
 	std::string dest_name;
 	short dest_owner_type = 0;
@@ -5789,7 +5925,7 @@ void CGame::process_motion_commands(uint16_t action_type)
 
 				if ((action_type == 2) || (action_type == 25))
 				{
-					if (check_item_by_type(ItemType::Arrow) == false)
+					if (has_item_with_sub_type(hb::shared::item::item_sub_type::ammo) == false)
 						action_type = 0;
 				}
 				m_player->m_player_dir = move_dir;
@@ -5805,14 +5941,10 @@ void CGame::process_motion_commands(uint16_t action_type)
 				m_player->m_Controller.set_command_time(GameClock::get_time_ms());
 				// Compute expected swing duration (must match server's check_client_attack_frequency formula)
 				{
-					int base_swing = hb::shared::calc::swing_time(m_formula_engine,
-						hb::shared::calc::attack_delay_value{(double)m_player->m_playerStatus.attack_delay});
-					int frames = hb::shared::calc::swing_frames(m_formula_engine);
-					int bft = hb::shared::calc::base_frame_time(m_formula_engine);
-					int rft = hb::shared::calc::run_frame_time(m_formula_engine);
+					int base_swing = hb::shared::calc::swing_time(m_player->m_playerStatus.attack_delay);
 					int effective_swing = base_swing;
-					if (m_player->m_playerStatus.frozen) effective_swing += frames * (bft >> 2);
-					if (m_player->m_playerStatus.haste)  effective_swing -= frames * static_cast<int>(rft / 2.3);
+					if (m_player->m_playerStatus.frozen) effective_swing += hb::shared::balance::swing_frames * (hb::shared::balance::base_frame_time >> 2);
+					if (m_player->m_playerStatus.haste)  effective_swing -= hb::shared::balance::swing_frames * static_cast<int>(hb::shared::balance::run_frame_time / 2.3);
 					m_player->m_Controller.set_attack_end_time(GameClock::get_time_ms() + effective_swing);
 				}
 			}
@@ -5868,14 +6000,10 @@ void CGame::process_motion_commands(uint16_t action_type)
 					m_player->m_Controller.set_command_time(GameClock::get_time_ms());
 					// Compute expected swing duration (must match server's check_client_attack_frequency formula)
 					{
-						int base_swing = hb::shared::calc::swing_time(m_formula_engine,
-							hb::shared::calc::attack_delay_value{(double)m_player->m_playerStatus.attack_delay});
-						int frames = hb::shared::calc::swing_frames(m_formula_engine);
-						int bft = hb::shared::calc::base_frame_time(m_formula_engine);
-						int rft = hb::shared::calc::run_frame_time(m_formula_engine);
+						int base_swing = hb::shared::calc::swing_time(m_player->m_playerStatus.attack_delay);
 						int effective_swing = base_swing;
-						if (m_player->m_playerStatus.frozen) effective_swing += frames * (bft >> 2);
-						if (m_player->m_playerStatus.haste)  effective_swing -= frames * static_cast<int>(rft / 2.3);
+						if (m_player->m_playerStatus.frozen) effective_swing += hb::shared::balance::swing_frames * (hb::shared::balance::base_frame_time >> 2);
+						if (m_player->m_playerStatus.haste)  effective_swing -= hb::shared::balance::swing_frames * static_cast<int>(hb::shared::balance::run_frame_time / 2.3);
 						m_player->m_Controller.set_attack_end_time(GameClock::get_time_ms() + effective_swing);
 					}
 					m_player->m_Controller.set_prev_move(m_player->m_player_x, m_player->m_player_y);
@@ -5943,6 +6071,12 @@ void CGame::request_teleport_and_wait_data()
 	if (teleport_manager::get().is_requested()) return;
 	if (teleport_manager::get().is_active()) return;
 
+	// Stop all movement and clear cursor state so the player doesn't
+	// walk off the teleport tile while waiting for server approval.
+	m_player->m_Controller.set_command(Type::stop);
+	m_player->m_Controller.reset_command_count();
+	CursorTarget::set_cursor_status(CursorStatus::Null);
+
 	teleport_manager::get().request_auth(m_player->m_player_x, m_player->m_player_y);
 }
 
@@ -5982,9 +6116,6 @@ void CGame::init_data_response_handler(char* packet_data)
 
 	weather_manager::get().reset_particles();
 
-	if (auto* on_game = GameModeManager::get_active_screen_as<Screen_OnGame>())
-		on_game->get_guild_manager().clear_name_cache();
-
 	get_floating_text().clear_all();
 
 	const auto* pkt = hb::net::PacketCast<hb::net::PacketResponseInitDataHeader>(
@@ -6022,6 +6153,7 @@ void CGame::init_data_response_handler(char* packet_data)
 	{
 		get_dialog_box_manager().get_dialog_box(DialogBoxId::GuideMap)->m_size_x = 128;
 		get_dialog_box_manager().get_dialog_box(DialogBoxId::GuideMap)->m_size_y = 128;
+		get_dialog_box_manager().enable_dialog_box(DialogBoxId::GuideMap, 0, 0, 0);
 	}
 
 	prev_location = m_cur_location;
@@ -6145,7 +6277,9 @@ void CGame::init_data_response_handler(char* packet_data)
 void CGame::motion_event_handler(char* packet_data)
 {
 	uint16_t event_type = 0, object_id = 0;
-	short map_x = -1, map_y = -1, owner_type = 0, value1 = 0, value2 = 0, value3 = 0;
+	short map_x = -1, map_y = -1, owner_type = 0;
+	int value1 = 0;
+	short value2 = 0, value3 = 0;
 	short npc_config_id = -1;
 	hb::shared::entity::PlayerStatus status;
 	direction move_dir = direction{};
@@ -6691,36 +6825,22 @@ void CGame::check_active_aura2(short sX, short sY, uint32_t time, short owner_ty
 **********************************************************************************************************************/
 int CGame::has_hero_set(const hb::shared::entity::PlayerAppearance& appr, short OwnerType)
 {
-	// Look up appearance_value for each armor slot via item config
-	auto get_appr = [this](int16_t item_id) -> int {
+	// Look up set_id for each armor slot via item config
+	auto get_set = [this](int16_t item_id) -> int16_t {
 		if (item_id <= 0) return 0;
 		CItem* cfg = get_item_config(item_id);
-		return cfg ? cfg->m_appearance_value : 0;
-		};
+		return cfg ? cfg->m_set_id : 0;
+	};
 
-	int armor = get_appr(appr.armor_item_id);
-	int leg = get_appr(appr.pants_item_id);
-	int hat = get_appr(appr.helm_item_id);
-	int berk = get_appr(appr.arm_item_id);
+	int16_t armor_set = get_set(appr.armor_item_id);
+	if (armor_set == 0) return 0;
+	int16_t leg_set = get_set(appr.pants_item_id);
+	int16_t hat_set = get_set(appr.helm_item_id);
+	int16_t berk_set = get_set(appr.arm_item_id);
 
-	switch (OwnerType) {
-	case 1:
-	case 2:
-	case 3:
-		if (armor == 8 && leg == 5 && hat == 9 && berk == 3) return 1; // Warr elv M
-		if (armor == 9 && leg == 6 && hat == 10 && berk == 4) return 1; // Warr ares M
-		if (armor == 10 && leg == 5 && hat == 11 && berk == 3) return 2; // Mage elv M
-		if (armor == 11 && leg == 6 && hat == 12 && berk == 4) return 2; // Mage ares M
-		break;
-	case 4:
-	case 5:
-	case 6:
-		if (armor == 9 && leg == 6 && hat == 9 && berk == 4) return 1; // Warr elv W
-		if (armor == 10 && leg == 7 && hat == 10 && berk == 5) return 1; // Warr ares W
-		if (armor == 11 && leg == 6 && hat == 11 && berk == 4) return 2; // Mage elv W
-		if (armor == 12 && leg == 7 && hat == 12 && berk == 5) return 2; // Mage ares W
-		break;
-	}
+	// All four pieces must have the same non-zero set_id
+	if (armor_set == leg_set && armor_set == hat_set && armor_set == berk_set)
+		return armor_set; // set_id encodes set type: 1=warrior, 2=mage
 	return 0;
 }
 /*********************************************************************************************************************

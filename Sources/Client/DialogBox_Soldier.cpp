@@ -229,7 +229,7 @@ bool DialogBox_Soldier::on_click()
 	case mode::teleport:
 		if (mouse_in(btn_tp_wide))
 		{
-			send_game_packet(hb::net::make_common_command(CommonType::GuildTeleport, player().m_player_x, player().m_player_y));
+			// Guild teleport removed with guild system
 			disable_dialog_box(DialogBoxId::CrusadeSoldier);
 			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
 		}

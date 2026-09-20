@@ -1,2 +1,116 @@
-<?xml version='1.0' encoding='utf-8'?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0"><ItemGroup><Filter Include="Shared"><UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000001}</UniqueIdentifier></Filter><Filter Include="Shared\Interfaces"><UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000002}</UniqueIdentifier></Filter><Filter Include="Shared\Rendering"><UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000006}</UniqueIdentifier></Filter><Filter Include="Shared\Entity"><UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000007}</UniqueIdentifier></Filter><Filter Include="Shared\Game"><UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000008}</UniqueIdentifier></Filter></ItemGroup><ItemGroup><ClInclude Include="..\Dependencies\Shared\Entity\ActionID.h"><Filter>Shared\Entity</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Entity\Appearance.h"><Filter>Shared\Entity</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\BitmapFontFactory.h"><Filter>Shared\Rendering</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\ColorUtils.h"><Filter>Shared\Rendering</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\GameGeometry.h"><Filter>Shared\Rendering</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\IBitmapFont.h"><Filter>Shared\Interfaces</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\IInput.h"><Filter>Shared\Interfaces</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\IRenderer.h"><Filter>Shared\Interfaces</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\ISprite.h"><Filter>Shared\Interfaces</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\ISpriteFactory.h"><Filter>Shared\Interfaces</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\ITextRenderer.h"><Filter>Shared\Interfaces</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\ITexture.h"><Filter>Shared\Interfaces</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\IWindow.h"><Filter>Shared\Interfaces</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\NativeTypes.h"><Filter>Shared</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\NullSprite.h"><Filter>Shared\Rendering</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\PrimitiveTypes.h"><Filter>Shared\Rendering</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\RenderConstants.h"><Filter>Shared\Rendering</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\RendererFactory.h"><Filter>Shared\Rendering</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\ResolutionConfig.h"><Filter>Shared\Rendering</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\SpriteCollection.h"><Filter>Shared\Rendering</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\SpriteLoader.h"><Filter>Shared\Rendering</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\SpriteTypes.h"><Filter>Shared\Rendering</Filter></ClInclude><ClInclude Include="..\Dependencies\Shared\Render\TextLib.h"><Filter>Shared\Rendering</Filter></ClInclude></ItemGroup><ItemGroup><ClCompile Include="..\Dependencies\Shared\Render\ISpriteFactory.cpp"><Filter>Shared\Interfaces</Filter></ClCompile><ClCompile Include="..\Dependencies\Shared\Render\TextLib.cpp"><Filter>Shared\Rendering</Filter></ClCompile></ItemGroup></Project>
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <Filter Include="Shared">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000001}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Interfaces">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000002}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Rendering">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000006}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Entity">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000007}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Game">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000008}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Dependencies\Shared\Entity\ActionID.h">
+      <Filter>Shared\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Entity\Appearance.h">
+      <Filter>Shared\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\BitmapFontFactory.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\ColorUtils.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\GameGeometry.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\IBitmapFont.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\IInput.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\IRenderer.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\ISprite.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\ISpriteFactory.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\ITextRenderer.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\ITexture.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\IWindow.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\NativeTypes.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\NullSprite.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\PrimitiveTypes.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\RenderConstants.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\RendererFactory.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\ResolutionConfig.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\SpriteCollection.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\SpriteLoader.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\SpriteTypes.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dependencies\Shared\Render\TextLib.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="SFMLRenderer.h" />
+    <ClInclude Include="SFMLTexture.h" />
+    <ClInclude Include="SFMLWindow.h" />
+    <ClInclude Include="SFMLSprite.h" />
+    <ClInclude Include="SFMLSpriteFactory.h" />
+    <ClInclude Include="SFMLTextRenderer.h" />
+    <ClInclude Include="SFMLBitmapFont.h" />
+    <ClInclude Include="SFMLInput.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Dependencies\Shared\Render\ISpriteFactory.cpp">
+      <Filter>Shared\Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Dependencies\Shared\Render\TextLib.cpp">
+      <Filter>Shared\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="SFMLRenderer.cpp" />
+    <ClCompile Include="SFMLTexture.cpp" />
+    <ClCompile Include="SFMLWindow.cpp" />
+    <ClCompile Include="SFMLSprite.cpp" />
+    <ClCompile Include="SFMLSpriteFactory.cpp" />
+    <ClCompile Include="SFMLTextRenderer.cpp" />
+    <ClCompile Include="SFMLBitmapFont.cpp" />
+    <ClCompile Include="SFMLInput.cpp" />
+    <ClCompile Include="RendererFactory.cpp" />
+  </ItemGroup>
+</Project>

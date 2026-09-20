@@ -40,6 +40,7 @@ namespace net {
 		std::uint8_t intl;
 		std::uint8_t mag;
 		std::uint8_t chr;
+		std::uint8_t class_type; // 1=warrior, 2=mage, 3=master
 	};
 	HB_PACK_END
 

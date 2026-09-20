@@ -56,8 +56,7 @@ bool GameCmdGiveItem::execute(CGame* game, int client_h, const char* args)
 	if (!is_gold && amount > 1000) amount = 1000;
 
 	const char* item_name = game->m_item_config_list[item_id]->m_name;
-	auto itemType = game->m_item_config_list[item_id]->get_item_type();
-	bool true_stack = hb::shared::item::is_true_stack_type(itemType) || is_gold;
+	bool true_stack = game->m_item_config_list[item_id]->is_stackable() || is_gold;
 
 	int created = 0;
 
@@ -67,7 +66,7 @@ bool GameCmdGiveItem::execute(CGame* game, int client_h, const char* args)
 		CItem* item = new CItem();
 		if (game->m_item_manager->init_item_attr(item, item_name))
 		{
-			item->m_count = amount;
+			item->m_instance.count = amount;
 			int erase_req = 0;
 			if (game->m_item_manager->add_client_item_list(target_h, item, &erase_req))
 			{

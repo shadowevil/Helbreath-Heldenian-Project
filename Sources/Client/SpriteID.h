@@ -7,12 +7,9 @@ constexpr int MouseCursor                   = 0;
 
 // Interface sprite IDs
 constexpr int InterfaceSprFonts             = 22;
-constexpr int InterfaceAddInterface         = 27;
-constexpr int InterfaceSprFonts2            = 28;
-constexpr int InterfaceF1HelpWindows        = 29;
 constexpr int InterfaceFont1                = 30;
 constexpr int InterfaceFont2                = 31;
-constexpr int InterfaceCrafting             = 32;
+constexpr int InterfaceSprFonts3            = 34;
 
 constexpr int InterfaceNewMaps1             = 35;
 constexpr int InterfaceNewMaps2             = 36;
@@ -34,14 +31,11 @@ constexpr int InterfaceNdGame2              = 61;
 constexpr int InterfaceNdGame3              = 62;
 constexpr int InterfaceNdGame4              = 63;
 constexpr int InterfaceNdIconPanel          = 64;
-constexpr int InterfaceNdIconPanel2         = 65;
 constexpr int InterfaceNdInventory          = 67;
 constexpr int InterfaceNdText               = 70;
 constexpr int InterfaceNdButton             = 71;
 constexpr int InterfaceNdCrusade            = 72;
 constexpr int InterfaceGuideMap             = 420;
-
-constexpr int InterfaceNdPartyStatus        = 80;
 
 // Item pivot points
 constexpr int ItemEquipPivotPoint           = 200;

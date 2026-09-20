@@ -60,7 +60,6 @@ public:
         int spot_mob_index, char change_side,
         bool hide_gen_mode, bool is_summoned,
         bool firm_berserk, bool is_master,
-        int guild_guid,
         bool bypass_mob_limit = false
     );
 
@@ -237,6 +236,22 @@ private:
     /**
      * initialize NPC attributes from configuration.
      */
+    static bool is_crusade_structure(int npc_type);
+
+    // Extracted helpers from long functions
+    bool find_spawn_position(int map_index, char move_type,
+        int* offset_x, int* offset_y, char* waypoint_list,
+        hb::shared::geometry::GameRectangle* area,
+        bool hide_gen_mode, short& out_x, short& out_y);
+    void setup_entity_appearance(CNpc* npc);
+    void award_kill_experience(int entity_handle, short attacker_h, char attacker_type);
+    void apply_crusade_contribution(int entity_handle, short attacker_h, char attacker_type);
+    bool try_magic_attack(int npc_h, int target_h, char target_type, short sX, short sY, short dX, short dY, bool& out_skip_ranged);
+    bool try_ranged_attack(int npc_h, int target_h, char target_type, short sX, short sY, short dX, short dY);
+    void spawn_follower_mobs(int map_index, int npc_config_id, int total_mob,
+        bool firm_berserk, int prob_sa, int kind_sa,
+        const char* master_name, int pX, int pY);
+
     bool init_entity_attributes(CNpc* npc, int npc_config_id, short sClass, char sa);
 
     /**

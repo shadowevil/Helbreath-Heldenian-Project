@@ -87,69 +87,7 @@ public:
 
 namespace GameColors
 {
-	// Item/Equipment tint palette (indices 0-15, multiply-ready RGB values)
-	// Values are used as multiplicative factors: pixel = sprite_pixel * (value / 255)
-	// Higher values = brighter/less tinted, lower values = darker/more saturated
-	inline constexpr hb::shared::render::Color Items[16] = {
-		{ 0, 0, 0 },      // 0  (no tint)
-		{ 80, 80, 192 },  // 1  IndigoBlue
-		{ 144, 144, 112 },// 2  CustomWeapon
-		{ 255, 208, 48 }, // 3  Gold
-		{ 240, 32, 0 },   // 4  Crimson
-		{ 16, 112, 16 },  // 5  Green
-		{ 160, 160, 160 },// 6  Gray (DK/DM armor)
-		{ 80, 144, 160 }, // 7  Aqua
-		{ 240, 96, 176 }, // 8  Pink
-		{ 176, 112, 176 },// 9  Violet
-		{ 0, 64, 112 },   // 10 Blue
-		{ 235, 215, 180 },// 11 Tan (Knight/Wizard armor)
-		{ 176, 176, 96 }, // 12 Khaki
-		{ 160, 160, 16 }, // 13 Yellow
-		{ 144, 16, 16 },  // 14 Red
-		{ 128, 128, 128 },// 15 Black
-	};
-
-	// Weapon tint palette (indices 0-15, multiply-ready RGB values)
-	inline constexpr hb::shared::render::Color Weapons[16] = {
-		{ 0, 0, 0 },      // 0  (unused)
-		{ 128, 128, 160 },// 1  LightBlue
-		{ 128, 128, 160 },// 2  LightBlue
-		{ 128, 128, 160 },// 3  LightBlue
-		{ 128, 192, 128 },// 4  Green
-		{ 255, 176, 16 }, // 5  Critical
-		{ 150, 160, 225 },// 6  HeavyBlue (DK/DM weapons)
-		{ 255, 255, 255 },// 7  White
-		{ 240, 192, 240 },// 8  Violet
-		{ 144, 16, 16 },  // 9  HeavyRed
-		{ 0, 0, 0 },      // 10 (unused)
-		{ 235, 215, 180 },// 11 Tan (Knight/Wizard weapons)
-		{ 0, 0, 0 },      // 12 (unused)
-		{ 0, 0, 0 },      // 13 (unused)
-		{ 0, 0, 0 },      // 14 (unused)
-		{ 0, 0, 0 },      // 15 (unused)
-	};
-
-	// Hair tint palette (indices 0-15, target color for grayscale sprites)
-	inline constexpr hb::shared::render::Color Hair[16] = {
-		{ 180, 80, 60 },  // 0  Auburn
-		{ 220, 150, 60 }, // 1  Orange
-		{ 210, 180, 120 },// 2  Light brown
-		{ 80, 170, 80 },  // 3  Green
-		{ 90, 120, 220 }, // 4  Bright blue
-		{ 70, 70, 170 },  // 5  Dark blue
-		{ 160, 80, 175 }, // 6  Purple
-		{ 60, 60, 60 },   // 7  Black
-		{ 170, 120, 160 },// 8  Pink
-		{ 180, 160, 110 },// 9  Sandy
-		{ 80, 160, 180 }, // 10 Teal
-		{ 160, 130, 200 },// 11 Lavender
-		{ 200, 120, 110 },// 12 Coral
-		{ 120, 130, 210 },// 13 Light blue
-		{ 120, 180, 120 },// 14 Light green
-		{ 150, 155, 110 },// 15 Olive
-	};
-
-	// Pre-computed math colors
+	// Pre-computed math colors (independent constants, not from palette)
 	// original: m_wR[13]*2, m_wG[13]*2, m_wB[13]*2
 	inline constexpr hb::shared::render::Color Yellow2x{ 160, 160, 16 };
 	// original: m_wR[13]*4, m_wG[13]*4, m_wB[13]*4
@@ -179,7 +117,7 @@ namespace GameColors
 	// Additional UI Colors
 	// ====================================================================
 
-	inline constexpr hb::shared::render::Color UIMenuHighlight{ 250, 250, 0 };  // Teleport menu highlight (DialogBox_CityHallMenu, DialogBox_GuildHallMenu)
+	inline constexpr hb::shared::render::Color UIMenuHighlight{ 250, 250, 0 };  // Teleport menu highlight (DialogBox_CityHallMenu, DialogBox_CommandHallMenu)
 	inline constexpr hb::shared::render::Color UINoticeRed{ 100, 10, 10 };      // Notice message text (DialogBox_Noticement)
 	inline constexpr hb::shared::render::Color UITooltip{ 250, 250, 220 };      // Tooltip text (DialogBox_HudPanel)
 	inline constexpr hb::shared::render::Color UIDisabledMed{ 120, 120, 120 };      // Grayed out text (DialogBox_Manufacture)
@@ -213,6 +151,7 @@ namespace GameColors
 	// Completed
 	inline constexpr hb::shared::render::Color UIMagicBlue{ 4,0,50 };
 	inline constexpr hb::shared::render::Color UIMagicPurple{ 60, 10, 60 };
+	inline constexpr hb::shared::render::Color UIMagicDisabled{ 50, 15, 15 };  // INT requirement not met
 	inline constexpr hb::shared::render::Color UIGuildGreen{ 130, 200, 130 };
 	inline constexpr hb::shared::render::Color UIWorldChat{ 255, 130, 130 };
 	inline constexpr hb::shared::render::Color UIFactionChat{ 130, 130, 255 };

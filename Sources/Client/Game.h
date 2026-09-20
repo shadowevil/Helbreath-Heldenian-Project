@@ -173,7 +173,7 @@ public:
 	void draw_version();
 	bool is_item_on_hand();
 	void dynamic_object_handler(char * data);
-	bool check_item_by_type(hb::shared::item::ItemType type);
+	bool has_item_with_sub_type(hb::shared::item::item_sub_type::item_sub_type sub_type);
 	void load_text_dlg_contents(int type);
 	int  load_text_dlg_contents2(int type);
 	void request_full_object_data(uint16_t object_id);
@@ -238,7 +238,6 @@ public:
 	hb::shared::types::NativeInstance m_native_instance;
 	int m_icon_resource_id;
 
-	void reserve_fightzone_response_handler(char * data);
 	void start_bgm();  // Forwards to audio_manager based on current location
 
 	int has_hero_set(const hb::shared::entity::PlayerAppearance& appr, short OwnerType);
@@ -309,7 +308,6 @@ public:
 	//v2.183 Hunter Mode - Moved to CPlayer
 
 std::array<bool, hb::shared::limits::MaxItems> m_is_item_equipped{};
-	std::array<bool, hb::shared::limits::MaxItems> m_is_item_disabled{};
 	bool m_is_first_conn;
 	bool m_is_server_changing = false;
 
@@ -391,6 +389,15 @@ std::array<bool, hb::shared::limits::MaxItems> m_is_item_equipped{};
 	bool cache_process_npc_config(char* data, uint32_t msg_size);
 	bool cache_process_map_config(char* data, uint32_t msg_size);
 	bool cache_process_balance_config(char* data, uint32_t msg_size);
+	bool cache_process_color_palette(char* data, uint32_t msg_size);
+	bool cache_process_attribute_types(char* data, uint32_t msg_size);
+
+	std::array<hb::shared::render::Color, 256> m_color_palette{};
+	bool m_color_palette_loaded = false;
+
+	uint8_t m_prefix_multiplier[16]{};
+	uint8_t m_secondary_multiplier[16]{};
+	bool m_attribute_types_loaded = false;
 
 	struct NpcConfig { short npcType = 0; std::string name; bool valid = false; };
 	std::array<NpcConfig, hb::shared::limits::MaxNpcConfigs> m_npc_config_list{};   // indexed by npc_id
@@ -407,7 +414,7 @@ std::array<bool, hb::shared::limits::MaxItems> m_is_item_equipped{};
 
 	bool ensure_config_loaded(int type);
 	bool try_replay_cache_for_config(int type);
-	void request_configs_from_server(bool items, bool magic, bool skills, bool npcs = false, bool maps = false, bool balance = false);
+	void request_configs_from_server(bool items, bool magic, bool skills, bool npcs = false, bool maps = false, bool balance = false, bool color_palette = false, bool attribute_types = false);
 	void check_configs_ready_and_enter_game();
 
 	bool ensure_item_configs_loaded()  { return ensure_config_loaded(0); }
@@ -432,6 +439,9 @@ std::array<bool, hb::shared::limits::MaxItems> m_is_item_equipped{};
 	short m_max_stats;
 	int m_max_level;
 	int m_max_bank_items;
+	int m_base_stat_value = 10;
+	int m_max_creation_stat_value = 4;
+	int m_creation_stat_points = 10;
 
 	// Formula engine — populated from balance config cache (sent at login + validated at enter-game)
 	hb::shared::formula_engine m_formula_engine;

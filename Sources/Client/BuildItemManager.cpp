@@ -77,7 +77,7 @@ bool build_item_manager::update_available_recipes()
 				// ItemCount
 				for (j = 0; j < hb::shared::limits::MaxItems; j++)
 					if (m_game->m_player->m_item_list[j] != 0)
-						item_count[j] = static_cast<int>(m_game->m_player->m_item_list[j]->m_count);
+						item_count[j] = static_cast<int>(m_game->m_player->m_item_list[j]->m_instance.count);
 					else item_count[j] = 0;
 
 				for (int elem = 1; elem <= 6; elem++)
@@ -95,7 +95,7 @@ bool build_item_manager::update_available_recipes()
 						{
 							CItem* cfg_j = m_game->get_item_config(m_game->m_player->m_item_list[j]->m_id_num);
 							if (cfg_j && (memcmp(cfg_j->m_name, temp_name, hb::shared::limits::ItemNameLen - 1) == 0) &&
-								(m_game->m_player->m_item_list[j]->m_count >= static_cast<uint32_t>(count)) &&
+								(m_game->m_player->m_item_list[j]->m_instance.count >= static_cast<uint32_t>(count)) &&
 								(item_count[j] > 0))
 							{
 								match++;
@@ -262,7 +262,7 @@ bool build_item_manager::validate_current_recipe()
 
 	for (i = 1; i <= 6; i++)
 		if (item_index[i] != -1)
-			item_count[i] = static_cast<int>(m_game->m_player->m_item_list[item_index[i]]->m_count);
+			item_count[i] = static_cast<int>(m_game->m_player->m_item_list[item_index[i]]->m_instance.count);
 		else item_count[i] = 0;
 	match = 0;
 	for (i = 1; i <= 6; i++) item_flag[i] = false;
@@ -281,7 +281,7 @@ bool build_item_manager::validate_current_recipe()
 			if (item_index[i] == -1) continue;
 			CItem* cfg_bi = m_game->get_item_config(m_game->m_player->m_item_list[item_index[i]]->m_id_num);
 			if (cfg_bi && (memcmp(cfg_bi->m_name, temp_name, hb::shared::limits::ItemNameLen - 1) == 0) &&
-				(m_game->m_player->m_item_list[item_index[i]]->m_count >= static_cast<uint32_t>(count)) &&
+				(m_game->m_player->m_item_list[item_index[i]]->m_instance.count >= static_cast<uint32_t>(count)) &&
 				(item_count[i] > 0) && (item_flag[i] == false))
 			{
 				match++;

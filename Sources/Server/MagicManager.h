@@ -37,7 +37,6 @@ public:
 	void get_magic_ability_handler(int client_h);
 
 	// Magic checks
-	bool check_magic_int(int client_h);
 	bool check_client_magic_frequency(int client_h, uint32_t client_time);
 	int get_weather_magic_bonus_effect(short type, char wheather_status);
 

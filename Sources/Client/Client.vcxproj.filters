@@ -198,7 +198,7 @@
     <ClInclude Include="DialogBox_GuideMap.h">
       <Filter>DialogBox</Filter>
     </ClInclude>
-    <ClInclude Include="DialogBox_GuildHallMenu.h">
+    <ClInclude Include="DialogBox_CommandHallMenu.h">
       <Filter>DialogBox</Filter>
     </ClInclude>
     <ClInclude Include="DialogBox_GuildMenu.h">
@@ -355,6 +355,9 @@
     </ClInclude>
     <ClInclude Include="IDialogBox.h">
       <Filter>DialogBox</Filter>
+    </ClInclude>
+    <ClInclude Include="GameMode.h">
+      <Filter>Screens</Filter>
     </ClInclude>
     <ClInclude Include="IGameScreen.h">
       <Filter>Screens</Filter>
@@ -784,7 +787,7 @@
     <ClCompile Include="DialogBox_GuideMap.cpp">
       <Filter>DialogBox</Filter>
     </ClCompile>
-    <ClCompile Include="DialogBox_GuildHallMenu.cpp">
+    <ClCompile Include="DialogBox_CommandHallMenu.cpp">
       <Filter>DialogBox</Filter>
     </ClCompile>
     <ClCompile Include="DialogBox_GuildMenu.cpp">

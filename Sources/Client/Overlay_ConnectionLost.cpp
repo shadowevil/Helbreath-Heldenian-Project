@@ -26,12 +26,6 @@ void Overlay_ConnectionLost::on_initialize()
     audio_manager::get().stop_sound(sound_type::effect, 38);
     audio_manager::get().stop_music();
 }
-
-void Overlay_ConnectionLost::on_uninitialize()
-{
-    // Nothing to clean up
-}
-
 void Overlay_ConnectionLost::on_update()
 {
     m_iFrameCount++;
@@ -48,9 +42,7 @@ void Overlay_ConnectionLost::on_update()
 void Overlay_ConnectionLost::on_render()
 {
     int dlgX, dlgY;
-    get_centered_dialog_pos(InterfaceNdGame4, 2, dlgX, dlgY);
-
-    draw_new_dialog_box(InterfaceNdGame4, dlgX, dlgY, 2);
+    draw_centered_dialog_box(InterfaceNdGame4, 2, dlgX, dlgY);
     hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 64, dlgY + 55, "Connection Lost!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
     put_string(dlgX + 60, dlgY + 85, UPDATE_SCREEN_ON_CONNECTION_LOST, GameColors::UIBlack);
     draw_version();

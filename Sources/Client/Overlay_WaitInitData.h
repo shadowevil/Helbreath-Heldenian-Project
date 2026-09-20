@@ -17,7 +17,6 @@ public:
     ~Overlay_WaitInitData() override = default;
 
     void on_initialize() override;
-    void on_uninitialize() override;
     void on_update() override;
     void on_render() override;
 

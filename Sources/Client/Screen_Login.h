@@ -14,11 +14,12 @@ class Screen_Login : public IGameScreen
 public:
     SCREEN_TYPE(Screen_Login)
 
+    GameMode get_game_mode() const override { return GameMode::Login; }
+
     explicit Screen_Login(CGame* game);
     ~Screen_Login() override = default;
 
     void on_initialize() override;
-    void on_uninitialize() override;
     void on_update() override;
     void on_render() override;
     bool on_net_response(uint16_t response_type, char* data) override;

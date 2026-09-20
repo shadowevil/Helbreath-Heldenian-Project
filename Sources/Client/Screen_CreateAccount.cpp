@@ -9,7 +9,6 @@
 #include "GameFonts.h"
 #include "TextLibExt.h"
 #include "TextFieldRenderer.h"
-#include "InputStateHelper.h"
 #include "Packet/SharedPackets.h"
 #include "AudioManager.h"
 
@@ -23,7 +22,6 @@ Screen_CreateAccount::Screen_CreateAccount(CGame* game)
 
 void Screen_CreateAccount::on_initialize()
 {
-    GameModeManager::set_current_mode(GameMode::CreateNewAccount);
     m_game->m_arrow_pressed = 0;
 
     m_controls.set_screen_size(LOGICAL_WIDTH(), LOGICAL_HEIGHT());
@@ -123,16 +121,9 @@ void Screen_CreateAccount::on_initialize()
                                 BTN_CREATE, BTN_CLEAR, BTN_CANCEL});
     m_controls.set_focus(TXT_ACCOUNT);
 }
-
-void Screen_CreateAccount::on_uninitialize()
-{
-}
-
 void Screen_CreateAccount::on_update()
 {
-    cc::input_state input;
-    hb::client::fill_input_state(input);
-    m_controls.update(input, GameClock::get_time_ms());
+    update_controls(m_controls);
 
     if (m_controls.escape_pressed())
         m_game->change_game_mode(GameMode::MainMenu);

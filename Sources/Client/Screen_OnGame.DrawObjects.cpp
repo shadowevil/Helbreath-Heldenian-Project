@@ -9,6 +9,7 @@
 #include "WeatherManager.h"
 #include "ItemNameFormatter.h"
 #include "ItemTooltip.h"
+#include "Item/ItemInstanceData.h"
 #include "ItemSpriteMetadata.h"
 #include "RenderHelpers.h"
 #include "EntityRenderState.h"
@@ -21,7 +22,6 @@
 #include "Packet/SharedPackets.h"
 #include "PacketSendHelpers.h"
 #include "NetMessages.h"
-#include "GuildManager.h"
 
 
 
@@ -143,9 +143,10 @@ void Screen_OnGame::draw_objects(short pivot_x, short pivot_y, short div_x, shor
 	int idelay = 75;
 
 	// Item's desc on floor
-	uint32_t item_attr, item_selected_attr;
 	int item_selectedx, item_selectedy;
-	short item_id, item_selected_id = -1;
+	short item_id;
+	short item_selected_id = 0;
+	hb::shared::item::item_instance_data item_selected;
 
 	int res_x = LOGICAL_MAX_X();
 	int res_y = LOGICAL_MAX_Y();
@@ -211,7 +212,6 @@ void Screen_OnGame::draw_objects(short pivot_x, short pivot_y, short div_x, shor
 					item_id = 0;
 					ret = false;
 					item_color = 0;
-					item_attr = 0;
 				}
 				else
 				{
@@ -227,8 +227,7 @@ void Screen_OnGame::draw_objects(short pivot_x, short pivot_y, short div_x, shor
 					m_game->m_entity_state.m_status = m_game->m_map_data->m_data[dX][dY].m_deadStatus;
 					std::snprintf(m_game->m_entity_state.m_name.data(), m_game->m_entity_state.m_name.size(), "%s", m_game->m_map_data->m_data[dX][dY].m_dead_owner_name.c_str());
 					item_id = m_game->m_map_data->m_data[dX][dY].m_item_id;
-					item_attr = m_game->m_map_data->m_data[dX][dY].m_item_attr;
-					item_color = m_game->m_map_data->m_data[dX][dY].m_item_color & 0x0F;
+					item_color = m_game->m_map_data->m_data[dX][dY].m_item.item_color;
 					dynamic_object = m_game->m_map_data->m_data[dX][dY].m_dynamic_object_type;
 					dynamic_object_frame = static_cast<short>(m_game->m_map_data->m_data[dX][dY].m_dynamic_object_frame);
 					dynamic_object_data1 = m_game->m_map_data->m_data[dX][dY].m_dynamic_object_data_1;
@@ -256,19 +255,15 @@ void Screen_OnGame::draw_objects(short pivot_x, short pivot_y, short div_x, shor
 					}
 					else
 					{
-						int eq = m_game->m_item_config_list[item_id]->m_equip_pos;
-						bool is_weapon = (eq == hb::shared::item::to_int(hb::shared::item::EquipPos::LeftHand) ||
-							eq == hb::shared::item::to_int(hb::shared::item::EquipPos::RightHand) ||
-							eq == hb::shared::item::to_int(hb::shared::item::EquipPos::TwoHand));
-						const auto& tint = is_weapon ? GameColors::Weapons[item_color] : GameColors::Items[item_color];
+						const auto& tint = m_game->m_color_palette[static_cast<uint8_t>(item_color)];
 						auto params = hb::shared::sprite::DrawParams::tint(tint.r, tint.g, tint.b);
 						params.m_ignore_pivot = true;
 						ground_draw.sprite->draw(cx, cy, ground_draw.frame, params);
 					}
 
 					if (hb::shared::input::is_shift_down() && mouse_x >= ix - 16 && mouse_y >= iy - 16 && mouse_x <= ix + 16 && mouse_y <= iy + 16) {
-						item_selected_id = item_id;
-						item_selected_attr = item_attr;
+						item_selected_id = m_game->m_map_data->m_data[dX][dY].m_item_id;
+						item_selected = m_game->m_map_data->m_data[dX][dY].m_item;
 						item_selectedx = ix;
 						item_selectedy = iy;
 					}
@@ -807,20 +802,20 @@ void Screen_OnGame::draw_objects(short pivot_x, short pivot_y, short div_x, shor
 		}
 	}
 
-	if (item_selected_id != -1) {
-		auto itemInfo = item_name_formatter::get().format(static_cast<short>(item_selected_id), item_selected_attr);
+	if (item_selected_id != 0) {
+		auto itemInfo = item_name_formatter::get().format(item_selected_id, item_selected);
 
 		item_tooltip tooltip;
-		auto name_color = itemInfo.is_special ? GameColors::UIItemName_Special : GameColors::UIWhite;
-		tooltip.add_line(itemInfo.name, name_color);
-		for (const auto& eff : itemInfo.effects)
+		bool has_prefix = item_selected.prefix_type != 0;
+		if (has_prefix && item_selected.item_color != 0)
 		{
-			if (eff.label.empty() && eff.value.empty()) continue;
-			if (eff.value.empty())
-				tooltip.add_line(eff.label, GameColors::InfoGrayLight);
-			else
-				tooltip.add_dual_line(eff.label, GameColors::InfoGrayLight, eff.value, GameColors::UIItemName_Special);
+			const auto& dye = m_game->m_color_palette[static_cast<uint8_t>(item_selected.item_color)];
+			tooltip.add_line(itemInfo.name, {dye.r, dye.g, dye.b, 255});
 		}
+		else if (itemInfo.is_special)
+			tooltip.add_line(itemInfo.name, GameColors::UIItemName_Special);
+		else
+			tooltip.add_line(itemInfo.name, GameColors::UIWhite);
 		tooltip.draw(mouse_x, mouse_y + 25, m_game->m_Renderer);
 	}
 }
@@ -888,7 +883,7 @@ void Screen_OnGame::draw_character_body(CGame& game, short sX, short sY, short t
 	if (type <= 3)
 	{
 		game.m_sprite[ItemEquipPivotPoint + 0]->draw(sX, sY, type - 1);
-		const auto& hcM = GameColors::Hair[game.m_entity_state.m_appearance.hair_color];
+		const auto& hcM = game.m_color_palette[game.m_entity_state.m_appearance.hair_color];
 		game.m_sprite[ItemEquipPivotPoint + 18]->draw(sX, sY, game.m_entity_state.m_appearance.hair_style, hb::shared::sprite::DrawParams::tint(hcM.r, hcM.g, hcM.b));
 
 		game.m_sprite[ItemEquipPivotPoint + 19]->draw(sX, sY, game.m_entity_state.m_appearance.underwear_type);
@@ -896,7 +891,7 @@ void Screen_OnGame::draw_character_body(CGame& game, short sX, short sY, short t
 	else
 	{
 		game.m_sprite[ItemEquipPivotPoint + 40]->draw(sX, sY, type - 4);
-		const auto& hcF = GameColors::Hair[game.m_entity_state.m_appearance.hair_color];
+		const auto& hcF = game.m_color_palette[game.m_entity_state.m_appearance.hair_color];
 		game.m_sprite[ItemEquipPivotPoint + 18 + 40]->draw(sX, sY, game.m_entity_state.m_appearance.hair_style, hb::shared::sprite::DrawParams::tint(hcF.r, hcF.g, hcF.b));
 		game.m_sprite[ItemEquipPivotPoint + 19 + 40]->draw(sX, sY, game.m_entity_state.m_appearance.underwear_type);
 	}
@@ -1017,10 +1012,9 @@ void Screen_OnGame::draw_npc_name(short screen_x, short screen_y, short owner_ty
 
 void Screen_OnGame::draw_object_name(short screen_x, short screen_y, const char* name, const hb::shared::entity::PlayerStatus& status, uint16_t object_id)
 {
-	std::string guild_text;
 	std::string text, text2;
 	uint8_t red = 0, green = 0, blue = 0;
-	int guild_index = 0, y_offset = 0;
+	int y_offset = 0;
 	bool is_pk = false, is_citizen = false, is_aresden = false, is_hunter = false;
 	auto relationship = status.relationship;
 	if (IsHostile(relationship))
@@ -1063,18 +1057,6 @@ void Screen_OnGame::draw_object_name(short screen_x, short screen_y, const char*
 
 	if (object_id == m_game->m_player->m_player_object_id)
 	{
-		if (m_game->m_player->m_guild_rank == 0)
-		{
-			guild_text = std::format(DEF_MSG_GUILDMASTER, m_game->m_player->m_guild_name);//" Guildmaster)"
-			hb::shared::text::draw_text(GameFont::Default, screen_x, screen_y + 14, guild_text.c_str(), hb::shared::text::TextStyle::with_shadow(GameColors::InfoGrayLight));
-			y_offset = 14;
-		}
-		if (m_game->m_player->m_guild_rank > 0)
-		{
-			guild_text = std::format(DEF_MSG_GUILDSMAN, m_game->m_player->m_guild_name);//" Guildsman)"
-			hb::shared::text::draw_text(GameFont::Default, screen_x, screen_y + 14, guild_text.c_str(), hb::shared::text::TextStyle::with_shadow(GameColors::InfoGrayLight));
-			y_offset = 14;
-		}
 		if (m_game->m_player->m_pk_count != 0)
 		{
 			is_pk = true;
@@ -1095,39 +1077,6 @@ void Screen_OnGame::draw_object_name(short screen_x, short screen_y, const char*
 		is_citizen = status.citizen;
 		is_aresden = status.aresden;
 		is_hunter = status.hunter;
-		if (m_is_crusade_mode == false || !IsHostile(relationship))
-		{
-			auto& gm = get_guild_manager();
-			if (gm.find_guild_name(name, m_game->m_cur_time, &guild_index) == true)
-			{
-				auto& entry = gm.get_name_entry(guild_index);
-				if (!entry.guild_name.empty())
-				{
-					if (entry.guild_name != "NONE")
-					{
-						if (entry.guild_rank == 0)
-						{
-							guild_text = std::format(DEF_MSG_GUILDMASTER, entry.guild_name);
-							hb::shared::text::draw_text(GameFont::Default, screen_x, screen_y + 14, guild_text.c_str(), hb::shared::text::TextStyle::with_shadow(GameColors::InfoGrayLight));
-							y_offset = 14;
-						}
-						else if (entry.guild_rank > 0)
-						{
-							guild_text = std::format(DEF_MSG_GUILDSMAN, entry.guild_name);
-							hb::shared::text::draw_text(GameFont::Default, screen_x, screen_y + 14, guild_text.c_str(), hb::shared::text::TextStyle::with_shadow(GameColors::InfoGrayLight));
-							y_offset = 14;
-						}
-					}
-				}
-			}
-			else
-			{
-				auto pkt = hb::net::make_common_command(CommonType::ReqGuildName, m_game->m_player->m_player_x, m_game->m_player->m_player_y);
-				pkt.v1 = m_game->m_entity_state.m_object_id;
-				pkt.v2 = guild_index;
-				m_game->send_game_packet(pkt);
-			}
-		}
 	}
 
 	if (is_citizen == false)
@@ -1192,14 +1141,11 @@ void Screen_OnGame::dk_glare(int weapon_color, int16_t weapon_item_id, int* weap
 {
 	if (weapon_color != 9) return;
 	if (weapon_item_id <= 0) return;
-	CItem* cfg = m_game->get_item_config(weapon_item_id);
-	if (!cfg) return;
-	uint8_t appr_val = static_cast<uint8_t>(cfg->m_appearance_value);
-	if (appr_val == 14) // Sword3 (msw3/wsw3)
+	if (weapon_item_id == 745) // Dark Knight Templar
 	{
 		*weapon_glare = 3;
 	}
-	else if (appr_val == 37) // Staff3 (MStaff3/WStaff3)
+	else if (weapon_item_id == 746) // Dark Mage Templar
 	{
 		*weapon_glare = 2;
 	}

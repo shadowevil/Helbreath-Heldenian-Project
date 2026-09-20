@@ -18,6 +18,8 @@ class Screen_Splash : public IGameScreen
 public:
     SCREEN_TYPE(Screen_Splash)
 
+    GameMode get_game_mode() const override { return GameMode::Splash; }
+
     explicit Screen_Splash(CGame* game);
     ~Screen_Splash() override = default;
 

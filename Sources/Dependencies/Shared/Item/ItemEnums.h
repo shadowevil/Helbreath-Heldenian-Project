@@ -2,7 +2,7 @@
 //
 // Replaces divergent DEF_ macros from Client/Item.h and Server/Item.h
 // Naming decisions:
-//   - Slot 5: Leggings (matches item data: PlateLeggings, ChainHose)
+//   - Slot 5: Boots (Shoes, Long Boots)
 //   - Slot 13: FullBody (describes slot purpose, not behavior)
 //
 //////////////////////////////////////////////////////////////////////
@@ -22,8 +22,8 @@ enum class EquipPos : int8_t
     Head      = 1,
     Body      = 2,
     Arms      = 3,
-    Pants     = 4,
-    Leggings  = 5,   // Leg armor (ChainHose, PlateLeggings)
+    Leggings  = 4,   // Lower body (Trousers, Skirts, Chain Hose, Plate Leggings)
+    Boots     = 5,   // Footwear (Shoes, Long Boots)
     Neck      = 6,
     LeftHand  = 7,
     RightHand = 8,
@@ -39,25 +39,75 @@ enum class EquipPos : int8_t
 constexpr int DEF_MAXITEMEQUIPPOS = 15;
 
 //------------------------------------------------------------------------
-// Item Type
+// Item Type — what the item IS
 //------------------------------------------------------------------------
-enum class ItemType : int8_t
+namespace item_type {
+enum item_type : int8_t
 {
-    NotUsed                = -1,  // Previously used, but currently unused item
-    None                   = 0,
-    Equip                  = 1,
-    Apply                  = 2,
-    UseDeplete             = 3,
-    Install                = 4,
-    Consume                = 5,
-    Arrow                  = 6,
-    Eat                    = 7,
-    UseSkill               = 8,
-    UsePerm                = 9,
-    UseSkillEnableDialogBox = 10,
-    UseDepleteDest         = 11,
-    Material               = 12
+	none       = 0,
+	consumable = 1,   // Used and destroyed (potions, scrolls, arrows, dyes)
+	equipment  = 2,   // Equippable gear (weapons, armor, accessories)
+	material   = 3,   // Stackable resources (gold, ores, drops, bars)
+	quest      = 4,   // Quest items (reserved)
+	tool       = 5,   // Usable but not destroyed (fishing rod, map, crafting tools)
+	misc       = 6    // Decorative / uncategorized
 };
+}
+
+//------------------------------------------------------------------------
+// Item Sub-Type — categorization within type
+// Flat namespace with non-overlapping ranges per type
+//------------------------------------------------------------------------
+namespace item_sub_type {
+enum item_sub_type : int8_t
+{
+	none         = 0,   // Generic (potions, food, scrolls, tickets, etc.)
+	ammo         = 1,   // Arrows, auto-consumed in combat
+	target       = 2,   // Requires pointing at a target (dyes, flags, seeds)
+	weapon       = 3,   // Weapons
+	armor        = 4,   // Armor, shields, helms, boots, gloves
+	accessory    = 5,   // Rings, necklaces, capes
+	component    = 6,   // Crafting inputs — ores, gems, stones
+	monster_drop = 7,   // Monster body parts
+	crafted      = 8,   // Smelted bars, wares (output of crafting)
+	currency     = 9,   // Gold, gold sacks
+	fishing      = 10,  // Fishing Rod
+	crafting     = 11,  // Alchemy Bowl, Smith's Anvil, Crafting Vessel
+	map          = 12,  // Map
+	pendant      = 13,  // Pendants (generic)
+	angelic      = 14   // Angelic Pendants
+};
+}
+
+//------------------------------------------------------------------------
+// Weapon Class — replaces weapon portion of appr_value
+//------------------------------------------------------------------------
+namespace weapon_class {
+enum weapon_class : int8_t
+{
+	none        = 0,
+	dagger      = 1,   // Skill: Short Sword (7)
+	short_sword = 2,   // Skill: Short Sword (7)
+	long_sword  = 3,   // Skill: Long Sword (8)
+	fencing     = 4,   // Skill: Fencing (9)
+	axe         = 5,   // Skill: Axe (10)
+	hammer      = 6,   // Skill: Hammer (14)
+	wand        = 7,   // Skill: Wand (21)
+	bow         = 8    // Skill: Bow (6)
+};
+}
+
+//------------------------------------------------------------------------
+// Armor Class — distinguishes clothing from armor for dye targeting
+//------------------------------------------------------------------------
+namespace armor_class {
+enum armor_class : int8_t
+{
+	none     = 0,
+	clothing = 1,   // Capes, shirts, boots — regular dye target
+	armor    = 2    // Plate, chain, shields — armor dye target
+};
+}
 
 //------------------------------------------------------------------------
 // Item Effect Type
@@ -143,6 +193,28 @@ enum class TouchEffectType : int16_t
 // Helper Functions
 //------------------------------------------------------------------------
 
+// Equipment slot display name
+constexpr const char* equip_pos_name(EquipPos pos)
+{
+    switch (pos)
+    {
+    case EquipPos::Head:        return "Head";
+    case EquipPos::Body:        return "Body";
+    case EquipPos::Arms:        return "Arms";
+    case EquipPos::Leggings:    return "Leggings";
+    case EquipPos::Boots:       return "Boots";
+    case EquipPos::Neck:        return "Neck";
+    case EquipPos::LeftHand:    return "Left Hand";
+    case EquipPos::RightHand:   return "Right Hand";
+    case EquipPos::TwoHand:     return "Two Hand";
+    case EquipPos::RightFinger: return "Ring";
+    case EquipPos::LeftFinger:  return "Ring";
+    case EquipPos::Back:        return "Back";
+    case EquipPos::FullBody:    return "Full Body";
+    default:                    return "";
+    }
+}
+
 // Check if equipment position is a weapon slot
 constexpr bool is_weapon_slot(EquipPos pos)
 {
@@ -157,8 +229,8 @@ constexpr bool is_armor_slot(EquipPos pos)
     return pos == EquipPos::Head ||
            pos == EquipPos::Body ||
            pos == EquipPos::Arms ||
-           pos == EquipPos::Pants ||
            pos == EquipPos::Leggings ||
+           pos == EquipPos::Boots ||
            pos == EquipPos::Back ||
            pos == EquipPos::FullBody;
 }
@@ -169,26 +241,6 @@ constexpr bool is_accessory_slot(EquipPos pos)
     return pos == EquipPos::Neck ||
            pos == EquipPos::RightFinger ||
            pos == EquipPos::LeftFinger;
-}
-
-// Check if item type indicates stackable items (includes soft-linked types like potions)
-constexpr bool is_stackable_type(ItemType type)
-{
-    return type == ItemType::Arrow ||
-           type == ItemType::Consume ||
-           type == ItemType::Eat ||
-           type == ItemType::UseDeplete ||
-           type == ItemType::UseDepleteDest ||
-           type == ItemType::Material;
-}
-
-// Check if item type is a true stack (single inventory entry with count > 1).
-// Soft-linked types (Consume, Eat, etc.) are individual items that the client
-// groups by item ID and displays with a count.
-constexpr bool is_true_stack_type(ItemType type)
-{
-    return type == ItemType::Arrow ||
-           type == ItemType::Material;
 }
 
 // Check if item effect type is an attack type
@@ -216,12 +268,18 @@ constexpr bool is_consumable_effect_type(ItemEffectType type)
 //------------------------------------------------------------------------
 
 constexpr int8_t to_int(EquipPos pos) { return static_cast<int8_t>(pos); }
-constexpr int8_t to_int(ItemType type) { return static_cast<int8_t>(type); }
+constexpr int8_t to_int(item_type::item_type type) { return static_cast<int8_t>(type); }
+constexpr int8_t to_int(item_sub_type::item_sub_type type) { return static_cast<int8_t>(type); }
+constexpr int8_t to_int(weapon_class::weapon_class type) { return static_cast<int8_t>(type); }
+constexpr int8_t to_int(armor_class::armor_class type) { return static_cast<int8_t>(type); }
 constexpr int16_t to_int(ItemEffectType type) { return static_cast<int16_t>(type); }
 constexpr int16_t to_int(TouchEffectType type) { return static_cast<int16_t>(type); }
 
 constexpr EquipPos to_equip_pos(int8_t val) { return static_cast<EquipPos>(val); }
-constexpr ItemType to_item_type(int8_t val) { return static_cast<ItemType>(val); }
+constexpr item_type::item_type to_item_type(int8_t val) { return static_cast<item_type::item_type>(val); }
+constexpr item_sub_type::item_sub_type to_item_sub_type(int8_t val) { return static_cast<item_sub_type::item_sub_type>(val); }
+constexpr weapon_class::weapon_class to_weapon_class(int8_t val) { return static_cast<weapon_class::weapon_class>(val); }
+constexpr armor_class::armor_class to_armor_class(int8_t val) { return static_cast<armor_class::armor_class>(val); }
 constexpr ItemEffectType to_item_effect_type(int16_t val) { return static_cast<ItemEffectType>(val); }
 constexpr TouchEffectType to_touch_effect_type(int16_t val) { return static_cast<TouchEffectType>(val); }
 
@@ -303,10 +361,14 @@ namespace ItemId
     constexpr short LightingBlade = 881;
     constexpr short MagicNecklaceDFp15 = 1086;
     constexpr short MagicNecklaceRM30 = 1101;
-    constexpr short AngelicPandentSTR = 1108;
-    constexpr short AngelicPandentDEX = 1109;
-    constexpr short AngelicPandentINT = 1110;
-    constexpr short AngelicPandentMAG = 1111;
+    constexpr short AngelicPendantSTR = 1108;
+    constexpr short AngelicPendantDEX = 1109;
+    constexpr short AngelicPendantINT = 1110;
+    constexpr short AngelicPendantMAG = 1111;
+
+    // DK Weapon IDs — used for glare visual effect
+    constexpr short DarkKnightSword = 745;   // Dark Knight Templar (appr_val was 14, glare 3)
+    constexpr short DarkMageStaff = 746;     // Dark Mage Templar (appr_val was 37, glare 2)
 }
 
 inline bool is_special_item(short i_dnum)
@@ -377,10 +439,10 @@ inline bool is_special_item(short i_dnum)
     case ItemId::LightingBlade:
     case ItemId::MagicNecklaceDFp15:
     case ItemId::MagicNecklaceRM30:
-    case ItemId::AngelicPandentSTR:
-    case ItemId::AngelicPandentDEX:
-    case ItemId::AngelicPandentINT:
-    case ItemId::AngelicPandentMAG:
+    case ItemId::AngelicPendantSTR:
+    case ItemId::AngelicPendantDEX:
+    case ItemId::AngelicPendantINT:
+    case ItemId::AngelicPendantMAG:
         return true;
     default:
         // Also check ranges for items between known IDs

@@ -10,6 +10,8 @@
 #include "TextLibExt.h"
 #include "GlobalDef.h"
 #include "SpriteID.h"
+#include "CControls.h"
+#include "InputStateHelper.h"
 
 IGameScreen::IGameScreen(CGame* game)
     : m_game(game)
@@ -59,6 +61,50 @@ void IGameScreen::draw_version()
 void IGameScreen::add_event_list(const char* txt, char color, bool dup_allow)
 {
     event_list_manager::get().add_event(txt, color, dup_allow);
+}
+
+// ============== CControls Input Helpers ==============
+
+void IGameScreen::update_controls(cc::control_collection& controls)
+{
+	cc::input_state input;
+	hb::client::fill_input_state(input);
+	controls.update(input, GameClock::get_time_ms());
+}
+
+void IGameScreen::discard_pending_controls_input(cc::control_collection& controls)
+{
+	cc::input_state input;
+	hb::client::fill_input_state(input);
+	controls.discard_pending_input(input);
+}
+
+// ============== Drawing Helpers (Centered) ==============
+
+void IGameScreen::draw_centered_dialog_box(char type, int frame, int& out_x, int& out_y,
+                                           bool is_no_color_key, bool is_trans)
+{
+	get_centered_dialog_pos(type, frame, out_x, out_y);
+	draw_new_dialog_box(type, out_x, out_y, frame, is_no_color_key, is_trans);
+}
+
+// ============== GameMode ==============
+
+GameMode IGameScreen::get_game_mode() const
+{
+	return GameMode::Null;
+}
+
+// ============== Per-Screen Transition Timing ==============
+
+float IGameScreen::get_fade_in_duration() const
+{
+	return GameModeManager::DEFAULT_FADE_DURATION;
+}
+
+float IGameScreen::get_fade_out_duration() const
+{
+	return GameModeManager::DEFAULT_FADE_DURATION;
 }
 
 // ============== Timing Helper ==============

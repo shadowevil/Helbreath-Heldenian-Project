@@ -105,7 +105,7 @@ int QuestManager::talk_to_npc_result_cityhall(int client_h, int* quest_type, int
 					(m_game->m_item_config_list[m_game->m_client_list[client_h]->m_quest_reward_type] != 0)) {
 					item = new CItem;
 					m_game->m_item_manager->init_item_attr(item, m_game->m_item_config_list[m_game->m_client_list[client_h]->m_quest_reward_type]->m_name);
-					item->m_count = m_game->m_client_list[client_h]->m_quest_reward_amount;
+					item->m_instance.count = m_game->m_client_list[client_h]->m_quest_reward_amount;
 					if (m_game->m_item_manager->check_item_receive_condition(client_h, item)) {
 						m_game->m_item_manager->add_client_item_list(client_h, item, &erase_req);
 						m_game->m_item_manager->send_item_notify_msg(client_h, Notify::ItemObtained, item, 0);

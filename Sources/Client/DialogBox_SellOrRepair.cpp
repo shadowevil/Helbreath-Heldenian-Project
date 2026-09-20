@@ -44,7 +44,7 @@ void DialogBox_SellOrRepair::on_draw()
 
 		item_id = m_item_index;
 
-		item_color = player().m_item_list[item_id]->m_item_color;
+		item_color = player().m_item_list[item_id]->m_instance.item_color;
 		{
 			CItem* sell_cfg = m_game->get_item_config(player().m_item_list[item_id]->m_id_num);
 			auto sell_draw = m_game->get_item_draw(sell_cfg ? sell_cfg->m_display_id : 0, item_atlas::pack, sell_cfg ? sell_cfg->sprite_is_female() : false);
@@ -52,9 +52,7 @@ void DialogBox_SellOrRepair::on_draw()
 				sell_draw.sprite->draw(sX + 62 + 15, sY + 84 + 30, sell_draw.frame);
 			else
 			{
-				bool sell_is_weapon = sell_cfg && (sell_cfg->m_equip_pos == to_int(EquipPos::LeftHand) ||
-					sell_cfg->m_equip_pos == to_int(EquipPos::RightHand) || sell_cfg->m_equip_pos == to_int(EquipPos::TwoHand));
-				const auto& sell_tint = sell_is_weapon ? GameColors::Weapons[item_color] : GameColors::Items[item_color];
+				const auto& sell_tint = m_game->m_color_palette[item_color];
 				sell_draw.sprite->draw(sX + 62 + 15, sY + 84 + 30, sell_draw.frame, hb::shared::sprite::DrawParams::tint(sell_tint.r, sell_tint.g, sell_tint.b));
 			}
 		}
@@ -73,7 +71,7 @@ void DialogBox_SellOrRepair::on_draw()
 			put_aligned_string(sX + 25 + 1, sX + 240 + 1, sY + 60, txt.c_str(), GameColors::UILabel);
 		}
 
-		txt = std::format(DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM2, m_price);
+		txt = std::format(DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM2, m_sell_price);
 		put_string(sX + 95 + 15, sY + 53 + 60, txt.c_str(), GameColors::UILabel);
 		txt = std::format(DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM3, m_secondary_price);
 		put_string(sX + 95 + 15, sY + 53 + 75, txt.c_str(), GameColors::UILabel);
@@ -94,7 +92,7 @@ void DialogBox_SellOrRepair::on_draw()
 		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 2);
 		draw_new_dialog_box(InterfaceNdText, sX, sY, 10);
 		item_id = m_item_index;
-		item_color = player().m_item_list[item_id]->m_item_color;
+		item_color = player().m_item_list[item_id]->m_instance.item_color;
 		{
 			CItem* rep_cfg = m_game->get_item_config(player().m_item_list[item_id]->m_id_num);
 			auto rep_draw = m_game->get_item_draw(rep_cfg ? rep_cfg->m_display_id : 0, item_atlas::pack, rep_cfg ? rep_cfg->sprite_is_female() : false);
@@ -102,9 +100,7 @@ void DialogBox_SellOrRepair::on_draw()
 				rep_draw.sprite->draw(sX + 62 + 15, sY + 84 + 30, rep_draw.frame);
 			else
 			{
-				bool rep_is_weapon = rep_cfg && (rep_cfg->m_equip_pos == to_int(EquipPos::LeftHand) ||
-					rep_cfg->m_equip_pos == to_int(EquipPos::RightHand) || rep_cfg->m_equip_pos == to_int(EquipPos::TwoHand));
-				const auto& rep_tint = rep_is_weapon ? GameColors::Weapons[item_color] : GameColors::Items[item_color];
+				const auto& rep_tint = m_game->m_color_palette[item_color];
 				rep_draw.sprite->draw(sX + 62 + 15, sY + 84 + 30, rep_draw.frame, hb::shared::sprite::DrawParams::tint(rep_tint.r, rep_tint.g, rep_tint.b));
 			}
 		}
@@ -120,7 +116,7 @@ void DialogBox_SellOrRepair::on_draw()
 			put_aligned_string(sX + 25, sX + 240, sY + 60, txt.c_str(), GameColors::UILabel);
 			put_aligned_string(sX + 25 + 1, sX + 240 + 1, sY + 60, txt.c_str(), GameColors::UILabel);
 		}
-		txt = std::format(DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM2, m_price);
+		txt = std::format(DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM2, m_sell_price);
 		put_string(sX + 95 + 15, sY + 53 + 60, txt.c_str(), GameColors::UILabel);
 		txt = std::format(DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM6, m_secondary_price);
 		put_string(sX + 95 + 15, sY + 53 + 75, txt.c_str(), GameColors::UILabel);
@@ -223,11 +219,17 @@ bool DialogBox_SellOrRepair::on_enable(int type, int64_t v1, int v2, const char*
 	if (is_enabled()) return true;
 	m_mode = static_cast<mode>(type);
 	m_item_index = static_cast<int>(v1);
-	m_price = v2;
+	m_sell_price = v2;
 	if (type == 2)
 	{
 		auto* saleDlg = get_dialog_box(DialogBoxId::SaleMenu);
 		if (saleDlg) { m_x = saleDlg->m_x; m_y = saleDlg->m_y; }
 	}
+	return true;
+}
+
+bool DialogBox_SellOrRepair::on_disable()
+{
+	inventory_manager::get().unlock_item(m_item_index);
 	return true;
 }

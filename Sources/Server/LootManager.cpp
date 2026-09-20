@@ -156,7 +156,7 @@ void LootManager::enemy_kill_reward_handler(int attacker_h, int client_h)
 	if (m_game->m_client_list[attacker_h]->m_player_kill_count != 0) {
 	}
 	else {
-		if (m_game->m_client_list[client_h]->m_guild_rank == -1) {
+		{
 			reward_exp = (m_game->dice(3, (3 * m_game->get_exp_level(m_game->m_client_list[client_h]->m_exp))) + m_game->get_exp_level(m_game->m_client_list[client_h]->m_exp)) / 3;
 
 			if (m_game->m_is_crusade_mode) {
@@ -180,61 +180,6 @@ void LootManager::enemy_kill_reward_handler(int attacker_h, int client_h)
 					if (memcmp(m_game->m_client_list[client_h]->m_location, m_game->m_client_list[client_h]->m_map_name, 10) != 0) {
 						m_game->m_client_list[attacker_h]->m_enemy_kill_count += m_game->m_enemy_kill_adjust;
 					}
-					if (m_game->m_enemy_kill_mode) {
-						m_game->m_client_list[attacker_h]->m_enemy_kill_count += m_game->m_enemy_kill_adjust;
-					}
-				}
-				m_game->m_client_list[attacker_h]->m_reward_gold += m_game->dice(1, (m_game->get_exp_level(m_game->m_client_list[client_h]->m_exp)));
-				if (m_game->m_client_list[attacker_h]->m_reward_gold > MaxRewardGold)
-					m_game->m_client_list[attacker_h]->m_reward_gold = MaxRewardGold;
-				if (m_game->m_client_list[attacker_h]->m_reward_gold < 0)
-					m_game->m_client_list[attacker_h]->m_reward_gold = 0;
-			}
-			else {
-				m_game->m_client_list[attacker_h]->m_exp += reward_exp;
-				if (m_game->get_exp_level(m_game->m_client_list[client_h]->m_exp) >= iEK_Level) {
-					if ((memcmp(m_game->m_client_list[client_h]->m_location, m_game->m_client_list[client_h]->m_map_name, 10) != 0)
-						&& (m_game->m_enemy_kill_mode == false)) {
-						m_game->m_client_list[attacker_h]->m_enemy_kill_count += m_game->m_enemy_kill_adjust;
-					}
-
-					if (m_game->m_enemy_kill_mode) {
-						m_game->m_client_list[attacker_h]->m_enemy_kill_count += m_game->m_enemy_kill_adjust;
-					}
-				}
-				m_game->m_client_list[attacker_h]->m_reward_gold += m_game->dice(1, (m_game->get_exp_level(m_game->m_client_list[client_h]->m_exp)));
-				if (m_game->m_client_list[attacker_h]->m_reward_gold > MaxRewardGold)
-					m_game->m_client_list[attacker_h]->m_reward_gold = MaxRewardGold;
-				if (m_game->m_client_list[attacker_h]->m_reward_gold < 0)
-					m_game->m_client_list[attacker_h]->m_reward_gold = 0;
-			}
-		}
-		else {
-			reward_exp = (m_game->dice(3, (3 * m_game->get_exp_level(m_game->m_client_list[client_h]->m_exp))) + m_game->get_exp_level(m_game->m_client_list[client_h]->m_exp)) / 3;
-
-			if (m_game->m_is_crusade_mode) {
-				m_game->m_client_list[attacker_h]->m_exp += (reward_exp / 3) * 4;
-				m_game->m_client_list[attacker_h]->m_war_contribution += (reward_exp - (reward_exp / 3)) * 12;
-
-				if (m_game->m_client_list[attacker_h]->m_war_contribution > m_game->m_max_war_contribution)
-					m_game->m_client_list[attacker_h]->m_war_contribution = m_game->m_max_war_contribution;
-
-				m_game->m_client_list[attacker_h]->m_construction_point += m_game->m_client_list[client_h]->m_level / 2;
-
-				if (m_game->m_client_list[attacker_h]->m_construction_point > m_game->m_max_construction_points)
-					m_game->m_client_list[attacker_h]->m_construction_point = m_game->m_max_construction_points;
-
-				//testcode
-				hb::logger::log("Enemy player killed by player, construction +{}, war contribution +{}", m_game->m_client_list[client_h]->m_level / 2, (reward_exp - (reward_exp / 3)) * 6);
-
-				m_game->send_notify_msg(0, attacker_h, Notify::ConstructionPoint, m_game->m_client_list[attacker_h]->m_construction_point, m_game->m_client_list[attacker_h]->m_war_contribution, 0, 0);
-
-				if (m_game->get_exp_level(m_game->m_client_list[client_h]->m_exp) >= iEK_Level) {
-					if ((memcmp(m_game->m_client_list[client_h]->m_location, m_game->m_client_list[client_h]->m_map_name, 10) != 0)
-						&& (m_game->m_enemy_kill_mode == false)) {
-						m_game->m_client_list[attacker_h]->m_enemy_kill_count += m_game->m_enemy_kill_adjust;
-					}
-
 					if (m_game->m_enemy_kill_mode) {
 						m_game->m_client_list[attacker_h]->m_enemy_kill_count += m_game->m_enemy_kill_adjust;
 					}
@@ -311,8 +256,10 @@ void LootManager::apply_combat_killed_penalty(int client_h, int penalty_level, b
 
 		// if (m_game->m_client_list[client_h]->m_level == hb::shared::limits::PlayerMaxLevel) exp = 0;
 
-		m_game->m_client_list[client_h]->m_exp -= exp;
-		if (m_game->m_client_list[client_h]->m_exp < 0) m_game->m_client_list[client_h]->m_exp = 0;
+		if (exp > m_game->m_client_list[client_h]->m_exp)
+			m_game->m_client_list[client_h]->m_exp = 0;
+		else
+			m_game->m_client_list[client_h]->m_exp -= exp;
 
 		m_game->send_notify_msg(0, client_h, Notify::Exp, 0, 0, 0, 0);
 
@@ -340,9 +287,9 @@ void LootManager::penalty_item_drop(int client_h, int total, bool is_s_aattacked
 	if ((m_game->m_client_list[client_h]->m_alter_item_drop_index != -1) && (m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index] != 0)) {
 		// Testcode
 		if (m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->get_item_effect_type() == ItemEffectType::AlterItemDrop) {
-			if (m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->m_cur_life_span > 0) {
-				m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->m_cur_life_span--;
-				m_game->send_notify_msg(0, client_h, Notify::CurLifeSpan, m_game->m_client_list[client_h]->m_alter_item_drop_index, m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->m_cur_life_span, 0, 0);
+			if (m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->m_instance.cur_durability > 0) {
+				m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->m_instance.cur_durability--;
+				m_game->send_notify_msg(0, client_h, Notify::CurDurability, m_game->m_client_list[client_h]->m_alter_item_drop_index, m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->m_instance.cur_durability, 0, 0);
 			}
 			m_game->m_item_manager->drop_item_handler(client_h, m_game->m_client_list[client_h]->m_alter_item_drop_index, -1, m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->m_name);
 
@@ -355,9 +302,9 @@ void LootManager::penalty_item_drop(int client_h, int total, bool is_s_aattacked
 			for(int i = 0; i < hb::shared::limits::MaxItems; i++)
 				if ((m_game->m_client_list[client_h]->m_item_list[i] != 0) && (m_game->m_client_list[client_h]->m_item_list[i]->get_item_effect_type() == ItemEffectType::AlterItemDrop)) {
 					m_game->m_client_list[client_h]->m_alter_item_drop_index = i;
-					if (m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->m_cur_life_span > 0) {
-						m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->m_cur_life_span--;
-						m_game->send_notify_msg(0, client_h, Notify::CurLifeSpan, m_game->m_client_list[client_h]->m_alter_item_drop_index, m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->m_cur_life_span, 0, 0);
+					if (m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->m_instance.cur_durability > 0) {
+						m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->m_instance.cur_durability--;
+						m_game->send_notify_msg(0, client_h, Notify::CurDurability, m_game->m_client_list[client_h]->m_alter_item_drop_index, m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->m_instance.cur_durability, 0, 0);
 					}
 					m_game->m_item_manager->drop_item_handler(client_h, m_game->m_client_list[client_h]->m_alter_item_drop_index, -1, m_game->m_client_list[client_h]->m_item_list[m_game->m_client_list[client_h]->m_alter_item_drop_index]->m_name);
 					m_game->m_client_list[client_h]->m_alter_item_drop_index = -1;
@@ -380,9 +327,9 @@ void LootManager::penalty_item_drop(int client_h, int total, bool is_s_aattacked
 		item_index = item_index_list[m_game->dice(1, remain_item) - 1];
 
 		if ((m_game->m_client_list[client_h]->m_item_list[item_index]->get_touch_effect_type() != TouchEffectType::None) &&
-			(m_game->m_client_list[client_h]->m_item_list[item_index]->m_touch_effect_value1 == m_game->m_client_list[client_h]->m_char_id_num1) &&
-			(m_game->m_client_list[client_h]->m_item_list[item_index]->m_touch_effect_value2 == m_game->m_client_list[client_h]->m_char_id_num2) &&
-			(m_game->m_client_list[client_h]->m_item_list[item_index]->m_touch_effect_value3 == m_game->m_client_list[client_h]->m_char_id_num3)) {
+			(m_game->m_client_list[client_h]->m_item_list[item_index]->m_instance.touch_effect_value1 == m_game->m_client_list[client_h]->m_char_id_num1) &&
+			(m_game->m_client_list[client_h]->m_item_list[item_index]->m_instance.touch_effect_value2 == m_game->m_client_list[client_h]->m_char_id_num2) &&
+			(m_game->m_client_list[client_h]->m_item_list[item_index]->m_instance.touch_effect_value3 == m_game->m_client_list[client_h]->m_char_id_num3)) {
 		}
 
 		else if (
@@ -421,17 +368,19 @@ void LootManager::get_reward_money_handler(int client_h)
 
 	item = new CItem;
 	m_game->m_item_manager->init_item_attr(item, hb::shared::item::ItemId::Gold);
-	//item->m_count = m_game->m_client_list[client_h]->m_reward_gold;
+	//item->m_instance.count = m_game->m_client_list[client_h]->m_reward_gold;
 
 	// (weight_left / item->m_weight)     Gold.   .
-	uint32_t maxGold = static_cast<uint32_t>(weight_left / m_game->m_item_manager->get_item_weight(item, 1));
+	int gold_weight = m_game->m_item_manager->get_item_weight(item, 1);
+	if (gold_weight <= 0) gold_weight = 1;
+	uint32_t maxGold = static_cast<uint32_t>(weight_left / gold_weight);
 	if (maxGold >= m_game->m_client_list[client_h]->m_reward_gold) {
-		item->m_count = m_game->m_client_list[client_h]->m_reward_gold;
+		item->m_instance.count = m_game->m_client_list[client_h]->m_reward_gold;
 		reward_gold_left = 0;
 	}
 	else {
 		// (weight_left / item->m_weight) .
-		item->m_count = maxGold;
+		item->m_instance.count = maxGold;
 		reward_gold_left = m_game->m_client_list[client_h]->m_reward_gold - maxGold;
 	}
 

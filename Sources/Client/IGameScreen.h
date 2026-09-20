@@ -10,12 +10,14 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "GameMode.h"
 #include <cstdint>
 #include <string>
 
 enum class KeyCode : int;
 class CGame;
 class GameModeManager;
+namespace cc { class control_collection; }
 
 // Macro to define screen type - converts class name to string automatically
 // Usage: Add SCREEN_TYPE(ClassName) in the public section of your screen class
@@ -44,7 +46,7 @@ public:
     virtual void on_initialize() = 0;
 
     // Called once when screen is about to be replaced (before new screen's on_initialize)
-    virtual void on_uninitialize() = 0;
+    virtual void on_uninitialize() {}
 
     // Called each frame to update logic, handle input, process state changes
     virtual void on_update() = 0;
@@ -54,6 +56,10 @@ public:
 
     // Returns the screen type identifier for runtime type checking
     virtual ScreenTypeId get_type_id() const = 0;
+
+    // Returns the GameMode this screen represents (for auto-registration).
+    // Override in Screen classes; overlays should return the default GameMode::Null.
+    virtual GameMode get_game_mode() const;
 
     // Whether the overlay system should draw a full-screen dim behind this overlay.
     // Override to false for overlays that draw their own background (e.g. DevConsole).
@@ -79,6 +85,14 @@ public:
     // false to fall through to default handling. Optional — not all screens need this.
     virtual bool on_game_msg(uint32_t msg_id, uint16_t msg_type, char* data, uint32_t msg_size) { return false; }
 
+    // Per-screen transition timing (overridable). Defaults to DEFAULT_FADE_DURATION.
+    virtual float get_fade_in_duration() const;
+    virtual float get_fade_out_duration() const;
+
+    // Called just before fade-out begins when this screen is being replaced.
+    // Use for cleanup or state saving that must happen before transition starts.
+    virtual void on_transition_out() {}
+
 protected:
     // ============== Helper Methods (delegate to CGame) ==============
     // These provide convenient access to common CGame functionality
@@ -88,6 +102,9 @@ protected:
                           bool is_no_color_key = false, bool is_trans = false);
     // Computes centered position for a dialog sprite frame within the logical resolution
     void get_centered_dialog_pos(char type, int frame, int& outX, int& outY);
+    // Computes centered position AND draws the dialog box in one call
+    void draw_centered_dialog_box(char type, int frame, int& out_x, int& out_y,
+                                  bool is_no_color_key = false, bool is_trans = false);
     void put_string(int iX, int iY, const char* string, const hb::shared::render::Color& color);
     void put_aligned_string(int x1, int x2, int iY, const char* string,
                           const hb::shared::render::Color& color = GameColors::UIBlack);
@@ -108,6 +125,10 @@ protected:
     void set_overlay(Args&&... args);
 
     void clear_overlay();
+
+    // CControls input helpers — replace 3-line fill_input_state + update/discard pattern
+    void update_controls(cc::control_collection& controls);
+    void discard_pending_controls_input(cc::control_collection& controls);
 
     // Timing helper - returns milliseconds since this screen/overlay was initialized
     uint32_t get_elapsed_ms() const;

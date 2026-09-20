@@ -73,8 +73,13 @@ void DialogBox_Magic::on_draw()
 	put_aligned_string(sX + 3, sX + 256, sY + 50, circle_name);
 	put_aligned_string(sX + 4, sX + 257, sY + 50, circle_name);
 
+	// Column headers
+	hb::shared::text::draw_text(GameFont::Default, sX + 30, sY + 57, "Spell", hb::shared::text::TextStyle::from_color(GameColors::UILabel).with_bold());
+	hb::shared::text::draw_text(GameFont::Default, sX + 206, sY + 57, "Cost", hb::shared::text::TextStyle::from_color(GameColors::UILabel).with_bold());
+
 	c_pivot = m_circle_view * 10;
 	yloc = 0;
+	int player_int = player().m_int + player().m_angelic_int;
 	for (i = 0; i < 9; i++)
 	{
 		if ((player().m_magic_mastery[c_pivot + i] != 0) && (m_game->m_magic_cfg_list[c_pivot + i] != 0))
@@ -83,8 +88,15 @@ void DialogBox_Magic::on_draw()
 			CMisc::replace_string(txt, '-', ' ');
 
 			mana_cost = magic_casting_system::get().get_mana_cost(c_pivot + i);
+			int int_req = m_game->m_magic_cfg_list[c_pivot + i]->m_value_2;
 
-			if (mana_cost > player().m_mp)
+			if (int_req > player_int)
+			{
+				hb::shared::text::draw_text(GameFont::Bitmap1, sX + 30, sY + 70 + yloc, txt, hb::shared::text::TextStyle::with_highlight(GameColors::UIMagicDisabled));
+				mana = std::format("{:3}", mana_cost);
+				hb::shared::text::draw_text(GameFont::Bitmap1, sX + 206, sY + 70 + yloc, mana.c_str(), hb::shared::text::TextStyle::with_highlight(GameColors::UIMagicDisabled));
+			}
+			else if (mana_cost > player().m_mp)
 			{
 				hb::shared::text::draw_text(GameFont::Bitmap1, sX + 30, sY + 70 + yloc, txt, hb::shared::text::TextStyle::with_highlight(GameColors::UIMagicPurple));
 				mana = std::format("{:3}", mana_cost);
@@ -185,10 +197,10 @@ void DialogBox_Magic::on_draw()
 		if (player().m_item_list[i] == 0) continue;
 		if (m_game->m_is_item_equipped[i] == true)
 		{
-			if (((player().m_item_list[i]->m_attribute & 0x00F00000) >> 20) == 10)
+			if (player().m_item_list[i]->m_instance.prefix_type == static_cast<uint8_t>(hb::shared::item::AttributePrefixType::Special))
 			{
 				v1 = static_cast<double>(result);
-				v2 = static_cast<double>(((player().m_item_list[i]->m_attribute & 0x000F0000) >> 16) * 3);
+				v2 = static_cast<double>(player().m_item_list[i]->m_instance.prefix_value * m_game->m_prefix_multiplier[10]);
 				v3 = v1 + v2;
 				result = static_cast<int>(v3);
 				break;
@@ -223,12 +235,19 @@ bool DialogBox_Magic::on_click()
 	sY = m_y;
 	c_pivot = m_circle_view * 10;
 	yloc = 0;
+	int click_player_int = player().m_int + player().m_angelic_int;
 	for (i = 0; i < 9; i++)
 	{
 		if ((player().m_magic_mastery[c_pivot + i] != 0) && (m_game->m_magic_cfg_list[c_pivot + i] != 0))
 		{
 			if ((mouse_x >= sX + 30) && (mouse_x <= sX + 240) && (mouse_y >= sY + 70 + yloc) && (mouse_y <= sY + 70 + 18 + yloc))
 			{
+				int int_req = m_game->m_magic_cfg_list[c_pivot + i]->m_value_2;
+				if (int_req > click_player_int)
+				{
+					m_game->add_event_list(DLGBOX_CLICK_MAGIC3, 10);
+					return true;
+				}
 				magic_casting_system::get().begin_cast(c_pivot + i);
 				audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
 				return true;
@@ -256,7 +275,7 @@ bool DialogBox_Magic::on_click()
 			{
 				if (player().m_item_list[i] == 0) continue;
 				CItem* cfg = m_game->get_item_config(player().m_item_list[i]->m_id_num);
-				if (cfg && (cfg->get_item_type() == ItemType::UseSkillEnableDialogBox) &&
+				if (cfg && (cfg->get_item_type() == hb::shared::item::item_type::tool) &&
 					(player().m_item_list[i]->m_id_num == 227)) // Alchemy Bowl
 				{
 					enable_dialog_box(DialogBoxId::Manufacture, 1, 0, 0, 0);

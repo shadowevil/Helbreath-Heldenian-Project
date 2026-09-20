@@ -12,7 +12,7 @@ import json
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "Binaries", "Server", "gameconfigs.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "Binaries", "Server", "gamedata.db")
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)

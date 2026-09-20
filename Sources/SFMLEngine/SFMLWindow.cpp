@@ -103,23 +103,9 @@ bool SFMLWindow::realize()
     m_open = true;
     m_active = true;
 
-    // Position the window: fullscreen at (0,0), windowed centered on screen.
-    // On Linux, "fullscreen" is a borderless window at desktop size, so it must
-    // be explicitly placed at the origin to cover the display.
-    {
-        int screen_w, screen_h;
-        get_desktop_size(screen_w, screen_h);
-        if (m_fullscreen)
-        {
-            move_window(0, 0, screen_w, screen_h);
-        }
-        else
-        {
-            int pos_x = (screen_w - m_width) / 2;
-            int pos_y = (screen_h - m_height) / 2;
-            move_window(pos_x, pos_y, m_width, m_height);
-        }
-    }
+    // Position the window: fullscreen at monitor origin, windowed centered
+    // on the monitor the window currently occupies.
+    center_on_current_monitor();
 
     update_cursor_clip();
     return true;
@@ -248,21 +234,8 @@ void SFMLWindow::set_fullscreen(bool fullscreen)
     m_renderWindow.setMouseCursorVisible(false);
     apply_cursor_grab();
 
-    // Position: fullscreen at origin, windowed centered
-    {
-        int screen_w, screen_h;
-        get_desktop_size(screen_w, screen_h);
-        if (fullscreen)
-        {
-            move_window(0, 0, screen_w, screen_h);
-        }
-        else
-        {
-            int new_x = (screen_w - windowWidth) / 2;
-            int new_y = (screen_h - windowHeight) / 2;
-            move_window(new_x, new_y, windowWidth, windowHeight);
-        }
-    }
+    // Position: fullscreen at monitor origin, windowed centered on current monitor
+    center_on_current_monitor();
 
     update_cursor_clip();
 }
@@ -294,12 +267,8 @@ void SFMLWindow::set_borderless(bool borderless)
     m_renderWindow.setMouseCursorVisible(false);
     apply_cursor_grab();
 
-    // Center the window
-    int screen_w, screen_h;
-    get_desktop_size(screen_w, screen_h);
-    int pos_x = (screen_w - m_width) / 2;
-    int pos_y = (screen_h - m_height) / 2;
-    move_window(pos_x, pos_y, m_width, m_height);
+    // Center the window on the current monitor
+    center_on_current_monitor();
 
     // Update input system with new window handle
     if (hb::shared::input::get())
@@ -347,11 +316,7 @@ void SFMLWindow::set_size(int width, int height, bool center)
     // Update window position/size
     if (center)
     {
-        int screen_w, screen_h;
-        get_desktop_size(screen_w, screen_h);
-        int pos_x = (screen_w - width) / 2;
-        int pos_y = (screen_h - height) / 2;
-        move_window(pos_x, pos_y, width, height);
+        center_on_current_monitor();
     }
     else
     {
@@ -373,20 +338,7 @@ void SFMLWindow::show()
     // Position the window after it's visible. On Linux, window managers like
     // GNOME/Mutter ignore setPosition on newly created windows before they're
     // fully mapped. Calling it here (after show) ensures the WM honors it.
-    {
-        int screen_w, screen_h;
-        get_desktop_size(screen_w, screen_h);
-        if (m_fullscreen)
-        {
-            move_window(0, 0, screen_w, screen_h);
-        }
-        else
-        {
-            int pos_x = (screen_w - m_width) / 2;
-            int pos_y = (screen_h - m_height) / 2;
-            move_window(pos_x, pos_y, m_width, m_height);
-        }
-    }
+    center_on_current_monitor();
 
     // Force foreground window to ensure focus
     if (m_handle)
@@ -878,6 +830,8 @@ KeyCode SFMLWindow::SfmlKeyToKeyCode(sf::Keyboard::Key key)
 
     // OEM keys
     case sf::Keyboard::Key::Grave: return KeyCode::Grave;
+    case sf::Keyboard::Key::Hyphen: return KeyCode::Hyphen;
+    case sf::Keyboard::Key::Equal: return KeyCode::Equal;
 
     default: return KeyCode::Unknown;
     }
@@ -952,6 +906,42 @@ void SFMLWindow::apply_cursor_grab()
     // by warping the cursor back when it leaves the window bounds.
     (void)grab;
 #endif
+}
+
+void SFMLWindow::center_on_current_monitor()
+{
+    if (m_fullscreen)
+    {
+        auto mon = hb::platform::get_current_monitor_size(m_handle);
+        if (mon.width > 0 && mon.height > 0)
+        {
+            move_window(mon.x, mon.y, mon.width, mon.height);
+        }
+        else
+        {
+            int screen_w, screen_h;
+            get_desktop_size(screen_w, screen_h);
+            move_window(0, 0, screen_w, screen_h);
+        }
+    }
+    else
+    {
+        auto mon = hb::platform::get_current_monitor_work_area(m_handle);
+        if (mon.width > 0 && mon.height > 0)
+        {
+            int pos_x = mon.x + (mon.width - m_width) / 2;
+            int pos_y = mon.y + (mon.height - m_height) / 2;
+            move_window(pos_x, pos_y, m_width, m_height);
+        }
+        else
+        {
+            int screen_w, screen_h;
+            get_desktop_size(screen_w, screen_h);
+            int pos_x = (screen_w - m_width) / 2;
+            int pos_y = (screen_h - m_height) / 2;
+            move_window(pos_x, pos_y, m_width, m_height);
+        }
+    }
 }
 
 void SFMLWindow::get_desktop_size(int& width, int& height) const

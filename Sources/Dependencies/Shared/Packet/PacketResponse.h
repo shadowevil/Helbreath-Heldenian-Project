@@ -10,11 +10,6 @@
 namespace hb {
 namespace net {
 	HB_PACK_BEGIN
-	struct HB_PACKED PacketResponseFightzoneReserve {
-		PacketHeader header;
-		int32_t result;
-	};
-
 	struct HB_PACKED PacketResponseInitPlayer {
 		PacketHeader header;
 	};
@@ -81,13 +76,18 @@ namespace net {
 		uint8_t is_equipped;
 		int16_t level_limit;
 		uint8_t gender_limit;
-		uint16_t cur_lifespan;
+		uint16_t cur_durability;
 		uint16_t weight;
 		uint8_t item_color;
 		uint8_t spec_value2;
-		uint32_t attribute;
+		uint8_t custom_made;
+		uint8_t prefix_type;
+		uint8_t prefix_value;
+		uint8_t secondary_type;
+		uint8_t secondary_value;
+		uint8_t enchant_bonus;
 		int16_t item_id;           // Item ID for config lookup
-		uint16_t max_lifespan;     // Maximum durability
+		uint16_t max_durability;     // Maximum durability
 	};
 
 	struct HB_PACKED PacketResponseBankItemListHeader {
@@ -101,13 +101,18 @@ namespace net {
 		uint8_t equip_pos;
 		int16_t level_limit;
 		uint8_t gender_limit;
-		uint16_t cur_lifespan;
+		uint16_t cur_durability;
 		uint16_t weight;
 		uint8_t item_color;
 		uint8_t spec_value2;
-		uint32_t attribute;
+		uint8_t custom_made;
+		uint8_t prefix_type;
+		uint8_t prefix_value;
+		uint8_t secondary_type;
+		uint8_t secondary_value;
+		uint8_t enchant_bonus;
 		int16_t item_id;           // Item ID for config lookup
-		uint16_t max_lifespan;     // Maximum durability
+		uint16_t max_durability;     // Maximum durability
 	};
 
 	struct HB_PACKED PacketResponseMasteryData {
@@ -145,10 +150,7 @@ namespace net {
 		int32_t pk_count;
 		uint32_t reward_gold;
 		char location[hb::shared::limits::MapNameLen];
-		char guild_name[hb::shared::limits::GuildNameLen];
-		int32_t guild_rank;
 		uint8_t super_attack_left;
-		int32_t fightzone_number;
 		int16_t max_stats;
 		int32_t max_level;
 		int16_t max_bank_items;

@@ -18,6 +18,7 @@
 #include "ItemNameFormatter.h"
 #include "ItemTooltip.h"
 #include "ConfigManager.h"
+#include "BalanceConstants.h"
 #include "IInput.h"
 #include "GlobalDef.h"
 #include "lan_eng.h"
@@ -25,8 +26,6 @@
 #include "TextLibExt.h"
 #include "SpellAoE.h"
 #include "Magic.h"
-#include "DialogBox_GuildMenu.h"
-#include "DialogBox_GuildOperation.h"
 #include "DialogBox_ItemDropAmount.h"
 #include "DialogBox_Party.h"
 #include "DialogBox_SellList.h"
@@ -83,9 +82,6 @@ void Screen_OnGame::destroy_player()
 
 void Screen_OnGame::on_initialize()
 {
-    // Set current mode for code that checks GameModeManager::get_mode()
-    GameModeManager::set_current_mode(GameMode::MainGame);
-
     // Create the player
     Screen_OnGame::create_player();
     m_game->m_player = s_player.get();
@@ -157,8 +153,6 @@ void Screen_OnGame::on_initialize()
 
     m_logout_count = -1;
     m_logout_count_time = 0;
-    m_fightzone_number = 0;
-    m_fightzone_number_temp = 0;
     m_quest.who = 0;
     m_quest.quest_type = 0;
     m_quest.contribution = 0;
@@ -206,18 +200,16 @@ void Screen_OnGame::on_initialize()
     // Reset dialog state that init_game_settings couldn't do (dialogs didn't exist yet)
     m_dialog_box_manager->get_dialog_as<DialogBox_Skill>(DialogBoxId::Skill)->m_is_down_skill_pending = false;
     m_dialog_box_manager->reset_all_for_map_change();
-    m_dialog_box_manager->get_dialog_as<DialogBox_GuildOperation>(DialogBoxId::GuildOperation)->reset();
     m_dialog_box_manager->get_dialog_as<DialogBox_SellList>(DialogBoxId::SellList)->reset();
     m_dialog_box_manager->get_dialog_as<DialogBox_Party>(DialogBoxId::Party)->reset_members();
-    m_dialog_box_manager->enable_dialog_box(DialogBoxId::GuideMap, 0, 0, 0);
+    // GuideMap is enabled in init_data_response_handler() after map data is loaded.
+    // Enabling it here would render before m_map_size_x/y are set, causing div-by-zero.
 
     m_network_message_manager = std::make_unique<NetworkMessageManager>(m_game);
 
     register_hotkeys();
 
     m_guild_manager.set_game(m_game);
-    m_guild_manager.clear_name_cache();
-
     m_fishing_manager.set_game(m_game);
     m_crafting_manager.set_game(m_game);
     m_quest_manager.set_game(m_game);
@@ -274,8 +266,8 @@ void Screen_OnGame::on_update()
     m_sMsX = static_cast<short>(hb::shared::input::get_mouse_x());
     m_sMsY = static_cast<short>(hb::shared::input::get_mouse_y());
     m_sMsZ = static_cast<short>(hb::shared::input::get_mouse_wheel_delta());
-    m_cLB = hb::shared::input::is_mouse_button_down(MouseButton::Left) ? 1 : 0;
-    m_cRB = hb::shared::input::is_mouse_button_down(MouseButton::Right) ? 1 : 0;
+    m_cLB = (hb::shared::input::is_mouse_button_pressed(MouseButton::Left) || hb::shared::input::is_mouse_button_down(MouseButton::Left)) ? 1 : 0;
+    m_cRB = (hb::shared::input::is_mouse_button_pressed(MouseButton::Right) || hb::shared::input::is_mouse_button_down(MouseButton::Right)) ? 1 : 0;
 
     m_game->m_cur_time = GameClock::get_time_ms();
 
@@ -288,25 +280,7 @@ void Screen_OnGame::on_update()
     // Enter key handling
     if (hb::shared::input::is_key_pressed(KeyCode::Enter) == true)
     {
-        if ((m_game->get_dialog_box_manager().is_enabled(DialogBoxId::GuildMenu) == true) && (m_game->get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode == DialogBox_GuildMenu::mode::create_guild) && (m_game->get_dialog_box_manager().get_top_id() == DialogBoxId::GuildMenu)) {
-            text_input_manager::get().end_input();
-            if (m_game->m_player->m_guild_name.empty()) return;
-            if (m_game->m_player->m_guild_name != "NONE") {
-                {
-			hb::net::PacketRequestGuildAction req{};
-			req.header.msg_id = MsgId::request_create_new_guild;
-			req.header.msg_type = MsgType::Confirm;
-			std::snprintf(req.player, sizeof(req.player), "%s", m_game->m_player->m_player_name.c_str());
-			std::snprintf(req.account, sizeof(req.account), "%s", m_game->m_account_name.c_str());
-			std::snprintf(req.password, sizeof(req.password), "%s", m_game->m_account_password.c_str());
-			std::snprintf(req.guild, sizeof(req.guild), "%s", m_game->m_player->m_guild_name.c_str());
-			CMisc::replace_string(req.guild, ' ', '_');
-			m_game->send_game_packet(req);
-		}
-                m_game->get_dialog_box_manager().get_dialog_as<DialogBox_GuildMenu>(DialogBoxId::GuildMenu)->m_mode = DialogBox_GuildMenu::mode::creating;
-            }
-        }
-        else if ((m_game->get_dialog_box_manager().is_enabled(DialogBoxId::ItemDropExternal) == true) && (m_game->get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal)->m_mode == DialogBox_ItemDropAmount::mode::input) && (m_game->get_dialog_box_manager().get_top_id() == DialogBoxId::ItemDropExternal)) {
+        if ((m_game->get_dialog_box_manager().is_enabled(DialogBoxId::ItemDropExternal) == true) && (m_game->get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal)->m_mode == DialogBox_ItemDropAmount::mode::input) && (m_game->get_dialog_box_manager().get_top_id() == DialogBoxId::ItemDropExternal)) {
             text_input_manager::get().end_input();
 
             if (m_skill_using_status == true) {
@@ -329,13 +303,13 @@ void Screen_OnGame::on_update()
                 uint64_t parsed_amount = 0;
                 auto [ptr, ec] = std::from_chars(m_game->m_amount_string.data(), m_game->m_amount_string.data() + m_game->m_amount_string.size(), parsed_amount);
                 if (ec != std::errc{}) return;
-                uint64_t item_count = m_game->m_player->m_item_list[m_game->get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal)->m_item_index]->m_count;
+                uint64_t item_count = m_game->m_player->m_item_list[m_game->get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal)->m_item_index]->m_instance.count;
                 if (parsed_amount > item_count) parsed_amount = item_count;
                 amount = static_cast<int>(std::min<uint64_t>(parsed_amount, INT_MAX));
             }
 
             if (amount != 0) {
-                if (m_game->m_player->m_item_list[m_game->get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal)->m_item_index]->m_count >= static_cast<uint64_t>(amount)) {
+                if (m_game->m_player->m_item_list[m_game->get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal)->m_item_index]->m_instance.count >= static_cast<uint64_t>(amount)) {
                     if (m_game->get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal)->m_drop_x != 0) {
                         absX = abs(m_game->get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal)->m_drop_x - m_game->m_player->m_player_x);
                         absY = abs(m_game->get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal)->m_drop_y - m_game->m_player->m_player_y);
@@ -859,20 +833,15 @@ void Screen_OnGame::render_item_tooltip()
     CItem* cfg = m_game->get_item_config(item->m_id_num);
     if (!cfg) return;
 
-    char item_color = item->m_item_color;
-    bool is_hand_item = cfg->get_equip_pos() == EquipPos::LeftHand || cfg->get_equip_pos() == EquipPos::RightHand || cfg->get_equip_pos() == EquipPos::TwoHand;
+    char item_color = item->m_instance.item_color;
     auto tooltip_draw = m_game->get_item_draw(cfg->m_display_id, item_atlas::pack, cfg->sprite_is_female());
     hb::shared::sprite::ISprite* sprite = tooltip_draw.sprite;
     int16_t frame = tooltip_draw.frame;
     bool is_equippable = cfg->is_armor() || cfg->is_weapon() || cfg->is_accessory();
 
     if (item_color != 0) {
-        if (is_hand_item) {
-            sprite->draw(m_sMsX - CursorTarget::get_drag_dist_x(), m_sMsY - CursorTarget::get_drag_dist_y(), frame, hb::shared::sprite::DrawParams::tint(GameColors::Weapons[item_color].r, GameColors::Weapons[item_color].g, GameColors::Weapons[item_color].b));
-        }
-        else {
-            sprite->draw(m_sMsX - CursorTarget::get_drag_dist_x(), m_sMsY - CursorTarget::get_drag_dist_y(), frame, hb::shared::sprite::DrawParams::tint(GameColors::Items[item_color].r, GameColors::Items[item_color].g, GameColors::Items[item_color].b));
-        }
+        const auto& drag_tint = m_game->m_color_palette[item_color];
+        sprite->draw(m_sMsX - CursorTarget::get_drag_dist_x(), m_sMsY - CursorTarget::get_drag_dist_y(), frame, hb::shared::sprite::DrawParams::tint(drag_tint.r, drag_tint.g, drag_tint.b));
     }
     else sprite->draw(m_sMsX - CursorTarget::get_drag_dist_x(), m_sMsY - CursorTarget::get_drag_dist_y(), frame);
 
@@ -880,13 +849,117 @@ void Screen_OnGame::render_item_tooltip()
 
     item_tooltip tooltip;
 
-    // Item name
-    auto name_color = itemInfo.is_special ? GameColors::UIItemName_Special : GameColors::UIWhite;
-    tooltip.add_line(itemInfo.name, name_color);
+    // 1. Name — dye-colored for prefixed items, special color, or white
+    bool has_prefix = item->m_instance.prefix_type != static_cast<uint8_t>(hb::shared::item::AttributePrefixType::None);
+    if (has_prefix && item_color != 0)
+    {
+        const auto& dye = m_game->m_color_palette[item_color];
+        tooltip.add_line(itemInfo.name, {dye.r, dye.g, dye.b, 255});
+    }
+    else if (itemInfo.is_special)
+        tooltip.add_line(itemInfo.name, GameColors::UIItemName_Special);
+    else
+        tooltip.add_line(itemInfo.name, GameColors::UIWhite);
 
-    // Attribute effects (label in gray, value in green)
+    // 2. Classification
+    if (cfg->m_armor_class == armor_class::clothing)
+    {
+        const char* slot = equip_pos_name(cfg->get_equip_pos());
+        if (cfg->get_equip_pos() == EquipPos::Leggings)
+            slot = cfg->m_is_skirt ? "Skirt" : "Pants";
+        else if (cfg->get_equip_pos() == EquipPos::Body)
+            slot = (cfg->m_gender_requirement == 2) ? "Bodice" : "Shirt";
+        G_cTxt = std::format("Clothing - {}", slot);
+        tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
+    }
+    else if (cfg->m_armor_class == armor_class::armor)
+    {
+        const char* slot = equip_pos_name(cfg->get_equip_pos());
+        if (cfg->get_equip_pos() == EquipPos::Body)
+            slot = "Chest";
+        G_cTxt = std::format("Armor - {}", slot);
+        tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
+    }
+    else if (cfg->is_weapon())
+    {
+        const char* slot = equip_pos_name(cfg->get_equip_pos());
+        G_cTxt = std::format("Weapon - {}", slot);
+        tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
+    }
+    else if (cfg->get_item_sub_type() == item_sub_type::angelic)
+    {
+        tooltip.add_line("Accessory - Angelic Pendant", GameColors::InfoGrayLight);
+    }
+    else if (cfg->get_item_sub_type() == item_sub_type::pendant)
+    {
+        tooltip.add_line("Accessory - Pendant", GameColors::InfoGrayLight);
+    }
+    else if (cfg->is_accessory())
+    {
+        const char* slot = equip_pos_name(cfg->get_equip_pos());
+        G_cTxt = std::format("Accessory - {}", slot);
+        tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
+    }
+
+    // 3. Base combat stats with inline modifiers
+    // Collect inline modifiers from effects
+    std::string damage_mod_str;
+    std::string defense_mod_str;
+    std::string weight_mod_str;
+    std::string durability_mod_str;
     for (const auto& eff : itemInfo.effects)
     {
+        if (eff.category == effect_category::inline_damage)
+        {
+            if (damage_mod_str.empty()) damage_mod_str = " (";
+            else damage_mod_str += ", ";
+            damage_mod_str += eff.label;
+        }
+        else if (eff.category == effect_category::inline_defense)
+        {
+            if (defense_mod_str.empty()) defense_mod_str = " (";
+            else defense_mod_str += ", ";
+            defense_mod_str += eff.label;
+        }
+        else if (eff.category == effect_category::inline_weight)
+        {
+            if (weight_mod_str.empty()) weight_mod_str = " (";
+            else weight_mod_str += ", ";
+            weight_mod_str += eff.label;
+        }
+        else if (eff.category == effect_category::inline_durability)
+        {
+            durability_mod_str = eff.value;
+        }
+    }
+    if (!damage_mod_str.empty()) damage_mod_str += ")";
+    if (!defense_mod_str.empty()) defense_mod_str += ")";
+    if (!weight_mod_str.empty()) weight_mod_str += ")";
+
+    // Weapon damage
+    if (cfg->get_equip_pos() == EquipPos::RightHand || cfg->get_equip_pos() == EquipPos::TwoHand)
+    {
+        auto range = cfg->get_damage_range();
+        G_cTxt = std::format("Damage: {}-{}", range.min, range.max);
+        if (!damage_mod_str.empty())
+            tooltip.add_dual_line(G_cTxt, GameColors::InfoGrayLight, damage_mod_str, GameColors::UIItemName_Special);
+        else
+            tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
+    }
+    // Shield/armor defense
+    else if (cfg->is_armor() || cfg->get_equip_pos() == EquipPos::LeftHand)
+    {
+        G_cTxt = std::format("Defence: +{}%", cfg->m_item_effect_value1);
+        if (!defense_mod_str.empty())
+            tooltip.add_dual_line(G_cTxt, GameColors::InfoGrayLight, defense_mod_str, GameColors::UIItemName_Special);
+        else
+            tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
+    }
+
+    // 4. Standalone bonuses
+    for (const auto& eff : itemInfo.effects)
+    {
+        if (eff.category != effect_category::standalone) continue;
         if (eff.label.empty() && eff.value.empty()) continue;
         if (eff.value.empty())
             tooltip.add_line(eff.label, GameColors::InfoGrayLight);
@@ -894,36 +967,48 @@ void Screen_OnGame::render_item_tooltip()
             tooltip.add_dual_line(eff.label, GameColors::InfoGrayLight, eff.value, GameColors::UIItemName_Special);
     }
 
-    // Weapon damage
-    if (cfg->get_equip_pos() == EquipPos::RightHand || cfg->get_equip_pos() == EquipPos::TwoHand)
+    // 5. Consumable info — HP/MP/SP potions and food
+    auto effectType = cfg->get_item_effect_type();
+    if (effectType == ItemEffectType::HP)
     {
-        auto range = cfg->get_damage_range();
-        G_cTxt = std::format("Damage: {}-{}", range.min, range.max);
+        auto range = parse_dice(cfg->m_item_effect_value1, cfg->m_item_effect_value2, cfg->m_item_effect_value3);
+        G_cTxt = std::format(TOOLTIP_RESTORES_HP, range.min, range.max);
         tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
     }
-    // Shield/armor defense
-    else if (cfg->is_armor() || cfg->get_equip_pos() == EquipPos::LeftHand)
+    else if (effectType == ItemEffectType::MP)
     {
-        G_cTxt = std::format("Defence: +{}%", cfg->m_item_effect_value1);
+        auto range = parse_dice(cfg->m_item_effect_value1, cfg->m_item_effect_value2, cfg->m_item_effect_value3);
+        G_cTxt = std::format(TOOLTIP_RESTORES_MP, range.min, range.max);
+        tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
+    }
+    else if (effectType == ItemEffectType::SP)
+    {
+        auto range = parse_dice(cfg->m_item_effect_value1, cfg->m_item_effect_value2, cfg->m_item_effect_value3);
+        G_cTxt = std::format(TOOLTIP_RESTORES_SP, range.min, range.max);
+        tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
+    }
+    else if (effectType == ItemEffectType::HPStock)
+    {
+        auto range = parse_dice(cfg->m_item_effect_value1, cfg->m_item_effect_value2, cfg->m_item_effect_value3);
+        G_cTxt = std::format(DRAW_DIALOGBOX_SHOP28, range.min, range.max);
         tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
     }
 
-    // Endurance
-    if (is_equippable)
+    // 6. Requirements
+    if (cfg->m_level_requirement != 0)
     {
-        G_cTxt = std::format(UPDATE_SCREEN_ONGAME10, item->m_cur_life_span, cfg->m_max_life_span);
+        G_cTxt = std::format("{}: {}", DRAW_DIALOGBOX_SHOP24, cfg->m_level_requirement);
         tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
     }
 
-    // Required Str (use cfg base weight, apply light attribute from item instance)
     int light_pct = item->get_light_percent();
     int eff_weight = (light_pct > 0) ? cfg->m_weight * (100 - light_pct) / 100 : cfg->m_weight;
-    if (is_equippable && eff_weight >= 1100)
+    if (is_equippable && eff_weight >= hb::shared::balance::equip_str_threshold)
     {
-        int req_str = static_cast<int>(std::ceil(eff_weight / 100.0f));
+        int req_str = static_cast<int>(std::ceil(eff_weight / static_cast<float>(hb::shared::balance::weight_units_per_stone)));
         if (cfg->get_equip_pos() == EquipPos::RightHand || cfg->get_equip_pos() == EquipPos::TwoHand)
         {
-            int full_speed_str = cfg->m_speed * 13;
+            int full_speed_str = cfg->m_swing_speed * hb::shared::balance::swing_str_divisor;
             G_cTxt = std::format("Required Str: {} ({} full speed)", req_str, full_speed_str);
         }
         else
@@ -933,14 +1018,52 @@ void Screen_OnGame::render_item_tooltip()
         tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
     }
 
-    // Level requirement
-    if (cfg->m_level_limit != 0)
+    // 7. Weight — using shared weight functions, inline light modifier
+    if (cfg->m_weight > 0)
     {
-        G_cTxt = std::format("{}: {}", DRAW_DIALOGBOX_SHOP24, cfg->m_level_limit);
+        float unit_stones = CItem::weight_to_stones(eff_weight);
+        if (cfg->is_stackable() && item->m_instance.count > 1)
+        {
+            int stack_raw = CItem::calc_item_stack_weight(eff_weight, static_cast<int>(item->m_instance.count));
+            float total_stones = CItem::weight_to_stones(stack_raw);
+            G_cTxt = std::format(TOOLTIP_WEIGHT_STACK, total_stones, unit_stones);
+        }
+        else
+        {
+            G_cTxt = std::format(TOOLTIP_WEIGHT, unit_stones);
+        }
+        if (!weight_mod_str.empty())
+            tooltip.add_dual_line(G_cTxt, GameColors::InfoGrayLight, weight_mod_str, GameColors::UIItemName_Special);
+        else
+            tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
+    }
+
+    // 8. Durability / Usages
+    if (is_equippable)
+    {
+        if (!durability_mod_str.empty())
+        {
+            // Strong prefix: show boosted durability with green values
+            int boost_pct = 0;
+            try { boost_pct = std::stoi(durability_mod_str.substr(1)); } catch (...) {}
+            int boosted_max = cfg->m_durability * (100 + boost_pct) / 100;
+            G_cTxt = std::format("Durability: {}/{}", item->m_instance.cur_durability, boosted_max);
+            std::string boost_str = std::format(" ({})", durability_mod_str);
+            tooltip.add_dual_line(G_cTxt, GameColors::UIItemName_Special, boost_str, GameColors::UIItemName_Special);
+        }
+        else
+        {
+            G_cTxt = std::format(UPDATE_SCREEN_ONGAME10, item->m_instance.cur_durability, cfg->m_durability);
+            tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
+        }
+    }
+    else if (effectType == ItemEffectType::AlterItemDrop && cfg->m_durability > 0)
+    {
+        G_cTxt = std::format(TOOLTIP_USAGES, item->m_instance.cur_durability, cfg->m_durability);
         tooltip.add_line(G_cTxt, GameColors::InfoGrayLight);
     }
 
-    // Stack count
+    // 9. Stack count
     if (cfg->is_stackable())
     {
         auto count = std::count_if(m_game->m_player->m_item_list.begin(), m_game->m_player->m_item_list.end(),
@@ -1147,8 +1270,8 @@ void Screen_OnGame::item_drop_external_screen(char item_id, short mouse_x, short
         else
         {
             CItem* cfg = m_game->get_item_config(m_game->m_player->m_item_list[item_id]->m_id_num);
-            if (cfg && ((cfg->get_item_type() == ItemType::Consume) || (cfg->get_item_type() == ItemType::Arrow))
-                && (m_game->m_player->m_item_list[item_id]->m_count > 1))
+            if (cfg && (cfg->is_stackable())
+                && (m_game->m_player->m_item_list[item_id]->m_instance.count > 1))
             {
                 m_game->get_dialog_box_manager().get_dialog_box(DialogBoxId::ItemDropExternal)->m_x = mouse_x - 140;
                 m_game->get_dialog_box_manager().get_dialog_box(DialogBoxId::ItemDropExternal)->m_y = mouse_y - 70;
@@ -1174,7 +1297,7 @@ void Screen_OnGame::item_drop_external_screen(char item_id, short mouse_x, short
                     dropDlg->m_drop_target_id = 0;
                     std::memset(dropDlg->m_target_name, 0, sizeof(dropDlg->m_target_name));
                 }
-                m_game->get_dialog_box_manager().enable_dialog_box(DialogBoxId::ItemDropExternal, item_id, static_cast<int64_t>(m_game->m_player->m_item_list[item_id]->m_count), 0);
+                m_game->get_dialog_box_manager().enable_dialog_box(DialogBoxId::ItemDropExternal, item_id, static_cast<int64_t>(m_game->m_player->m_item_list[item_id]->m_instance.count), 0);
             }
             else
             {
@@ -1248,7 +1371,7 @@ void Screen_OnGame::item_drop_external_screen(char item_id, short mouse_x, short
                             m_game->get_dialog_box_manager().get_dialog_box(DialogBoxId::ItemDropConfirm)->m_x = mouse_x - 140;
                             m_game->get_dialog_box_manager().get_dialog_box(DialogBoxId::ItemDropConfirm)->m_y = mouse_y - 70;
                             if (m_game->get_dialog_box_manager().get_dialog_box(DialogBoxId::ItemDropConfirm)->m_y < 0) m_game->get_dialog_box_manager().get_dialog_box(DialogBoxId::ItemDropConfirm)->m_y = 0;
-                            m_game->get_dialog_box_manager().enable_dialog_box(DialogBoxId::ItemDropConfirm, item_id, static_cast<int64_t>(m_game->m_player->m_item_list[item_id]->m_count), 0);
+                            m_game->get_dialog_box_manager().enable_dialog_box(DialogBoxId::ItemDropConfirm, item_id, static_cast<int64_t>(m_game->m_player->m_item_list[item_id]->m_instance.count), 0);
                         }
                         else
                         {
@@ -1270,8 +1393,8 @@ void Screen_OnGame::item_drop_external_screen(char item_id, short mouse_x, short
     else
     {
         CItem* cfg2 = m_game->get_item_config(m_game->m_player->m_item_list[item_id]->m_id_num);
-        if (cfg2 && ((cfg2->get_item_type() == ItemType::Consume) || (cfg2->get_item_type() == ItemType::Arrow))
-            && (m_game->m_player->m_item_list[item_id]->m_count > 1))
+        if (cfg2 && (cfg2->is_stackable())
+            && (m_game->m_player->m_item_list[item_id]->m_instance.count > 1))
         {
             m_game->get_dialog_box_manager().get_dialog_box(DialogBoxId::ItemDropExternal)->m_x = mouse_x - 140;
             m_game->get_dialog_box_manager().get_dialog_box(DialogBoxId::ItemDropExternal)->m_y = mouse_y - 70;
@@ -1284,7 +1407,7 @@ void Screen_OnGame::item_drop_external_screen(char item_id, short mouse_x, short
                 dropDlg2->m_drop_target_id = 0;
                 std::memset(dropDlg2->m_target_name, 0, sizeof(dropDlg2->m_target_name));
             }
-            m_game->get_dialog_box_manager().enable_dialog_box(DialogBoxId::ItemDropExternal, item_id, static_cast<int64_t>(m_game->m_player->m_item_list[item_id]->m_count), 0);
+            m_game->get_dialog_box_manager().enable_dialog_box(DialogBoxId::ItemDropExternal, item_id, static_cast<int64_t>(m_game->m_player->m_item_list[item_id]->m_instance.count), 0);
         }
         else
         {
@@ -1293,7 +1416,7 @@ void Screen_OnGame::item_drop_external_screen(char item_id, short mouse_x, short
                 m_game->get_dialog_box_manager().get_dialog_box(DialogBoxId::ItemDropConfirm)->m_x = mouse_x - 140;
                 m_game->get_dialog_box_manager().get_dialog_box(DialogBoxId::ItemDropConfirm)->m_y = mouse_y - 70;
                 if (m_game->get_dialog_box_manager().get_dialog_box(DialogBoxId::ItemDropConfirm)->m_y < 0) m_game->get_dialog_box_manager().get_dialog_box(DialogBoxId::ItemDropConfirm)->m_y = 0;
-                m_game->get_dialog_box_manager().enable_dialog_box(DialogBoxId::ItemDropConfirm, item_id, static_cast<int64_t>(m_game->m_player->m_item_list[item_id]->m_count), 0);
+                m_game->get_dialog_box_manager().enable_dialog_box(DialogBoxId::ItemDropConfirm, item_id, static_cast<int64_t>(m_game->m_player->m_item_list[item_id]->m_instance.count), 0);
             }
             else
             {

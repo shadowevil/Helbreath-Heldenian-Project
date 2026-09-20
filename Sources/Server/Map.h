@@ -84,7 +84,7 @@ public:
 	bool search_teleport_dest(int sX, int sY, char * map_name, int * dx, int * dy, direction * dir);
 	bool init(char * name);
 	bool is_valid_loc(short sX, short sY);
-	CItem * get_item(short sX, short sY, short* remain_item_id, char* remain_item_color, uint32_t* remain_item_attr);
+	CItem* get_item(short sX, short sY, CItem** remain = nullptr);
 	bool set_item(short sX, short sY, CItem * item);
 	void clear_dead_owner(short sX, short sY);
 	void clear_owner(int debug_code, short owner_h, char owner_type, short sX, short sY);
@@ -163,7 +163,7 @@ public:
 	char  m_weather_status;		// . 0 . 1~3  4~6  7~9
 	uint32_t m_weather_duration, m_weather_start_time;
 
-	int   m_level_limit;
+	int   m_level_requirement;
 	int   m_upper_level_limit;
 
 	class COccupyFlag * m_occupy_flag[hb::server::map::MaxOccupyFlag];

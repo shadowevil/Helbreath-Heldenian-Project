@@ -103,7 +103,7 @@ void CraftingManager::req_create_portion_handler(int client_h, char* data)
 			if (item_index[i] < 0) return;
 			if ((item_index[i] >= 0) && (item_index[i] >= hb::shared::limits::MaxItems)) return;
 			if (m_game->m_client_list[client_h]->m_item_list[item_index[i]] == 0) return;
-			if (m_game->m_client_list[client_h]->m_item_list[item_index[i]]->m_count < static_cast<uint64_t>(item_number[i])) return;
+			if (m_game->m_client_list[client_h]->m_item_list[item_index[i]]->m_instance.count < static_cast<uint64_t>(item_number[i])) return;
 		}
 
 	// . Bubble Sort
@@ -179,10 +179,9 @@ void CraftingManager::req_create_portion_handler(int client_h, char* data)
 
 		for(int i = 0; i < 6; i++)
 			if (item_index[i] != -1) {
-				if (m_game->m_client_list[client_h]->m_item_list[item_index[i]]->get_item_type() == ItemType::Consume)
-					// v1.41 !!!
-					m_game->m_item_manager->set_item_count(client_h, item_index[i], //     m_client_list[client_h]->m_item_list[item_index[i]]->m_name,
-						m_game->m_client_list[client_h]->m_item_list[item_index[i]]->m_count - item_number[i]);
+				if (m_game->m_client_list[client_h]->m_item_list[item_index[i]]->is_stackable())
+					m_game->m_item_manager->set_item_count(client_h, item_index[i],
+						m_game->m_client_list[client_h]->m_item_list[item_index[i]]->m_instance.count - item_number[i]);
 				else m_game->m_item_manager->item_deplete_handler(client_h, item_index[i], false);
 			}
 
@@ -201,16 +200,15 @@ void CraftingManager::req_create_portion_handler(int client_h, char* data)
 					break;
 				}
 
-				//if ((item->m_price * item->m_count) > 1000)
+				//if ((item->m_sell_price * item->m_instance.count) > 1000)
 				//	SendMsgToLS(ServerMsgId::RequestSavePlayerData, client_h);
 			}
 			else {
 				m_game->m_map_list[m_game->m_client_list[client_h]->m_map_index]->set_item(m_game->m_client_list[client_h]->m_x,
 					m_game->m_client_list[client_h]->m_y, item);
 
-				m_game->send_event_to_near_client_type_b(MsgId::EventCommon, CommonType::ItemDrop, m_game->m_client_list[client_h]->m_map_index,
-					m_game->m_client_list[client_h]->m_x, m_game->m_client_list[client_h]->m_y,
-					item->m_id_num, 0, item->m_item_color, item->m_attribute); // v1.4
+				m_game->send_ground_item_event(CommonType::ItemDrop, m_game->m_client_list[client_h]->m_map_index,
+					m_game->m_client_list[client_h]->m_x, m_game->m_client_list[client_h]->m_y, item);
 
 				ret = m_game->m_item_manager->send_item_notify_msg(client_h, Notify::CannotCarryMoreItem, 0, 0);
 
@@ -292,13 +290,13 @@ void CraftingManager::req_create_crafting_handler(int client_h, char* data)
 			if (item_index[i] < 0) return;
 			if ((item_index[i] >= 0) && (item_index[i] >= hb::shared::limits::MaxItems)) return;
 			if (m_game->m_client_list[client_h]->m_item_list[item_index[i]] == 0) return;
-			if (m_game->m_client_list[client_h]->m_item_list[item_index[i]]->m_count < static_cast<uint64_t>(item_number[i])) return;
-			item_purity[i] = m_game->m_client_list[client_h]->m_item_list[item_index[i]]->m_item_special_effect_value2;
+			if (m_game->m_client_list[client_h]->m_item_list[item_index[i]]->m_instance.count < static_cast<uint64_t>(item_number[i])) return;
+			item_purity[i] = m_game->m_client_list[client_h]->m_item_list[item_index[i]]->m_instance.special_effect_value2;
 			if (m_game->m_client_list[client_h]->m_item_list[item_index[i]]->m_id_num == 657) // Stone of Merien
 			{
 				item_purity[i] = 100; // Merien stones considered 100% purity.
 			}
-			if (m_game->m_client_list[client_h]->m_item_list[item_index[i]]->get_item_type() == ItemType::Consume)
+			if (m_game->m_client_list[client_h]->m_item_list[item_index[i]]->is_stackable())
 			{
 				item_purity[i] = -1; // Diamonds / Emeralds.etc.. never have purity
 			}
@@ -312,7 +310,7 @@ void CraftingManager::req_create_crafting_handler(int client_h, char* data)
 				, m_game->m_client_list[client_h]->m_item_list[item_index[i]]->m_id_num);
 			PutLogList(G_cTxt);*/
 
-			if ((m_game->m_client_list[client_h]->m_item_list[item_index[i]]->get_item_type() == ItemType::Equip)
+			if ((m_game->m_client_list[client_h]->m_item_list[item_index[i]]->get_item_type() == hb::shared::item::item_type::equipment)
 				&& (m_game->m_client_list[client_h]->m_item_list[item_index[i]]->get_equip_pos() == EquipPos::Neck))
 			{
 				needed_contrib = 10; // Necks Crafting requires 10 contrib
@@ -400,8 +398,8 @@ void CraftingManager::req_create_crafting_handler(int client_h, char* data)
 				}
 				else
 					// Risk to deplete any other items (not stackable ones) // DEF_ITEMTYPE_CONSUME
-					if ((m_game->m_client_list[client_h]->m_item_list[item_index[i]]->get_item_type() == ItemType::Equip)
-						|| (m_game->m_client_list[client_h]->m_item_list[item_index[i]]->get_item_type() == ItemType::Material))
+					if ((m_game->m_client_list[client_h]->m_item_list[item_index[i]]->get_item_type() == hb::shared::item::item_type::equipment)
+						|| (m_game->m_client_list[client_h]->m_item_list[item_index[i]]->get_item_type() == hb::shared::item::item_type::material))
 					{
 						if (m_game->dice(1, 100) < static_cast<uint32_t>(risk_level))
 						{
@@ -454,12 +452,12 @@ void CraftingManager::req_create_crafting_handler(int client_h, char* data)
 		{
 			if (item_index[i] != -1)
 			{
-				if (m_game->m_client_list[client_h]->m_item_list[item_index[i]]->get_item_type() == ItemType::Consume)
+				if (m_game->m_client_list[client_h]->m_item_list[item_index[i]]->is_stackable())
 				{
 					m_game->m_item_manager->set_item_count(client_h, item_index[i],
-						m_game->m_client_list[client_h]->m_item_list[item_index[i]]->m_count - item_number[i]);
+						m_game->m_client_list[client_h]->m_item_list[item_index[i]]->m_instance.count - item_number[i]);
 				}
-				else // So if item is not Type 5 (stackable items), you deplete item
+				else // Non-stackable items get depleted
 				{
 					m_game->m_item_manager->item_deplete_handler(client_h, item_index[i], false);
 				}
@@ -479,24 +477,24 @@ void CraftingManager::req_create_crafting_handler(int client_h, char* data)
 		{	// // Snoopy: Added Purity to Oils/Elixirs
 			if (purity != 0)
 			{
-				item->m_item_special_effect_value2 = purity;
-				item->m_attribute = 1;
+				item->m_instance.special_effect_value2 = purity;
+				item->m_instance.custom_made = 1;
 			}
 			item->set_touch_effect_type(TouchEffectType::ID);
-			item->m_touch_effect_value1 = static_cast<short>(m_game->dice(1, 100000));
-			item->m_touch_effect_value2 = static_cast<short>(m_game->dice(1, 100000));
-			// item->m_touch_effect_value3 = GameClock::GetTimeMS();
+			item->m_instance.touch_effect_value1 = static_cast<short>(m_game->dice(1, 100000));
+			item->m_instance.touch_effect_value2 = static_cast<short>(m_game->dice(1, 100000));
+			// item->m_instance.touch_effect_value3 = GameClock::GetTimeMS();
 			hb::time::local_time SysTime{};
 			char temp[256];
 			SysTime = hb::time::local_time::now();
 			std::memset(temp, 0, sizeof(temp));
 			std::snprintf(temp, sizeof(temp), "%d%2d", (short)SysTime.month, (short)SysTime.day);
-			item->m_touch_effect_value3 = atoi(temp);
+			item->m_instance.touch_effect_value3 = atoi(temp);
 
 			// SNOOPY log anything above WAREs
 			if (need_log)
 			{
-				hb::logger::log<log_channel::events>("Player '{}' crafting '{}' purity={}", m_game->m_client_list[client_h]->m_char_name, item->m_name, item->m_item_special_effect_value2);
+				hb::logger::log<log_channel::events>("Player '{}' crafting '{}' purity={}", m_game->m_client_list[client_h]->m_char_name, item->m_name, item->m_instance.special_effect_value2);
 			}
 			if (m_game->m_item_manager->add_client_item_list(client_h, item, &erase_req))
 			{
@@ -509,16 +507,15 @@ void CraftingManager::req_create_crafting_handler(int client_h, char* data)
 					m_game->delete_client(client_h, true, true);
 					break;
 				}
-				//if ((item->m_price * item->m_count) > 1000)
+				//if ((item->m_sell_price * item->m_instance.count) > 1000)
 				//	SendMsgToLS(ServerMsgId::RequestSavePlayerData, client_h);
 			}
 			else
 			{
 				m_game->m_map_list[m_game->m_client_list[client_h]->m_map_index]->set_item(m_game->m_client_list[client_h]->m_x,
 					m_game->m_client_list[client_h]->m_y, item);
-				m_game->send_event_to_near_client_type_b(MsgId::EventCommon, CommonType::ItemDrop, m_game->m_client_list[client_h]->m_map_index,
-					m_game->m_client_list[client_h]->m_x, m_game->m_client_list[client_h]->m_y,
-					item->m_id_num, 0, item->m_item_color, item->m_attribute);
+				m_game->send_ground_item_event(CommonType::ItemDrop, m_game->m_client_list[client_h]->m_map_index,
+					m_game->m_client_list[client_h]->m_x, m_game->m_client_list[client_h]->m_y, item);
 
 				ret = m_game->m_item_manager->send_item_notify_msg(client_h, Notify::CannotCarryMoreItem, 0, 0);
 

@@ -21,8 +21,10 @@
 #include "toggle_button.h"
 #include "IRenderer.h"
 #include "Packet/SharedPackets.h"
+#include "CharacterClass.h"
 #include "CharInfo.h"
 #include "AudioManager.h"
+#include <algorithm>
 #include <format>
 #include <memory>
 
@@ -32,7 +34,7 @@ using namespace hb::client::sprite_id;
 
 Screen_CreateNewCharacter::Screen_CreateNewCharacter(CGame* game)
     : IGameScreen(game)
-    , m_iNewCharPoint(10)
+    , m_iNewCharPoint(game->m_creation_stat_points)
     , m_dwNewCharMTime(0)
     , m_bNewCharFlag(false)
 {
@@ -40,22 +42,20 @@ Screen_CreateNewCharacter::Screen_CreateNewCharacter(CGame* game)
 
 void Screen_CreateNewCharacter::on_initialize()
 {
-    GameModeManager::set_current_mode(GameMode::CreateNewCharacter);
-
     // Initialize character creation defaults
     m_game->m_new_char.gender = rand() % 2 + 1;
     m_game->m_new_char.skin_col = rand() % 3 + 1;
     m_game->m_new_char.hair_style = rand() % 8;
-    m_game->m_new_char.hair_col = rand() % 16;
+    m_game->m_new_char.hair_col = 32 + (rand() % 16);
     m_game->m_new_char.under_col = rand() % 8;
-    m_game->m_new_char.stat_str = 10;
-    m_game->m_new_char.stat_vit = 10;
-    m_game->m_new_char.stat_dex = 10;
-    m_game->m_new_char.stat_int = 10;
-    m_game->m_new_char.stat_mag = 10;
-    m_game->m_new_char.stat_chr = 10;
+    m_game->m_new_char.stat_str = static_cast<int8_t>(m_game->m_base_stat_value);
+    m_game->m_new_char.stat_vit = static_cast<int8_t>(m_game->m_base_stat_value);
+    m_game->m_new_char.stat_dex = static_cast<int8_t>(m_game->m_base_stat_value);
+    m_game->m_new_char.stat_int = static_cast<int8_t>(m_game->m_base_stat_value);
+    m_game->m_new_char.stat_mag = static_cast<int8_t>(m_game->m_base_stat_value);
+    m_game->m_new_char.stat_chr = static_cast<int8_t>(m_game->m_base_stat_value);
 
-    m_iNewCharPoint = 10;
+    m_iNewCharPoint = m_game->m_creation_stat_points;
     m_bNewCharFlag = false;
     m_game->m_arrow_pressed = 0;
     m_dwNewCharMTime = GameClock::get_time_ms();
@@ -115,14 +115,14 @@ void Screen_CreateNewCharacter::on_initialize()
         if (m_game->m_new_char.hair_style > 7) m_game->m_new_char.hair_style = 0;
     });
 
-    // Hair color: 0-15 wrap
+    // Hair color: 32-47 wrap (unified palette hair range)
     auto* tog_hair_color = m_controls.add<cc::toggle_button>(TOG_HAIR_COLOR,
         cc::rect{ 316, 217 + (16 * 3), 43, 15 }, cc::rect{ 0, 0, 21, 15 }, cc::rect{ 22, 0, 21, 15 });
     tog_hair_color->set_click_sound([this] { audio_manager::get().play_game_sound(sound_type::effect, 14, 5); });
     tog_hair_color->set_on_change([this](int, int delta) {
         m_game->m_new_char.hair_col += delta;
-        if (m_game->m_new_char.hair_col < 0) m_game->m_new_char.hair_col = 15;
-        if (m_game->m_new_char.hair_col > 15) m_game->m_new_char.hair_col = 0;
+        if (m_game->m_new_char.hair_col < 32) m_game->m_new_char.hair_col = 47;
+        if (m_game->m_new_char.hair_col > 47) m_game->m_new_char.hair_col = 32;
     });
 
     // Underwear color: 0-7 wrap
@@ -141,13 +141,15 @@ void Screen_CreateNewCharacter::on_initialize()
 
     auto make_stat_handler = [this](int8_t& stat) {
         return [this, &stat](int, int delta) {
+            int8_t max_stat = static_cast<int8_t>(m_game->m_base_stat_value + m_game->m_max_creation_stat_value);
+            int8_t min_stat = static_cast<int8_t>(m_game->m_base_stat_value);
             if (delta > 0)
             {
-                if (m_iNewCharPoint > 0 && stat < 14) { stat++; m_iNewCharPoint--; }
+                if (m_iNewCharPoint > 0 && stat < max_stat) { stat++; m_iNewCharPoint--; }
             }
             else
             {
-                if (stat > 10) { stat--; m_iNewCharPoint++; }
+                if (stat > min_stat) { stat--; m_iNewCharPoint++; }
             }
         };
     };
@@ -199,13 +201,17 @@ void Screen_CreateNewCharacter::on_initialize()
     btn_warrior->set_click_sound([this] { audio_manager::get().play_game_sound(sound_type::effect, 14, 5); });
     btn_warrior->set_on_click([this](int) {
         if (m_prev_focused != BTN_WARRIOR) return;
-        m_game->m_new_char.stat_str = 14;
-        m_game->m_new_char.stat_vit = 12;
-        m_game->m_new_char.stat_dex = 14;
-        m_game->m_new_char.stat_int = 10;
-        m_game->m_new_char.stat_mag = 10;
-        m_game->m_new_char.stat_chr = 10;
-        m_iNewCharPoint = 70 - (m_game->m_new_char.stat_str + m_game->m_new_char.stat_vit
+        int8_t base = static_cast<int8_t>(m_game->m_base_stat_value);
+        int8_t max_bonus = static_cast<int8_t>(m_game->m_max_creation_stat_value);
+        int8_t remaining = static_cast<int8_t>(std::clamp(m_game->m_creation_stat_points - max_bonus * 2, 0, (int)max_bonus));
+        m_game->m_new_char.stat_str = base + max_bonus;
+        m_game->m_new_char.stat_vit = base + remaining;
+        m_game->m_new_char.stat_dex = base + max_bonus;
+        m_game->m_new_char.stat_int = base;
+        m_game->m_new_char.stat_mag = base;
+        m_game->m_new_char.stat_chr = base;
+        int total = m_game->m_base_stat_value * 6 + m_game->m_creation_stat_points;
+        m_iNewCharPoint = total - (m_game->m_new_char.stat_str + m_game->m_new_char.stat_vit
             + m_game->m_new_char.stat_dex + m_game->m_new_char.stat_int
             + m_game->m_new_char.stat_mag + m_game->m_new_char.stat_chr);
         m_selected_class = BTN_WARRIOR;
@@ -221,13 +227,17 @@ void Screen_CreateNewCharacter::on_initialize()
     btn_mage->set_click_sound([this] { audio_manager::get().play_game_sound(sound_type::effect, 14, 5); });
     btn_mage->set_on_click([this](int) {
         if (m_prev_focused != BTN_MAGE) return;
-        m_game->m_new_char.stat_str = 10;
-        m_game->m_new_char.stat_vit = 12;
-        m_game->m_new_char.stat_dex = 10;
-        m_game->m_new_char.stat_int = 14;
-        m_game->m_new_char.stat_mag = 14;
-        m_game->m_new_char.stat_chr = 10;
-        m_iNewCharPoint = 70 - (m_game->m_new_char.stat_str + m_game->m_new_char.stat_vit
+        int8_t base = static_cast<int8_t>(m_game->m_base_stat_value);
+        int8_t max_bonus = static_cast<int8_t>(m_game->m_max_creation_stat_value);
+        int8_t remaining = static_cast<int8_t>(std::clamp(m_game->m_creation_stat_points - max_bonus * 2, 0, (int)max_bonus));
+        m_game->m_new_char.stat_str = base;
+        m_game->m_new_char.stat_vit = base + remaining;
+        m_game->m_new_char.stat_dex = base;
+        m_game->m_new_char.stat_int = base + max_bonus;
+        m_game->m_new_char.stat_mag = base + max_bonus;
+        m_game->m_new_char.stat_chr = base;
+        int total = m_game->m_base_stat_value * 6 + m_game->m_creation_stat_points;
+        m_iNewCharPoint = total - (m_game->m_new_char.stat_str + m_game->m_new_char.stat_vit
             + m_game->m_new_char.stat_dex + m_game->m_new_char.stat_int
             + m_game->m_new_char.stat_mag + m_game->m_new_char.stat_chr);
         m_selected_class = BTN_MAGE;
@@ -243,13 +253,17 @@ void Screen_CreateNewCharacter::on_initialize()
     btn_priest->set_click_sound([this] { audio_manager::get().play_game_sound(sound_type::effect, 14, 5); });
     btn_priest->set_on_click([this](int) {
         if (m_prev_focused != BTN_MASTER) return;
-        m_game->m_new_char.stat_str = 14;
-        m_game->m_new_char.stat_vit = 10;
-        m_game->m_new_char.stat_dex = 10;
-        m_game->m_new_char.stat_int = 10;
-        m_game->m_new_char.stat_mag = 12;
-        m_game->m_new_char.stat_chr = 14;
-        m_iNewCharPoint = 70 - (m_game->m_new_char.stat_str + m_game->m_new_char.stat_vit
+        int8_t base = static_cast<int8_t>(m_game->m_base_stat_value);
+        int8_t max_bonus = static_cast<int8_t>(m_game->m_max_creation_stat_value);
+        int8_t remaining = static_cast<int8_t>(std::clamp(m_game->m_creation_stat_points - max_bonus * 2, 0, (int)max_bonus));
+        m_game->m_new_char.stat_str = base + max_bonus;
+        m_game->m_new_char.stat_vit = base;
+        m_game->m_new_char.stat_dex = base;
+        m_game->m_new_char.stat_int = base;
+        m_game->m_new_char.stat_mag = base + remaining;
+        m_game->m_new_char.stat_chr = base + max_bonus;
+        int total = m_game->m_base_stat_value * 6 + m_game->m_creation_stat_points;
+        m_iNewCharPoint = total - (m_game->m_new_char.stat_str + m_game->m_new_char.stat_vit
             + m_game->m_new_char.stat_dex + m_game->m_new_char.stat_int
             + m_game->m_new_char.stat_mag + m_game->m_new_char.stat_chr);
         m_selected_class = BTN_MASTER;
@@ -265,15 +279,8 @@ void Screen_CreateNewCharacter::on_initialize()
     m_controls.set_focus(TXT_NAME);
 
     // Discard any pending input from previous screen/overlay
-    cc::input_state init_input;
-    hb::client::fill_input_state(init_input);
-    m_controls.discard_pending_input(init_input);
+    discard_pending_controls_input(m_controls);
 }
-
-void Screen_CreateNewCharacter::on_uninitialize()
-{
-}
-
 void Screen_CreateNewCharacter::on_update()
 {
     uint32_t time = GameClock::get_time_ms();
@@ -354,6 +361,14 @@ void Screen_CreateNewCharacter::submit_create_character()
     req.intl = static_cast<uint8_t>(m_game->m_new_char.stat_int);
     req.mag = static_cast<uint8_t>(m_game->m_new_char.stat_mag);
     req.chr = static_cast<uint8_t>(m_game->m_new_char.stat_chr);
+
+    // Map UI button to protocol class_type; default to warrior if none selected
+    using namespace hb::shared::character_class;
+    uint8_t cls = warrior;
+    if (m_selected_class == BTN_MAGE) cls = mage;
+    else if (m_selected_class == BTN_MASTER) cls = master;
+    req.class_type = cls;
+
     m_game->set_pending_login_packet(req);
 
     m_game->m_l_sock = std::make_unique<hb::shared::net::ASIOSocket>(m_game->m_io_pool->get_context(), game_limits::socket_block_limit);

@@ -97,6 +97,8 @@ enum class KeyCode : int
 
     // OEM keys
     Grave = 192,   // ` / ~ (VK_OEM_3)
+    Hyphen = 189,  // - / _ (VK_OEM_MINUS)
+    Equal = 187,   // = / + (VK_OEM_PLUS)
 };
 
 // Abstract input interface

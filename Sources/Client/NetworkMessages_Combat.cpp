@@ -141,7 +141,6 @@ namespace NetworkMessageHandlers {
 	void HandleEnemyKillReward(CGame* game, char* data)
 	{
 		uint32_t exp;
-		short guild_rank;
 		std::string txt;
 
 		int   enemy_kill_count, war_contribution;
@@ -153,8 +152,6 @@ namespace NetworkMessageHandlers {
 		exp = pkt->exp;
 		enemy_kill_count = static_cast<int>(pkt->kill_count);
 		std::string name(pkt->killer_name, strnlen(pkt->killer_name, sizeof(pkt->killer_name)));
-		std::string guild_name(pkt->killer_guild, strnlen(pkt->killer_guild, sizeof(pkt->killer_guild)));
-		guild_rank = pkt->killer_rank;
 		war_contribution = pkt->war_contribution;
 
 		if (war_contribution > game->m_player->m_war_contribution && game->m_game_msg_list[21])
@@ -168,16 +165,8 @@ namespace NetworkMessageHandlers {
 		}
 		game->m_player->m_war_contribution = war_contribution;
 
-		if (guild_rank == -1)
-		{
-			txt = std::format(NOTIFYMSG_ENEMYKILL_REWARD1, name);
-			game->add_event_list(txt.c_str(), 10);
-		}
-		else
-		{
-			txt = std::format(NOTIFYMSG_ENEMYKILL_REWARD2, name, guild_name);
-			game->add_event_list(txt.c_str(), 10);
-		}
+		txt = std::format(NOTIFYMSG_ENEMYKILL_REWARD1, name);
+		game->add_event_list(txt.c_str(), 10);
 
 		if (game->m_player->m_enemy_kill_count != enemy_kill_count)
 		{

@@ -107,8 +107,7 @@ void DialogBox_NpcActionQuery::DrawMode2_SellToShop(short sX, short sY)
 	draw_highlighted_text(sX + 28, sY + 55, DRAW_DIALOGBOX_NPCACTION_QUERY39, mouse_x, mouse_y, sX + 25, sX + 100, sY + 55, sY + 70);
 
 	CItem* cfg = m_game->get_item_config(player().m_item_list[m_item_index]->m_id_num);
-	if (cfg && (cfg->get_item_type() != ItemType::Consume) &&
-		(cfg->get_item_type() != ItemType::Arrow) &&
+	if (cfg && !cfg->is_stackable() &&
 		m_owner_type == hb::shared::owner::Tom)
 	{
 		draw_highlighted_text(sX + 125, sY + 55, DRAW_DIALOGBOX_NPCACTION_QUERY43, mouse_x, mouse_y, sX + 125, sX + 180, sY + 55, sY + 70);
@@ -521,7 +520,7 @@ bool DialogBox_NpcActionQuery::on_click()
 
 	case mode::gail:
 		if ((mouse_x > sX + 25) && (mouse_x < sX + 100) && (mouse_y > sY + 55) && (mouse_y < sY + 70)) {
-			enable_dialog_box(DialogBoxId::GuildHallMenu, 0, 0, 0);
+			enable_dialog_box(DialogBoxId::CommandHallMenu, 0, 0, 0);
 			disable_this_dialog();
 			return true;
 		}

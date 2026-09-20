@@ -135,41 +135,41 @@ void DialogBox_ItemCreator::build_valid_options(int16_t effect_type)
 	switch (m_category)
 	{
 	case item_category::weapon:
-		m_valid_prefixes.push_back({1, "Critical", 1});
-		m_valid_prefixes.push_back({2, "Poisoning", 5});
-		m_valid_prefixes.push_back({3, "Righteous", 1});
-		m_valid_prefixes.push_back({5, "Agile", 1});
-		m_valid_prefixes.push_back({6, "Light", 4});
-		m_valid_prefixes.push_back({7, "Sharp", 1});
-		m_valid_prefixes.push_back({8, "Strong", 7});
-		m_valid_prefixes.push_back({9, "Ancient", 1});
-		m_valid_secondaries.push_back({2, "HitProb", 7});
-		m_valid_secondaries.push_back({10, "ConsecAtk", 1});
-		m_valid_secondaries.push_back({11, "ExpBonus", 10});
-		m_valid_secondaries.push_back({12, "GoldBonus", 10});
+		m_valid_prefixes.push_back({1, "Critical", m_game->m_prefix_multiplier[1]});
+		m_valid_prefixes.push_back({2, "Poisoning", m_game->m_prefix_multiplier[2]});
+		m_valid_prefixes.push_back({3, "Righteous", m_game->m_prefix_multiplier[3]});
+		m_valid_prefixes.push_back({5, "Agile", m_game->m_prefix_multiplier[5]});
+		m_valid_prefixes.push_back({6, "Light", m_game->m_prefix_multiplier[6]});
+		m_valid_prefixes.push_back({7, "Sharp", m_game->m_prefix_multiplier[7]});
+		m_valid_prefixes.push_back({8, "Strong", m_game->m_prefix_multiplier[8]});
+		m_valid_prefixes.push_back({9, "Ancient", m_game->m_prefix_multiplier[9]});
+		m_valid_secondaries.push_back({2, "HitProb", m_game->m_secondary_multiplier[2]});
+		m_valid_secondaries.push_back({10, "ConsecAtk", m_game->m_secondary_multiplier[10]});
+		m_valid_secondaries.push_back({11, "ExpBonus", m_game->m_secondary_multiplier[11]});
+		m_valid_secondaries.push_back({12, "GoldBonus", m_game->m_secondary_multiplier[12]});
 		break;
 
 	case item_category::armor:
-		m_valid_prefixes.push_back({8, "Strong", 7});
-		m_valid_prefixes.push_back({6, "Light", 4});
-		m_valid_prefixes.push_back({11, "ManaConvert", 1});
-		m_valid_prefixes.push_back({12, "CritChance", 1});
-		m_valid_secondaries.push_back({3, "DefRatio", 7});
-		m_valid_secondaries.push_back({1, "PoisonRes", 7});
-		m_valid_secondaries.push_back({5, "SPRecov", 7});
-		m_valid_secondaries.push_back({4, "HPRecov", 7});
-		m_valid_secondaries.push_back({6, "MPRecov", 7});
-		m_valid_secondaries.push_back({7, "MagicRes", 7});
-		m_valid_secondaries.push_back({8, "PhysAbsorb", 3});
-		m_valid_secondaries.push_back({9, "MagicAbsorb", 3});
+		m_valid_prefixes.push_back({8, "Strong", m_game->m_prefix_multiplier[8]});
+		m_valid_prefixes.push_back({6, "Light", m_game->m_prefix_multiplier[6]});
+		m_valid_prefixes.push_back({11, "ManaConvert", m_game->m_prefix_multiplier[11]});
+		m_valid_prefixes.push_back({12, "CritChance", m_game->m_prefix_multiplier[12]});
+		m_valid_secondaries.push_back({3, "DefRatio", m_game->m_secondary_multiplier[3]});
+		m_valid_secondaries.push_back({1, "PoisonRes", m_game->m_secondary_multiplier[1]});
+		m_valid_secondaries.push_back({5, "SPRecov", m_game->m_secondary_multiplier[5]});
+		m_valid_secondaries.push_back({4, "HPRecov", m_game->m_secondary_multiplier[4]});
+		m_valid_secondaries.push_back({6, "MPRecov", m_game->m_secondary_multiplier[6]});
+		m_valid_secondaries.push_back({7, "MagicRes", m_game->m_secondary_multiplier[7]});
+		m_valid_secondaries.push_back({8, "PhysAbsorb", m_game->m_secondary_multiplier[8]});
+		m_valid_secondaries.push_back({9, "MagicAbsorb", m_game->m_secondary_multiplier[9]});
 		break;
 
 	case item_category::magic_weapon:
-		m_valid_prefixes.push_back({10, "Special", 3});
-		m_valid_secondaries.push_back({2, "HitProb", 7});
-		m_valid_secondaries.push_back({10, "ConsecAtk", 1});
-		m_valid_secondaries.push_back({11, "ExpBonus", 10});
-		m_valid_secondaries.push_back({12, "GoldBonus", 10});
+		m_valid_prefixes.push_back({10, "Special", m_game->m_prefix_multiplier[10]});
+		m_valid_secondaries.push_back({2, "HitProb", m_game->m_secondary_multiplier[2]});
+		m_valid_secondaries.push_back({10, "ConsecAtk", m_game->m_secondary_multiplier[10]});
+		m_valid_secondaries.push_back({11, "ExpBonus", m_game->m_secondary_multiplier[11]});
+		m_valid_secondaries.push_back({12, "GoldBonus", m_game->m_secondary_multiplier[12]});
 		break;
 
 	default:
@@ -822,13 +822,13 @@ bool DialogBox_ItemCreator::on_click_configure(short sX, short sY, short size_x)
 			int pval = (prefix_type != 0) ? m_prefix_value : 0;
 			int sval = (secondary_type != 0) ? m_secondary_value : 0;
 
-			uint32_t attr = build_attribute(
-				false,
-				static_cast<AttributePrefixType>(prefix_type),
-				static_cast<uint8_t>(pval),
-				static_cast<SecondaryEffectType>(secondary_type),
-				static_cast<uint8_t>(sval),
-				static_cast<uint8_t>(m_enchant_value));
+			// Pack attributes into legacy uint32_t format for TesterCreateItem command
+			uint32_t attr = 0;
+			attr |= (static_cast<uint32_t>(sval) & 0x0F) << 8;
+			attr |= (static_cast<uint32_t>(secondary_type) & 0x0F) << 12;
+			attr |= (static_cast<uint32_t>(pval) & 0x0F) << 16;
+			attr |= (static_cast<uint32_t>(prefix_type) & 0x0F) << 20;
+			attr |= (static_cast<uint32_t>(m_enchant_value) & 0x0F) << 28;
 			{
 				auto pkt = hb::net::make_common_command(CommonType::TesterCreateItem, player().m_player_x, player().m_player_y);
 				pkt.v1 = item_id;

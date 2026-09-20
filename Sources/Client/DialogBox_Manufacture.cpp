@@ -131,7 +131,7 @@ void DialogBox_Manufacture::draw_alchemy_waiting(short sX, short sY)
 	int adj_y = 8;
 	uint32_t time = m_game->m_cur_time;
 
-	m_game->m_sprite[InterfaceAddInterface]->draw(sX, sY, 1);
+	m_game->m_sprite[InterfaceNdInventory]->draw(sX, sY, 10);
 
 	if (m_slot_1 != -1) {
 		CItem* cfg = m_game->get_item_config(player().m_item_list[m_slot_1]->m_id_num);
@@ -180,7 +180,7 @@ void DialogBox_Manufacture::draw_alchemy_creating(short sX, short sY)
 	int adj_y = 8;
 	uint32_t time = m_game->m_cur_time;
 
-	m_game->m_sprite[InterfaceAddInterface]->draw(sX, sY, 1);
+	m_game->m_sprite[InterfaceNdInventory]->draw(sX, sY, 10);
 
 	if (m_slot_1 != -1) {
 		CItem* cfg = m_game->get_item_config(player().m_item_list[m_slot_1]->m_id_num);
@@ -270,7 +270,7 @@ void DialogBox_Manufacture::draw_manufacture_list(short sX, short sY)
 	for (int i = 0; i < 13; i++)
 		if (build_item_manager::get().get_display_list()[i + m_scroll_view] != 0) {
 
-			auto itemInfo = item_name_formatter::get().format(m_game->find_item_id_by_name(build_item_manager::get().get_display_list()[i + m_scroll_view]->m_name.c_str()),  0);
+			auto itemInfo = item_name_formatter::get().format(m_game->find_item_id_by_name(build_item_manager::get().get_display_list()[i + m_scroll_view]->m_name.c_str()));
 			temp = itemInfo.name.c_str();
 			temp2 = std::format("{}%", build_item_manager::get().get_display_list()[i + m_scroll_view]->m_max_skill);
 
@@ -353,7 +353,7 @@ void DialogBox_Manufacture::draw_manufacture_waiting(short sX, short sY)
 		recipe_draw.sprite->draw(sX + adj_x + 62 + 5, sY + adj_y + 84 + 17, recipe_draw.frame);
 	};
 
-	auto itemInfo2 = item_name_formatter::get().format(m_game->find_item_id_by_name(build_item_manager::get().get_display_list()[m_progress]->m_name.c_str()),  0);
+	auto itemInfo2 = item_name_formatter::get().format(m_game->find_item_id_by_name(build_item_manager::get().get_display_list()[m_progress]->m_name.c_str()));
 	temp = itemInfo2.name.c_str();
 	put_string(sX + adj_x + 44 + 10 + 60, sY + adj_y + 55, temp.c_str(), GameColors::UIWhite);
 
@@ -376,7 +376,7 @@ void DialogBox_Manufacture::draw_manufacture_waiting(short sX, short sY)
 			case 5: elemName = build_item_manager::get().get_display_list()[m_progress]->m_element_name_5.c_str(); elemFlag = build_item_manager::get().get_display_list()[m_progress]->m_element_flag[5]; break;
 			case 6: elemName = build_item_manager::get().get_display_list()[m_progress]->m_element_name_6.c_str(); elemFlag = build_item_manager::get().get_display_list()[m_progress]->m_element_flag[6]; break;
 			}
-			auto itemInfo3 = item_name_formatter::get().format(m_game->find_item_id_by_name(elemName),  0);
+			auto itemInfo3 = item_name_formatter::get().format(m_game->find_item_id_by_name(elemName));
 			temp = itemInfo3.name.c_str();
 			if (elemFlag)
 				put_string(sX + adj_x + 44 + 20 + 60, sY + adj_y + 55 + loc * 15 + 5, temp.c_str(), GameColors::UILabel);
@@ -393,7 +393,7 @@ void DialogBox_Manufacture::draw_manufacture_waiting(short sX, short sY)
 		{
 			int slotX = (slot % 3) * 45;
 			int slotY = (slot / 3) * 45;
-			m_game->m_sprite[InterfaceAddInterface]->draw(sX + adj_x + 55 + 30 + slotX + 13, sY + adj_y + 55 + slotY + 180, 2);
+			m_game->m_sprite[InterfaceNdGame2]->draw(sX + adj_x + 55 + 30 + slotX + 13, sY + adj_y + 55 + slotY + 180, 27);
 		}
 
 		// draw items in slots
@@ -475,7 +475,7 @@ void DialogBox_Manufacture::draw_manufacture_in_progress(short sX, short sY)
 		recipe_draw.sprite->draw(sX + adj_x + 62 + 5, sY + adj_y + 84 + 17, recipe_draw.frame);
 	};
 
-	auto itemInfo4 = item_name_formatter::get().format(m_game->find_item_id_by_name(build_item_manager::get().get_display_list()[m_progress]->m_name.c_str()),  0);
+	auto itemInfo4 = item_name_formatter::get().format(m_game->find_item_id_by_name(build_item_manager::get().get_display_list()[m_progress]->m_name.c_str()));
 	temp = itemInfo4.name.c_str();
 	put_string(sX + adj_x + 44 + 10 + 60, sY + adj_y + 55, temp.c_str(), GameColors::UIWhite);
 
@@ -498,7 +498,7 @@ void DialogBox_Manufacture::draw_manufacture_in_progress(short sX, short sY)
 			case 5: elemName = build_item_manager::get().get_display_list()[m_progress]->m_element_name_5.c_str(); elemFlag = build_item_manager::get().get_display_list()[m_progress]->m_element_flag[5]; break;
 			case 6: elemName = build_item_manager::get().get_display_list()[m_progress]->m_element_name_6.c_str(); elemFlag = build_item_manager::get().get_display_list()[m_progress]->m_element_flag[6]; break;
 			}
-			auto itemInfo5 = item_name_formatter::get().format(m_game->find_item_id_by_name(elemName),  0);
+			auto itemInfo5 = item_name_formatter::get().format(m_game->find_item_id_by_name(elemName));
 			temp = itemInfo5.name.c_str();
 			if (elemFlag)
 				put_string(sX + adj_x + 44 + 20 + 60, sY + adj_y + 55 + loc * 15 + 5, temp.c_str(), GameColors::UILabel);
@@ -513,7 +513,7 @@ void DialogBox_Manufacture::draw_manufacture_in_progress(short sX, short sY)
 	{
 		int slotX = (slot % 3) * 45;
 		int slotY = (slot / 3) * 45;
-		m_game->m_sprite[InterfaceAddInterface]->draw(sX + adj_x + 55 + 30 + slotX + 13, sY + adj_y + 55 + slotY + 180, 2);
+		m_game->m_sprite[InterfaceNdGame2]->draw(sX + adj_x + 55 + 30 + slotX + 13, sY + adj_y + 55 + slotY + 180, 27);
 	}
 
 	// draw items in slots
@@ -598,7 +598,7 @@ void DialogBox_Manufacture::draw_manufacture_done(short sX, short sY)
 		recipe_draw.sprite->draw(sX + adj_x + 62 + 5, sY + adj_y + 84 + 17, recipe_draw.frame);
 	};
 
-	auto itemInfo6 = item_name_formatter::get().format(m_game->find_item_id_by_name(build_item_manager::get().get_display_list()[m_progress]->m_name.c_str()),  0);
+	auto itemInfo6 = item_name_formatter::get().format(m_game->find_item_id_by_name(build_item_manager::get().get_display_list()[m_progress]->m_name.c_str()));
 
 	temp = itemInfo6.name.c_str();
 	put_string(sX + adj_x + 44 + 10 + 60, sY + adj_y + 55, temp.c_str(), GameColors::UIWhite);
@@ -607,7 +607,9 @@ void DialogBox_Manufacture::draw_manufacture_done(short sX, short sY)
 		put_string(sX + adj_x + 33 + 11, sY + adj_y + 200 - 45, DRAW_DIALOGBOX_SKILLDLG31, GameColors::UILabel);
 
 		std::string resultBuf;
-		if (static_cast<ItemType>(m_slot_1) == ItemType::Material) {
+		CItem* slot1_cfg = (m_slot_1 >= 0 && m_slot_1 < hb::shared::limits::MaxItems && player().m_item_list[m_slot_1])
+			? m_game->get_item_config(player().m_item_list[m_slot_1]->m_id_num) : nullptr;
+		if (slot1_cfg && slot1_cfg->get_item_type() == hb::shared::item::item_type::material) {
 			resultBuf = std::format(DRAW_DIALOGBOX_SKILLDLG32, m_result_value);
 			put_string(sX + adj_x + 33 + 11, sY + adj_y + 215 - 45, resultBuf.c_str(), GameColors::UILabel);
 		}
@@ -633,7 +635,7 @@ void DialogBox_Manufacture::draw_crafting_waiting(short sX, short sY)
 	int adj_y = 8;
 	uint32_t time = m_game->m_cur_time;
 
-	m_game->m_sprite[InterfaceCrafting]->draw(sX, sY, 0);
+	m_game->m_sprite[InterfaceNdInventory]->draw(sX, sY, 10);
 
 	if (m_slot_1 != -1) {
 		CItem* cfg = m_game->get_item_config(player().m_item_list[m_slot_1]->m_id_num);
@@ -677,7 +679,7 @@ void DialogBox_Manufacture::draw_crafting_in_progress(short sX, short sY)
 	int adj_y = 8;
 	uint32_t time = m_game->m_cur_time;
 
-	m_game->m_sprite[InterfaceCrafting]->draw(sX, sY, 0);
+	m_game->m_sprite[InterfaceNdInventory]->draw(sX, sY, 10);
 
 	if (m_slot_1 != -1)
 	{
@@ -685,7 +687,7 @@ void DialogBox_Manufacture::draw_crafting_in_progress(short sX, short sY)
 		if (cfg) {
 			auto d = m_game->get_item_draw(cfg->m_display_id, item_atlas::pack, cfg->sprite_is_female());
 			d.sprite->draw(sX + adj_x + 55 + (1 - (rand() % 3)), sY + adj_y + 55 + (1 - (rand() % 3)), d.frame);
-			if ((cfg->get_item_type() == ItemType::Equip) && (cfg->get_equip_pos() == EquipPos::Neck))
+			if ((cfg->get_item_type() == hb::shared::item::item_type::equipment) && (cfg->get_equip_pos() == EquipPos::Neck))
 				m_game->m_contribution_price = 10;
 		}
 	}
@@ -695,7 +697,7 @@ void DialogBox_Manufacture::draw_crafting_in_progress(short sX, short sY)
 		if (cfg) {
 			auto d = m_game->get_item_draw(cfg->m_display_id, item_atlas::pack, cfg->sprite_is_female());
 			d.sprite->draw(sX + adj_x + 65 + 45 + (1 - (rand() % 3)), sY + adj_y + 40 + (1 - (rand() % 3)), d.frame);
-			if ((cfg->get_item_type() == ItemType::Equip) && (cfg->get_equip_pos() == EquipPos::Neck))
+			if ((cfg->get_item_type() == hb::shared::item::item_type::equipment) && (cfg->get_equip_pos() == EquipPos::Neck))
 				m_game->m_contribution_price = 10;
 		}
 	}
@@ -705,7 +707,7 @@ void DialogBox_Manufacture::draw_crafting_in_progress(short sX, short sY)
 		if (cfg) {
 			auto d = m_game->get_item_draw(cfg->m_display_id, item_atlas::pack, cfg->sprite_is_female());
 			d.sprite->draw(sX + adj_x + 65 + 90 + (1 - (rand() % 3)), sY + adj_y + 55 + (1 - (rand() % 3)), d.frame);
-			if ((cfg->get_item_type() == ItemType::Equip) && (cfg->get_equip_pos() == EquipPos::Neck))
+			if ((cfg->get_item_type() == hb::shared::item::item_type::equipment) && (cfg->get_equip_pos() == EquipPos::Neck))
 				m_game->m_contribution_price = 10;
 		}
 	}
@@ -715,7 +717,7 @@ void DialogBox_Manufacture::draw_crafting_in_progress(short sX, short sY)
 		if (cfg) {
 			auto d = m_game->get_item_draw(cfg->m_display_id, item_atlas::pack, cfg->sprite_is_female());
 			d.sprite->draw(sX + adj_x + 65 + (1 - (rand() % 3)), sY + adj_y + 100 + (1 - (rand() % 3)), d.frame);
-			if ((cfg->get_item_type() == ItemType::Equip) && (cfg->get_equip_pos() == EquipPos::Neck))
+			if ((cfg->get_item_type() == hb::shared::item::item_type::equipment) && (cfg->get_equip_pos() == EquipPos::Neck))
 				m_game->m_contribution_price = 10;
 		}
 	}
@@ -725,7 +727,7 @@ void DialogBox_Manufacture::draw_crafting_in_progress(short sX, short sY)
 		if (cfg) {
 			auto d = m_game->get_item_draw(cfg->m_display_id, item_atlas::pack, cfg->sprite_is_female());
 			d.sprite->draw(sX + adj_x + 65 + 45 + (1 - (rand() % 3)), sY + adj_y + 115 + (1 - (rand() % 3)), d.frame);
-			if ((cfg->get_item_type() == ItemType::Equip) && (cfg->get_equip_pos() == EquipPos::Neck))
+			if ((cfg->get_item_type() == hb::shared::item::item_type::equipment) && (cfg->get_equip_pos() == EquipPos::Neck))
 				m_game->m_contribution_price = 10;
 		}
 	}
@@ -735,7 +737,7 @@ void DialogBox_Manufacture::draw_crafting_in_progress(short sX, short sY)
 		if (cfg) {
 			auto d = m_game->get_item_draw(cfg->m_display_id, item_atlas::pack, cfg->sprite_is_female());
 			d.sprite->draw(sX + adj_x + 75 + 90 + (1 - (rand() % 3)), sY + adj_y + 100 + (1 - (rand() % 3)), d.frame);
-			if ((cfg->get_item_type() == ItemType::Equip) && (cfg->get_equip_pos() == EquipPos::Neck))
+			if ((cfg->get_item_type() == hb::shared::item::item_type::equipment) && (cfg->get_equip_pos() == EquipPos::Neck))
 				m_game->m_contribution_price = 10;
 		}
 	}
@@ -1011,8 +1013,8 @@ bool DialogBox_Manufacture::try_add_item_to_slot(int item_id, bool updateBuildSt
 
 			// Only disable non-stackable items (stackable consumables can be added multiple times)
 			CItem* cfg = m_game->get_item_config(player().m_item_list[item_id]->m_id_num);
-			if (!cfg || cfg->get_item_type() != ItemType::Consume ||
-				player().m_item_list[item_id]->m_count <= 1)
+			if (!cfg || !cfg->is_stackable() ||
+				player().m_item_list[item_id]->m_instance.count <= 1)
 			{
 				inventory_manager::get().lock_item(item_id);
 			}
@@ -1029,7 +1031,7 @@ bool DialogBox_Manufacture::on_item_drop()
 	int item_id = CursorTarget::get_selected_id();
 	if (item_id < 0 || item_id >= hb::shared::limits::MaxItems) return false;
 	if (player().m_item_list[item_id] == nullptr) return false;
-	if (inventory_manager::get().is_locked(item_id)) return false;
+	if (inventory_manager::get().warn_if_locked(item_id)) return false;
 	CItem* cfg = m_game->get_item_config(player().m_item_list[item_id]->m_id_num);
 	if (!cfg) return false;
 
@@ -1056,7 +1058,7 @@ bool DialogBox_Manufacture::on_item_drop()
 	case mode::alchemy_waiting:
 	{
 		// Check consumable item count - can't add if all instances are already used
-		if (cfg->get_item_type() == ItemType::Consume)
+		if (cfg->is_stackable())
 		{
 			int consume_num = 0;
 			if (m_slot_1 == item_id) consume_num++;
@@ -1065,13 +1067,14 @@ bool DialogBox_Manufacture::on_item_drop()
 			if (m_slot_4 == item_id) consume_num++;
 			if (m_slot_5 == item_id) consume_num++;
 			if (m_slot_6 == item_id) consume_num++;
-			if (consume_num >= static_cast<int>(player().m_item_list[item_id]->m_count)) return false;
+			if (consume_num >= static_cast<int>(player().m_item_list[item_id]->m_instance.count)) return false;
 		}
 
-		// Only allow EAT, CONSUME, or NONE item types for alchemy
-		if (cfg->get_item_type() != ItemType::Eat &&
-			cfg->get_item_type() != ItemType::Consume &&
-			cfg->get_item_type() != ItemType::None)
+		// Only allow consumable, material, or untyped items for alchemy
+		// (type none includes legacy items like Stone of Merien used in alchemy recipes)
+		if (cfg->get_item_type() != hb::shared::item::item_type::consumable &&
+			cfg->get_item_type() != hb::shared::item::item_type::material &&
+			cfg->get_item_type() != hb::shared::item::item_type::none)
 		{
 			return false;
 		}
@@ -1084,7 +1087,7 @@ bool DialogBox_Manufacture::on_item_drop()
 	case mode::manufacture_waiting:
 	{
 		// Check consumable item count
-		if (cfg->get_item_type() == ItemType::Consume)
+		if (cfg->is_stackable())
 		{
 			int consume_num = 0;
 			if (m_slot_1 == item_id) consume_num++;
@@ -1093,7 +1096,7 @@ bool DialogBox_Manufacture::on_item_drop()
 			if (m_slot_4 == item_id) consume_num++;
 			if (m_slot_5 == item_id) consume_num++;
 			if (m_slot_6 == item_id) consume_num++;
-			if (consume_num >= static_cast<int>(player().m_item_list[item_id]->m_count)) return false;
+			if (consume_num >= static_cast<int>(player().m_item_list[item_id]->m_instance.count)) return false;
 		}
 
 		if (!try_add_item_to_slot(item_id, true))
@@ -1104,10 +1107,10 @@ bool DialogBox_Manufacture::on_item_drop()
 	case mode::crafting_waiting:
 	{
 		// Only allow specific item types for crafting
-		if (cfg->get_item_type() != ItemType::None &&      // Merien Stone
-			cfg->get_item_type() != ItemType::Equip &&     // Necklaces, Rings
-			cfg->get_item_type() != ItemType::Consume &&   // Stones
-			cfg->get_item_type() != ItemType::Material)    // Craftwares
+		if (cfg->get_item_type() != hb::shared::item::item_type::material &&     // Craftwares, bars
+			cfg->get_item_type() != hb::shared::item::item_type::equipment &&     // Necklaces, Rings
+			cfg->get_item_type() != hb::shared::item::item_type::consumable &&    // Consumable stones
+			cfg->get_item_type() != hb::shared::item::item_type::none)            // Legacy untyped (Merien Stone, Xelima Stone)
 		{
 			return false;
 		}

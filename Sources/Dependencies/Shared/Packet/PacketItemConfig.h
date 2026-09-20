@@ -19,8 +19,10 @@ struct HB_PACKED PacketItemConfigEntry
 {
 	int16_t  itemId;                // Item ID number
 	char     name[hb::shared::limits::ItemNameLen];    // Item display name (fixed size, null-padded)
-	int8_t   itemType;              // Item type (see ItemType enum)
+	int8_t   itemType;              // Item type (see item_type enum)
+	int8_t   itemSubType;           // Item sub-type (see item_sub_type enum)
 	int8_t   equipPos;              // Equipment position (see EquipPos enum)
+	int8_t   weaponClass;           // Weapon class (see weapon_class enum)
 	int16_t  effectType;            // Primary effect type
 	int16_t  effectValue1;          // Effect value 1
 	int16_t  effectValue2;          // Effect value 2
@@ -28,18 +30,22 @@ struct HB_PACKED PacketItemConfigEntry
 	int16_t  effectValue4;          // Effect value 4
 	int16_t  effectValue5;          // Effect value 5
 	int16_t  effectValue6;          // Effect value 6
-	uint16_t maxLifeSpan;           // Maximum durability
+	uint16_t durability;            // Maximum durability
 	int16_t  specialEffect;         // Special effect type
-	int32_t  price;                 // Price (negative if not for sale)
+	uint32_t sellPrice;             // Sell price (0 = cannot sell)
 	uint16_t weight;                // Item weight
-	int8_t   apprValue;             // Appearance value
-	int8_t   speed;                 // Weapon attack speed
-	int16_t  levelLimit;            // Minimum level requirement
-	int8_t   genderLimit;           // Gender restriction
+	int8_t   swingSpeed;            // Weapon attack speed
+	int16_t  levelRequirement;      // Minimum level requirement
+	int8_t   genderRequirement;     // Gender restriction
 	int16_t  specialEffectValue1;   // Special effect value 1
 	int16_t  specialEffectValue2;   // Special effect value 2
 	int16_t  relatedSkill;          // Related skill ID
-	int8_t   category;              // Item category
+	int8_t   hideArmor;             // Body armor hides sprite
+	int8_t   isSkirt;               // Pants render as skirt
+	int8_t   stackable;             // Item is stackable
+	int8_t   isDyeable;             // Item can be dyed
+	int8_t   armorClass;            // Armor class (0=none, 1=clothing, 2=armor)
+	int16_t  setId;                 // Equipment set ID (0 = no set)
 	int8_t   itemColor;             // Item color variant
 	int16_t  displayId;             // Atlas display ID (maps to ItemSpriteMetadata)
 };

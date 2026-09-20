@@ -11,7 +11,6 @@
 #include "AudioManager.h"
 #include "TextLibExt.h"
 #include "GameFonts.h"
-#include "InputStateHelper.h"
 #include <format>
 #include <string>
 using namespace hb::client::sprite_id;
@@ -55,15 +54,8 @@ void Overlay_LogResMsg::on_initialize()
 
     // Discard stale key state so Enter held from the previous screen
     // doesn't immediately fire the OK button on the first frame.
-    cc::input_state init_input;
-    hb::client::fill_input_state(init_input);
-    m_controls.discard_pending_input(init_input);
+    discard_pending_controls_input(m_controls);
 }
-
-void Overlay_LogResMsg::on_uninitialize()
-{
-}
-
 void Overlay_LogResMsg::handle_dismiss()
 {
     // Note: clear_overlay() is not needed here as change_game_mode will either:
@@ -115,9 +107,7 @@ void Overlay_LogResMsg::handle_dismiss()
 
 void Overlay_LogResMsg::on_update()
 {
-    cc::input_state input;
-    hb::client::fill_input_state(input);
-    m_controls.update(input, GameClock::get_time_ms());
+    update_controls(m_controls);
 
     // ESC also dismisses
     if (m_controls.escape_pressed())
@@ -281,10 +271,7 @@ void Overlay_LogResMsg::render_message(int dlgX, int dlgY)
 void Overlay_LogResMsg::on_render()
 {
     int dlgX, dlgY;
-    get_centered_dialog_pos(InterfaceNdGame4, 2, dlgX, dlgY);
-
-    // draw dialog box
-    draw_new_dialog_box(InterfaceNdGame4, dlgX, dlgY, 2);
+    draw_centered_dialog_box(InterfaceNdGame4, 2, dlgX, dlgY);
 
     // render the appropriate message
     render_message(dlgX, dlgY);

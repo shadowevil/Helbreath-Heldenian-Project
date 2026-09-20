@@ -51,19 +51,19 @@ void DialogBox_ItemUpgrade::on_draw()
 
 int DialogBox_ItemUpgrade::calculate_upgrade_cost(int item_index)
 {
-    int value = (player().m_item_list[item_index]->m_attribute & 0xF0000000) >> 28;
+    int value = player().m_item_list[item_index]->m_instance.enchant_bonus;
     value = value * (value + 6) / 8 + 2;
 
     // Special handling for Angelic Pendants
     CItem* cfg = m_game->get_item_config(player().m_item_list[item_index]->m_id_num);
-    if (cfg && (cfg->m_equip_pos >= 11)
-        && (cfg->get_item_type() == ItemType::Equip))
+    if (cfg && (cfg->get_equip_pos() >= EquipPos::LeftFinger)
+        && (cfg->get_item_type() == hb::shared::item::item_type::equipment))
     {
         short id = player().m_item_list[item_index]->m_id_num;
-        if (id == hb::shared::item::ItemId::AngelicPandentSTR || id == hb::shared::item::ItemId::AngelicPandentDEX ||
-            id == hb::shared::item::ItemId::AngelicPandentINT || id == hb::shared::item::ItemId::AngelicPandentMAG)
+        if (id == hb::shared::item::ItemId::AngelicPendantSTR || id == hb::shared::item::ItemId::AngelicPendantDEX ||
+            id == hb::shared::item::ItemId::AngelicPendantINT || id == hb::shared::item::ItemId::AngelicPendantMAG)
         {
-            value = (player().m_item_list[item_index]->m_attribute & 0xF0000000) >> 28;
+            value = player().m_item_list[item_index]->m_instance.enchant_bonus;
             switch (value) {
             case 0: value = 10; break;
             case 1: value = 11; break;
@@ -83,7 +83,7 @@ int DialogBox_ItemUpgrade::calculate_upgrade_cost(int item_index)
 
 void DialogBox_ItemUpgrade::draw_item_preview(int sX, int sY, int item_index)
 {
-    char item_color = player().m_item_list[item_index]->m_item_color;
+    char item_color = player().m_item_list[item_index]->m_instance.item_color;
     CItem* cfg = m_game->get_item_config(player().m_item_list[item_index]->m_id_num);
     if (!cfg) return;
 
@@ -92,15 +92,10 @@ void DialogBox_ItemUpgrade::draw_item_preview(int sX, int sY, int item_index)
     {
         upg_draw.sprite->draw(sX + 134, sY + 182, upg_draw.frame);
     }
-    else if ((cfg->get_equip_pos() == EquipPos::LeftHand)
-        || (cfg->get_equip_pos() == EquipPos::RightHand)
-        || (cfg->get_equip_pos() == EquipPos::TwoHand))
-    {
-        upg_draw.sprite->draw(sX + 134, sY + 182, upg_draw.frame, hb::shared::sprite::DrawParams::tint(GameColors::Weapons[item_color].r, GameColors::Weapons[item_color].g, GameColors::Weapons[item_color].b));
-    }
     else
     {
-        upg_draw.sprite->draw(sX + 134, sY + 182, upg_draw.frame, hb::shared::sprite::DrawParams::tint(GameColors::Items[item_color].r, GameColors::Items[item_color].g, GameColors::Items[item_color].b));
+        const auto& upg_tint = m_game->m_color_palette[item_color];
+        upg_draw.sprite->draw(sX + 134, sY + 182, upg_draw.frame, hb::shared::sprite::DrawParams::tint(upg_tint.r, upg_tint.g, upg_tint.b));
     }
 
     auto itemInfo = item_name_formatter::get().format(player().m_item_list[item_index].get());
@@ -174,7 +169,7 @@ void DialogBox_ItemUpgrade::DrawMode2_InProgress(int sX, int sY)
     if (item_index != -1)
     {
         m_game->draw_new_dialog_box(InterfaceNdGame3, sX, sY, 3);
-        char item_color = player().m_item_list[item_index]->m_item_color;
+        char item_color = player().m_item_list[item_index]->m_instance.item_color;
         CItem* cfg = m_game->get_item_config(player().m_item_list[item_index]->m_id_num);
 
         if (cfg)
@@ -184,15 +179,10 @@ void DialogBox_ItemUpgrade::DrawMode2_InProgress(int sX, int sY)
             {
                 upg2_draw.sprite->draw(sX + 134, sY + 182, upg2_draw.frame);
             }
-            else if ((cfg->get_equip_pos() == EquipPos::LeftHand)
-                || (cfg->get_equip_pos() == EquipPos::RightHand)
-                || (cfg->get_equip_pos() == EquipPos::TwoHand))
-            {
-                upg2_draw.sprite->draw(sX + 134, sY + 182, upg2_draw.frame, hb::shared::sprite::DrawParams::tint(GameColors::Weapons[item_color].r, GameColors::Weapons[item_color].g, GameColors::Weapons[item_color].b));
-            }
             else
             {
-                upg2_draw.sprite->draw(sX + 134, sY + 182, upg2_draw.frame, hb::shared::sprite::DrawParams::tint(GameColors::Items[item_color].r, GameColors::Items[item_color].g, GameColors::Items[item_color].b));
+                const auto& upg2_tint = m_game->m_color_palette[item_color];
+                upg2_draw.sprite->draw(sX + 134, sY + 182, upg2_draw.frame, hb::shared::sprite::DrawParams::tint(upg2_tint.r, upg2_tint.g, upg2_tint.b));
             }
 
             // Flickering effect
@@ -549,7 +539,7 @@ bool DialogBox_ItemUpgrade::on_item_drop()
 {
 	int item_id = CursorTarget::get_selected_id();
 	if (item_id < 0 || item_id >= hb::shared::limits::MaxItems) return false;
-	if (inventory_manager::get().is_locked(item_id)) return false;
+	if (inventory_manager::get().warn_if_locked(item_id)) return false;
 	if (player().m_Controller.get_command() < 0) return false;
 	CItem* cfg = m_game->get_item_config(player().m_item_list[item_id]->m_id_num);
 	if (!cfg || cfg->get_equip_pos() == EquipPos::None) return false;

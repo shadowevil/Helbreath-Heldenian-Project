@@ -22,7 +22,9 @@
 
 constexpr const char* NAME_WORLDNAME1 = "WS1";
 
-//#define DEF_TEST_SERVER // Comment this out to use local IP instead of public test server
+#ifndef _DEBUG
+	#define DEF_TEST_SERVER // Comment this out to use local IP instead of public test server
+#endif
 
 #ifdef DEF_TEST_SERVER
 constexpr const char* DEF_SERVER_IP = "199.187.160.239";

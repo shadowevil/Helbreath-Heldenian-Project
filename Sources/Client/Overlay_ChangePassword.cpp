@@ -13,7 +13,6 @@
 #include "GameFonts.h"
 #include "TextLibExt.h"
 #include "TextFieldRenderer.h"
-#include "InputStateHelper.h"
 #include "Packet/SharedPackets.h"
 #include "AudioManager.h"
 #include <string>
@@ -115,15 +114,8 @@ void Overlay_ChangePassword::on_initialize()
     m_controls.set_focus_order({TXT_OLD_PW, TXT_NEW_PW, TXT_CONFIRM_PW, BTN_OK, BTN_CANCEL});
     m_controls.set_focus(TXT_OLD_PW);
 
-    cc::input_state init_input;
-    hb::client::fill_input_state(init_input);
-    m_controls.discard_pending_input(init_input);
+    discard_pending_controls_input(m_controls);
 }
-
-void Overlay_ChangePassword::on_uninitialize()
-{
-}
-
 void Overlay_ChangePassword::handle_submit()
 {
     auto* tb_old = m_controls.find_as<cc::textbox>(TXT_OLD_PW);
@@ -191,9 +183,7 @@ void Overlay_ChangePassword::handle_submit()
 
 void Overlay_ChangePassword::on_update()
 {
-    cc::input_state input;
-    hb::client::fill_input_state(input);
-    m_controls.update(input, GameClock::get_time_ms());
+    update_controls(m_controls);
 
     // Clear error when focus changes to a text field
     int focused = m_controls.focused_id();
@@ -214,10 +204,7 @@ void Overlay_ChangePassword::on_update()
 void Overlay_ChangePassword::on_render()
 {
     int dlgX, dlgY;
-    get_centered_dialog_pos(InterfaceNdGame4, 0, dlgX, dlgY);
-
-    // draw dialog boxes
-    draw_new_dialog_box(InterfaceNdGame4, dlgX, dlgY, 0);
+    draw_centered_dialog_box(InterfaceNdGame4, 0, dlgX, dlgY);
     draw_new_dialog_box(InterfaceNdText, dlgX, dlgY, 13);
     draw_new_dialog_box(InterfaceNdGame4, dlgX + 157, dlgY + 109, 7);
 

@@ -31,6 +31,8 @@ class Screen_OnGame : public IGameScreen
 public:
     SCREEN_TYPE(Screen_OnGame)
 
+    GameMode get_game_mode() const override { return GameMode::MainGame; }
+
     explicit Screen_OnGame(CGame* game);
     ~Screen_OnGame() override = default;
 
@@ -43,11 +45,7 @@ public:
     bool on_key_up(KeyCode key) override;
     bool on_game_msg(uint32_t msg_id, uint16_t msg_type, char* data, uint32_t msg_size) override;
 
-    void handle_create_new_guild_response(char* data);
-    void handle_disband_guild_response(char* data);
-
     void item_drop_external_screen(char item_id, short mouse_x, short mouse_y);
-    guild_manager& get_guild_manager() { return m_guild_manager; }
     DialogBoxManager& get_dialog_box_manager() { return *m_dialog_box_manager; }
     fishing_manager& get_fishing_manager() { return m_fishing_manager; }
     crafting_manager& get_crafting_manager() { return m_crafting_manager; }
@@ -127,8 +125,6 @@ public:
     std::array<std::unique_ptr<CMsg>, game_limits::max_text_dlg_lines> m_agree_msg_text_list;
     int m_logout_count = -1;
     uint32_t m_logout_count_time = 0;
-    int m_fightzone_number = 0;
-    int m_fightzone_number_temp = 0;
     struct {
         bool is_quest_completed = false;
         short who = 0, quest_type = 0, contribution = 0, target_type = 0, target_count = 0, x = 0, y = 0, range = 0;

@@ -10,7 +10,7 @@ Usage: python restore_all_drops.py
 import sqlite3
 import os
 
-DB_PATH = 'Binaries/Server/GameConfigs.db'
+DB_PATH = 'Binaries/Server/gamedata.db'
 
 def restore():
     if not os.path.exists(DB_PATH):
@@ -45,9 +45,19 @@ def restore():
     for npc_name, tid in NPC_LINKS:
         cursor.execute("UPDATE npc_configs SET drop_table_id = ? WHERE name = ?", (tid, npc_name))
     
-    print("Setting global rates...")
-    cursor.execute("UPDATE settings SET value = '3500' WHERE key = 'gold-drop-rate'")
-    cursor.execute("UPDATE settings SET value = '400' WHERE key = 'secondary-drop-rate'")
+    print("Setting global rates in server_config.json...")
+    try:
+        import json as _json
+        cfg_path = 'Binaries/Server/server_config.json'
+        with open(cfg_path, 'r') as _f:
+            _cfg = _json.load(_f)
+        _cfg.setdefault('drop_rates', {})['gold'] = 3500.0
+        _cfg.setdefault('drop_rates', {})['secondary'] = 400.0
+        with open(cfg_path, 'w') as _f:
+            _json.dump(_cfg, _f, indent='\t', ensure_ascii=False)
+            _f.write('\n')
+    except FileNotFoundError:
+        print("  Warning: server_config.json not found, skipping rate restore")
     
     conn.commit()
     conn.close()

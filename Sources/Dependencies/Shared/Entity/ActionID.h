@@ -24,7 +24,7 @@ namespace Type
 
 namespace Sentinel
 {
-	enum : int16_t
+	enum : int32_t
 	{
 		DamageImmune = -32768,
 		MagicFailed  = -32767,

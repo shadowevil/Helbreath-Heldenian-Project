@@ -19,7 +19,7 @@ public:
 
 private:
 	combat_system() = default;
-	uint8_t get_weapon_appr_value() const;
+	int8_t get_weapon_class() const;
 	CPlayer* m_player = nullptr;
 	CGame* m_game = nullptr;
 };

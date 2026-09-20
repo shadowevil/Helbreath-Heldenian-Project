@@ -28,11 +28,8 @@ CClient::CClient(asio::io_context& ctx)
 	std::memset(m_account_name, 0, sizeof(m_account_name));
 	std::memset(m_account_password, 0, sizeof(m_account_password));
 
-	std::memset(m_guild_name, 0, sizeof(m_guild_name));
 	std::memset(m_location, 0, sizeof(m_location));
 	strcpy(m_location, "NONE");
-	m_guild_rank = -1;
-	m_guild_guid = -1;
 
 	m_is_init_complete = false;
 	m_is_client_connected = false;
@@ -214,8 +211,6 @@ CClient::CClient(asio::io_context& ctx)
 	//hbest
 	is_force_set = false;
 
-    m_fightzone_ticket_number =	m_fightzone_number = m_reserve_time = 0 ;            
-
 	m_penalty_block_year = m_penalty_block_month = m_penalty_block_day = 0; // v1.4
 
 	m_exchange_h = 0;
@@ -299,9 +294,6 @@ CClient::CClient(asio::io_context& ctx)
 	std::memset(m_sending_map_name, 0, sizeof(m_sending_map_name));
 
 	m_construction_point = 0;
-
-	std::memset(m_construct_map_name, 0, sizeof(m_construct_map_name));
-	m_construct_loc_x = m_construct_loc_y = -1;
 
 	m_is_inside_warehouse = false;
 	m_is_inside_wizard_tower = false;

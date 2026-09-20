@@ -119,9 +119,7 @@ void DialogBox_Exchange::draw_items(short sX, short sY, short mouse_x, short mou
 				ex_draw.sprite->draw(sX + xadd, sY + 130, ex_draw.frame);
 			}
 			else {
-				bool ex_is_weapon = ex_cfg && (ex_cfg->m_equip_pos == to_int(EquipPos::LeftHand) ||
-					ex_cfg->m_equip_pos == to_int(EquipPos::RightHand) || ex_cfg->m_equip_pos == to_int(EquipPos::TwoHand));
-				const auto& ex_tint = ex_is_weapon ? GameColors::Weapons[item_color] : GameColors::Items[item_color];
+				const auto& ex_tint = m_game->m_color_palette[item_color];
 				ex_draw.sprite->draw(sX + xadd, sY + 130, ex_draw.frame, hb::shared::sprite::DrawParams::tint(ex_tint.r, ex_tint.g, ex_tint.b));
 			}
 
@@ -135,7 +133,7 @@ void DialogBox_Exchange::draw_item_info(short sX, short sY, short size_x, short 
 	std::string txt, txt2;
 	int loc;
 
-	auto itemInfo = item_name_formatter::get().format(m_slots[item_index].item_id,  m_slots[item_index].dw_v1);
+	auto itemInfo = item_name_formatter::get().format(static_cast<short>(m_slots[item_index].item_id), m_slots[item_index].item_data);
 
 	if ((mouse_x >= sX + xadd - 6) && (mouse_x <= sX + xadd + 42) && (mouse_y >= sY + 61) && (mouse_y <= sY + 200)) {
 		txt = itemInfo.name.c_str();
@@ -174,11 +172,11 @@ void DialogBox_Exchange::draw_item_info(short sX, short sY, short size_x, short 
 		if (m_slots[item_index].v5 != -1) {
 			// Crafting Magins completion fix
 			CItem* magin_cfg = m_game->get_item_config(m_slots[item_index].item_id);
-			if (magin_cfg && magin_cfg->m_category == 46 && magin_cfg->get_item_type() == ItemType::Equip) {
+			if (magin_cfg && magin_cfg->get_item_sub_type() == hb::shared::item::item_sub_type::accessory && magin_cfg->get_item_type() == hb::shared::item::item_type::equipment) {
 				// Magic gems (Diamond/Emerald/Ruby/Sapphire Ware) � show completion %
 				txt = std::format(GET_ITEM_NAME2, (m_slots[item_index].v7 - 100));
 			}
-			else if (magin_cfg && magin_cfg->get_item_type() == ItemType::Material) {
+			else if (magin_cfg && magin_cfg->get_item_type() == hb::shared::item::item_type::material) {
 				txt = std::format(GET_ITEM_NAME1, (m_slots[item_index].v7 - 100));
 			}
 			else {
@@ -237,6 +235,7 @@ bool DialogBox_Exchange::on_item_drop()
 
 	int item_id = CursorTarget::get_selected_id();
 	if (item_id < 0 || item_id >= hb::shared::limits::MaxItems) return false;
+	if (inventory_manager::get().warn_if_locked(item_id)) return false;
 
 	// Find first empty exchange slot
 	int slot = -1;
@@ -248,9 +247,8 @@ bool DialogBox_Exchange::on_item_drop()
 
 	// Stackable items - open quantity dialog
 	CItem* cfg = m_game->get_item_config(player().m_item_list[item_id]->m_id_num);
-	if (cfg && ((cfg->get_item_type() == ItemType::Consume) ||
-		(cfg->get_item_type() == ItemType::Arrow)) &&
-		(player().m_item_list[item_id]->m_count > 1))
+	if (cfg && (cfg->is_stackable()) &&
+		(player().m_item_list[item_id]->m_instance.count > 1))
 	{
 		auto* dropDlg = m_game->get_dialog_box_manager().get_dialog_as<DialogBox_ItemDropAmount>(DialogBoxId::ItemDropExternal);
 		dropDlg->m_x = mouse_x - 140;
@@ -263,7 +261,7 @@ bool DialogBox_Exchange::on_item_drop()
 		m_slots[slot].inv_slot = item_id;
 		std::memset(dropDlg->m_target_name, 0, sizeof(dropDlg->m_target_name));
 		m_game->get_dialog_box_manager().enable_dialog_box(DialogBoxId::ItemDropExternal, item_id,
-			static_cast<int64_t>(player().m_item_list[item_id]->m_count), 0);
+			static_cast<int64_t>(player().m_item_list[item_id]->m_instance.count), 0);
 	}
 	else
 	{
@@ -295,7 +293,7 @@ bool DialogBox_Exchange::on_enable(int type, int64_t v1, int v2, const char* str
 		m_slots[i].v6 = -1;
 		m_slots[i].v7 = -1;
 		m_slots[i].inv_slot = -1;
-		m_slots[i].dw_v1 = 0;
+		m_slots[i].item_data = {};
 	}
 	disable_dialog_box(DialogBoxId::ItemDropExternal);
 	disable_dialog_box(DialogBoxId::NpcActionQuery);
@@ -321,7 +319,7 @@ bool DialogBox_Exchange::on_disable()
 		m_slots[i].v7 = -1;
 		m_slots[i].item_id = -1;
 		m_slots[i].inv_slot = -1;
-		m_slots[i].dw_v1 = 0;
+		m_slots[i].item_data = {};
 	}
 	return true;
 }
@@ -339,7 +337,7 @@ void DialogBox_Exchange::reset_slots()
 		m_slots[i].v7 = -1;
 		m_slots[i].item_id = -1;
 		m_slots[i].inv_slot = -1;
-		m_slots[i].dw_v1 = 0;
+		m_slots[i].item_data = {};
 	}
 }
 

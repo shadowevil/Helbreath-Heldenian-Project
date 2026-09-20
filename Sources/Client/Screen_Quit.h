@@ -14,11 +14,12 @@ class Screen_Quit : public IGameScreen
 public:
     SCREEN_TYPE(Screen_Quit)
 
+    GameMode get_game_mode() const override { return GameMode::Quit; }
+
     explicit Screen_Quit(CGame* game);
     ~Screen_Quit() override = default;
 
     void on_initialize() override;
-    void on_uninitialize() override;
     void on_update() override;
     void on_render() override;
 

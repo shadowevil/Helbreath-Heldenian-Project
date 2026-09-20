@@ -10,7 +10,9 @@ Commands:
     status                      List all checkpoints with dirty/clean status
     revert <id>                 Revert all files from checkpoint <id>
     revert <id> <files...>      Revert specific files from checkpoint <id>
-    commit                      Delete all .bak* files (accept current state)
+    commit                      Accept all changes (refuses if multiple checkpoints; use --force)
+    commit <id>                 Accept changes for a specific checkpoint only
+    commit --force              Accept all changes across all checkpoints
 
 Global flags:
     --dry-run                   Preview what would happen without modifying files
@@ -183,7 +185,12 @@ def cmd_guard(args: argparse.Namespace) -> int:
 
     for f in files:
         if not f.exists():
-            print(f"ERROR: {rel(f)} does not exist.")
+            print(f"ERROR: {f} does not exist.")
+            return 1
+        try:
+            f.resolve().relative_to(SOURCES.resolve())
+        except ValueError:
+            print(f"ERROR: {f} is outside Sources/. bak.py only guards files within Sources/.")
             return 1
 
     # Check for files with existing checkpoints
@@ -368,17 +375,73 @@ def cmd_revert(args: argparse.Namespace) -> int:
 # ── commit ─────────────────────────────────────────────────────────
 
 def cmd_commit(args: argparse.Namespace) -> int:
-    """Delete all .bak* files (accept current state)."""
+    """Delete .bak* files (accept current state).
+
+    If multiple checkpoint IDs exist and no specific ID is given,
+    refuses to proceed and reports all checkpoints so the caller
+    can decide which to commit.
+    """
     dry_run = args.dry_run
+    force = args.force
+    specific_id = args.checkpoint_id
     baks = find_all_baks()
     legacy = find_legacy_baks()
-    all_files = baks + legacy
 
-    if not all_files:
+    if not baks and not legacy:
         print("Nothing to commit — no .bak files found.")
         return 0
 
     checkpoints = get_checkpoints()
+
+    # If a specific checkpoint ID was given, scope to just that checkpoint
+    if specific_id:
+        checkpoint = find_checkpoint(specific_id)
+        if not checkpoint:
+            print(f"ERROR: Checkpoint '{specific_id}' not found.\n")
+            print_available_checkpoints()
+            return 1
+        guid, mtime, bak_paths = checkpoint
+        all_files = bak_paths
+
+        if dry_run:
+            ts = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
+            print(f"[DRY RUN] Would commit checkpoint [{guid}]  {ts}  ({len(bak_paths)} file(s)):")
+            for bak in sorted(bak_paths):
+                parsed = parse_bak(bak)
+                if parsed:
+                    orig, _ = parsed
+                    status = file_status(bak, orig)
+                    print(f"    {rel(orig)}   [{status}]")
+            return 0
+
+        for f in all_files:
+            f.unlink()
+        print(f"Committed checkpoint [{guid}] — deleted {len(all_files)} file(s). Changes accepted.")
+        remaining = get_checkpoints()
+        if remaining:
+            print(f"\n{len(remaining)} other checkpoint(s) still active:")
+            for g, mt, bp in remaining:
+                ts = datetime.fromtimestamp(mt).strftime("%Y-%m-%d %H:%M:%S")
+                print(f"  [{g}]  {ts}  ({len(bp)} file(s))")
+        return 0
+
+    # No specific ID — if multiple checkpoints exist, refuse unless --force
+    if len(checkpoints) > 1 and not force:
+        print(f"ERROR: {len(checkpoints)} checkpoints exist. Specify which to commit, or use --force to commit all.\n")
+        for guid, mtime, bak_paths in checkpoints:
+            ts = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
+            print(f"  [{guid}]  {ts}  ({len(bak_paths)} file(s))")
+            for bak in sorted(bak_paths):
+                parsed = parse_bak(bak)
+                if parsed:
+                    orig, _ = parsed
+                    print(f"    {rel(orig)}")
+        print(f"\nUsage:  bak.py commit <id>        Commit a specific checkpoint")
+        print(f"        bak.py commit --force     Commit all checkpoints")
+        return 1
+
+    # Single checkpoint or --force: commit everything
+    all_files = baks + legacy
 
     if dry_run:
         print(f"[DRY RUN] Would delete {len(all_files)} checkpoint file(s) "
@@ -437,7 +500,11 @@ def main() -> int:
     p_revert.add_argument("--force", action="store_true",
                           help="Proceed even if files have other checkpoint layers")
 
-    sub.add_parser("commit", help="Delete all .bak* files (accept changes)")
+    p_commit = sub.add_parser("commit", help="Delete .bak* files (accept changes)")
+    p_commit.add_argument("checkpoint_id", nargs="?", default=None,
+                          help="Specific checkpoint ID to commit (optional)")
+    p_commit.add_argument("--force", action="store_true",
+                          help="Commit all checkpoints even when multiple exist")
 
     args = parser.parse_args()
 

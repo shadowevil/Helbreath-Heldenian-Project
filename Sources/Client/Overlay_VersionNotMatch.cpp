@@ -8,7 +8,6 @@
 #include "RendererFactory.h"
 #include "lan_eng.h"
 #include "IInput.h"
-#include "InputStateHelper.h"
 #include "AudioManager.h"
 using namespace hb::client::sprite_id;
 
@@ -46,15 +45,8 @@ void Overlay_VersionNotMatch::on_initialize()
     m_controls.set_focus_order({BTN_OK});
     m_controls.set_focus(BTN_OK);
 
-    cc::input_state init_input;
-    hb::client::fill_input_state(init_input);
-    m_controls.discard_pending_input(init_input);
+    discard_pending_controls_input(m_controls);
 }
-
-void Overlay_VersionNotMatch::on_uninitialize()
-{
-}
-
 void Overlay_VersionNotMatch::close_app()
 {
     m_game->change_game_mode(GameMode::Null);
@@ -63,9 +55,7 @@ void Overlay_VersionNotMatch::close_app()
 
 void Overlay_VersionNotMatch::on_update()
 {
-    cc::input_state input;
-    hb::client::fill_input_state(input);
-    m_controls.update(input, GameClock::get_time_ms());
+    update_controls(m_controls);
 
     // ESC also closes app
     if (m_controls.escape_pressed())
@@ -77,11 +67,10 @@ void Overlay_VersionNotMatch::on_update()
 
 void Overlay_VersionNotMatch::on_render()
 {
-    int dlgX, dlgY;
-    get_centered_dialog_pos(InterfaceNdGame4, 2, dlgX, dlgY);
-
     draw_new_dialog_box(InterfaceNdQuit, 0, 0, 0, true);
-    draw_new_dialog_box(InterfaceNdGame4, dlgX, dlgY, 2);
+
+    int dlgX, dlgY;
+    draw_centered_dialog_box(InterfaceNdGame4, 2, dlgX, dlgY);
     put_aligned_string(dlgX + 6, dlgX + 312, dlgY + 35, UPDATE_SCREEN_ON_VERSION_NO_MATCH1);
     put_aligned_string(dlgX + 6, dlgX + 312, dlgY + 55, UPDATE_SCREEN_ON_VERSION_NO_MATCH2);
 

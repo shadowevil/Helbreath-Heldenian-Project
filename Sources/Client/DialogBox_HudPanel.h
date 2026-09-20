@@ -29,25 +29,34 @@ private:
 	// Bar dimensions
 	static constexpr int HP_MP_BAR_WIDTH = 101;
 	static constexpr int SP_BAR_WIDTH = 167;
+	static constexpr int MAX_HUNGER = 100;
 
 	// Bar positions (base values for 640x480, add offsets at runtime)
 	static constexpr int BASE_HP_BAR_X = 23;
 	static constexpr int BASE_HP_BAR_Y = 437;
 	static constexpr int BASE_MP_BAR_Y = 459;
-	static constexpr int BASE_SP_BAR_X = 147;
-	static constexpr int BASE_SP_BAR_Y = 434;
+	static constexpr int BASE_SP_BAR_X = 150;
+	static constexpr int BASE_SP_BAR_Y = 435;
+	static constexpr int BASE_HUNGER_BAR_X = 139;
+	static constexpr int BASE_HUNGER_BAR_Y = 11;
+	static constexpr int BASE_EXP_BAR_X = 0;
+	static constexpr int BASE_EXP_BAR_Y = 0;
 	// Runtime positions (X and Y offsets applied)
 	static int HP_BAR_X() { return BASE_HP_BAR_X + hud_x_offset(); }
 	static int HP_BAR_Y() { return BASE_HP_BAR_Y + hud_y_offset(); }
 	static int MP_BAR_Y() { return BASE_MP_BAR_Y + hud_y_offset(); }
 	static int SP_BAR_X() { return BASE_SP_BAR_X + hud_x_offset(); }
 	static int SP_BAR_Y() { return BASE_SP_BAR_Y + hud_y_offset(); }
+	static int HUNGER_BAR_X() { return BASE_HUNGER_BAR_X + hud_x_offset(); }
+	static int HUNGER_BAR_Y() { return BASE_HUNGER_BAR_Y; }
+	static int EXP_BAR_X() { return BASE_EXP_BAR_X; }
+	static int EXP_BAR_Y() { return BASE_EXP_BAR_Y; }
 
 	// HP/MP/SP number positions
 	static constexpr int BASE_HP_NUM_X = 80;
 	static constexpr int BASE_HP_NUM_Y = 441;
 	static constexpr int BASE_MP_NUM_Y = 463;
-	static constexpr int BASE_SP_NUM_X = 228;
+	static constexpr int BASE_SP_NUM_X = 230;
 	static constexpr int BASE_SP_NUM_Y = 435;
 
 	static int HP_NUM_X() { return BASE_HP_NUM_X + hud_x_offset(); }
@@ -63,8 +72,8 @@ private:
 	static int COMBAT_ICON_Y() { return BASE_COMBAT_ICON_Y + hud_y_offset(); }
 
 	// Map message text position
-	static constexpr int BASE_MAP_MSG_X1 = 140;
-	static constexpr int BASE_MAP_MSG_X2 = 323;
+	static constexpr int BASE_MAP_MSG_X1 = 142;
+	static constexpr int BASE_MAP_MSG_X2 = 325;
 	static constexpr int BASE_MAP_MSG_Y = 456;
 	static int MAP_MSG_X1() { return BASE_MAP_MSG_X1 + hud_x_offset(); }
 	static int MAP_MSG_X2() { return BASE_MAP_MSG_X2 + hud_x_offset(); }
@@ -77,8 +86,8 @@ private:
 	static int BTN_Y2() { return BASE_BTN_Y2 + hud_y_offset(); }
 
 	// Right-side buttons (need X offset for wider resolutions)
-	static constexpr int BASE_BTN_CRUSADE_X1 = 322;
-	static constexpr int BASE_BTN_CRUSADE_X2 = 355;
+	static constexpr int BASE_BTN_CRUSADE_X1 = 324;
+	static constexpr int BASE_BTN_CRUSADE_X2 = 357;
 	static constexpr int BASE_BTN_COMBAT_X1 = 362;
 	static constexpr int BASE_BTN_COMBAT_X2 = 404;
 	static int BTN_CRUSADE_X1() { return BASE_BTN_CRUSADE_X1 + hud_x_offset(); }

@@ -105,6 +105,53 @@ inline int get_screen_height()
 #endif
 }
 
+struct monitor_rect
+{
+	int x, y, width, height;
+};
+
+inline monitor_rect get_current_monitor_work_area(handle hwnd)
+{
+#ifdef _WIN32
+	HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO info = {};
+	info.cbSize = sizeof(info);
+	if (GetMonitorInfo(monitor, &info))
+	{
+		return {
+			info.rcWork.left,
+			info.rcWork.top,
+			info.rcWork.right - info.rcWork.left,
+			info.rcWork.bottom - info.rcWork.top
+		};
+	}
+#else
+	(void)hwnd;
+#endif
+	return { 0, 0, 0, 0 };
+}
+
+inline monitor_rect get_current_monitor_size(handle hwnd)
+{
+#ifdef _WIN32
+	HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO info = {};
+	info.cbSize = sizeof(info);
+	if (GetMonitorInfo(monitor, &info))
+	{
+		return {
+			info.rcMonitor.left,
+			info.rcMonitor.top,
+			info.rcMonitor.right - info.rcMonitor.left,
+			info.rcMonitor.bottom - info.rcMonitor.top
+		};
+	}
+#else
+	(void)hwnd;
+#endif
+	return { 0, 0, 0, 0 };
+}
+
 inline int get_monitor_refresh_rate()
 {
 #ifdef _WIN32

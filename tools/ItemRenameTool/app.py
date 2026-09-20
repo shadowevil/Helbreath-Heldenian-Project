@@ -9,7 +9,7 @@ import json
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "Binaries", "Server", "gameconfigs.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "Binaries", "Server", "gamedata.db")
 BACKUP_FILE = os.path.join(os.path.dirname(__file__), "original_names.json")
 
 def get_db():
@@ -20,7 +20,11 @@ def get_db():
 def save_originals():
     """Save a snapshot of all item names for revert support."""
     conn = get_db()
-    rows = conn.execute("SELECT item_id, name FROM items ORDER BY item_id").fetchall()
+    try:
+        rows = conn.execute("SELECT item_id, name FROM items ORDER BY item_id").fetchall()
+    except sqlite3.OperationalError:
+        conn.close()
+        return {}
     conn.close()
     data = {str(r["item_id"]): r["name"] for r in rows}
     with open(BACKUP_FILE, "w") as f:
@@ -413,7 +417,12 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def _send_items(self):
         conn = get_db()
-        rows = conn.execute("SELECT item_id, name, gender_limit FROM items ORDER BY item_id").fetchall()
+        try:
+            rows = conn.execute("SELECT item_id, name, gender_limit FROM items ORDER BY item_id").fetchall()
+        except sqlite3.OperationalError:
+            conn.close()
+            self._send_json({"items": [], "originals": {}})
+            return
         conn.close()
         originals = load_originals()
         items = [{"item_id": r["item_id"], "name": r["name"], "gender_limit": r["gender_limit"]} for r in rows]

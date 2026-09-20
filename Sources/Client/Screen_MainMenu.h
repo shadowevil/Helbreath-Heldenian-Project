@@ -14,11 +14,12 @@ class Screen_MainMenu : public IGameScreen
 public:
     SCREEN_TYPE(Screen_MainMenu)
 
+    GameMode get_game_mode() const override { return GameMode::MainMenu; }
+
     explicit Screen_MainMenu(CGame* game);
     ~Screen_MainMenu() override = default;
 
     void on_initialize() override;
-    void on_uninitialize() override;
     void on_update() override;
     void on_render() override;
 

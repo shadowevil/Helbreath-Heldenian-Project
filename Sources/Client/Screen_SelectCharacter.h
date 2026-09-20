@@ -16,11 +16,12 @@ class Screen_SelectCharacter : public IGameScreen
 public:
     SCREEN_TYPE(Screen_SelectCharacter)
 
+    GameMode get_game_mode() const override { return GameMode::SelectCharacter; }
+
     explicit Screen_SelectCharacter(CGame* game);
     ~Screen_SelectCharacter() override = default;
 
     void on_initialize() override;
-    void on_uninitialize() override;
     void on_update() override;
     void on_render() override;
     bool on_net_response(uint16_t response_type, char* data) override;

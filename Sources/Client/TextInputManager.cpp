@@ -27,6 +27,9 @@ text_input_manager::text_input_manager()
 void text_input_manager::start_input(int x, int y, unsigned char max_len, std::string& buffer,
                                      bool hidden, std::string_view char_filter)
 {
+	// Flush stale characters that accumulated while no input was active
+	hb::shared::input::take_typed_chars();
+
 	m_controls.clear();
 
 	int line_height = hb::shared::text::get_line_height(GameFont::Default);

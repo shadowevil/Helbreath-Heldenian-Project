@@ -21,7 +21,7 @@ public:
 	                  int object_id, CMapData* map_data);
 
 	// Damage factory (replaces CreateDamageMsg logic)
-	int add_damage_from_value(short damage, bool last_hit, uint32_t time,
+	int add_damage_from_value(int damage, bool last_hit, uint32_t time,
 	                       int object_id, CMapData* map_data);
 
 	void remove_by_object_id(int object_id);

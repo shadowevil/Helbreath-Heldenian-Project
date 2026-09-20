@@ -18,12 +18,6 @@ void Overlay_Msg::on_initialize()
 {
     m_dwStartTime = GameClock::get_time_ms();
 }
-
-void Overlay_Msg::on_uninitialize()
-{
-    // Nothing to clean up
-}
-
 void Overlay_Msg::on_update()
 {
     // Auto-transition to MainMenu after 1.5 seconds

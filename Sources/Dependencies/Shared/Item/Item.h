@@ -11,9 +11,13 @@
 #pragma once
 
 #include "ItemEnums.h"
+#include "ItemAttributes.h"
+#include "ItemInstanceData.h"
 #include "NetConstants.h"
+#include "Game/BalanceConstants.h"
 #include <cstring>
 #include <cstdint>
+#include <algorithm>
 
 struct dice_range
 {
@@ -35,6 +39,7 @@ public:
 
         m_id_num = 0;
         m_item_type = 0;
+        m_item_sub_type = 0;
         m_equip_pos = 0;
         m_item_effect_type = 0;
 
@@ -45,7 +50,7 @@ public:
         m_item_effect_value5 = 0;
         m_item_effect_value6 = 0;
 
-        m_max_life_span = 0;
+        m_durability = 0;
         m_special_effect = 0;
         m_special_effect_value1 = 0;
         m_special_effect_value2 = 0;
@@ -55,32 +60,24 @@ public:
 
         m_display_id = -1;
 
-        m_appearance_value = 0;
-        m_speed = 0;
+        m_weapon_class = 0;
+        m_swing_speed = 0;
 
-        m_price = 0;
+        m_sell_price = 0;
         m_weight = 0;
-        m_level_limit = 0;
-        m_gender_limit = 0;
+        m_level_requirement = 0;
+        m_gender_requirement = 0;
 
         m_related_skill = 0;
 
-        m_category = 0;
-        m_is_for_sale = false;
+        m_hide_armor = 0;
+        m_is_skirt = 0;
+        m_stackable = 0;
+        m_is_dyeable = 0;
+        m_armor_class = 0;
+        m_set_id = 0;
 
-        m_count = 1;
-        m_touch_effect_type = 0;
-        m_touch_effect_value1 = 0;
-        m_touch_effect_value2 = 0;
-        m_touch_effect_value3 = 0;
-
-        m_item_color = 0;
-        m_item_special_effect_value1 = 0;
-        m_item_special_effect_value2 = 0;
-        m_item_special_effect_value3 = 0;
-
-        m_cur_life_span = 0;
-        m_attribute = 0;
+        // m_instance is zero-initialized by its default member initializers
     }
 
     inline virtual ~CItem()
@@ -93,8 +90,9 @@ public:
 
     char  m_name[hb::shared::limits::ItemNameLen];    // Internal item name (from database)
 
-    short m_id_num;                 // Item ID number (unique identifier)
-    char  m_item_type;              // Item type (see ItemType enum)
+    short m_id_num;                 // Item ID number (unique identifier / lookup key — NOT instance data)
+    char  m_item_type;              // Item type (see item_type enum)
+    char  m_item_sub_type;          // Item sub-type (see item_sub_type enum)
     char  m_equip_pos;              // Equipment position (see EquipPos enum)
 
     //------------------------------------------------------------------------
@@ -118,29 +116,10 @@ public:
     short m_special_effect_value2;   // Special effect value 2
 
     //------------------------------------------------------------------------
-    // Item-Specific Effects (attributes applied to item instance)
-    //------------------------------------------------------------------------
-
-    short m_item_special_effect_value1;  // Item spec effect value 1
-    short m_item_special_effect_value2;  // Item spec effect value 2
-    short m_item_special_effect_value3;  // Item spec effect value 3
-
-    //------------------------------------------------------------------------
-    // Touch Effects (triggered on first touch/acquisition)
-    //------------------------------------------------------------------------
-
-    short m_touch_effect_type;       // Touch effect type (see TouchEffectType enum)
-    short m_touch_effect_value1;     // Touch effect value 1
-    short m_touch_effect_value2;     // Touch effect value 2
-    short m_touch_effect_value3;     // Touch effect value 3
-
-    //------------------------------------------------------------------------
     // Visual Properties
     //------------------------------------------------------------------------
 
     short m_display_id = -1;       // Atlas display ID (maps to ItemSpriteMetadata, -1 = unmapped)
-    char  m_appearance_value;             // Appearance value (for equipped items)
-    char  m_item_color;             // Item color variant
 
     //------------------------------------------------------------------------
     // Position (client-side for inventory/ground display)
@@ -150,45 +129,54 @@ public:
     short m_y;                     // Y position
 
     //------------------------------------------------------------------------
+    // Weapon Properties
+    //------------------------------------------------------------------------
+
+    char  m_weapon_class;          // Weapon class (see weapon_class enum)
+    char  m_swing_speed;           // Weapon attack speed
+
+    //------------------------------------------------------------------------
     // Stats and Limits
     //------------------------------------------------------------------------
 
-    char  m_speed;                 // Weapon attack speed
-    uint32_t m_price;              // Base price in gold
+    uint32_t m_sell_price;         // Sell price in gold (0 = cannot sell)
     uint16_t m_weight;             // Weight (affects encumbrance)
-    short m_level_limit;            // Minimum level to use
-    char  m_gender_limit;           // Gender restriction (0=none, 1=male, 2=female)
-    short m_related_skill;          // Related skill for proficiency
+    short m_level_requirement;     // Minimum level to use
+    char  m_gender_requirement;    // Gender restriction (0=none, 1=male, 2=female)
+    short m_related_skill;         // Related skill for proficiency
 
     //------------------------------------------------------------------------
-    // Durability
+    // Durability (config — maximum)
     //------------------------------------------------------------------------
 
-    uint16_t m_max_life_span;        // Maximum durability
-    uint16_t m_cur_life_span;        // Current durability
+    uint16_t m_durability;         // Maximum durability
 
     //------------------------------------------------------------------------
-    // Miscellaneous
+    // Behavioral Flags
     //------------------------------------------------------------------------
 
-    char  m_category;              // Item category (for shop filtering)
-    bool  m_is_for_sale;             // Can be sold to NPC shops
-    uint64_t m_count;             // Stack count (for stackable items)
+    char  m_hide_armor;            // Body armor hides sprite when equipped
+    char  m_is_skirt;              // Pants render as skirt for female characters
+    char  m_stackable;             // Item merges into a single slot with count
+    char  m_is_dyeable;            // Item can be a dye target
+    char  m_armor_class;           // Armor class (0=none, 1=clothing, 2=armor)
+    int16_t m_set_id;              // Equipment set ID (0 = no set)
 
     //------------------------------------------------------------------------
-    // Attribute Flags
-    //
-    // Bit layout: aaaa bbbb cccc dddd eeee ffff xxxx xxx1
-    //   1: Custom-Made Item flag
-    //   a: Item attribute type
-    //   b: Item attribute value
-    //   c: Special item flag
-    //   d: Special item flag value
-    //   e: Additional special flag
-    //   f: Additional special flag value
+    // Client-side lock (prevents interaction while item is in a pending operation)
     //------------------------------------------------------------------------
 
-    uint32_t m_attribute;
+    bool m_locked = false;
+
+    bool is_locked() const { return m_locked; }
+    bool try_lock() { if (m_locked) return false; m_locked = true; return true; }
+    void unlock() { m_locked = false; }
+
+    //------------------------------------------------------------------------
+    // Instance Data (per-instance mutable fields)
+    //------------------------------------------------------------------------
+
+    hb::shared::item::item_instance_data m_instance;
 
     //------------------------------------------------------------------------
     // Display Name Helpers
@@ -215,14 +203,34 @@ public:
         m_equip_pos = hb::shared::item::to_int(pos);
     }
 
-    hb::shared::item::ItemType get_item_type() const
+    hb::shared::item::item_type::item_type get_item_type() const
     {
         return hb::shared::item::to_item_type(m_item_type);
     }
 
-    void set_item_type(hb::shared::item::ItemType type)
+    void set_item_type(hb::shared::item::item_type::item_type type)
     {
         m_item_type = hb::shared::item::to_int(type);
+    }
+
+    hb::shared::item::item_sub_type::item_sub_type get_item_sub_type() const
+    {
+        return hb::shared::item::to_item_sub_type(m_item_sub_type);
+    }
+
+    void set_item_sub_type(hb::shared::item::item_sub_type::item_sub_type type)
+    {
+        m_item_sub_type = hb::shared::item::to_int(type);
+    }
+
+    hb::shared::item::weapon_class::weapon_class get_weapon_class() const
+    {
+        return hb::shared::item::to_weapon_class(m_weapon_class);
+    }
+
+    void set_weapon_class(hb::shared::item::weapon_class::weapon_class wc)
+    {
+        m_weapon_class = hb::shared::item::to_int(wc);
     }
 
     hb::shared::item::ItemEffectType get_item_effect_type() const
@@ -237,52 +245,93 @@ public:
 
     bool sprite_is_female() const
     {
-        return m_gender_limit == 2;
+        return m_gender_requirement == 2;
     }
 
     hb::shared::item::TouchEffectType get_touch_effect_type() const
     {
-        return hb::shared::item::to_touch_effect_type(m_touch_effect_type);
+        return hb::shared::item::to_touch_effect_type(m_instance.touch_effect_type);
     }
 
     void set_touch_effect_type(hb::shared::item::TouchEffectType type)
     {
-        m_touch_effect_type = hb::shared::item::to_int(type);
+        m_instance.touch_effect_type = hb::shared::item::to_int(type);
     }
 
     //------------------------------------------------------------------------
     // Attribute Helpers
     //------------------------------------------------------------------------
 
+    hb::shared::item::AttributePrefixType get_prefix_type() const
+    {
+        return static_cast<hb::shared::item::AttributePrefixType>(m_instance.prefix_type);
+    }
+
+    hb::shared::item::SecondaryEffectType get_secondary_type() const
+    {
+        return static_cast<hb::shared::item::SecondaryEffectType>(m_instance.secondary_type);
+    }
+
     bool is_custom_made() const
     {
-        return (m_attribute & 0x00000001) != 0;
+        return m_instance.custom_made != 0;
     }
 
     void set_custom_made(bool custom)
     {
-        if (custom)
-            m_attribute |= 0x00000001;
-        else
-            m_attribute &= ~0x00000001;
+        m_instance.custom_made = custom ? 1 : 0;
     }
 
-    // get attribute type (bits 28-31, 'a' nibble)
-    uint8_t get_attribute_type() const
+    bool has_special_attributes() const
     {
-        return static_cast<uint8_t>((m_attribute >> 28) & 0x0F);
+        return m_instance.prefix_type != 0 ||
+               m_instance.secondary_type != 0 ||
+               m_instance.enchant_bonus > 0 ||
+               m_instance.custom_made != 0;
     }
 
-    // get attribute value (bits 24-27, 'b' nibble)
-    uint8_t get_attribute_value() const
+    // Copy attribute fields to a packet or DB struct that has matching field names
+    template <typename T>
+    void copy_attributes_to(T& target) const
     {
-        return static_cast<uint8_t>((m_attribute >> 24) & 0x0F);
+        target.custom_made = m_instance.custom_made;
+        target.prefix_type = m_instance.prefix_type;
+        target.prefix_value = m_instance.prefix_value;
+        target.secondary_type = m_instance.secondary_type;
+        target.secondary_value = m_instance.secondary_value;
+        target.enchant_bonus = m_instance.enchant_bonus;
     }
 
-    // Check if item is stackable based on its type
+    // Load attribute fields from a packet or DB struct that has matching field names
+    template <typename T>
+    void load_attributes_from(const T& source)
+    {
+        m_instance.custom_made = source.custom_made;
+        m_instance.prefix_type = source.prefix_type;
+        m_instance.prefix_value = source.prefix_value;
+        m_instance.secondary_type = source.secondary_type;
+        m_instance.secondary_value = source.secondary_value;
+        m_instance.enchant_bonus = source.enchant_bonus;
+    }
+
+    // Copy all attribute fields from another CItem
+    void copy_attributes_from(const CItem* other)
+    {
+        m_instance.custom_made = other->m_instance.custom_made;
+        m_instance.prefix_type = other->m_instance.prefix_type;
+        m_instance.prefix_value = other->m_instance.prefix_value;
+        m_instance.secondary_type = other->m_instance.secondary_type;
+        m_instance.secondary_value = other->m_instance.secondary_value;
+        m_instance.enchant_bonus = other->m_instance.enchant_bonus;
+    }
+
+    // Return a const reference to the instance data
+    const hb::shared::item::item_instance_data& to_instance_data() const { return m_instance; }
+
+    // Check if item is stackable (reads the config flag)
     bool is_stackable() const
     {
-        return hb::shared::item::is_stackable_type(get_item_type());
+        return m_stackable != 0;
     }
 
     // Base damage range from dice values (throw D range + bonus)
@@ -291,16 +340,11 @@ public:
         return parse_dice(m_item_effect_value1, m_item_effect_value2, m_item_effect_value3);
     }
 
-    // Light attribute percentage from special flag (bits 20-23 type, 16-19 value)
-    // Type 6 = light, percentage = value * 4
+    // Light attribute percentage — prefix_value is already the actual percentage
     int get_light_percent() const
     {
-        uint8_t special_type = static_cast<uint8_t>((m_attribute & 0x00F00000) >> 20);
-        if (special_type == 6)
-        {
-            uint8_t special_value = static_cast<uint8_t>((m_attribute & 0x000F0000) >> 16);
-            return special_value * 4;
-        }
+        if (m_instance.prefix_type == static_cast<uint8_t>(hb::shared::item::AttributePrefixType::Light))
+            return m_instance.prefix_value;
         return 0;
     }
 
@@ -311,6 +355,25 @@ public:
         if (light > 0)
             return static_cast<int>(m_weight) * (100 - light) / 100;
         return m_weight;
+    }
+
+    // Total weight for a stack of items (effective_weight * count), 0 for zero-weight items
+    static inline constexpr int calc_item_stack_weight(int effective_weight, int count)
+    {
+        if (effective_weight <= 0) return 0;
+        return effective_weight * count;
+    }
+
+    // Clamp item count to int16_t range for wire protocol (v2 field)
+    static inline constexpr short count_to_v2(uint64_t count)
+    {
+        return static_cast<short>(count > 32767 ? 32767 : count);
+    }
+
+    // Convert raw weight units to stones (float)
+    static inline constexpr float weight_to_stones(int raw_weight)
+    {
+        return static_cast<float>(raw_weight) / hb::shared::balance::weight_units_per_stone;
     }
 
     // Check if item is a weapon

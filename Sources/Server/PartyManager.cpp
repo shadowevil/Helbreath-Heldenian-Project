@@ -240,7 +240,8 @@ void PartyManager::check_member_activity()
 	char data[120];
 
 	if ((time - m_check_member_act_time) > 1000 * 2) {
-		m_check_member_act_time = time;
+		m_check_member_act_time += 1000 * 2;
+		if (time - m_check_member_act_time > 1000 * 2) m_check_member_act_time = time;
 	}
 	else return;
 

@@ -31,6 +31,8 @@ public:
 	void create_new_account(int h, char* data);
 	void send_login_msg(uint32_t msgid, uint16_t msgtype, char* data, size_t sz, int h);
 	void send_balance_config(int h);
+	void send_server_config(int h);
+	void send_color_palette(int h);
 	void local_save_player_data(int h);
 	void activated();
 };

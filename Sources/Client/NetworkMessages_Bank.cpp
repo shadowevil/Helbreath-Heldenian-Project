@@ -15,11 +15,10 @@ namespace NetworkMessageHandlers {
 	{
 		int index;
 		uint64_t count;
-		uint32_t attribute;
 		char  name[hb::shared::limits::ItemNameLen]{}, item_type, equip_pos, gender_limit, item_color;
 		bool  is_equipped;
 		short level_limit, item_effect_value2, item_spec_effect_value2;
-		uint16_t weight, cur_life_span;
+		uint16_t weight, cur_durability;
 		std::string txt;
 		const auto* pkt = hb::net::PacketCast<hb::net::PacketNotifyItemToBank>(
 			data, sizeof(hb::net::PacketNotifyItemToBank));
@@ -34,11 +33,10 @@ namespace NetworkMessageHandlers {
 		is_equipped = (pkt->is_equipped != 0);
 		level_limit = static_cast<short>(pkt->level_limit);
 		gender_limit = static_cast<char>(pkt->gender_limit);
-		cur_life_span = pkt->cur_lifespan;
+		cur_durability = pkt->cur_durability;
 		weight = pkt->weight;
 		item_color = static_cast<char>(pkt->item_color);
 		item_effect_value2 = static_cast<short>(pkt->item_effect_value2);
-		attribute = pkt->attribute;
 		item_spec_effect_value2 = static_cast<short>(pkt->spec_effect_value2);
 
 		std::string str1;
@@ -53,11 +51,11 @@ namespace NetworkMessageHandlers {
 		{
 			game->m_player->m_bank_list[index] = std::make_unique<CItem>();
 			game->m_player->m_bank_list[index]->m_id_num = static_cast<short>(pkt->item_id);
-			game->m_player->m_bank_list[index]->m_count = count;
-			game->m_player->m_bank_list[index]->m_cur_life_span = cur_life_span;
-			game->m_player->m_bank_list[index]->m_item_color = item_color;
-			game->m_player->m_bank_list[index]->m_attribute = attribute;
-			game->m_player->m_bank_list[index]->m_item_special_effect_value2 = item_spec_effect_value2;
+			game->m_player->m_bank_list[index]->m_instance.count = count;
+			game->m_player->m_bank_list[index]->m_instance.cur_durability = cur_durability;
+			game->m_player->m_bank_list[index]->m_instance.item_color = item_color;
+			game->m_player->m_bank_list[index]->load_attributes_from(*pkt);
+			game->m_player->m_bank_list[index]->m_instance.special_effect_value2 = item_spec_effect_value2;
 
 			if (count == 1) txt = std::format(NOTIFYMSG_ITEMTOBANK3, str1.c_str());
 			else txt = std::format(NOTIFYMSG_ITEMTOBANK2, count, str1.c_str());
@@ -73,11 +71,11 @@ namespace NetworkMessageHandlers {
 		{
 			// Update existing bank item in-place (e.g., hero item sex swap)
 			game->m_player->m_bank_list[index]->m_id_num = static_cast<short>(pkt->item_id);
-			game->m_player->m_bank_list[index]->m_count = count;
-			game->m_player->m_bank_list[index]->m_cur_life_span = cur_life_span;
-			game->m_player->m_bank_list[index]->m_item_color = item_color;
-			game->m_player->m_bank_list[index]->m_attribute = attribute;
-			game->m_player->m_bank_list[index]->m_item_special_effect_value2 = item_spec_effect_value2;
+			game->m_player->m_bank_list[index]->m_instance.count = count;
+			game->m_player->m_bank_list[index]->m_instance.cur_durability = cur_durability;
+			game->m_player->m_bank_list[index]->m_instance.item_color = item_color;
+			game->m_player->m_bank_list[index]->load_attributes_from(*pkt);
+			game->m_player->m_bank_list[index]->m_instance.special_effect_value2 = item_spec_effect_value2;
 		}
 	}
 

@@ -1,5 +1,4 @@
 ﻿#include "Game.h"
-#include "SharedCalculations.h"
 #include "FloatingTextManager.h"
 #include "NetworkMessageManager.h"
 #include "Packet/SharedPackets.h"
@@ -378,7 +377,6 @@ namespace NetworkMessageHandlers {
 		game->m_player->m_int += game->m_player->m_lu_int;
 		game->m_player->m_mag += game->m_player->m_lu_mag;
 		game->m_player->m_charisma += game->m_player->m_lu_char;
-		game->m_player->m_lu_point = hb::shared::calc::level_up_points(game->m_formula_engine, hb::shared::calc::level{(double)game->m_player->m_level}, hb::shared::calc::total_stats{(double)(game->m_player->m_str + game->m_player->m_vit + game->m_player->m_dex + game->m_player->m_int + game->m_player->m_mag + game->m_player->m_charisma)});
 		game->on_game()->m_gizon_item_upgrade_left -= majestic_cost;
 		game->m_player->m_lu_str = game->m_player->m_lu_vit = game->m_player->m_lu_dex = game->m_player->m_lu_int = game->m_player->m_lu_mag = game->m_player->m_lu_char = 0;
 		game->get_dialog_box_manager().disable_dialog_box(DialogBoxId::ChangeStatsMajestic);
@@ -386,10 +384,24 @@ namespace NetworkMessageHandlers {
 		game->add_event_list("Your stat has been changed.", 10);
 	}
 
+	void HandleForceMasteryRefresh(CGame* game, char* data)
+	{
+		const auto* pkt = hb::net::PacketCast<hb::net::PacketNotifyStateChangeSuccess>(
+			data, sizeof(hb::net::PacketNotifyStateChangeSuccess));
+		if (!pkt) return;
+		for (int i = 0; i < hb::shared::limits::MaxMagicType; i++)
+			game->m_player->m_magic_mastery[i] = pkt->magic_mastery[i];
+		for (int i = 0; i < hb::shared::limits::MaxSkillType; i++)
+		{
+			game->m_player->m_skill_mastery[i] = pkt->skill_mastery[i];
+			if (game->m_skill_cfg_list[i] != 0)
+				game->m_skill_cfg_list[i]->m_level = pkt->skill_mastery[i];
+		}
+	}
+
 	void HandleStateChangeFailed(CGame* game, char* data)
 	{
 		game->m_player->m_lu_str = game->m_player->m_lu_vit = game->m_player->m_lu_dex = game->m_player->m_lu_int = game->m_player->m_lu_mag = game->m_player->m_lu_char = 0;
-		game->m_player->m_lu_point = hb::shared::calc::level_up_points(game->m_formula_engine, hb::shared::calc::level{(double)game->m_player->m_level}, hb::shared::calc::total_stats{(double)(game->m_player->m_str + game->m_player->m_vit + game->m_player->m_dex + game->m_player->m_int + game->m_player->m_mag + game->m_player->m_charisma)});
 		game->get_dialog_box_manager().disable_dialog_box(DialogBoxId::ChangeStatsMajestic);
 		game->add_event_list("Your stat has not been changed.", 10);
 	}
@@ -398,7 +410,6 @@ namespace NetworkMessageHandlers {
 	{
 		game->add_event_list("Your stat has not been changed.", 10);
 		game->m_player->m_lu_str = game->m_player->m_lu_vit = game->m_player->m_lu_dex = game->m_player->m_lu_int = game->m_player->m_lu_mag = game->m_player->m_lu_char = 0;
-		game->m_player->m_lu_point = hb::shared::calc::level_up_points(game->m_formula_engine, hb::shared::calc::level{(double)game->m_player->m_level}, hb::shared::calc::total_stats{(double)(game->m_player->m_str + game->m_player->m_vit + game->m_player->m_dex + game->m_player->m_int + game->m_player->m_mag + game->m_player->m_charisma)});
 	}
 
 	void HandleSpecialAbilityStatus(CGame* game, char* data)
