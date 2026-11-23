@@ -1,7 +1,7 @@
 {
   "id": "HH-0008",
   "summary": "Split 1c: fades, overlay dim, cursor and performance monitor in screen space",
-  "status": "verified",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:29:36Z",
-  "updated": "2026-11-23T21:47:01Z",
+  "updated": "2026-11-23T21:47:13Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "8949dc9"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0005"
     ]
   },
-  "body": "Screen and teleport fades and the overlay dim use `fill_output` (dim rect was one pixel short); the software cursor and performance monitor draw last in screen space; screenshot captures the window.\n\n**Done when:** fades cover the whole window, cursor is sharp at 1440x1080; reviewed.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md."
+  "body": "Screen and teleport fades and the overlay dim use `fill_output` (dim rect was one pixel short); the software cursor and performance monitor draw last in screen space; screenshot captures the window.\n\n**Done when:** fades cover the whole window, cursor is sharp at 1440x1080; reviewed.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md.\n\n**Verified, 2026-11-23:** Opus review passed after two fix rounds; Debug build 0 errors. Not yet run in game.\n"
 }

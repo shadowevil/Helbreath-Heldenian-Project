@@ -1,7 +1,7 @@
 {
   "id": "HH-0006",
   "summary": "Split 1a: route every draw through a renderer current target",
-  "status": "verified",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:29:35Z",
-  "updated": "2026-11-23T21:47:01Z",
+  "updated": "2026-11-23T21:47:13Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "8949dc9"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0005"
     ]
   },
-  "body": "Replace each hard-wired `m_backBuffer` draw (primitives, `SFMLSprite::DrawInternal`, `DrawWidth`, `DrawShifted`, TTF text, bitmap glyphs) with one current target; clip and scissor per target.\n\n**Done when:** grep finds no direct back-buffer draw outside the world target code; Debug build 0 errors; reviewed.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md."
+  "body": "Replace each hard-wired `m_backBuffer` draw (primitives, `SFMLSprite::DrawInternal`, `DrawWidth`, `DrawShifted`, TTF text, bitmap glyphs) with one current target; clip and scissor per target.\n\n**Done when:** grep finds no direct back-buffer draw outside the world target code; Debug build 0 errors; reviewed.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md.\n\n**Verified, 2026-11-23:** Opus review passed after two fix rounds; Debug build 0 errors. Not yet run in game.\n"
 }

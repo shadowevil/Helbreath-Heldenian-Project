@@ -1,7 +1,7 @@
 {
   "id": "HH-0007",
   "summary": "Split 1b: begin_world / end_world composite and UI view",
-  "status": "verified",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,16 +11,18 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:29:35Z",
-  "updated": "2026-11-23T21:47:01Z",
+  "updated": "2026-11-23T21:47:13Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "8949dc9"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0005"
     ]
   },
-  "body": "New renderer API: `begin_world`, `end_world` (composites the 800x600 world target in the world rect, stretch or letterbox), UI `sf::View` for 800x600 UI units, `fill_output`, `ui_scale`. In-game calls begin_world before the world and end_world before `DialogBoxManager::draw_all`; other screens draw in screen space only.\n\n**Done when:** in-game and every other screen render correctly through the new path; reviewed.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md.",
+  "body": "New renderer API: `begin_world`, `end_world` (composites the 800x600 world target in the world rect, stretch or letterbox), UI `sf::View` for 800x600 UI units, `fill_output`, `ui_scale`. In-game calls begin_world before the world and end_world before `DialogBoxManager::draw_all`; other screens draw in screen space only.\n\n**Done when:** in-game and every other screen render correctly through the new path; reviewed.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md.\n\n**Verified, 2026-11-23:** Opus review passed after two fix rounds; Debug build 0 errors. Not yet run in game.\n",
   "comments": [
     {
       "author": "pm",

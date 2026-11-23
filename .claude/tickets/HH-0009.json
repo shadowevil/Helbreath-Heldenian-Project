@@ -1,7 +1,7 @@
 {
   "id": "HH-0009",
   "summary": "Split 2: native-resolution TTF text in the screen pass",
-  "status": "open",
+  "status": "in_progress",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:29:36Z",
-  "updated": "2026-11-23T21:29:36Z",
+  "updated": "2026-11-23T21:52:03Z",
   "links": {
     "commits": [],
     "files": [],
