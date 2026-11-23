@@ -751,9 +751,8 @@ void Screen_OnGame::on_render()
     weather_manager::get().draw();
     FrameTiming::end_profile(ProfileStage::DrawWeather);
 
-    FrameTiming::begin_profile(ProfileStage::DrawChat);
-    m_floating_text.draw_all(-100, 0, LOGICAL_WIDTH(), LOGICAL_HEIGHT(), m_game->m_cur_time, m_game->m_Renderer);
-    FrameTiming::end_profile(ProfileStage::DrawChat);
+    // Chat bubbles and damage numbers join the names already queued by draw_objects
+    m_floating_text.queue_visible(-100, 0, LOGICAL_WIDTH(), LOGICAL_HEIGHT(), m_world_overlay);
 
     // Apocalypse map effects
     if (m_game->m_map_index == 26) {
@@ -778,6 +777,15 @@ void Screen_OnGame::on_render()
 
     // Composite the world onto the window; UI from here on draws in screen space
     m_game->m_Renderer->end_world();
+
+    // world_overlay layer: names, chat bubbles, damage numbers, above every world draw
+    FrameTiming::begin_profile(ProfileStage::DrawChat);
+    m_world_overlay.flush(m_floating_text, m_game->m_cur_time, m_game->m_Renderer);
+    FrameTiming::end_profile(ProfileStage::DrawChat);
+
+    // Ground item name (shift-hover): screen space but below dialogs, since its hit test is tile-only
+    if (!m_ground_item_tooltip.empty())
+        m_ground_item_tooltip.draw(m_sMsX, m_sMsY + 25, m_game->m_Renderer);
 
     // UI rendering
     FrameTiming::begin_profile(ProfileStage::DrawDialogs);

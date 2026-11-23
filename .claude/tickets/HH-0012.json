@@ -1,7 +1,7 @@
 {
   "id": "HH-0012",
   "summary": "Split 3c: HUD action bar spans the world rect",
-  "status": "open",
+  "status": "verified",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:29:38Z",
-  "updated": "2026-11-23T21:29:38Z",
+  "updated": "2026-11-23T22:28:21Z",
   "links": {
     "commits": [],
     "files": [],
@@ -20,5 +20,17 @@
       "HH-0005"
     ]
   },
-  "body": "User decision: the action bar always takes the same share of the screen as at 800x600, so it draws in the world rect even when the rest of the UI is uniform and centred.\n\n**Done when:** in fullscreen stretch on a non-4:3 screen the bar spans the full width; reviewed.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md."
+  "body": "User decision: the action bar always takes the same share of the screen as at 800x600, so it draws in the world rect even when the rest of the UI is uniform and centred.\n\n**Done when:** in fullscreen stretch on a non-4:3 screen the bar spans the full width; reviewed.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md.",
+  "comments": [
+    {
+      "author": "pm",
+      "at": "2026-11-23T22:22:08Z",
+      "body": "Blocked 2026-11-23: the HUD world-rect view needs push/pop_world_rect_view in renderer.h and sfml_renderer.*, which the HQ cursor change (HH-0030) holds until it is committed. Snippets are ready; it resumes as soon as those files are released."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-23T22:24:06Z",
+      "body": "Resumed 2026-11-23: the cursor change landed (73ce459), so renderer.h and sfml_renderer.* are released to the Phase 3 editor for the world-rect view."
+    }
+  ]
 }

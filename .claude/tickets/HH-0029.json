@@ -1,7 +1,7 @@
 {
   "id": "HH-0029",
   "summary": "HQ cursors 1: map the sheet to the existing cursor frames and slice it",
-  "status": "verified",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,16 +11,18 @@
   ],
   "author": "pm",
   "created": "2026-11-23T22:12:56Z",
-  "updated": "2026-11-23T22:23:46Z",
+  "updated": "2026-11-23T22:23:59Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "73ce459"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0028"
     ]
   },
-  "body": "Match each figure in cursors.png to the current cursor frame it replaces (frame index, size, pivot/hotspot), slice by alpha bounds, and stage the sheet plus a frame table (rects, hotspots in source pixels, scale vs. the original) under `staged/client/`.\n\n**Done when:** every cursor frame the client draws has an HQ frame or a recorded fallback to the original.\n\nSource: user request 2026-11-23, art working\\sprite_work\\cursors.png (1406x124 RGBA, measured).",
+  "body": "Match each figure in cursors.png to the current cursor frame it replaces (frame index, size, pivot/hotspot), slice by alpha bounds, and stage the sheet plus a frame table (rects, hotspots in source pixels, scale vs. the original) under `staged/client/`.\n\n**Done when:** every cursor frame the client draws has an HQ frame or a recorded fallback to the original.\n\nSource: user request 2026-11-23, art working\\sprite_work\\cursors.png (1406x124 RGBA, measured).\n\n**Verified, 2026-11-23:** review passed with fixes (fringe, tip) applied in the 4x re-stage; full Debug build 0 errors. In-game check is HH-0031.\n",
   "comments": [
     {
       "author": "pm",

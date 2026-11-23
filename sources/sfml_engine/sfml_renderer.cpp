@@ -341,6 +341,7 @@ void SFMLRenderer::begin_frame()
     // Each target's clip starts the frame at its full logical area
     m_world_clip = logical_area();
     m_screen_clip = m_world_clip;
+    m_world_rect_view_depth = 0;
 
     // Clear the whole window, letterbox bars included; an unscissored view so nothing is left stale
     if (m_render_window)
@@ -437,7 +438,7 @@ void SFMLRenderer::apply_target_view()
     sf::Vector2f target_size = logical;
     if (!m_in_world)
     {
-        area = m_ui_rect;
+        area = screen_rect();
         target_size = m_output_size;
         view.setViewport(sf::FloatRect(
             {area.position.x / target_size.x, area.position.y / target_size.y},
@@ -535,10 +536,11 @@ sf::Vector2f SFMLRenderer::snap_to_output_pixel(sf::Vector2f logical) const
 {
     // SFML rounds the view's viewport to whole pixels (RenderTarget::getViewport), so map through
     // the rounded rect: pixel = vp.pos + logical * vp.size / logical_size
-    float vp_x = std::round(m_ui_rect.position.x);
-    float vp_y = std::round(m_ui_rect.position.y);
-    float scale_x = std::round(m_ui_rect.size.x) / static_cast<float>(m_width);
-    float scale_y = std::round(m_ui_rect.size.y) / static_cast<float>(m_height);
+    const sf::FloatRect& rect = screen_rect();
+    float vp_x = std::round(rect.position.x);
+    float vp_y = std::round(rect.position.y);
+    float scale_x = std::round(rect.size.x) / static_cast<float>(m_width);
+    float scale_y = std::round(rect.size.y) / static_cast<float>(m_height);
     if (scale_x <= 0.0f || scale_y <= 0.0f)
         return logical;
 
@@ -549,10 +551,26 @@ sf::Vector2f SFMLRenderer::snap_to_output_pixel(sf::Vector2f logical) const
 float SFMLRenderer::ui_scale() const
 {
     // Phase 1: the UI rect is the world rect, which stretches per axis; report the smaller axis
-    float scale_x = m_ui_rect.size.x / static_cast<float>(m_width);
-    float scale_y = m_ui_rect.size.y / static_cast<float>(m_height);
+    const sf::FloatRect& rect = screen_rect();
+    float scale_x = rect.size.x / static_cast<float>(m_width);
+    float scale_y = rect.size.y / static_cast<float>(m_height);
     float scale = (std::min)(scale_x, scale_y);
     return (scale > 0.0f) ? scale : 1.0f;
+}
+
+void SFMLRenderer::push_world_rect_view()
+{
+    ++m_world_rect_view_depth;
+    if (!m_in_world)
+        apply_target_view();
+}
+
+void SFMLRenderer::pop_world_rect_view()
+{
+    if (m_world_rect_view_depth > 0)
+        --m_world_rect_view_depth;
+    if (!m_in_world)
+        apply_target_view();
 }
 
 void SFMLRenderer::end_frame()

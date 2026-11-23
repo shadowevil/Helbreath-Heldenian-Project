@@ -353,6 +353,9 @@
     <ClInclude Include="item_tooltip.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="world_overlay_queue.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
     <ClInclude Include="text_field_renderer.h">
       <Filter>Rendering</Filter>
     </ClInclude>

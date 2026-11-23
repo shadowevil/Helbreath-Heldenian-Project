@@ -49,6 +49,8 @@ public:
     void end_world() override;
     void fill_output(const hb::shared::render::Color& color) override;
     float ui_scale() const override;
+    void push_world_rect_view() override;
+    void pop_world_rect_view() override;
 
     // Frame Metrics
     uint32_t get_fps() const override;
@@ -129,7 +131,7 @@ public:
     bool wants_ui_smoothing() const
     {
         return m_upscale_smoothing && !m_in_world
-            && (m_ui_rect.size.x != static_cast<float>(m_width) || m_ui_rect.size.y != static_cast<float>(m_height));
+            && (screen_rect().size.x != static_cast<float>(m_width) || screen_rect().size.y != static_cast<float>(m_height));
     }
 
     // Set the window to render to (called from SFMLWindow)
@@ -175,6 +177,9 @@ private:
     sf::Vector2f m_output_size;         // Window client size in pixels, for this frame
     sf::FloatRect m_world_rect;         // Where the world target lands in the window (pixels)
     sf::FloatRect m_ui_rect;            // Where the 800x600 UI space lands in the window (pixels)
+    int m_world_rect_view_depth = 0;    // >0: screen-space draws map 800x600 onto m_world_rect (HUD)
+    // Where screen-space draws land now: the world rect inside push/pop_world_rect_view, else the UI rect
+    const sf::FloatRect& screen_rect() const { return m_world_rect_view_depth > 0 ? m_world_rect : m_ui_rect; }
 
     // Display properties
     int m_width;

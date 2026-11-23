@@ -9,6 +9,7 @@
 
 class CMapData;
 namespace hb::shared::render { class IRenderer; }
+namespace hb::client { class world_overlay_queue; }
 
 class floating_text_manager {
 public:
@@ -30,8 +31,9 @@ public:
 	void clear_all();
 
 	// Rendering
-	void draw_all(short min_x, short min_y, short max_x, short max_y,
-	             uint32_t cur_time, hb::shared::render::IRenderer* renderer);
+	// Queue every message anchored inside the bounds (world-target pixels) for the world_overlay layer
+	void queue_visible(short min_x, short min_y, short max_x, short max_y,
+	                   hb::client::world_overlay_queue& queue) const;
 	void draw_single(int index, short sX, short sY,
 	                uint32_t cur_time, hb::shared::render::IRenderer* renderer);
 

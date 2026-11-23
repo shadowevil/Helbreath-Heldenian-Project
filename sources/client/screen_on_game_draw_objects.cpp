@@ -152,6 +152,7 @@ void Screen_OnGame::draw_objects(short pivot_x, short pivot_y, short div_x, shor
 	int res_y = LOGICAL_MAX_Y();
 	int res_msy = LOGICAL_HEIGHT() - 49;
 
+	m_ground_item_tooltip.clear();
 	if (div_y < 0 || div_x < 0) return;
 
 	// initialize Picking system for this frame
@@ -802,21 +803,20 @@ void Screen_OnGame::draw_objects(short pivot_x, short pivot_y, short div_x, shor
 		}
 	}
 
+	// Ground item name: built here, drawn in the screen-pass tooltip layer by on_render
 	if (item_selected_id != 0) {
 		auto itemInfo = item_name_formatter::get().format(item_selected_id, item_selected);
 
-		item_tooltip tooltip;
 		bool has_prefix = item_selected.prefix_type != 0;
 		if (has_prefix && item_selected.item_color != 0)
 		{
 			const auto& dye = m_game->m_color_palette[static_cast<uint8_t>(item_selected.item_color)];
-			tooltip.add_line(itemInfo.name, {dye.r, dye.g, dye.b, 255});
+			m_ground_item_tooltip.add_line(itemInfo.name, {dye.r, dye.g, dye.b, 255});
 		}
 		else if (itemInfo.is_special)
-			tooltip.add_line(itemInfo.name, GameColors::UIItemName_Special);
+			m_ground_item_tooltip.add_line(itemInfo.name, GameColors::UIItemName_Special);
 		else
-			tooltip.add_line(itemInfo.name, GameColors::UIWhite);
-		tooltip.draw(mouse_x, mouse_y + 25, m_game->m_Renderer);
+			m_ground_item_tooltip.add_line(itemInfo.name, GameColors::UIWhite);
 	}
 }
 
@@ -939,21 +939,20 @@ void Screen_OnGame::draw_npc_name(short screen_x, short screen_y, short owner_ty
 	}
 	if (status.berserk) text += DRAW_OBJECT_NAME50;//" Berserk"
 	if (status.frozen) text += DRAW_OBJECT_NAME51;//" Frozen"
-	hb::shared::text::draw_text(GameFont::Default, screen_x, screen_y, text.c_str(), hb::shared::text::TextStyle::with_shadow(GameColors::UIWhite));
-	if (m_is_observer_mode == true) hb::shared::text::draw_text(GameFont::Default, screen_x, screen_y + 14, text.c_str(), hb::shared::text::TextStyle::with_shadow(GameColors::NeutralNamePlate));
+	queue_name_line(screen_x, screen_y, 0, text, hb::shared::text::TextStyle::with_shadow(GameColors::UIWhite));
+	if (m_is_observer_mode == true) queue_name_line(screen_x, screen_y, 14, text, hb::shared::text::TextStyle::with_shadow(GameColors::NeutralNamePlate));
 	else if (m_game->m_player->m_is_confusion || (m_ilusion_owner_h != 0))
 	{
-		text = DRAW_OBJECT_NAME87;//"(Unknown)"
-		hb::shared::text::draw_text(GameFont::Default, screen_x, screen_y + 14, text.c_str(), hb::shared::text::TextStyle::with_shadow(GameColors::UIDisabled)); // v2.171
+		queue_name_line(screen_x, screen_y, 14, DRAW_OBJECT_NAME87, hb::shared::text::TextStyle::with_shadow(GameColors::UIDisabled)); // "(Unknown)" v2.171
 	}
 	else
 	{
 		if (IsHostile(status.relationship))
-			hb::shared::text::draw_text(GameFont::Default, screen_x, screen_y + 14, DRAW_OBJECT_NAME90, hb::shared::text::TextStyle::with_shadow(GameColors::UIRed)); // "(Enemy)"
+			queue_name_line(screen_x, screen_y, 14, DRAW_OBJECT_NAME90, hb::shared::text::TextStyle::with_shadow(GameColors::UIRed)); // "(Enemy)"
 		else if (IsFriendly(status.relationship))
-			hb::shared::text::draw_text(GameFont::Default, screen_x, screen_y + 14, DRAW_OBJECT_NAME89, hb::shared::text::TextStyle::with_shadow(GameColors::FriendlyNamePlate)); // "(Friendly)"
+			queue_name_line(screen_x, screen_y, 14, DRAW_OBJECT_NAME89, hb::shared::text::TextStyle::with_shadow(GameColors::FriendlyNamePlate)); // "(Friendly)"
 		else
-			hb::shared::text::draw_text(GameFont::Default, screen_x, screen_y + 14, DRAW_OBJECT_NAME88, hb::shared::text::TextStyle::with_shadow(GameColors::NeutralNamePlate)); // "(Neutral)"
+			queue_name_line(screen_x, screen_y, 14, DRAW_OBJECT_NAME88, hb::shared::text::TextStyle::with_shadow(GameColors::NeutralNamePlate)); // "(Neutral)"
 	}
 	switch (status.angel_percent) {
 	case 0: break;
@@ -966,7 +965,7 @@ void Screen_OnGame::draw_npc_name(short screen_x, short screen_y, short owner_ty
 	case 7: text2 = DRAW_OBJECT_NAME58; break;//"Explosive"
 	case 8: text2 = DRAW_OBJECT_NAME59; break;//"Critical Explosive"
 	}
-	hb::shared::text::draw_text(GameFont::Default, screen_x, screen_y + 28, text2.c_str(), hb::shared::text::TextStyle::with_shadow(GameColors::MonsterStatusEffect));
+	queue_name_line(screen_x, screen_y, 28, std::move(text2), hb::shared::text::TextStyle::with_shadow(GameColors::MonsterStatusEffect));
 
 	// centu: no muestra la barra de hp de algunos npc
 	switch (owner_type) {
@@ -1053,7 +1052,7 @@ void Screen_OnGame::draw_object_name(short screen_x, short screen_y, const char*
 	if (status.berserk) text += DRAW_OBJECT_NAME50;//" Berserk"
 	if (status.frozen) text += DRAW_OBJECT_NAME51;//" Frozen"
 
-	hb::shared::text::draw_text(GameFont::Default, screen_x, screen_y, text.c_str(), hb::shared::text::TextStyle::with_shadow(GameColors::UIWhite));
+	queue_name_line(screen_x, screen_y, 0, text, hb::shared::text::TextStyle::with_shadow(GameColors::UIWhite));
 
 	if (object_id == m_game->m_player->m_player_object_id)
 	{
@@ -1108,7 +1107,13 @@ void Screen_OnGame::draw_object_name(short screen_x, short screen_y, const char*
 			else text = DEF_MSG_ELVPK;  // "Elvine Criminal"
 		}
 	}
-	hb::shared::text::draw_text(GameFont::Default, screen_x, screen_y + 14 + y_offset, text.c_str(), hb::shared::text::TextStyle::with_shadow(hb::shared::render::Color(red, green, blue)));
+	queue_name_line(screen_x, screen_y, 14 + y_offset, std::move(text), hb::shared::text::TextStyle::with_shadow(hb::shared::render::Color(red, green, blue)));
+}
+
+void Screen_OnGame::queue_name_line(short screen_x, short screen_y, int line_y, std::string text, const hb::shared::text::TextStyle& style)
+{
+	if (text.empty()) return;
+	m_world_overlay.add_text(GameFont::Default, {screen_x, screen_y}, {0, line_y}, std::move(text), style);
 }
 
 void Screen_OnGame::draw_angel(int sprite, short sX, short sY, char frame, uint32_t time)

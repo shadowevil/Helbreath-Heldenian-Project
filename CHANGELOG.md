@@ -42,3 +42,5 @@ The world and the interface now draw separately: the game world still renders at
 Interface text is now drawn at the window's real resolution, so menus, dialogs and the HUD stay sharp at large window sizes; layout and line wrapping are unchanged. Names, chat bubbles and damage numbers over characters still use the old path until the next step.
 
 New high-quality cursors: every cursor (pointer, sword, magic circles, gauntlets, hourglass, target brackets) is redrawn from new artwork stored at four times its in-game size, so it stays sharp up to 4K while keeping its old size and click point. If the new art is missing, the old cursor is used.
+
+Names, chat bubbles and damage numbers over characters are now drawn after the world in screen space: they are sharp at any window size and always appear above spell effects and weather. The ground-item name stays under dialogs and the HUD. The HUD action bar is prepared to span the full world area when the world and interface areas differ.

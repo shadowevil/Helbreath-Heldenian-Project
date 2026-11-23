@@ -7,6 +7,7 @@
 #include "action_id.h"
 #include "audio_manager.h"
 #include "game_geometry.h"
+#include "world_overlay_queue.h"
 #include <cstdio>
 #include <format>
 #include <string>
@@ -196,8 +197,8 @@ bool floating_text_manager::is_occupied(int index) const
 // Drawing
 // ---------------------------------------------------------------
 
-void floating_text_manager::draw_all(short min_x, short min_y, short max_x, short max_y,
-                                   uint32_t cur_time, hb::shared::render::IRenderer* renderer)
+void floating_text_manager::queue_visible(short min_x, short min_y, short max_x, short max_y,
+                                        hb::client::world_overlay_queue& queue) const
 {
 	for (int i = 0; i < max_messages; i++)
 	{
@@ -205,7 +206,7 @@ void floating_text_manager::draw_all(short min_x, short min_y, short max_x, shor
 		if (m_messages[i]->m_x < min_x || m_messages[i]->m_x > max_x ||
 		    m_messages[i]->m_y < min_y || m_messages[i]->m_y > max_y)
 			continue;
-		draw_message(*m_messages[i], m_messages[i]->m_x, m_messages[i]->m_y, cur_time, renderer);
+		queue.add_floating_text(i, {m_messages[i]->m_x, m_messages[i]->m_y});
 	}
 }
 

@@ -1,7 +1,7 @@
 {
   "id": "HH-0010",
   "summary": "Split 3a: queue world-anchored overlays and replay them after the composite",
-  "status": "open",
+  "status": "verified",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:29:37Z",
-  "updated": "2026-11-23T21:29:37Z",
+  "updated": "2026-11-23T22:28:21Z",
   "links": {
     "commits": [],
     "files": [],
@@ -20,5 +20,12 @@
       "HH-0005"
     ]
   },
-  "body": "Names (`render_helpers.cpp`), chat bubbles (`CGame::draw_character_body`), damage numbers (`floating_text.draw_all`) and foe icons are queued during the world pass and replayed in screen space above the world, including above the late world effects (user decision).\n\n**Done when:** overlays stay attached to sprites while moving and draw above all world effects; reviewed.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md."
+  "body": "Names (`render_helpers.cpp`), chat bubbles (`CGame::draw_character_body`), damage numbers (`floating_text.draw_all`) and foe icons are queued during the world pass and replayed in screen space above the world, including above the late world effects (user decision).\n\n**Done when:** overlays stay attached to sprites while moving and draw above all world effects; reviewed.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md.",
+  "comments": [
+    {
+      "author": "pm",
+      "at": "2026-11-23T22:22:08Z",
+      "body": "Kept in the world (editor's reading, accepted): foe icons are a ground circle drawn under the body (player_renderer.cpp:41); the user's overlay ruling names names, bubbles and damage numbers."
+    }
+  ]
 }

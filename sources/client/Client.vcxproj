@@ -303,6 +303,7 @@
     <ClInclude Include="chat_manager.h" />
     <ClInclude Include="item_name_formatter.h" />
     <ClInclude Include="item_tooltip.h" />
+    <ClInclude Include="world_overlay_queue.h" />
     <ClInclude Include="item_sprite_metadata.h" />
     <ClInclude Include="cursor_art.h" />
     <ClInclude Include="client_messages.h" />

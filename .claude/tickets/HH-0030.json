@@ -1,7 +1,7 @@
 {
   "id": "HH-0030",
   "summary": "HQ cursors 2: draw the cursor from the HQ sheet at window resolution",
-  "status": "verified",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,16 +11,18 @@
   ],
   "author": "pm",
   "created": "2026-11-23T22:12:57Z",
-  "updated": "2026-11-23T22:23:46Z",
+  "updated": "2026-11-23T22:23:59Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "73ce459"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0028"
     ]
   },
-  "body": "Load the staged sheet once; draw the current frame in screen space at the same logical size and hotspot as the original frame, sampled smoothly from the high-resolution source; observer crosshair unchanged.\n\n**Done when:** the cursor looks sharp at 1440x1080, matches the old size and hotspot at 800x600, and clicks land where the tip points; reviewed.\n\nSource: user request 2026-11-23, art working\\sprite_work\\cursors.png (1406x124 RGBA, measured).",
+  "body": "Load the staged sheet once; draw the current frame in screen space at the same logical size and hotspot as the original frame, sampled smoothly from the high-resolution source; observer crosshair unchanged.\n\n**Done when:** the cursor looks sharp at 1440x1080, matches the old size and hotspot at 800x600, and clicks land where the tip points; reviewed.\n\nSource: user request 2026-11-23, art working\\sprite_work\\cursors.png (1406x124 RGBA, measured).\n\n**Verified, 2026-11-23:** review passed with fixes (fringe, tip) applied in the 4x re-stage; full Debug build 0 errors. In-game check is HH-0031.\n",
   "comments": [
     {
       "author": "pm",

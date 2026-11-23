@@ -114,6 +114,11 @@ private:
 	// Tester menu text position (above Level Up text)
 	static constexpr int BASE_TESTER_TEXT_Y = 433;
 
+	// Mouse in HUD units: every HUD hit test reads these. The HUD draws in the world rect, not the
+	// UI rect; while the two rects are equal this is the UI mouse. Phase 4 maps it through both rects.
+	static short hud_mouse_x();
+	static short hud_mouse_y();
+
 	// Helper methods
 	void draw_gauge_bars();
 	void draw_icon_buttons();

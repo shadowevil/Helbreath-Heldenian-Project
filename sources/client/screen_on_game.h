@@ -16,9 +16,12 @@
 #include "player_renderer.h"
 #include "npc_renderer.h"
 #include "floating_text_manager.h"
+#include "world_overlay_queue.h"
+#include "item_tooltip.h"
 #include "player_status_data.h"
 #include <cstdint>
 #include <memory>
+#include <string>
 #include "chat_msg.h"
 #include "game_constants.h"
 #include "global_def.h"
@@ -101,6 +104,8 @@ private:
     void hotkey_whisper_target();
 
     void render_item_tooltip();
+    // Queue one name-plate line: anchor in world-target pixels, line_y in UI units below it
+    void queue_name_line(short screen_x, short screen_y, int line_y, std::string text, const hb::shared::text::TextStyle& style);
     void draw_tile_grid();           // Simple dark grid lines
     void draw_patching_grid();       // Debug grid with zone colors
     void draw_spell_target_overlay(); // Spell AoE targeting overlay (debug only)
@@ -182,6 +187,10 @@ private:
     CPlayerRenderer m_player_renderer;
     CNpcRenderer m_npc_renderer;
     floating_text_manager m_floating_text;
+
+    // Screen-space layers filled during the world pass, drawn after end_world()
+    hb::client::world_overlay_queue m_world_overlay;  // names, chat bubbles, damage numbers
+    item_tooltip m_ground_item_tooltip;               // shift-hover name of an item on the ground
 
     static std::unique_ptr<CPlayer> s_player;
 };

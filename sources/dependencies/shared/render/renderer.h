@@ -59,6 +59,11 @@ public:
     virtual void fill_output(const Color& color) = 0;
     // Window pixels per UI unit.
     virtual float ui_scale() const = 0;
+    // Screen space: draws between push and pop map the 800x600 UI space onto the world rect instead of
+    // the UI rect, so that block (the HUD action bar) takes the same share of the window as at 800x600.
+    // Calls nest; begin_frame resets the depth. No effect on draws inside a world pass.
+    virtual void push_world_rect_view() = 0;
+    virtual void pop_world_rect_view() = 0;
 
     // ============== Frame Metrics ==============
     // Tracked internally by the engine at the point of actual present

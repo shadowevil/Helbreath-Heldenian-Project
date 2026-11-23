@@ -34,10 +34,20 @@ DialogBox_HudPanel::DialogBox_HudPanel(CGame* game)
 	m_can_close_on_right_click = false;
 }
 
+short DialogBox_HudPanel::hud_mouse_x()
+{
+	return static_cast<short>(hb::shared::input::get_mouse_x());
+}
+
+short DialogBox_HudPanel::hud_mouse_y()
+{
+	return static_cast<short>(hb::shared::input::get_mouse_y());
+}
+
 bool DialogBox_HudPanel::is_in_button(int x1, int x2) const
 {
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
+	short mouse_x = hud_mouse_x();
+	short mouse_y = hud_mouse_y();
 	return (mouse_x > x1) && (mouse_x < x2) && (mouse_y > BTN_Y1()) && (mouse_y < BTN_Y2());
 }
 
@@ -141,8 +151,8 @@ void DialogBox_HudPanel::draw_gauge_bars()
 
 void DialogBox_HudPanel::draw_status_icons()
 {
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
+	short mouse_x = hud_mouse_x();
+	short mouse_y = hud_mouse_y();
 	uint32_t time = m_game->m_cur_time;
 	auto sprite = m_game->m_sprite[InterfaceNdIconPanel];
 
@@ -197,8 +207,8 @@ void DialogBox_HudPanel::draw_status_icons()
 
 void DialogBox_HudPanel::draw_icon_buttons()
 {
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
+	short mouse_x = hud_mouse_x();
+	short mouse_y = hud_mouse_y();
 
 	if (mouse_y <= BTN_Y1() || mouse_y >= BTN_Y2()) return;
 
@@ -247,6 +257,9 @@ void DialogBox_HudPanel::draw_super_attack_overlay()
 
 void DialogBox_HudPanel::on_draw()
 {
+	// The action bar draws in the world rect: it keeps the share of the window it has at 800x600
+	m_game->m_Renderer->push_world_rect_view();
+
 	// draw main HUD background centered (at xOffset, which is 0 for 640x480, 80 for 800x600)
 	m_game->m_sprite[InterfaceNdIconPanel]->draw(0, m_y, 14);
 
@@ -254,13 +267,12 @@ void DialogBox_HudPanel::on_draw()
 	draw_status_icons();
 	draw_icon_buttons();
 	draw_super_attack_overlay();
+
+	m_game->m_Renderer->pop_world_rect_view();
 }
 
 bool DialogBox_HudPanel::on_click()
 {
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-
 	// Crusade button
 	if (is_in_button(BTN_CRUSADE_X1(), BTN_CRUSADE_X2()))
 	{
