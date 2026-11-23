@@ -123,7 +123,7 @@ Editors that need information from the other wing route through the Coordinator.
 1. Coordinator analyzes the task and identifies what needs investigation
 2. Coordinator spawns Research Agents with specific search focuses
 3. Research agents investigate in parallel, report findings to Coordinator
-4. Coordinator synthesizes findings and creates the task list
+4. Coordinator synthesizes findings and files the work as a task ticket with small sub-task tickets (`.claude/docs/ticket-workflow.md`); a sub-task goes `in_progress` only when an agent starts it, and every brief names its ticket ids
 
 ### Phase 2: Implementation
 

@@ -1,0 +1,24 @@
+{
+  "id": "HH-0025",
+  "summary": "Docs 10 KB 2: audit decisions.md (12.6 KB)",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "docs",
+  "target_patch": "next",
+  "tags": [
+    4,
+    2
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:38:18Z",
+  "updated": "2026-11-23T21:38:18Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0023"
+    ]
+  },
+  "body": "`decisions.md` holds d-001..d-026 in one file. Candidate: lean index (one line per decision) plus `decisions/d-NNN-*.md` sidecars, keeping ids resolvable and the quote-only rule.\n\n**Done when:** decisions.md is under 10 KB or kept whole with a dated reason; references repaired.\n\nSource: user request 2026-11-23 (d-026); .claude/docs/documentation.md."
+}

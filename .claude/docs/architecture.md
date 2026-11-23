@@ -1,6 +1,6 @@
 # Architecture Reference
 
-*Assessed 2026-11-23 (docs standard sect. 1): kept whole, about 6 KB, under the 10 KB review line. Read as one picture when working across subsystems; the Client and Server sections are short and the Shared section is context for both. Project structure moved here from CLAUDE.md 2026-11-23. Class names below are the legacy names, not yet re-checked against the Phase R renames.*
+*Assessed 2026-11-23 (docs standard sect. 1): kept whole, about 6 KB, under the 10 KB review line. Read as one picture when working across subsystems; the Client and Server sections are short and the Shared section is context for both. Project structure moved here from CLAUDE.md 2026-11-23. Audited 2026-11-23 (HH-0020): file names and paths below are the post-Phase R snake_case ones; class names are mostly still the legacy ones (verified `CGame`, `CPlayer`, `CClient`, `CMapData`, `IGameScreen`, `IDialogBox`, `IRenderer`, `GameModeManager`, `DialogBoxManager`; `audio_manager` is already renamed), and counts (61 dialogs, 2000 clients) are unverified.*
 
 Contents: Solution Structure - Runtime Layout - Client - Server - Shared Protocol - Key Anti-Patterns.
 
@@ -36,7 +36,7 @@ Type-safe screen management with fade transitions. Screens: Splash, MainMenu, Lo
 61 dialog boxes by enum ID with z-order. Interface: `OnDraw`, `OnClick`, `OnDoubleClick`, `OnPress`, `OnItemDrop`, `OnUpdate`.
 
 ### Networking (`NetworkMessageManager` + `ASIOSocket`)
-Polling mode, two sockets (game `m_pGSock`, login `m_pLSock`). Handlers split across ~20 `NetworkMessages_*.cpp` files.
+Polling mode, two sockets (game `m_pGSock`, login `m_pLSock`). Handlers split across ~20 `network_messages_*.cpp` files.
 
 ### Rendering (SFMLEngine)
 Abstract interfaces (`IRenderer`, `IWindow`, `ISprite`, `IBitmapFont`) with SFML implementations. Render order: clear → tiles → lighting → entities (z-ordered) → dialogs → particles → present. Sprites from PAK files via `SFMLSpriteFactory`.
@@ -69,9 +69,9 @@ Grid-based. Tiles track: owner entity, 12 items, dynamic objects, movement/telep
 NPC lifecycle with active entity list optimization. Movement types (waypoint, random, follow, guard), behavior states, special abilities, AI levels, summon support.
 
 ### Database (SQLite)
-- `AccountSqliteStore` — Per-account `.db` in `Accounts/`. Characters, items, bank, equips, mastery.
-- `GameConfigSqliteStore` — `GameConfigs.db`. Items, NPCs, magic, skills, quests, drops, shops.
-- `MapInfoSqliteStore` — `MapInfo.db`. Dimensions, teleports, spawns, waypoints, generators.
+- `AccountSqliteStore` — Per-account `.db` in `accounts/`. Characters, items, bank, equips, mastery.
+- `GameConfigSqliteStore` — `gamedata.db` (config files in `gameconfigs/`). Items, NPCs, magic, skills, quests, drops, shops.
+- `MapInfoSqliteStore` — `mapinfo.db`. Dimensions, teleports, spawns, waypoints, generators.
 
 ### Commands
 Console: `ServerCommand` + `ServerCommandManager`. In-game: `GameChatCommand` with admin levels.
@@ -82,11 +82,12 @@ Connect → validate → character list → select → redirect to game socket �
 ---
 
 ## Shared Protocol (`dependencies/shared/`)
-- `net_messages.h` — 100+ message IDs. `net_constants.h` — buffer sizes, limits, view range (25x17).
-- `packet/` — 23 packet headers with byte-packing.
-- `item/` — Unified item class, enums (35 effects, 15 equip positions, 13 types).
-- `appearance.h` — Player/NPC visuals. `player_status_data.h` — Status flags.
-- `owner_type.h` — Entity type IDs. `ASIOSocket` — Shared networking.
+- `net/net_messages.h` — 100+ message IDs. `net/net_constants.h` — buffer sizes, limits, view range (25x17).
+- `packet/` — 25 packet headers with byte-packing (counted 2026-11-23).
+- `item/` — Unified item class, enums (35 effects, 15 equip positions, 13 types; counts unverified).
+- `entity/appearance.h` — Player/NPC visuals. `entity/player_status_data.h` — Status flags.
+- `entity/owner_type.h` — Entity type IDs. `net/asio_socket.h` — Shared networking (class `ASIOSocket`).
+- Also `game/` (formula engine, shared calculations), `log/` (logging), `render/` (renderer interfaces), `util/` (hmac, sha256), `version.h`/`version.cpp`.
 
 ## Key Anti-Patterns
 1. **God Objects** — CGame on both sides. Decompose into focused systems.

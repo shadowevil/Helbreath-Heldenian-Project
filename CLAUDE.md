@@ -2,18 +2,20 @@
 
 ## Docs (index)
 
-Docs: `.claude/docs/` (standard: `~/.claude/docs/documentation_standards.md`). Plans: `.claude/design/plans/`. Scratch: `.claude/scratch/` (gitignored).
+Docs: `.claude/docs/` (standard: `~/.claude/docs/documentation_standards.md`). **Linked docs stay under 10 KB, else audit for an index split** (d-026; `documentation.md`, read before growing a doc). Plans: `.claude/design/plans/`. Scratch: `.claude/scratch/` (gitignored).
 - `build.md` - build commands, outputs, deploy, `bin/` `build/` `staged/` `game/` layout; read before building or deploying.
+- `tickets.md` - ticket system rules and CLI reference (release text); read for field or CLI detail.
 - `workflow.md` - Mode 1 cycle detail, Mode 2 pattern, regex safety; read before a guarded edit sequence or bulk script.
 - `bulk-scripts-dry-run.md` - `--dry-run`/`--verify` spec; read when writing a Mode 2 script.
 - `code-search.md` - `grep.py` usage; read before using it.
 - `architecture.md` - project structure, client/server/shared design; read before working across subsystems.
-- `coding-standards.md` - full style rules; read when a rule below is not specific enough.
-- `ccontrols-reference.md` - CControls API and screen pattern; read before building or changing a menu screen.
+- `coding-standards.md` - index to full style rules (formatting, naming, language use); read when a rule below is not specific enough.
+- `ccontrols-reference.md` - index to the CControls API (core, text input, layout); read before building or changing a menu screen.
 - `versioning.md` - versioning index; read before any version, Build ID, login-gate or `sources/database/` work.
 - `logging.md` - log files and channels; read before adding logging.
 - `changelog-format.md` - internal and Discord formats; read before writing `CHANGELOG.md`.
 - `agents.md` - agent-team roles and phases; read before running a team.
+- `ticket-workflow.md` - filing, task/sub-task structure, statuses with agents, the viewer; read before filing or moving a ticket.
 - `decisions.md` - the user's settled rulings with quotes; read before changing what a ruling covers.
 
 (All under `.claude/docs/`.)
@@ -30,9 +32,9 @@ Commands and layout: `.claude/docs/build.md`. Windows: `powershell -ExecutionPol
 
 ## Workflow
 
-- **Git follows the global rules** (user, 2026-11-23): local commits and working-tree git (`git mv`, `git rm`, `git add`) are allowed; commit on `Development` only and never push to `origin` until the user says so ("From now on only push to Development - don't push to origin until I say so", user, 2026-11-23); PRs only when asked; never pull, `reset --hard`, force, or rewrite history. Use `git diff` after refactoring to confirm no logic was lost. The Build ID generator runs read-only git (`git rev-parse`, `git status`) during a build.
+- **Git follows the global rules** (user, 2026-11-23): local commits and working-tree git (`git mv`, `git rm`, `git add`) are allowed; commit on `Development` as needed, never push to `origin` until the user says so (d-022); PRs only when asked; never pull, `reset --hard`, force, or rewrite history. Use `git diff` after refactoring to confirm no logic was lost. The Build ID generator runs read-only git (`git rev-parse`, `git status`) during a build.
 - **Workflow tools** live in `.claude/tools/` (`bak.py`, `grep.py`), one-off scripts in `.claude/tools/scripts/`. Product tooling stays with its code: `tools/`, `sources/build_tools/`, `sources/database/`.
-- **Tickets** (`HH-`, for any finding or ask worth keeping; status tracks the work): CLI `python .claude/tools/tickets/tickets.py` (agents file via `author.py`), viewer `serve.py` on port 18550, rules `.claude/docs/tickets.md`, skill `tickets`.
+- **Tickets track all work** (`HH-`, user, 2026-11-23; d-025): file as you work; small tickets, larger work as a task with blocking sub-tasks; `in_progress` only while an agent works that ticket. Practice: `.claude/docs/ticket-workflow.md`. CLI `python .claude/tools/tickets/tickets.py` (`author.py` to file), viewer on 18550 kept open in the in-app browser, skill `tickets`.
 - **Default to Mode 1** (1-9 files): `bak.py guard <files>` (only files under `sources/`), edit with Read/Edit, `/simplify`, build, a separate read-only review agent (`ADVISOR: FORBIDDEN`) with the diff and the goal, then `bak.py commit <id>` (or `revert`). One logical change per cycle. Details: `.claude/docs/workflow.md`.
 - **Mode 2** (script, 10+ files) only when justified ("This touches N files with pattern X, script appropriate because Y"). Required before applying: `--dry-run`, then `--verify`, then apply. Details: `.claude/docs/workflow.md`, `.claude/docs/bulk-scripts-dry-run.md`.
 - After every `bak.py commit`, update `CHANGELOG.md`. A Discord post is a player-facing changelog on request.

@@ -10,6 +10,8 @@ Shared logging system in `sources/dependencies/shared/log/`. Uses `std::format` 
 
 ## Files
 
+Paths under `log/` are in `sources/dependencies/shared/`; `server/` and `client/` here mean `sources/server/` and `sources/client/` (the channel headers sit directly in those folders).
+
 | File | Purpose |
 |------|---------|
 | `log/log.h` | **Public API** — include this to log. Provides `hb::logger::error`, `warn`, `log`, `debug` |

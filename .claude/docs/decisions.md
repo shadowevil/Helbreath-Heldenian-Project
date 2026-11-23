@@ -175,3 +175,20 @@ Contents: d-001 SDL versioning - d-002 clock-skew exchange - d-003 sources/bin/b
 - Quotes: "UI/floating text and screens that are not maingame should be screenspace always never drawn at world resolution 800x600"; "Should remain uniform however the action bar must always take up the same percentage of screen space as 800x600 would"; selected answers "Native-res TTF", "Overlays on top", "Approve, start phase 1".
 - Decided: the world renders at 800x600 and is upscaled; UI, floating text and non-game screens render in screen space with native-resolution text and a uniform UI scale; the HUD action bar spans the world rect; world-anchored overlays draw above late world effects.
 - Recorded in: `.claude/design/plans/world-screen-split.md`.
+
+## d-025 Work is tracked in small tickets, as tasks and sub-tasks
+
+- Date: 2026-11-23.
+- Quotes: "Make sure we are filing tickets as we work, as the tickets are how we keep track of our work. Tickets should be small and multiple tickets for larger work"; "Broken into tasks/sub-tasks".
+- Decided: every piece of work gets a ticket when it starts; larger work is a task ticket whose small sub-task tickets block it.
+- Added the same day: "Only put tickets in progress if an agent is actively working on them. A master ticket can remain in in-progress as long as agents are actively working on sub tickets. But only put sub tickets in progress if an agent is working on them". A sub-task is `in_progress` only while an agent works it; otherwise it stays `open`.
+- Added the same day: "use comments in the tickets where deemed necessary such as work pausing or holding". Pauses, holds, resumes and hand-overs get a ticket comment.
+- Added the same day: "I also cannot interact with the ticket board, only view. So all questions or issues should come to me". Clarified: "Well issues that request me". Questions and issues that need the user go to them in chat; their answers are recorded on the ticket. Other issues are only tracked on the board.
+
+## d-026 Docs linked from CLAUDE.md stay under 10 KB
+
+- Date: 2026-11-23.
+- Quote: "the goal is to keep documentation files under 10kb when linked to the CLAUDE.md - if it gets bigger than that it needs to be audited and checked to see if it needs to have an index system to keep it lean".
+- Decided: a linked doc over 10 KB gets an audit ticket and is split into an index plus sidecars, or kept whole with a dated reason.
+- Recorded in: `.claude/docs/documentation.md`; CLAUDE.md "Docs (index)".
+- Recorded in: CLAUDE.md "Workflow"; `.claude/docs/ticket-workflow.md`; `.claude/docs/workflow.md`; `.claude/docs/agents.md`.

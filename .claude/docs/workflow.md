@@ -27,6 +27,7 @@ bak.py guard <files>  ->  Read/Edit tools  ->  Build  ->  Review  ->  bak.py com
    - `revert <id> <file1> [file2 ...]` to revert specific files from a checkpoint.
 
 Rules:
+- Every cycle has a ticket, and its status moves with the steps (in_progress at edit, in_review at review, verified, done with the commit): `.claude/docs/ticket-workflow.md`.
 - Specific edits to specific lines are Mode 1.
 - One logical change per guard-edit-build-commit cycle.
 - Each `guard` creates a new checkpoint: layer fixes and peel back selectively.

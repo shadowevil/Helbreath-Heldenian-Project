@@ -1,7 +1,7 @@
 {
   "id": "HH-0008",
   "summary": "Split 1c: fades, overlay dim, cursor and performance monitor in screen space",
-  "status": "in_review",
+  "status": "in_progress",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:29:36Z",
-  "updated": "2026-11-23T21:30:47Z",
+  "updated": "2026-11-23T21:36:42Z",
   "links": {
     "commits": [],
     "files": [],

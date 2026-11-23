@@ -373,6 +373,11 @@ DocProject/Help/html
 !/.claude/docs/changelog-format.md
 !/.claude/docs/logging.md
 !/.claude/docs/coding-standards.md
+!/.claude/docs/coding-standards/
+!/.claude/docs/coding-standards/*.md
+!/.claude/docs/ccontrols-reference.md
+!/.claude/docs/ccontrols-reference/
+!/.claude/docs/ccontrols-reference/*.md
 !/.claude/docs/versioning.md
 !/.claude/docs/versioning/
 !/.claude/docs/versioning/*.md
@@ -380,6 +385,8 @@ DocProject/Help/html
 !/.claude/docs/code-search.md
 !/.claude/docs/decisions.md
 !/.claude/docs/tickets.md
+!/.claude/docs/ticket-workflow.md
+!/.claude/docs/documentation.md
 !/.claude/skills/**/SKILL.md
 !/sources/readme_build_linux.md
 !/.claude/agents/*.md
@@ -413,3 +420,4 @@ tools/installer_creator/Helbreath/
 # Ticket system runtime files (CLI temp file, tag-store lock)
 .claude/tickets/*.tmp
 .claude/tickets/tags.json.lock
+/classic_ui/reference/

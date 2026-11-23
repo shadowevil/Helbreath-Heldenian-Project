@@ -1,0 +1,24 @@
+{
+  "id": "HH-0027",
+  "summary": "Docs 10 KB 4: log-only hook warning on oversize linked docs",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "docs",
+  "target_patch": "next",
+  "tags": [
+    8,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:38:19Z",
+  "updated": "2026-11-23T21:38:19Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0023"
+    ]
+  },
+  "body": "Candidate project hook (log-only): after a write to `.claude/docs/**.md`, log when the file is over 10 KB. Needs the hook framework and the review phase (global rules).\n\n**Done when:** hook built log-only, reviewed and installed, or ruled not worth it.\n\nSource: user request 2026-11-23 (d-026); .claude/docs/documentation.md."
+}

@@ -2,7 +2,7 @@
 
 *Assessed 2026-11-23 (docs standard sect. 1): kept whole, about 6 KB. One continuous spec, read once when writing a Mode 2 script. This is the single home of the `--dry-run`/`--verify` detail; `.claude/docs/workflow.md` points here. Originally written as a plan, now the adopted standard.*
 
-Contents: Motivation - Current limitations - Two-phase verification - Script template - Collision scanner - Output format - Files changed - Retrofitting.
+Contents: Motivation - Current limitations - Two-phase verification - Script template - Collision scanner - Output format - Where this applies - Retrofitting.
 
 ## Motivation
 
@@ -14,7 +14,7 @@ that identifies potential issues before any files are modified.
 
 ## Current Dry Run Limitations
 
-The existing `--dry-run`:
+Why the standard below exists. A plain `--dry-run` alone:
 - Shows per-file replacement counts and first 20 line details
 - Does NOT flag potential collisions (e.g., renaming a name that exists in Shared)
 - Does NOT verify the rename won't break `#include` paths
@@ -22,7 +22,7 @@ The existing `--dry-run`:
 - Does NOT show context around matches (hard to judge if a match is correct)
 - Truncates detail output at 20 lines per file
 
-## Proposed Standard: Two-Phase Verification
+## Standard: Two-Phase Verification
 
 All Mode 2 bulk scripts should support two verification phases before applying:
 
@@ -148,13 +148,13 @@ Would change: 5510 replacements across 202 files
 335 entries checked, 3 collisions found, 332 clean
 ```
 
-## Files Changed
+## Where this applies
 
-| File | Change |
+| Place | Status |
 |------|--------|
 | Future Mode 2 scripts | Follow the two-phase template |
-| `CLAUDE.md` | Update Mode 2 section to require `--verify` before apply |
-| `.claude/docs/workflow.md` | Add verification standards to script pattern docs |
+| `CLAUDE.md` Workflow (Mode 2) | Requires `--dry-run`, then `--verify`, then apply (done) |
+| `.claude/docs/workflow.md` | Points here (done) |
 
 ## Retrofitting Existing Scripts
 
