@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="15.0">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>SFMLEngine</ProjectName>
+    <ProjectGuid>{C4A8D9E2-5D3F-4C8B-9F2E-3D4E5F6A8B9C}</ProjectGuid>
+    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <!-- Phase H build layout: build\ for intermediates, bin\<project>\<Configuration>\ for outputs -->
+  <Import Project="$(MSBuildThisFileDirectory)..\build_tools\layout.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(HbOutDir)</OutDir>
+    <IntDir>$(HbIntDir)</IntDir>
+    <IncludePath>$(HbSourcesDir)dependencies\shared;$(HbSourcesDir)dependencies\shared\entity;$(HbSourcesDir)dependencies\shared\game;$(HbSourcesDir)dependencies\shared\net;$(HbSourcesDir)dependencies\shared\render;$(HbSourcesDir)dependencies\shared\util;$(HbSourcesDir)dependencies\client\includes;$(HbSourcesDir)dependencies\SFML\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(HbSourcesDir)dependencies\SFML\lib_x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(HbOutDir)</OutDir>
+    <IntDir>$(HbIntDir)</IntDir>
+    <IncludePath>$(HbSourcesDir)dependencies\shared;$(HbSourcesDir)dependencies\shared\entity;$(HbSourcesDir)dependencies\shared\game;$(HbSourcesDir)dependencies\shared\net;$(HbSourcesDir)dependencies\shared\render;$(HbSourcesDir)dependencies\shared\util;$(HbSourcesDir)dependencies\client\includes;$(HbSourcesDir)dependencies\SFML\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(HbSourcesDir)dependencies\SFML\lib_x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;SFML_STATIC;SFMLENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>$(HbSourcesDir)client;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;SFML_STATIC;SFMLENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>$(HbSourcesDir)client;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="sfml_renderer.h" />
+    <ClInclude Include="sfml_texture.h" />
+    <ClInclude Include="sfml_window.h" />
+    <ClInclude Include="sfml_sprite.h" />
+    <ClInclude Include="sfml_sprite_factory.h" />
+    <ClInclude Include="sfml_text_renderer.h" />
+    <ClInclude Include="sfml_bitmap_font.h" />
+    <ClInclude Include="sfml_input.h" />
+    <ClInclude Include="..\dependencies\shared\entity\action_id.h" />
+    <ClInclude Include="..\dependencies\shared\entity\appearance.h" />
+    <ClInclude Include="..\dependencies\shared\render\bitmap_font_factory.h" />
+    <ClInclude Include="..\dependencies\shared\render\color_utils.h" />
+    <ClInclude Include="..\dependencies\shared\render\game_geometry.h" />
+    <ClInclude Include="..\dependencies\shared\render\bitmap_font.h" />
+    <ClInclude Include="..\dependencies\shared\render\input.h" />
+    <ClInclude Include="..\dependencies\shared\render\renderer.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite_factory.h" />
+    <ClInclude Include="..\dependencies\shared\render\text_renderer.h" />
+    <ClInclude Include="..\dependencies\shared\render\texture.h" />
+    <ClInclude Include="..\dependencies\shared\render\window.h" />
+    <ClInclude Include="..\dependencies\shared\render\native_types.h" />
+    <ClInclude Include="..\dependencies\shared\render\null_sprite.h" />
+    <ClInclude Include="..\dependencies\shared\render\primitive_types.h" />
+    <ClInclude Include="..\dependencies\shared\render\render_constants.h" />
+    <ClInclude Include="..\dependencies\shared\render\renderer_factory.h" />
+    <ClInclude Include="..\dependencies\shared\render\resolution_config.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite_collection.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite_loader.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite_types.h" />
+    <ClInclude Include="..\dependencies\shared\render\text_lib.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="sfml_renderer.cpp" />
+    <ClCompile Include="sfml_texture.cpp" />
+    <ClCompile Include="sfml_window.cpp" />
+    <ClCompile Include="sfml_sprite.cpp" />
+    <ClCompile Include="sfml_sprite_factory.cpp" />
+    <ClCompile Include="sfml_text_renderer.cpp" />
+    <ClCompile Include="sfml_bitmap_font.cpp" />
+    <ClCompile Include="sfml_input.cpp" />
+    <ClCompile Include="renderer_factory.cpp" />
+    <ClCompile Include="..\dependencies\shared\render\sprite_factory.cpp" />
+    <ClCompile Include="..\dependencies\shared\render\text_lib.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

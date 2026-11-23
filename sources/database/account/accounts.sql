@@ -1,0 +1,1 @@
+CREATE TABLE accounts ( account_name TEXT PRIMARY KEY, password_hash TEXT NOT NULL, password_salt TEXT NOT NULL, email TEXT NOT NULL, created_at TEXT NOT NULL, password_changed_at TEXT NOT NULL, last_ip TEXT NOT NULL);

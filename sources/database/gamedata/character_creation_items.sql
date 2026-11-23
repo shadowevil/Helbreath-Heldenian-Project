@@ -1,0 +1,1 @@
+CREATE TABLE "character_creation_items" ( class_type INTEGER NOT NULL, item_id INTEGER NOT NULL, count INTEGER NOT NULL DEFAULT 1, item_color INTEGER NOT NULL DEFAULT 0, durability INTEGER NOT NULL DEFAULT 0, is_equipped INTEGER NOT NULL DEFAULT 0, gender_limit INTEGER NOT NULL DEFAULT 0, sort_order INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (class_type, item_id, gender_limit));

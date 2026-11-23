@@ -1,0 +1,1 @@
+CREATE TABLE character_item_equips ( character_name TEXT NOT NULL, slot INTEGER NOT NULL, is_equipped INTEGER NOT NULL, PRIMARY KEY(character_name, slot), FOREIGN KEY(character_name) REFERENCES characters(character_name) ON DELETE CASCADE);

@@ -1,0 +1,1 @@
+CREATE TABLE attribute_secondary_types ( secondary_id INTEGER PRIMARY KEY, name TEXT NOT NULL, effect_label TEXT NOT NULL, effect_format TEXT NOT NULL, min_value INTEGER NOT NULL DEFAULT 0, max_value INTEGER NOT NULL DEFAULT 0, multiplier INTEGER NOT NULL DEFAULT 1);

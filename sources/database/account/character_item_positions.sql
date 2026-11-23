@@ -1,0 +1,1 @@
+CREATE TABLE character_item_positions ( character_name TEXT NOT NULL, slot INTEGER NOT NULL, pos_x INTEGER NOT NULL, pos_y INTEGER NOT NULL, PRIMARY KEY(character_name, slot), FOREIGN KEY(character_name) REFERENCES characters(character_name) ON DELETE CASCADE);

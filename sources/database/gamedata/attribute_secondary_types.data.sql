@@ -1,0 +1,13 @@
+INSERT INTO "attribute_secondary_types" ("secondary_id", "name", "effect_label", "effect_format", "min_value", "max_value", "multiplier") VALUES (0, 'None', '', '', 0, 0, 0);
+INSERT INTO "attribute_secondary_types" ("secondary_id", "name", "effect_label", "effect_format", "min_value", "max_value", "multiplier") VALUES (1, 'PoisonResistance', 'Poison Resistance', '+{value}%', 3, 13, 7);
+INSERT INTO "attribute_secondary_types" ("secondary_id", "name", "effect_label", "effect_format", "min_value", "max_value", "multiplier") VALUES (2, 'HittingProb', 'Hitting Probability', '+{value}', 3, 13, 7);
+INSERT INTO "attribute_secondary_types" ("secondary_id", "name", "effect_label", "effect_format", "min_value", "max_value", "multiplier") VALUES (3, 'DefenseRatio', 'Defense Ratio', '+{value}', 3, 13, 7);
+INSERT INTO "attribute_secondary_types" ("secondary_id", "name", "effect_label", "effect_format", "min_value", "max_value", "multiplier") VALUES (4, 'HPRecovery', 'HP recovery', '{value}%', 1, 13, 7);
+INSERT INTO "attribute_secondary_types" ("secondary_id", "name", "effect_label", "effect_format", "min_value", "max_value", "multiplier") VALUES (5, 'SPRecovery', 'SP recovery', '{value}%', 1, 13, 7);
+INSERT INTO "attribute_secondary_types" ("secondary_id", "name", "effect_label", "effect_format", "min_value", "max_value", "multiplier") VALUES (6, 'MPRecovery', 'MP recovery', '{value}%', 1, 13, 7);
+INSERT INTO "attribute_secondary_types" ("secondary_id", "name", "effect_label", "effect_format", "min_value", "max_value", "multiplier") VALUES (7, 'MagicResistance', 'Magic Resistance', '+{value}%', 3, 13, 7);
+INSERT INTO "attribute_secondary_types" ("secondary_id", "name", "effect_label", "effect_format", "min_value", "max_value", "multiplier") VALUES (8, 'PhysicalAbsorb', 'Physical Absorption', '+{value}%', 3, 13, 3);
+INSERT INTO "attribute_secondary_types" ("secondary_id", "name", "effect_label", "effect_format", "min_value", "max_value", "multiplier") VALUES (9, 'MagicAbsorb', 'Magic Absorption', '+{value}%', 3, 13, 3);
+INSERT INTO "attribute_secondary_types" ("secondary_id", "name", "effect_label", "effect_format", "min_value", "max_value", "multiplier") VALUES (10, 'ConsecutiveAttack', 'Consecutive Attack Damage', '+{value}', 1, 7, 1);
+INSERT INTO "attribute_secondary_types" ("secondary_id", "name", "effect_label", "effect_format", "min_value", "max_value", "multiplier") VALUES (11, 'ExperienceBonus', 'Experience', '+{value}%', 1, 2, 10);
+INSERT INTO "attribute_secondary_types" ("secondary_id", "name", "effect_label", "effect_format", "min_value", "max_value", "multiplier") VALUES (12, 'GoldBonus', 'Gold', '+{value}%', 5, 5, 10);

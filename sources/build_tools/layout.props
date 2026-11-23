@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Build layout shared by every .vcxproj (Phase H: sources/ holds sources only).
+
+     Imported first by each project, so it never depends on $(SolutionDir): the solution lives at the repo
+     root, and a project can also be built on its own. Paths end in a backslash.
+
+       HbRepoRoot     repo root
+       HbSourcesDir   sources\ (what $(SolutionDir) used to mean)
+       HbBuildRoot    build\  - every intermediate: objs, tlogs, generated headers, release seed, logs
+       HbBinRoot      bin\    - built exes and libs, bin\<project>\<Configuration>\
+       HbGameRoot     game\   - assembled by sources\build_tools\deploy.py, never written by a build
+
+     Configurations get their own bin folder because the libraries keep one name for Debug and Release: a
+     shared folder would let a Debug client link a Release SFMLEngine.lib that looks up to date. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <HbRepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\'))</HbRepoRoot>
+    <HbSourcesDir>$(HbRepoRoot)sources\</HbSourcesDir>
+    <HbBuildRoot>$(HbRepoRoot)build\</HbBuildRoot>
+    <HbBinRoot>$(HbRepoRoot)bin\</HbBinRoot>
+    <HbGameRoot>$(HbRepoRoot)game\</HbGameRoot>
+    <!-- client, server, sfmlengine, ccontrols, autoupdater -->
+    <HbProjectKey>$(MSBuildProjectName.ToLower())</HbProjectKey>
+    <HbOutDir>$(HbBinRoot)$(HbProjectKey)\$(Configuration)\</HbOutDir>
+    <HbIntDir>$(HbBuildRoot)msbuild\$(HbProjectKey)\$(Configuration)\</HbIntDir>
+    <!-- The libraries have no ReleaseWithDebugInfo configuration; the solution builds them as Release -->
+    <HbLibConfig>$(Configuration)</HbLibConfig>
+    <HbLibConfig Condition="'$(Configuration)'=='ReleaseWithDebugInfo'">Release</HbLibConfig>
+    <HbLibDirs>$(HbBinRoot)sfmlengine\$(HbLibConfig);$(HbBinRoot)ccontrols\$(HbLibConfig);$(HbBinRoot)autoupdater\$(HbLibConfig)</HbLibDirs>
+  </PropertyGroup>
+</Project>

@@ -61,3 +61,12 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+###############################################################################
+# SQL source directory: files are stored verbatim (embedded CRs, non-ASCII).
+# Never let git rewrite line endings.
+###############################################################################
+sources/database/**/*.sql -text
+
+# Shell scripts run under Linux/WSL: always LF.
+*.sh text eol=lf

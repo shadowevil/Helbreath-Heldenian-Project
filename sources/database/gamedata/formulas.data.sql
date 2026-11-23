@@ -1,0 +1,14 @@
+INSERT INTO "formulas" ("formula_id", "expression", "description") VALUES ('hp_regen_max_roll', 'vit', 'HP regen dice ceiling');
+INSERT INTO "formulas" ("formula_id", "expression", "description") VALUES ('hp_regen_min_roll', 'vit / 2', 'HP regen hard floor clamp');
+INSERT INTO "formulas" ("formula_id", "expression", "description") VALUES ('hp_regen_roll_variance', '30 * vit / (vit + 60)', 'HP regen bonus variance (diminishing returns)');
+INSERT INTO "formulas" ("formula_id", "expression", "description") VALUES ('level_exp', '((100 + pow(level, 2))) - 8 + 0.5 * pow(level, 3)', 'XP cost for a single level');
+INSERT INTO "formulas" ("formula_id", "expression", "description") VALUES ('max_hp', 'vit * 3 + level * 2 + str * 0.5 + angelic_str * 0.5', 'Maximum health points');
+INSERT INTO "formulas" ("formula_id", "expression", "description") VALUES ('max_load', 'str * 5 + angelic_str * 5 + level * 5', 'Maximum carry weight');
+INSERT INTO "formulas" ("formula_id", "expression", "description") VALUES ('max_mp', 'mag * 2 + angelic_mag * 2 + level * 2 + int * 0.5 + angelic_int * 0.5', 'Maximum mana points');
+INSERT INTO "formulas" ("formula_id", "expression", "description") VALUES ('max_sp', '(str + angelic_str) + level * 2', 'Maximum stamina points');
+INSERT INTO "formulas" ("formula_id", "expression", "description") VALUES ('mp_regen_max_roll', 'mag + angelic_mag', 'MP regen dice ceiling');
+INSERT INTO "formulas" ("formula_id", "expression", "description") VALUES ('mp_regen_min_roll', '(mag + angelic_mag) / 2', 'MP regen hard floor clamp');
+INSERT INTO "formulas" ("formula_id", "expression", "description") VALUES ('mp_regen_roll_variance', '30 * (mag + angelic_mag) / (mag + angelic_mag + 60)', 'MP regen bonus variance (diminishing returns)');
+INSERT INTO "formulas" ("formula_id", "expression", "description") VALUES ('sp_regen_max_roll', 'floor(vit * 0.15) + 5', 'SP regen dice ceiling');
+INSERT INTO "formulas" ("formula_id", "expression", "description") VALUES ('sp_regen_min_roll', 'floor(vit * 0.05) + 1', 'SP regen hard floor clamp');
+INSERT INTO "formulas" ("formula_id", "expression", "description") VALUES ('sp_regen_roll_variance', '30 * vit / (vit + 500)', 'SP regen bonus variance (diminishing returns)');

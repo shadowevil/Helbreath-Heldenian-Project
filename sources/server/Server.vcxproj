@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="Current">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <SccProjectName>"$/HGserver", KDAAAAAA</SccProjectName>
+    <SccLocalPath>.</SccLocalPath>
+    <ProjectGuid>{E8966E8D-F08D-4A15-88E4-A482F41B9E33}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <!-- Phase H build layout: build\ for intermediates, bin\<project>\<Configuration>\ for outputs -->
+  <Import Project="$(MSBuildThisFileDirectory)..\build_tools\layout.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>17.0.35527.80</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(HbOutDir)</OutDir>
+    <IntDir>$(HbIntDir)</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <LocalDebuggerWorkingDirectory>$(HbGameRoot)server\</LocalDebuggerWorkingDirectory>
+    <IncludePath>$(HbSourcesDir)dependencies\shared;$(HbSourcesDir)dependencies\shared\entity;$(HbSourcesDir)dependencies\shared\game;$(HbSourcesDir)dependencies\shared\net;$(HbSourcesDir)dependencies\shared\render;$(HbSourcesDir)dependencies\shared\util;$(HbSourcesDir)dependencies\shared\log;$(HbSourcesDir)dependencies\server\includes;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(HbSourcesDir)dependencies\server\libs;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(HbOutDir)</OutDir>
+    <IntDir>$(HbIntDir)</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <LocalDebuggerWorkingDirectory>$(HbGameRoot)server\</LocalDebuggerWorkingDirectory>
+    <IncludePath>$(HbSourcesDir)dependencies\shared;$(HbSourcesDir)dependencies\shared\entity;$(HbSourcesDir)dependencies\shared\game;$(HbSourcesDir)dependencies\shared\net;$(HbSourcesDir)dependencies\shared\render;$(HbSourcesDir)dependencies\shared\util;$(HbSourcesDir)dependencies\shared\log;$(HbSourcesDir)dependencies\server\includes;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(HbSourcesDir)dependencies\server\libs;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <PreprocessorDefinitions>WIN32;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;TESTER_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>
+      </PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:X64 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;sqlite3_x64.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>x64</TargetEnvironment>
+      <TypeLibraryName>.\Release/HGserver.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0412</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;TESTER_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>
+      </PrecompiledHeaderOutputFile>
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:X64 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;sqlite3_x64.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <GenerateMapFile>false</GenerateMapFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>x64</TargetEnvironment>
+      <TypeLibraryName>.\Debug/HGserver.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0412</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <!-- Versioning (sources/build_tools, shared/version.h). HbEnvironment is DEV unless a build overrides it;
+       TEST and PROD also need /p:Configuration=Release and HbFreshSourceSwitch set to the generator's
+       fresh-source flag (see gen_build_id.py; an XML comment cannot hold its double hyphen). -->
+  <PropertyGroup>
+    <HbEnvironment Condition="'$(HbEnvironment)'==''">DEV</HbEnvironment>
+    <HbFreshSourceSwitch Condition="'$(HbFreshSourceSwitch)'==''"></HbFreshSourceSwitch>
+    <!-- build.ps1 / build_release.ps1 set this after checking the whole tree once, before the build
+         writes anything; a bare MSBuild run leaves it empty and the generator checks itself. -->
+    <HbCleanVerifiedSwitch Condition="'$(HbCleanVerifiedSwitch)'==''"></HbCleanVerifiedSwitch>
+    <!-- The Build ID comes from git state, which MSBuild cannot see as an input: without this the IDE's
+         fast up-to-date check would skip the generator and run a binary with a stale Build ID. -->
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+    <HbVersionComponent>server</HbVersionComponent>
+    <HbVersionDescription>Helbreath server</HbVersionDescription>
+    <!-- One folder per configuration AND channel, so a DEV header can never feed a TEST build -->
+    <HbGeneratedDir>$(HbIntDir)$(HbEnvironment.ToLower())\generated\</HbGeneratedDir>
+    <!-- build.ps1 passes the interpreter it found; an IDE build uses python from PATH -->
+    <HbPython Condition="'$(HbPython)'==''">python</HbPython>
+    <!-- One seed per channel, shared by the client and the server of that channel -->
+    <HbReleaseSeedDir>$(HbBuildRoot)generated\$(HbEnvironment.ToLower())\</HbReleaseSeedDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(HbGeneratedDir);$(HbReleaseSeedDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(HbGeneratedDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="account_sqlite_store.h" />
+    <ClInclude Include="database_gate.h" />
+    <ClInclude Include="action_id_server.h" />
+    <ClInclude Include="build_item.h" />
+    <ClInclude Include="client.h" />
+    <ClInclude Include="common_types.h" />
+    <ClInclude Include="delay_event.h" />
+    <ClInclude Include="dynamic_object.h" />
+    <ClInclude Include="entity_manager.h" />
+    <ClInclude Include="fishing_manager.h" />
+    <ClInclude Include="mining_manager.h" />
+    <ClInclude Include="crafting_manager.h" />
+    <ClInclude Include="quest_manager.h" />
+    <ClInclude Include="guild_manager.h" />
+    <ClInclude Include="delay_event_manager.h" />
+    <ClInclude Include="dynamic_object_manager.h" />
+    <ClInclude Include="loot_manager.h" />
+    <ClInclude Include="combat_manager.h" />
+    <ClInclude Include="item_manager.h" />
+    <ClInclude Include="magic_manager.h" />
+    <ClInclude Include="skill_manager.h" />
+    <ClInclude Include="war_manager.h" />
+    <ClInclude Include="status_effect_manager.h" />
+    <ClInclude Include="regen_manager.h" />
+    <ClInclude Include="fish.h" />
+    <ClInclude Include="game.h" />
+    <ClInclude Include="game_config_sqlite_store.h" />
+    <ClInclude Include="server_config.h" />
+    <ClInclude Include="global_def.h" />
+    <ClInclude Include="map_info_sqlite_store.h" />
+
+    <ClInclude Include="item.h" />
+    <ClInclude Include="login_server.h" />
+    <ClInclude Include="magic.h" />
+    <ClInclude Include="map.h" />
+    <ClInclude Include="message_index.h" />
+    <ClInclude Include="mineral.h" />
+    <ClInclude Include="misc.h" />
+    <ClInclude Include="network_msg.h" />
+    <ClInclude Include="npc.h" />
+    <ClInclude Include="occupy_flag.h" />
+    <ClInclude Include="party_manager.h" />
+    <ClInclude Include="portion.h" />
+    <ClInclude Include="quest.h" />
+    <ClInclude Include="server_messages.h" />
+    <ClInclude Include="skill.h" />
+    <ClInclude Include="strategic_point.h" />
+    <ClInclude Include="teleport_loc.h" />
+    <ClInclude Include="tile.h" />
+    <ClInclude Include="version.h" />
+    <ClInclude Include="server_console.h" />
+    <ClInclude Include="server_command.h" />
+    <ClInclude Include="cmd_help.h" />
+    <ClInclude Include="cmd_broadcast.h" />
+    <ClInclude Include="cmd_show_chat.h" />
+    <ClInclude Include="cmd_give_item.h" />
+    <ClInclude Include="cmd_reload.h" />
+    <ClInclude Include="game_chat_command.h" />
+    <ClInclude Include="game_cmd_whisper.h" />
+    <ClInclude Include="game_cmd_block.h" />
+    <ClInclude Include="game_cmd_unblock.h" />
+    <ClInclude Include="game_cmd_gm.h" />
+    <ClInclude Include="game_cmd_regen.h" />
+    <ClInclude Include="game_cmd_create_item.h" />
+    <ClInclude Include="game_cmd_give_item.h" />
+    <ClInclude Include="game_cmd_spawn.h" />
+    <ClInclude Include="game_cmd_goto.h" />
+    <ClInclude Include="game_cmd_come.h" />
+    <ClInclude Include="game_cmd_invis.h" />
+    <ClInclude Include="game_cmd_save_all.h" />
+    <ClInclude Include="cmd_set_admin.h" />
+    <ClInclude Include="cmd_set_cmd_level.h" />
+    <ClInclude Include="cmd_save_all.h" />
+    <ClInclude Include="cmd_shutdown.h" />
+    <ClInclude Include="password_hash.h" />
+    <ClInclude Include="string_compat.h" />
+    <ClInclude Include="time_utils.h" />
+    <ClInclude Include="..\dependencies\shared\net\asio_socket.h" />
+    <ClInclude Include="..\dependencies\shared\entity\action_id.h" />
+    <ClInclude Include="..\dependencies\shared\game\admin_level.h" />
+    <ClInclude Include="..\dependencies\shared\entity\appearance.h" />
+    <ClInclude Include="..\dependencies\shared\render\bitmap_font_factory.h" />
+    <ClInclude Include="..\dependencies\shared\util\sha256.h" />
+    <ClInclude Include="..\dependencies\shared\util\hmac.h" />
+    <ClInclude Include="..\dependencies\shared\version.h" />
+    <ClInclude Include="..\dependencies\shared\vendor\picosha2.h" />
+    <ClInclude Include="..\dependencies\shared\render\color_utils.h" />
+    <ClInclude Include="..\dependencies\shared\net\concurrent_msg_queue.h" />
+    <ClInclude Include="..\dependencies\shared\entity\dynamic_object_id.h" />
+    <ClInclude Include="..\dependencies\shared\entity\entity_relationship.h" />
+    <ClInclude Include="..\dependencies\shared\render\game_geometry.h" />
+    <ClInclude Include="..\dependencies\shared\render\bitmap_font.h" />
+    <ClInclude Include="..\dependencies\shared\render\input.h" />
+    <ClInclude Include="..\dependencies\shared\net\io_service_pool.h" />
+    <ClInclude Include="..\dependencies\shared\render\renderer.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite_factory.h" />
+    <ClInclude Include="..\dependencies\shared\render\text_renderer.h" />
+    <ClInclude Include="..\dependencies\shared\render\texture.h" />
+    <ClInclude Include="..\dependencies\shared\render\window.h" />
+    <ClInclude Include="..\dependencies\shared\item\item.h" />
+    <ClInclude Include="..\dependencies\shared\item\item_attributes.h" />
+    <ClInclude Include="..\dependencies\shared\item\item_enums.h" />
+    <ClInclude Include="..\dependencies\shared\item\shared_item.h" />
+    <ClInclude Include="..\dependencies\shared\game\magic_types.h" />
+    <ClInclude Include="..\dependencies\shared\net\net_constants.h" />
+    <ClInclude Include="..\dependencies\shared\net\net_messages.h" />
+    <ClInclude Include="..\dependencies\shared\render\null_sprite.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_calc_socket.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_common.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_config_cache.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_event.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_headers.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_helpers.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_item_config.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_login.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_login_response.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_magic_config.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_map.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_motion.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_notify.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_request.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_response.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_shop.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_skill_config.h" />
+    <ClInclude Include="..\dependencies\shared\packet\shared_packets.h" />
+    <ClInclude Include="..\dependencies\shared\entity\player_status_data.h" />
+    <ClInclude Include="..\dependencies\shared\render\primitive_types.h" />
+    <ClInclude Include="..\dependencies\shared\render\render_constants.h" />
+    <ClInclude Include="..\dependencies\shared\render\renderer_factory.h" />
+    <ClInclude Include="..\dependencies\shared\render\resolution_config.h" />
+    <ClInclude Include="..\dependencies\shared\game\shared_calculations.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite_collection.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite_loader.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite_types.h" />
+    <ClInclude Include="..\dependencies\shared\render\text_lib.h" />
+    <ClInclude Include="..\dependencies\shared\log\log.h" />
+    <ClInclude Include="..\dependencies\shared\log\log_level.h" />
+    <ClInclude Include="..\dependencies\shared\log\log_backend.h" />
+    <ClInclude Include="server_log_channels.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="account_sqlite_store.cpp" />
+    <ClCompile Include="database_gate.cpp" />
+    <ClCompile Include="client.cpp" />
+    <ClCompile Include="common_types.cpp" />
+    <ClCompile Include="entity_manager.cpp" />
+    <ClCompile Include="fishing_manager.cpp" />
+    <ClCompile Include="mining_manager.cpp" />
+    <ClCompile Include="crafting_manager.cpp" />
+    <ClCompile Include="quest_manager.cpp" />
+    <ClCompile Include="guild_manager.cpp" />
+    <ClCompile Include="delay_event_manager.cpp" />
+    <ClCompile Include="dynamic_object_manager.cpp" />
+    <ClCompile Include="loot_manager.cpp" />
+    <ClCompile Include="combat_manager.cpp" />
+    <ClCompile Include="item_manager.cpp" />
+    <ClCompile Include="magic_manager.cpp" />
+    <ClCompile Include="skill_manager.cpp" />
+    <ClCompile Include="war_manager.cpp" />
+    <ClCompile Include="status_effect_manager.cpp" />
+    <ClCompile Include="regen_manager.cpp" />
+    <ClCompile Include="game.cpp" />
+    <ClCompile Include="game_config_sqlite_store.cpp" />
+    <ClCompile Include="server_config.cpp" />
+    <ClCompile Include="map_info_sqlite_store.cpp" />
+    <ClCompile Include="login_server.cpp" />
+    <ClCompile Include="map.cpp" />
+    <ClCompile Include="network_msg.cpp" />
+    <ClCompile Include="npc.cpp" />
+    <ClCompile Include="party_manager.cpp" />
+    <ClCompile Include="quest.cpp" />
+    <ClCompile Include="tile.cpp" />
+    <ClCompile Include="wmain.cpp" />
+    <ClCompile Include="server_console.cpp" />
+    <ClCompile Include="server_command.cpp" />
+    <ClCompile Include="cmd_help.cpp" />
+    <ClCompile Include="cmd_broadcast.cpp" />
+    <ClCompile Include="cmd_show_chat.cpp" />
+    <ClCompile Include="cmd_give_item.cpp" />
+    <ClCompile Include="cmd_reload.cpp" />
+    <ClCompile Include="game_chat_command.cpp" />
+    <ClCompile Include="game_cmd_whisper.cpp" />
+    <ClCompile Include="game_cmd_block.cpp" />
+    <ClCompile Include="game_cmd_unblock.cpp" />
+    <ClCompile Include="game_cmd_gm.cpp" />
+    <ClCompile Include="game_cmd_regen.cpp" />
+    <ClCompile Include="game_cmd_create_item.cpp" />
+    <ClCompile Include="game_cmd_give_item.cpp" />
+    <ClCompile Include="game_cmd_spawn.cpp" />
+    <ClCompile Include="game_cmd_goto.cpp" />
+    <ClCompile Include="game_cmd_come.cpp" />
+    <ClCompile Include="game_cmd_invis.cpp" />
+    <ClCompile Include="game_cmd_save_all.cpp" />
+    <ClCompile Include="cmd_set_admin.cpp" />
+    <ClCompile Include="cmd_set_cmd_level.cpp" />
+    <ClCompile Include="cmd_save_all.cpp" />
+    <ClCompile Include="cmd_shutdown.cpp" />
+    <ClCompile Include="..\dependencies\shared\net\asio_socket.cpp" />
+    <ClCompile Include="..\dependencies\shared\net\io_service_pool.cpp" />
+    <ClCompile Include="..\dependencies\shared\log\log_backend.cpp" />
+    <ClCompile Include="..\dependencies\shared\util\sha256.cpp" />
+    <ClCompile Include="..\dependencies\shared\util\hmac.cpp" />
+    <ClCompile Include="..\dependencies\shared\version.cpp" />
+    <ClCompile Include="..\dependencies\shared\game\formula_engine.cpp" />
+    <ClCompile Include="server_log.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="logo.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="server.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <!-- Build ID: written into this project's untracked build folder before every compile, rewritten only
+       when the value changes so an unchanged source state does not recompile. -->
+  <Target Name="GenerateBuildId" BeforeTargets="ClCompile">
+    <Exec Command="&quot;$(HbPython)&quot; &quot;$(HbSourcesDir)build_tools\gen_build_id.py&quot; --environment $(HbEnvironment) --configuration $(Configuration) --output &quot;$(HbGeneratedDir)build_id_generated.h&quot;$(HbFreshSourceSwitch)$(HbCleanVerifiedSwitch)" />
+  </Target>
+  <!-- Schema headers: gamedata/mapinfo fingerprints (byte-identical to build_databases.py's header) and the
+       account baseline + migrations, from sources/database. Header only: no DB is built or touched here.
+       Rewritten only when the content changes, so an unchanged source does not recompile. -->
+  <Target Name="GenerateServerSchema" BeforeTargets="ClCompile">
+    <Exec Command="&quot;$(HbPython)&quot; &quot;$(HbSourcesDir)build_tools\gen_server_schema.py&quot; --environment $(HbEnvironment) --schema-out &quot;$(HbGeneratedDir)schema_sql_generated.h&quot; --account-out &quot;$(HbGeneratedDir)account_schema_generated.h&quot;" />
+  </Target>
+  <!-- Release seed: one file shared with the client. Writes a seed only when none exists, so a lone build
+       reuses the current one; only build_release.ps1 rolls a new seed. Debug never reads it. -->
+  <Target Name="EnsureReleaseSeed" BeforeTargets="ClCompile" Condition="'$(Configuration)'!='Debug'">
+    <Exec Command="&quot;$(HbPython)&quot; &quot;$(HbSourcesDir)build_tools\gen_release_seed.py&quot; --mode ensure --environment $(HbEnvironment) --configuration $(Configuration) --output &quot;$(HbReleaseSeedDir)release_seed_generated.h&quot;" />
+  </Target>
+  <!-- VERSIONINFO fragment from the release in version.h; server.rc includes it once phase C switches over. -->
+  <Target Name="GenerateVersionInfo" BeforeTargets="ResourceCompile">
+    <Exec Command="&quot;$(HbPython)&quot; &quot;$(HbSourcesDir)build_tools\gen_version_info.py&quot; --component $(HbVersionComponent) --description &quot;$(HbVersionDescription)&quot; --original-filename $(TargetName)$(TargetExt) --internal-name $(TargetName) --configuration $(Configuration) --output &quot;$(HbGeneratedDir)version_info.rc&quot;" />
+  </Target>
+</Project>

@@ -1,6 +1,6 @@
 """
 Regen Algorithm Simulator
-Run: python PLANS/regen_sim.py
+Run: python tools/regen_sim.py
 Opens a browser with interactive line graphs comparing custom regen formulas.
 """
 

@@ -1,0 +1,5 @@
+// Server resource script - version info for Windows executable metadata.
+// version_info.rc is generated before every resource compile by sources/build_tools/gen_version_info.py
+// into the project's untracked build folder ($(HbGeneratedDir), on the resource include path), from the
+// server release in sources/dependencies/shared/version.h.
+#include "version_info.rc"

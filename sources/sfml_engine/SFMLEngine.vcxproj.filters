@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <Filter Include="Shared">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000001}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Interfaces">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000002}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Rendering">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000006}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Entity">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000007}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Game">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000008}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\dependencies\shared\entity\action_id.h">
+      <Filter>Shared\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\entity\appearance.h">
+      <Filter>Shared\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\bitmap_font_factory.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\color_utils.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\game_geometry.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\bitmap_font.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\input.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\renderer.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\sprite.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\sprite_factory.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\text_renderer.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\texture.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\window.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\native_types.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\null_sprite.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\primitive_types.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\render_constants.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\renderer_factory.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\resolution_config.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\sprite_collection.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\sprite_loader.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\sprite_types.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\text_lib.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="sfml_renderer.h" />
+    <ClInclude Include="sfml_texture.h" />
+    <ClInclude Include="sfml_window.h" />
+    <ClInclude Include="sfml_sprite.h" />
+    <ClInclude Include="sfml_sprite_factory.h" />
+    <ClInclude Include="sfml_text_renderer.h" />
+    <ClInclude Include="sfml_bitmap_font.h" />
+    <ClInclude Include="sfml_input.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\dependencies\shared\render\sprite_factory.cpp">
+      <Filter>Shared\Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\shared\render\text_lib.cpp">
+      <Filter>Shared\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="sfml_renderer.cpp" />
+    <ClCompile Include="sfml_texture.cpp" />
+    <ClCompile Include="sfml_window.cpp" />
+    <ClCompile Include="sfml_sprite.cpp" />
+    <ClCompile Include="sfml_sprite_factory.cpp" />
+    <ClCompile Include="sfml_text_renderer.cpp" />
+    <ClCompile Include="sfml_bitmap_font.cpp" />
+    <ClCompile Include="sfml_input.cpp" />
+    <ClCompile Include="renderer_factory.cpp" />
+  </ItemGroup>
+</Project>

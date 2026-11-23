@@ -1,0 +1,12 @@
+INSERT INTO "admin_command_permissions" ("command", "admin_level", "description") VALUES ('block', 0, 'Blocking players');
+INSERT INTO "admin_command_permissions" ("command", "admin_level", "description") VALUES ('come', 101, 'Forces a player to teleport to you.');
+INSERT INTO "admin_command_permissions" ("command", "admin_level", "description") VALUES ('createitem', 1000, 'Creates an item for the caller');
+INSERT INTO "admin_command_permissions" ("command", "admin_level", "description") VALUES ('giveitem', 1000, 'Gives an item to the designated player');
+INSERT INTO "admin_command_permissions" ("command", "admin_level", "description") VALUES ('gm', 100, 'Enable/Disable GM Mode');
+INSERT INTO "admin_command_permissions" ("command", "admin_level", "description") VALUES ('goto', 100, 'Teleports caller to a player, online or offline');
+INSERT INTO "admin_command_permissions" ("command", "admin_level", "description") VALUES ('invis', 100, 'GM Invis, unable to be detected or seen');
+INSERT INTO "admin_command_permissions" ("command", "admin_level", "description") VALUES ('regen', 101, 'Regenerates HP/MP/SP/Hunger for self or desired player');
+INSERT INTO "admin_command_permissions" ("command", "admin_level", "description") VALUES ('saveall', 100, '');
+INSERT INTO "admin_command_permissions" ("command", "admin_level", "description") VALUES ('spawn', 500, 'Spawns an entity by ID');
+INSERT INTO "admin_command_permissions" ("command", "admin_level", "description") VALUES ('to', 0, 'Whisper for players');
+INSERT INTO "admin_command_permissions" ("command", "admin_level", "description") VALUES ('unblock', 0, 'Unblocking players');

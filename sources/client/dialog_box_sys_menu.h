@@ -1,0 +1,71 @@
+#pragma once
+#include "dialog_box.h"
+
+// 4:3 resolution options
+struct Resolution {
+	int width;
+	int height;
+};
+
+class DialogBox_SysMenu : public IDialogBox
+{
+public:
+	// Tab indices
+	enum Tab
+	{
+		TAB_GENERAL = 0,
+		TAB_GRAPHICS,
+		TAB_AUDIO,
+		TAB_SYSTEM,
+		TAB_COUNT
+	};
+
+	DialogBox_SysMenu(CGame* game);
+	~DialogBox_SysMenu() override = default;
+
+	void on_update() override;
+	void on_draw() override;
+	bool on_click() override;
+	PressResult on_press() override;
+
+	// Resolution management
+	static const Resolution s_Resolutions[];
+	static const int s_NumResolutions;
+	static int get_current_resolution_index();
+	static int get_nearest_resolution_index(int width, int height);
+	static void cycle_resolution();
+	static void apply_resolution(int index);
+
+private:
+	// Tab drawing
+	void draw_tabs(short sX, short sY);
+	void draw_tab_content(short sX, short sY, short mouse_x, short mouse_y, char lb);
+
+	// Individual tab content
+	void draw_general_tab(short sX, short sY);
+	void draw_graphics_tab(short sX, short sY);
+	void draw_audio_tab(short sX, short sY, short mouse_x, short mouse_y, char lb);
+	void draw_system_tab(short sX, short sY);
+
+	// Click handlers for each tab
+	bool on_click_general(short sX, short sY);
+	bool on_click_graphics(short sX, short sY);
+	bool on_click_audio(short sX, short sY);
+	bool on_click_system(short sX, short sY);
+
+	// Helper to draw On/Off toggle
+	void draw_toggle(int x, int y, bool enabled);
+	bool is_in_toggle_area(int x, int y);
+
+	int m_iActiveTab;
+	int m_graphics_scroll_offset = 0;
+
+	// Cached frame dimensions (initialized on first update)
+	bool m_bFrameSizesInitialized;
+	int m_iWideBoxWidth;    // Frame 78 width
+	int m_iWideBoxHeight;   // Frame 78 height
+	int m_iSmallBoxWidth;   // Frame 79 width
+	int m_iSmallBoxHeight;  // Frame 79 height
+	int m_iLargeBoxWidth;   // Frame 81 width
+	int m_iLargeBoxHeight;  // Frame 81 height
+};

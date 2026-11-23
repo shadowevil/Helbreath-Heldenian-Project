@@ -1,0 +1,618 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <Filter Include="Console">
+      <UniqueIdentifier>{a1b2c3d4-1111-2222-3333-444455556666}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Console\Commands">
+      <UniqueIdentifier>{a1b2c3d4-1111-2222-3333-44445555cccc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{a1b2c3d4-1111-2222-3333-44445555bbbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data Types">
+      <UniqueIdentifier>{a1b2c3d4-1111-2222-3333-44445555aaaa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Database">
+      <UniqueIdentifier>{a1b2c3d4-1111-2222-3333-444455557777}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Chat">
+      <UniqueIdentifier>{a1b2c3d4-1111-2222-3333-44445555dddd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Chat\Commands">
+      <UniqueIdentifier>{a1b2c3d4-1111-2222-3333-44445555eeee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Networking">
+      <UniqueIdentifier>{a1b2c3d4-1111-2222-3333-444455558888}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="World">
+      <UniqueIdentifier>{a1b2c3d4-1111-2222-3333-444455559999}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000001}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Interfaces">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000002}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Item">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Network">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000004}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Packet">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000005}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Rendering">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000006}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Entity">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000007}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Game">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000008}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shared\Log">
+      <UniqueIdentifier>{d1e2f3a4-b5c6-7890-abcd-shared000009}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="account_sqlite_store.h">
+      <Filter>Database</Filter>
+    </ClInclude>
+    <ClInclude Include="database_gate.h">
+      <Filter>Database</Filter>
+    </ClInclude>
+    <ClInclude Include="action_id_server.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="build_item.h">
+      <Filter>Data Types</Filter>
+    </ClInclude>
+    <ClInclude Include="client.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="cmd_broadcast.h">
+      <Filter>Console\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="cmd_give_item.h">
+      <Filter>Console\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="cmd_help.h">
+      <Filter>Console\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="cmd_reload.h">
+      <Filter>Console\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="cmd_set_admin.h">
+      <Filter>Console\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="cmd_set_cmd_level.h">
+      <Filter>Console\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="cmd_show_chat.h">
+      <Filter>Console\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="common_types.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="delay_event.h">
+      <Filter>Data Types</Filter>
+    </ClInclude>
+    <ClInclude Include="dynamic_object.h">
+      <Filter>Data Types</Filter>
+    </ClInclude>
+    <ClInclude Include="entity_manager.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="fishing_manager.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="mining_manager.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="crafting_manager.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="quest_manager.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="guild_manager.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="delay_event_manager.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="dynamic_object_manager.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="loot_manager.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="combat_manager.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="regen_manager.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="fish.h">
+      <Filter>Data Types</Filter>
+    </ClInclude>
+    <ClInclude Include="game.h" />
+    <ClInclude Include="game_chat_command.h">
+      <Filter>Game Chat</Filter>
+    </ClInclude>
+    <ClInclude Include="game_cmd_block.h">
+      <Filter>Game Chat\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="game_cmd_come.h">
+      <Filter>Game Chat\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="game_cmd_create_item.h">
+      <Filter>Game Chat\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="game_cmd_gm.h">
+      <Filter>Game Chat\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="game_cmd_give_item.h">
+      <Filter>Game Chat\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="game_cmd_goto.h">
+      <Filter>Game Chat\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="game_cmd_invis.h">
+      <Filter>Game Chat\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="game_cmd_regen.h">
+      <Filter>Game Chat\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="game_cmd_spawn.h">
+      <Filter>Game Chat\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="game_cmd_unblock.h">
+      <Filter>Game Chat\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="game_cmd_whisper.h">
+      <Filter>Game Chat\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="game_config_sqlite_store.h">
+      <Filter>Database</Filter>
+    </ClInclude>
+    <ClInclude Include="server_config.h">
+      <Filter>Database</Filter>
+    </ClInclude>
+    <ClInclude Include="global_def.h" />
+
+    <ClInclude Include="item.h">
+      <Filter>Data Types</Filter>
+    </ClInclude>
+    <ClInclude Include="login_server.h">
+      <Filter>Networking</Filter>
+    </ClInclude>
+    <ClInclude Include="magic.h">
+      <Filter>Data Types</Filter>
+    </ClInclude>
+    <ClInclude Include="map.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="map_info_sqlite_store.h">
+      <Filter>Database</Filter>
+    </ClInclude>
+    <ClInclude Include="message_index.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="mineral.h">
+      <Filter>Data Types</Filter>
+    </ClInclude>
+    <ClInclude Include="misc.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="network_msg.h">
+      <Filter>Networking</Filter>
+    </ClInclude>
+    <ClInclude Include="npc.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="occupy_flag.h">
+      <Filter>Data Types</Filter>
+    </ClInclude>
+    <ClInclude Include="party_manager.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="password_hash.h">
+      <Filter>Database</Filter>
+    </ClInclude>
+    <ClInclude Include="string_compat.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="time_utils.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="portion.h">
+      <Filter>Data Types</Filter>
+    </ClInclude>
+    <ClInclude Include="quest.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="server_command.h">
+      <Filter>Console</Filter>
+    </ClInclude>
+    <ClInclude Include="server_console.h">
+      <Filter>Console</Filter>
+    </ClInclude>
+    <ClInclude Include="server_messages.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="skill.h">
+      <Filter>Data Types</Filter>
+    </ClInclude>
+    <ClInclude Include="strategic_point.h">
+      <Filter>Data Types</Filter>
+    </ClInclude>
+    <ClInclude Include="teleport_loc.h">
+      <Filter>Data Types</Filter>
+    </ClInclude>
+    <ClInclude Include="tile.h">
+      <Filter>World</Filter>
+    </ClInclude>
+    <ClInclude Include="version.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\net\asio_socket.h">
+      <Filter>Shared\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\entity\action_id.h">
+      <Filter>Shared\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\game\admin_level.h">
+      <Filter>Shared\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\entity\appearance.h">
+      <Filter>Shared\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\bitmap_font_factory.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\util\sha256.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\vendor\picosha2.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\color_utils.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\net\concurrent_msg_queue.h">
+      <Filter>Shared\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\entity\dynamic_object_id.h">
+      <Filter>Shared\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\entity\entity_relationship.h">
+      <Filter>Shared\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\game_geometry.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\bitmap_font.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\input.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\net\io_service_pool.h">
+      <Filter>Shared\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\renderer.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\sprite.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\sprite_factory.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\text_renderer.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\texture.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\window.h">
+      <Filter>Shared\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\item\item.h">
+      <Filter>Shared\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\item\item_attributes.h">
+      <Filter>Shared\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\item\item_enums.h">
+      <Filter>Shared\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\item\shared_item.h">
+      <Filter>Shared\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\game\magic_types.h">
+      <Filter>Shared\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\net\net_constants.h">
+      <Filter>Shared\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\net\net_messages.h">
+      <Filter>Shared\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\null_sprite.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_calc_socket.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_common.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_config_cache.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_event.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_headers.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_helpers.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_item_config.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_login.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_login_response.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_magic_config.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_map.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_motion.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_notify.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_request.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_response.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_shop.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\packet_skill_config.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\packet\shared_packets.h">
+      <Filter>Shared\Packet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\entity\player_status_data.h">
+      <Filter>Shared\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\primitive_types.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\render_constants.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\renderer_factory.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\resolution_config.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\game\shared_calculations.h">
+      <Filter>Shared\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\sprite_collection.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\sprite_loader.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\sprite_types.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\text_lib.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\log\log.h">
+      <Filter>Shared\Log</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\log\log_level.h">
+      <Filter>Shared\Log</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\shared\log\log_backend.h">
+      <Filter>Shared\Log</Filter>
+    </ClInclude>
+    <ClInclude Include="server_log_channels.h">
+      <Filter>Console</Filter>
+    </ClInclude>
+    <ClInclude Include="item_manager.h" />
+    <ClInclude Include="magic_manager.h" />
+    <ClInclude Include="skill_manager.h" />
+    <ClInclude Include="war_manager.h" />
+    <ClInclude Include="status_effect_manager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="account_sqlite_store.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="database_gate.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="client.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd_broadcast.cpp">
+      <Filter>Console\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd_give_item.cpp">
+      <Filter>Console\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd_help.cpp">
+      <Filter>Console\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd_reload.cpp">
+      <Filter>Console\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd_set_admin.cpp">
+      <Filter>Console\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd_set_cmd_level.cpp">
+      <Filter>Console\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd_show_chat.cpp">
+      <Filter>Console\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="common_types.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="entity_manager.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="fishing_manager.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="mining_manager.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="crafting_manager.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="quest_manager.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="guild_manager.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="delay_event_manager.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="dynamic_object_manager.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="loot_manager.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="combat_manager.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="regen_manager.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="game.cpp" />
+    <ClCompile Include="game_chat_command.cpp">
+      <Filter>Game Chat</Filter>
+    </ClCompile>
+    <ClCompile Include="game_cmd_block.cpp">
+      <Filter>Game Chat\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="game_cmd_come.cpp">
+      <Filter>Game Chat\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="game_cmd_create_item.cpp">
+      <Filter>Game Chat\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="game_cmd_gm.cpp">
+      <Filter>Game Chat\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="game_cmd_give_item.cpp">
+      <Filter>Game Chat\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="game_cmd_goto.cpp">
+      <Filter>Game Chat\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="game_cmd_invis.cpp">
+      <Filter>Game Chat\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="game_cmd_regen.cpp">
+      <Filter>Game Chat\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="game_cmd_spawn.cpp">
+      <Filter>Game Chat\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="game_cmd_unblock.cpp">
+      <Filter>Game Chat\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="game_cmd_whisper.cpp">
+      <Filter>Game Chat\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="game_config_sqlite_store.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="server_config.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="login_server.cpp">
+      <Filter>Networking</Filter>
+    </ClCompile>
+    <ClCompile Include="map.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="map_info_sqlite_store.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="network_msg.cpp">
+      <Filter>Networking</Filter>
+    </ClCompile>
+    <ClCompile Include="npc.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="party_manager.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="quest.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="server_command.cpp">
+      <Filter>Console</Filter>
+    </ClCompile>
+    <ClCompile Include="server_console.cpp">
+      <Filter>Console</Filter>
+    </ClCompile>
+    <ClCompile Include="tile.cpp">
+      <Filter>World</Filter>
+    </ClCompile>
+    <ClCompile Include="wmain.cpp" />
+    <ClCompile Include="..\dependencies\shared\net\asio_socket.cpp">
+      <Filter>Shared\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\shared\net\io_service_pool.cpp">
+      <Filter>Shared\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\shared\log\log_backend.cpp">
+      <Filter>Shared\Log</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\shared\util\sha256.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\shared\game\formula_engine.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="server_log.cpp">
+      <Filter>Console</Filter>
+    </ClCompile>
+    <ClCompile Include="item_manager.cpp" />
+    <ClCompile Include="magic_manager.cpp" />
+    <ClCompile Include="skill_manager.cpp" />
+    <ClCompile Include="war_manager.cpp" />
+    <ClCompile Include="status_effect_manager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="logo.bmp" />
+  </ItemGroup>
+</Project>

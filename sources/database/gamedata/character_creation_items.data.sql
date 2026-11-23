@@ -1,0 +1,9 @@
+INSERT INTO "character_creation_items" ("class_type", "item_id", "count", "item_color", "durability", "is_equipped", "gender_limit", "sort_order") VALUES (0, 1, 1, 0, 0, 1, 0, 0);
+INSERT INTO "character_creation_items" ("class_type", "item_id", "count", "item_color", "durability", "is_equipped", "gender_limit", "sort_order") VALUES (0, 91, 1, 0, 0, 0, 0, 8);
+INSERT INTO "character_creation_items" ("class_type", "item_id", "count", "item_color", "durability", "is_equipped", "gender_limit", "sort_order") VALUES (0, 93, 1, 0, 0, 0, 0, 7);
+INSERT INTO "character_creation_items" ("class_type", "item_id", "count", "item_color", "durability", "is_equipped", "gender_limit", "sort_order") VALUES (0, 104, 1, 0, 0, 0, 0, 2);
+INSERT INTO "character_creation_items" ("class_type", "item_id", "count", "item_color", "durability", "is_equipped", "gender_limit", "sort_order") VALUES (0, 114, 1, 0, 0, 0, 0, 1);
+INSERT INTO "character_creation_items" ("class_type", "item_id", "count", "item_color", "durability", "is_equipped", "gender_limit", "sort_order") VALUES (0, 453, 1, 0, 0, 1, 1, 6);
+INSERT INTO "character_creation_items" ("class_type", "item_id", "count", "item_color", "durability", "is_equipped", "gender_limit", "sort_order") VALUES (0, 460, 1, 0, 0, 1, 1, 3);
+INSERT INTO "character_creation_items" ("class_type", "item_id", "count", "item_color", "durability", "is_equipped", "gender_limit", "sort_order") VALUES (0, 473, 1, 0, 0, 1, 2, 4);
+INSERT INTO "character_creation_items" ("class_type", "item_id", "count", "item_color", "durability", "is_equipped", "gender_limit", "sort_order") VALUES (0, 481, 1, 0, 0, 1, 2, 5);

@@ -1,0 +1,628 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="15.0">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseWithDebugInfo|x64">
+      <Configuration>ReleaseWithDebugInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>Game</ProjectName>
+    <SccProjectName />
+    <SccLocalPath />
+    <ProjectGuid>{F5807AE3-600C-4037-970B-CD2474F5CF9A}</ProjectGuid>
+    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <!-- Phase H build layout: build\ for intermediates, bin\<project>\<Configuration>\ for outputs -->
+  <Import Project="$(MSBuildThisFileDirectory)..\build_tools\layout.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebugInfo|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebugInfo|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(HbSourcesDir)ccontrols;$(HbSourcesDir)sfml_engine;$(HbSourcesDir)dependencies\shared;$(HbSourcesDir)dependencies\shared\entity;$(HbSourcesDir)dependencies\shared\game;$(HbSourcesDir)dependencies\shared\net;$(HbSourcesDir)dependencies\shared\render;$(HbSourcesDir)dependencies\shared\util;$(HbSourcesDir)auto_updater;$(HbSourcesDir)dependencies\shared\log;$(HbSourcesDir)dependencies\client\includes;$(HbSourcesDir)dependencies\SFML\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(HbLibDirs);$(HbSourcesDir)dependencies\SFML\lib_x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <OutDir>$(HbOutDir)</OutDir>
+    <IntDir>$(HbIntDir)</IntDir>
+    <TargetName>Game_x64_win</TargetName>
+    <LocalDebuggerWorkingDirectory>$(HbGameRoot)client\</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(HbSourcesDir)ccontrols;$(HbSourcesDir)sfml_engine;$(HbSourcesDir)dependencies\shared;$(HbSourcesDir)dependencies\shared\entity;$(HbSourcesDir)dependencies\shared\game;$(HbSourcesDir)dependencies\shared\net;$(HbSourcesDir)dependencies\shared\render;$(HbSourcesDir)dependencies\shared\util;$(HbSourcesDir)auto_updater;$(HbSourcesDir)dependencies\shared\log;$(HbSourcesDir)dependencies\client\includes;$(HbSourcesDir)dependencies\SFML\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(HbLibDirs);$(HbSourcesDir)dependencies\SFML\lib_x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <OutDir>$(HbOutDir)</OutDir>
+    <IntDir>$(HbIntDir)</IntDir>
+    <TargetName>Game_x64_win</TargetName>
+    <LocalDebuggerWorkingDirectory>$(HbGameRoot)client\</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebugInfo|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(HbSourcesDir)ccontrols;$(HbSourcesDir)sfml_engine;$(HbSourcesDir)dependencies\shared;$(HbSourcesDir)dependencies\shared\entity;$(HbSourcesDir)dependencies\shared\game;$(HbSourcesDir)dependencies\shared\net;$(HbSourcesDir)dependencies\shared\render;$(HbSourcesDir)dependencies\shared\util;$(HbSourcesDir)auto_updater;$(HbSourcesDir)dependencies\shared\log;$(HbSourcesDir)dependencies\client\includes;$(HbSourcesDir)dependencies\SFML\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(HbLibDirs);$(HbSourcesDir)dependencies\SFML\lib_x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <OutDir>$(HbOutDir)</OutDir>
+    <IntDir>$(HbIntDir)</IntDir>
+    <TargetName>Game_x64_win</TargetName>
+    <LocalDebuggerWorkingDirectory>$(HbGameRoot)client\</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_VC80_UPGRADE=0x0600;SFML_STATIC;SFML_ENGINE;TESTER_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <SubSystem>Windows</SubSystem>
+      <SetChecksum>false</SetChecksum>
+      <AdditionalDependencies>CControls.lib;AutoUpdater.lib;SFMLEngine.lib;sfml-graphics-s-d.lib;sfml-window-s-d.lib;sfml-system-s-d.lib;freetyped.lib;opengl32.lib;Ws2_32.lib;dxgi.lib;winmm.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
+    </Link>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_VC80_UPGRADE=0x0600;SFML_STATIC;SFML_ENGINE;TESTER_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <SubSystem>Windows</SubSystem>
+      <SetChecksum>true</SetChecksum>
+      <AdditionalDependencies>CControls.lib;AutoUpdater.lib;SFMLEngine.lib;sfml-graphics-s.lib;sfml-window-s.lib;sfml-system-s.lib;freetype.lib;opengl32.lib;Ws2_32.lib;dxgi.lib;winmm.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalOptions> /FORCE:UNRESOLVED</AdditionalOptions>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
+    </Link>
+    <ResourceCompile>
+      <Culture>0x0809</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebugInfo|x64'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_VC80_UPGRADE=0x0600;SFML_STATIC;SFML_ENGINE;TESTER_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <SubSystem>Windows</SubSystem>
+      <SetChecksum>true</SetChecksum>
+      <AdditionalDependencies>CControls.lib;AutoUpdater.lib;SFMLEngine.lib;sfml-graphics-s.lib;sfml-window-s.lib;sfml-system-s.lib;freetype.lib;opengl32.lib;Ws2_32.lib;dxgi.lib;winmm.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalOptions> /FORCE:UNRESOLVED</AdditionalOptions>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
+    </Link>
+    <ResourceCompile>
+      <Culture>0x0809</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <!-- Versioning (sources/build_tools, shared/version.h). HbEnvironment is DEV unless a build overrides it;
+       TEST and PROD also need /p:Configuration=Release and HbFreshSourceSwitch set to the generator's
+       fresh-source flag (see gen_build_id.py; an XML comment cannot hold its double hyphen). -->
+  <PropertyGroup>
+    <HbEnvironment Condition="'$(HbEnvironment)'==''">DEV</HbEnvironment>
+    <HbFreshSourceSwitch Condition="'$(HbFreshSourceSwitch)'==''"></HbFreshSourceSwitch>
+    <!-- build.ps1 / build_release.ps1 set this after checking the whole tree once, before the build
+         writes anything; a bare MSBuild run leaves it empty and the generator checks itself. -->
+    <HbCleanVerifiedSwitch Condition="'$(HbCleanVerifiedSwitch)'==''"></HbCleanVerifiedSwitch>
+    <!-- The Build ID comes from git state, which MSBuild cannot see as an input: without this the IDE's
+         fast up-to-date check would skip the generator and run a binary with a stale Build ID. -->
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+    <HbVersionComponent>client</HbVersionComponent>
+    <HbVersionDescription>Helbreath client</HbVersionDescription>
+    <!-- One folder per configuration AND channel, so a DEV header can never feed a TEST build -->
+    <HbGeneratedDir>$(HbIntDir)$(HbEnvironment.ToLower())\generated\</HbGeneratedDir>
+    <!-- build.ps1 passes the interpreter it found; an IDE build uses python from PATH -->
+    <HbPython Condition="'$(HbPython)'==''">python</HbPython>
+    <!-- One seed per channel, shared by the client and the server of that channel -->
+    <HbReleaseSeedDir>$(HbBuildRoot)generated\$(HbEnvironment.ToLower())\</HbReleaseSeedDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(HbGeneratedDir);$(HbReleaseSeedDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(HbGeneratedDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\dependencies\shared\platform_headers.h" />
+    <ClInclude Include="..\dependencies\shared\version.h" />
+    <ClInclude Include="..\dependencies\shared\util\hmac.h" />
+    <ClInclude Include="action_id_client.h" />
+    <ClInclude Include="benchmark.h" />
+    <ClInclude Include="performance_monitor.h" />
+    <ClInclude Include="build_item.h" />
+    <ClInclude Include="char_info.h" />
+    <ClInclude Include="common_types.h" />
+    <ClInclude Include="packet_send_helpers.h" />
+    <ClInclude Include="effect.h" />
+    <ClInclude Include="dialog_box_ids.h" />
+    <ClInclude Include="dialog_box_manager.h" />
+    <ClInclude Include="dialog_box.h" />
+    <ClInclude Include="dialog_box_warning_msg.h" />
+    <ClInclude Include="dialog_box_resurrect.h" />
+    <ClInclude Include="dialog_box_noticement.h" />
+    <ClInclude Include="dialog_box_repair_all.h" />
+    <ClInclude Include="dialog_box_confirm_exchange.h" />
+    <ClInclude Include="dialog_box_help.h" />
+    <ClInclude Include="dialog_box_item_drop.h" />
+    <ClInclude Include="dialog_box_level_up_setting.h" />
+    <ClInclude Include="dialog_box_character.h" />
+    <ClInclude Include="dialog_box_inventory.h" />
+    <ClInclude Include="dialog_box_skill.h" />
+    <ClInclude Include="dialog_box_magic.h" />
+    <ClInclude Include="dialog_box_hud_panel.h" />
+    <ClInclude Include="dialog_box_status_overlay.h" />
+    <ClInclude Include="dialog_box_guide_map.h" />
+    <ClInclude Include="dialog_box_fishing.h" />
+    <ClInclude Include="dialog_box_crusade_job.h" />
+    <ClInclude Include="dialog_box_item_drop_amount.h" />
+    <ClInclude Include="dialog_box_map.h" />
+    <ClInclude Include="dialog_box_npc_action_query.h" />
+    <ClInclude Include="dialog_box_sys_menu.h" />
+    <ClInclude Include="dialog_box_text.h" />
+    <ClInclude Include="dialog_box_magic_shop.h" />
+    <ClInclude Include="dialog_box_npc_talk.h" />
+    <ClInclude Include="dialog_box_chat_history.h" />
+    <ClInclude Include="dialog_box_city_hall_menu.h" />
+    <ClInclude Include="dialog_box_shop.h" />
+    <ClInclude Include="dialog_box_item_upgrade.h" />
+    <ClInclude Include="dialog_box_sell_list.h" />
+    <ClInclude Include="dialog_box_guild_menu.h" />
+    <ClInclude Include="dialog_box_guild_operation.h" />
+    <ClInclude Include="dialog_box_bank.h" />
+    <ClInclude Include="dialog_box_exchange.h" />
+    <ClInclude Include="dialog_box_party.h" />
+    <ClInclude Include="dialog_box_quest.h" />
+    <ClInclude Include="dialog_box_commander.h" />
+    <ClInclude Include="dialog_box_constructor.h" />
+    <ClInclude Include="dialog_box_soldier.h" />
+    <ClInclude Include="dialog_box_slates.h" />
+    <ClInclude Include="dialog_box_change_stats_majestic.h" />
+    <ClInclude Include="dialog_box_tester_menu.h" />
+    <ClInclude Include="dialog_box_item_creator.h" />
+    <ClInclude Include="dialog_box_command_hall_menu.h" />
+    <ClInclude Include="dialog_box_sell_or_repair.h" />
+    <ClInclude Include="dialog_box_manufacture.h" />
+    <ClInclude Include="animation_state.h" />
+    <ClInclude Include="effect_manager.h" />
+    <ClInclude Include="entity_motion.h" />
+    <ClInclude Include="network_message_manager.h" />
+    <ClInclude Include="game.h" />
+    <ClInclude Include="game_constants.h" />
+    <ClInclude Include="game_timer.h" />
+    <ClInclude Include="..\dependencies\shared\render\application.h" />
+    <ClInclude Include="global_def.h" />
+    <ClInclude Include="lan_eng.h" />
+    <ClInclude Include="magic.h" />
+    <ClInclude Include="map_data.h" />
+    <ClInclude Include="misc.h" />
+    <ClInclude Include="chat_msg.h" />
+    <ClInclude Include="chat_manager.h" />
+    <ClInclude Include="item_name_formatter.h" />
+    <ClInclude Include="item_tooltip.h" />
+    <ClInclude Include="item_sprite_metadata.h" />
+    <ClInclude Include="client_messages.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="skill.h" />
+    <ClInclude Include="sprite_id.h" />
+    <ClInclude Include="tile.h" />
+    <ClInclude Include="tile_spr.h" />
+    <ClInclude Include="config_manager.h" />
+    <ClInclude Include="local_cache_manager.h" />
+    <ClInclude Include="audio_manager.h" />
+    <ClInclude Include="chat_command_manager.h" />
+    <ClInclude Include="combat_system.h" />
+    <ClInclude Include="inventory_manager.h" />
+    <ClInclude Include="magic_casting_system.h" />
+    <ClInclude Include="build_item_manager.h" />
+    <ClInclude Include="shop_manager.h" />
+    <ClInclude Include="teleport_manager.h" />
+    <ClInclude Include="text_input_manager.h" />
+    <ClInclude Include="text_field_renderer.h" />
+    <ClInclude Include="input_state_helper.h" />
+    <ClInclude Include="event_list_manager.h" />
+    <ClInclude Include="weather_manager.h" />
+    <ClInclude Include="floating_text_types.h" />
+    <ClInclude Include="floating_text.h" />
+    <ClInclude Include="floating_text_manager.h" />
+    <ClInclude Include="fishing_manager.h" />
+    <ClInclude Include="crafting_manager.h" />
+    <ClInclude Include="quest_manager.h" />
+    <ClInclude Include="guild_manager.h" />
+    <ClInclude Include="cursor_target.h" />
+    <ClInclude Include="player.h" />
+    <ClInclude Include="player_controller.h" />
+    <ClInclude Include="entity_render_state.h" />
+    <ClInclude Include="equipment_indices.h" />
+    <ClInclude Include="render_helpers.h" />
+    <ClInclude Include="player_renderer.h" />
+    <ClInclude Include="npc_renderer.h" />
+    <ClInclude Include="$(HbSourcesDir)dependencies\shared\entity\owner_type.h" />
+    <ClInclude Include="$(HbSourcesDir)dependencies\shared\entity\object_id_range.h" />
+    <ClInclude Include="camera.h" />
+    <ClInclude Include="game_mode_manager.h" />
+    <ClInclude Include="game_fonts.h" />
+    <ClInclude Include="game_mode.h" />
+    <ClInclude Include="game_screen.h" />
+    <ClInclude Include="screen_on_game.h" />
+    <ClInclude Include="spell_aoe.h" />
+    <ClInclude Include="screen_main_menu.h" />
+    <ClInclude Include="screen_login.h" />
+    <ClInclude Include="screen_select_character.h" />
+    <ClInclude Include="screen_create_new_character.h" />
+    <ClInclude Include="screen_create_account.h" />
+    <ClInclude Include="screen_quit.h" />
+    <ClInclude Include="screen_loading.h" />
+    <ClInclude Include="screen_splash.h" />
+    <ClInclude Include="screen_test.h" />
+    <ClInclude Include="screen_test_primitives.h" />
+    <ClInclude Include="overlay_connecting.h" />
+    <ClInclude Include="overlay_waiting_response.h" />
+    <ClInclude Include="overlay_log_res_msg.h" />
+    <ClInclude Include="overlay_query_force_login.h" />
+    <ClInclude Include="overlay_query_delete_character.h" />
+    <ClInclude Include="overlay_change_password.h" />
+    <ClInclude Include="overlay_version_not_match.h" />
+    <ClInclude Include="overlay_connection_lost.h" />
+    <ClInclude Include="overlay_msg.h" />
+    <ClInclude Include="overlay_wait_init_data.h" />
+    <ClInclude Include="..\dependencies\shared\net\asio_socket.h" />
+    <ClInclude Include="..\dependencies\shared\entity\action_id.h" />
+    <ClInclude Include="..\dependencies\shared\game\admin_level.h" />
+    <ClInclude Include="..\dependencies\shared\entity\appearance.h" />
+    <ClInclude Include="..\dependencies\shared\render\bitmap_font_factory.h" />
+    <ClInclude Include="..\dependencies\shared\util\sha256.h" />
+    <ClInclude Include="..\dependencies\shared\vendor\picosha2.h" />
+    <ClInclude Include="..\dependencies\shared\render\color_utils.h" />
+    <ClInclude Include="..\dependencies\shared\net\concurrent_msg_queue.h" />
+    <ClInclude Include="..\dependencies\shared\entity\dynamic_object_id.h" />
+    <ClInclude Include="..\dependencies\shared\entity\entity_relationship.h" />
+    <ClInclude Include="..\dependencies\shared\render\game_geometry.h" />
+    <ClInclude Include="..\dependencies\shared\render\bitmap_font.h" />
+    <ClInclude Include="..\dependencies\shared\render\input.h" />
+    <ClInclude Include="..\dependencies\shared\net\io_service_pool.h" />
+    <ClInclude Include="..\dependencies\shared\render\renderer.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite_factory.h" />
+    <ClInclude Include="..\dependencies\shared\render\text_renderer.h" />
+    <ClInclude Include="..\dependencies\shared\render\texture.h" />
+    <ClInclude Include="..\dependencies\shared\render\event.h" />
+    <ClInclude Include="..\dependencies\shared\render\window.h" />
+    <ClInclude Include="..\dependencies\shared\item\item.h" />
+    <ClInclude Include="..\dependencies\shared\item\item_attributes.h" />
+    <ClInclude Include="..\dependencies\shared\item\item_enums.h" />
+    <ClInclude Include="..\dependencies\shared\item\shared_item.h" />
+    <ClInclude Include="..\dependencies\shared\game\magic_types.h" />
+    <ClInclude Include="..\dependencies\shared\net\net_constants.h" />
+    <ClInclude Include="..\dependencies\shared\net\net_messages.h" />
+    <ClInclude Include="..\dependencies\shared\render\null_sprite.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_calc_socket.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_common.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_config_cache.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_event.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_headers.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_helpers.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_item_config.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_login.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_login_response.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_magic_config.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_map.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_motion.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_notify.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_request.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_response.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_shop.h" />
+    <ClInclude Include="..\dependencies\shared\packet\packet_skill_config.h" />
+    <ClInclude Include="..\dependencies\shared\packet\shared_packets.h" />
+    <ClInclude Include="..\dependencies\shared\entity\player_status_data.h" />
+    <ClInclude Include="..\dependencies\shared\render\primitive_types.h" />
+    <ClInclude Include="..\dependencies\shared\render\render_constants.h" />
+    <ClInclude Include="..\dependencies\shared\render\renderer_factory.h" />
+    <ClInclude Include="..\dependencies\shared\render\resolution_config.h" />
+    <ClInclude Include="..\dependencies\shared\game\shared_calculations.h" />
+    <ClInclude Include="..\dependencies\shared\game\formula_engine.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite_collection.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite_loader.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite_types.h" />
+    <ClInclude Include="..\dependencies\shared\render\text_lib.h" />
+    <ClInclude Include="..\dependencies\shared\log\log.h" />
+    <ClInclude Include="..\dependencies\shared\log\log_level.h" />
+    <ClInclude Include="..\dependencies\shared\log\log_backend.h" />
+    <ClInclude Include="client_log_channels.h" />
+    <ClInclude Include="game_events.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="common_types.cpp" />
+    <ClCompile Include="config_manager.cpp" />
+    <ClCompile Include="local_cache_manager.cpp" />
+    <ClCompile Include="dialog_box_manager.cpp" />
+    <ClCompile Include="dialog_box.cpp" />
+    <ClCompile Include="dialog_box_warning_msg.cpp" />
+    <ClCompile Include="dialog_box_resurrect.cpp" />
+    <ClCompile Include="dialog_box_noticement.cpp" />
+    <ClCompile Include="dialog_box_repair_all.cpp" />
+    <ClCompile Include="dialog_box_confirm_exchange.cpp" />
+    <ClCompile Include="dialog_box_help.cpp" />
+    <ClCompile Include="dialog_box_item_drop.cpp" />
+    <ClCompile Include="dialog_box_level_up_setting.cpp" />
+    <ClCompile Include="dialog_box_character.cpp" />
+    <ClCompile Include="dialog_box_inventory.cpp" />
+    <ClCompile Include="dialog_box_skill.cpp" />
+    <ClCompile Include="dialog_box_magic.cpp" />
+    <ClCompile Include="dialog_box_hud_panel.cpp" />
+    <ClCompile Include="dialog_box_status_overlay.cpp" />
+    <ClCompile Include="dialog_box_guide_map.cpp" />
+    <ClCompile Include="dialog_box_fishing.cpp" />
+    <ClCompile Include="dialog_box_crusade_job.cpp" />
+    <ClCompile Include="dialog_box_item_drop_amount.cpp" />
+    <ClCompile Include="dialog_box_map.cpp" />
+    <ClCompile Include="dialog_box_npc_action_query.cpp" />
+    <ClCompile Include="dialog_box_sys_menu.cpp" />
+    <ClCompile Include="dialog_box_text.cpp" />
+    <ClCompile Include="dialog_box_magic_shop.cpp" />
+    <ClCompile Include="dialog_box_npc_talk.cpp" />
+    <ClCompile Include="dialog_box_chat_history.cpp" />
+    <ClCompile Include="dialog_box_city_hall_menu.cpp" />
+    <ClCompile Include="dialog_box_shop.cpp" />
+    <ClCompile Include="dialog_box_item_upgrade.cpp" />
+    <ClCompile Include="dialog_box_sell_list.cpp" />
+    <ClCompile Include="dialog_box_guild_menu.cpp" />
+    <ClCompile Include="dialog_box_guild_operation.cpp" />
+    <ClCompile Include="dialog_box_bank.cpp" />
+    <ClCompile Include="dialog_box_exchange.cpp" />
+    <ClCompile Include="dialog_box_party.cpp" />
+    <ClCompile Include="dialog_box_quest.cpp" />
+    <ClCompile Include="dialog_box_commander.cpp" />
+    <ClCompile Include="dialog_box_constructor.cpp" />
+    <ClCompile Include="dialog_box_soldier.cpp" />
+    <ClCompile Include="dialog_box_slates.cpp" />
+    <ClCompile Include="dialog_box_change_stats_majestic.cpp" />
+    <ClCompile Include="dialog_box_tester_menu.cpp" />
+    <ClCompile Include="dialog_box_item_creator.cpp" />
+    <ClCompile Include="dialog_box_command_hall_menu.cpp" />
+    <ClCompile Include="dialog_box_sell_or_repair.cpp" />
+    <ClCompile Include="dialog_box_manufacture.cpp" />
+    <ClCompile Include="performance_monitor.cpp" />
+    <ClCompile Include="hotkey_manager.cpp" />
+    <ClCompile Include="screen_on_game_hotkeys.cpp" />
+    <ClCompile Include="screen_on_game_draw_objects.cpp" />
+    <ClCompile Include="equipment_indices.cpp" />
+    <ClCompile Include="render_helpers.cpp" />
+    <ClCompile Include="player_renderer.cpp" />
+    <ClCompile Include="npc_renderer.cpp" />
+    <ClCompile Include="game.cpp" />
+    <ClCompile Include="game_mode_manager.cpp" />
+    <ClCompile Include="game_screen.cpp" />
+    <ClCompile Include="screen_on_game.cpp" />
+    <ClCompile Include="screen_on_game_network.cpp" />
+    <ClCompile Include="spell_aoe.cpp" />
+    <ClCompile Include="screen_main_menu.cpp" />
+    <ClCompile Include="screen_login.cpp" />
+    <ClCompile Include="screen_select_character.cpp" />
+    <ClCompile Include="screen_create_new_character.cpp" />
+    <ClCompile Include="screen_create_account.cpp" />
+    <ClCompile Include="screen_quit.cpp" />
+    <ClCompile Include="screen_loading.cpp" />
+    <ClCompile Include="screen_splash.cpp" />
+    <ClCompile Include="screen_test.cpp" />
+    <ClCompile Include="screen_test_primitives.cpp" />
+    <ClCompile Include="overlay_connecting.cpp" />
+    <ClCompile Include="overlay_waiting_response.cpp" />
+    <ClCompile Include="overlay_log_res_msg.cpp" />
+    <ClCompile Include="overlay_query_force_login.cpp" />
+    <ClCompile Include="overlay_query_delete_character.cpp" />
+    <ClCompile Include="overlay_change_password.cpp" />
+    <ClCompile Include="overlay_version_not_match.cpp" />
+    <ClCompile Include="overlay_connection_lost.cpp" />
+    <ClCompile Include="overlay_msg.cpp" />
+    <ClCompile Include="overlay_wait_init_data.cpp" />
+    <ClCompile Include="animation_state.cpp" />
+    <ClCompile Include="effect_manager.cpp" />
+    <ClCompile Include="entity_motion.cpp" />
+    <ClCompile Include="effect_add.cpp" />
+    <ClCompile Include="effect_update.cpp" />
+    <ClCompile Include="effect_draw.cpp" />
+    <ClCompile Include="effect_lights.cpp" />
+    <ClCompile Include="network_message_manager.cpp" />
+    <ClCompile Include="network_messages_admin.cpp" />
+    <ClCompile Include="network_messages_agriculture.cpp" />
+    <ClCompile Include="network_messages_angels.cpp" />
+    <ClCompile Include="network_messages_apocalypse.cpp" />
+    <ClCompile Include="network_messages_bank.cpp" />
+    <ClCompile Include="network_messages_combat.cpp" />
+    <ClCompile Include="network_messages_crafting.cpp" />
+    <ClCompile Include="network_messages_crusade.cpp" />
+    <ClCompile Include="network_messages_events.cpp" />
+    <ClCompile Include="network_messages_exchange.cpp" />
+    <ClCompile Include="network_messages_fish.cpp" />
+    <ClCompile Include="fishing_manager.cpp" />
+    <ClCompile Include="crafting_manager.cpp" />
+    <ClCompile Include="quest_manager.cpp" />
+    <ClCompile Include="guild_manager.cpp" />
+    <ClCompile Include="network_messages_guild.cpp" />
+    <ClCompile Include="network_messages_heldenian.cpp" />
+    <ClCompile Include="network_messages_items.cpp" />
+    <ClCompile Include="network_messages_map.cpp" />
+    <ClCompile Include="network_messages_party.cpp" />
+    <ClCompile Include="network_messages_player.cpp" />
+    <ClCompile Include="network_messages_quest.cpp" />
+    <ClCompile Include="network_messages_skills.cpp" />
+    <ClCompile Include="network_messages_slates.cpp" />
+    <ClCompile Include="network_messages_stats.cpp" />
+    <ClCompile Include="network_messages_system.cpp" />
+    <ClCompile Include="map_data.cpp" />
+    <ClCompile Include="wmain.cpp" />
+    <ClCompile Include="..\dependencies\shared\render\application.cpp" />
+    <ClCompile Include="audio_manager.cpp" />
+    <ClCompile Include="chat_command_manager.cpp" />
+    <ClCompile Include="combat_system.cpp" />
+    <ClCompile Include="inventory_manager.cpp" />
+    <ClCompile Include="magic_casting_system.cpp" />
+    <ClCompile Include="build_item_manager.cpp" />
+    <ClCompile Include="shop_manager.cpp" />
+    <ClCompile Include="teleport_manager.cpp" />
+    <ClCompile Include="text_input_manager.cpp" />
+    <ClCompile Include="text_field_renderer.cpp" />
+    <ClCompile Include="input_state_helper.cpp" />
+    <ClCompile Include="event_list_manager.cpp" />
+    <ClCompile Include="chat_manager.cpp" />
+    <ClCompile Include="item_name_formatter.cpp" />
+    <ClCompile Include="item_tooltip.cpp" />
+    <ClCompile Include="item_sprite_metadata.cpp" />
+    <ClCompile Include="miniaudio_impl.cpp" />
+    <ClCompile Include="weather_manager.cpp" />
+    <ClCompile Include="floating_text_manager.cpp" />
+    <ClCompile Include="cursor_target.cpp" />
+    <ClCompile Include="player.cpp" />
+    <ClCompile Include="player_controller.cpp" />
+    <ClCompile Include="camera.cpp" />
+    <ClCompile Include="..\dependencies\shared\net\asio_socket.cpp" />
+    <ClCompile Include="..\dependencies\shared\net\io_service_pool.cpp" />
+    <ClCompile Include="..\dependencies\shared\render\event.cpp" />
+    <ClCompile Include="..\dependencies\shared\render\resolution_config.cpp" />
+    <ClCompile Include="..\dependencies\shared\log\log_backend.cpp" />
+    <ClCompile Include="..\dependencies\shared\util\sha256.cpp" />
+    <ClCompile Include="..\dependencies\shared\util\hmac.cpp" />
+    <ClCompile Include="..\dependencies\shared\version.cpp" />
+    <ClCompile Include="..\dependencies\shared\game\formula_engine.cpp" />
+    <ClCompile Include="client_log.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="game.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico" />
+  </ItemGroup>
+  <ItemGroup Condition="$(Configuration.Contains('SFML'))">
+    <ProjectReference Include="..\sfml_engine\SFMLEngine.vcxproj">
+      <Project>{C4A8D9E2-5D3F-4C8B-9F2E-3D4E5F6A8B9C}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\auto_updater\AutoUpdater.vcxproj">
+      <Project>{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <!-- Build ID: written into this project's untracked build folder before every compile, rewritten only
+       when the value changes so an unchanged source state does not recompile. -->
+  <Target Name="GenerateBuildId" BeforeTargets="ClCompile">
+    <Exec Command="&quot;$(HbPython)&quot; &quot;$(HbSourcesDir)build_tools\gen_build_id.py&quot; --environment $(HbEnvironment) --configuration $(Configuration) --output &quot;$(HbGeneratedDir)build_id_generated.h&quot;$(HbFreshSourceSwitch)$(HbCleanVerifiedSwitch)" />
+  </Target>
+  <!-- Release seed: one file shared with the server. Writes a seed only when none exists, so a lone build
+       reuses the current one; only build_release.ps1 rolls a new seed. Debug never reads it. -->
+  <Target Name="EnsureReleaseSeed" BeforeTargets="ClCompile" Condition="'$(Configuration)'!='Debug'">
+    <Exec Command="&quot;$(HbPython)&quot; &quot;$(HbSourcesDir)build_tools\gen_release_seed.py&quot; --mode ensure --environment $(HbEnvironment) --configuration $(Configuration) --output &quot;$(HbReleaseSeedDir)release_seed_generated.h&quot;" />
+  </Target>
+  <!-- VERSIONINFO fragment from the release in version.h; game.rc includes it once phase B switches over. -->
+  <Target Name="GenerateVersionInfo" BeforeTargets="ResourceCompile">
+    <Exec Command="&quot;$(HbPython)&quot; &quot;$(HbSourcesDir)build_tools\gen_version_info.py&quot; --component $(HbVersionComponent) --description &quot;$(HbVersionDescription)&quot; --original-filename $(TargetName)$(TargetExt) --internal-name $(TargetName) --configuration $(Configuration) --output &quot;$(HbGeneratedDir)version_info.rc&quot;" />
+  </Target>
+</Project>

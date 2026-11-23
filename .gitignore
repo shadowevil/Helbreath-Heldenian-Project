@@ -37,7 +37,7 @@
 
 # Ignore root lib folder but allow Dependencies lib folders
 /lib/
-!**/Dependencies/**/lib/
+!**/dependencies/**/lib/
 
 ###########################
 # MSBuild/MSVC Artifacts  #
@@ -350,7 +350,7 @@ DocProject/Help/html
 
 # Static libraries (except Dependencies)
 **/*.a
-!**/Dependencies/**/*.a
+!**/dependencies/**/*.a
 
 # FetchContent downloads
 **/_deps/
@@ -360,24 +360,50 @@ DocProject/Help/html
 ########################
 
 # Project docs/plans (tracked separately)
-PLANS/
+.claude/design/
 *.md
 !**/README.md
-!/CLAUDE*.md
+!/CLAUDE.md
 !/CHANGELOG.md
-!/CODING_STANDARDS.md
-!/VERSION_STANDARDS.md
+# Claude docs: same tracked set as before the move to .claude/docs/ (ccontrols-reference stays untracked)
+!/.claude/docs/architecture.md
+!/.claude/docs/agents.md
+!/.claude/docs/workflow.md
+!/.claude/docs/bulk-scripts-dry-run.md
+!/.claude/docs/changelog-format.md
+!/.claude/docs/logging.md
+!/.claude/docs/coding-standards.md
+!/.claude/docs/versioning.md
+!/.claude/docs/versioning/
+!/.claude/docs/versioning/*.md
+!/.claude/docs/build.md
+!/.claude/docs/code-search.md
+!/.claude/docs/decisions.md
+!/sources/readme_build_linux.md
+!/.claude/agents/*.md
+
+# Claude session scratch (global layout) and tool output
+.claude/scratch/
+.claude/hooks/log/
+.claude/settings.local.json
 
 # Game logs and runtime data
 **/GameLogs/
 
+# Deployed game (assembled by deploy from bin/ + staged/ + generated DBs; holds runtime state
+# such as account DBs with password hashes - never tracked). staged/ is the tracked source.
+/game/
+/bin/
+/build/
+# User's local working folder (user, 2026-11-23)
+/working/
+
 # Temporary files
 tmpclaude*cwd
 nul
-!/Scripts
 
 # Installer staging folder
-tools/InstallerCreator/Helbreath/
+tools/installer_creator/Helbreath/
 
 # Backup checkpoints (bak.py)
 **/*.bak_*

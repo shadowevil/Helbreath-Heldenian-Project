@@ -1,0 +1,1 @@
+CREATE TABLE character_skill_mastery ( character_name TEXT NOT NULL, skill_index INTEGER NOT NULL, mastery_value INTEGER NOT NULL, PRIMARY KEY(character_name, skill_index), FOREIGN KEY(character_name) REFERENCES characters(character_name) ON DELETE CASCADE);

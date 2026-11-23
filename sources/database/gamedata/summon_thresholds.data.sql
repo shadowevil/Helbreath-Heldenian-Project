@@ -1,0 +1,12 @@
+INSERT INTO "summon_thresholds" ("threshold_id", "min_mastery", "npc_id", "weight") VALUES (1, 0, 0, 1);
+INSERT INTO "summon_thresholds" ("threshold_id", "min_mastery", "npc_id", "weight") VALUES (2, 0, 3, 1);
+INSERT INTO "summon_thresholds" ("threshold_id", "min_mastery", "npc_id", "weight") VALUES (3, 20, 5, 1);
+INSERT INTO "summon_thresholds" ("threshold_id", "min_mastery", "npc_id", "weight") VALUES (4, 20, 10, 1);
+INSERT INTO "summon_thresholds" ("threshold_id", "min_mastery", "npc_id", "weight") VALUES (5, 40, 11, 1);
+INSERT INTO "summon_thresholds" ("threshold_id", "min_mastery", "npc_id", "weight") VALUES (6, 40, 12, 1);
+INSERT INTO "summon_thresholds" ("threshold_id", "min_mastery", "npc_id", "weight") VALUES (7, 60, 13, 1);
+INSERT INTO "summon_thresholds" ("threshold_id", "min_mastery", "npc_id", "weight") VALUES (8, 60, 14, 1);
+INSERT INTO "summon_thresholds" ("threshold_id", "min_mastery", "npc_id", "weight") VALUES (9, 80, 17, 1);
+INSERT INTO "summon_thresholds" ("threshold_id", "min_mastery", "npc_id", "weight") VALUES (10, 80, 18, 1);
+INSERT INTO "summon_thresholds" ("threshold_id", "min_mastery", "npc_id", "weight") VALUES (11, 80, 22, 1);
+INSERT INTO "summon_thresholds" ("threshold_id", "min_mastery", "npc_id", "weight") VALUES (12, 0, 4, 1);

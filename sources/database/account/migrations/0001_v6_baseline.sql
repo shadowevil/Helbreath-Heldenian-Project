@@ -1,0 +1,10 @@
+-- release: 0.0.1-alpha
+-- The v6 baseline marker. It changes nothing; recording it marks an account DB as adopted at the baseline.
+--
+-- Sources/Database/account/*.sql is the frozen v6 baseline: the structure every account DB had once the
+-- pre-Phase-F server had opened it (every column its AddColumnIfMissing calls added, inventory and bank
+-- items stored by item_id instead of item_name, lowercase account names, meta schema_version '6').
+-- The server checks an account DB without hb_migrations against that baseline and refuses one below it.
+--
+-- Migrations are append-only. Never edit this file or any applied migration: the server refuses a DB
+-- whose recorded hash differs. Put every later change in a new NNNN_<name>.sql.

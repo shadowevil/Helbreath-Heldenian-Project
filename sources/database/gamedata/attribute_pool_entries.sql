@@ -1,0 +1,1 @@
+CREATE TABLE attribute_pool_entries ( pool_id INTEGER NOT NULL, is_secondary INTEGER NOT NULL, type_id INTEGER NOT NULL, weight INTEGER NOT NULL, PRIMARY KEY (pool_id, is_secondary, type_id), FOREIGN KEY (pool_id) REFERENCES attribute_pools(pool_id));

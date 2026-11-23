@@ -1,0 +1,1 @@
+CREATE TABLE attribute_prefix_types ( prefix_id INTEGER PRIMARY KEY, name TEXT NOT NULL, display_name TEXT NOT NULL, effect_label TEXT NOT NULL, effect_format TEXT NOT NULL, min_value INTEGER NOT NULL DEFAULT 0, max_value INTEGER NOT NULL DEFAULT 0, weapon_color INTEGER NOT NULL DEFAULT 0, multiplier INTEGER NOT NULL DEFAULT 1);
