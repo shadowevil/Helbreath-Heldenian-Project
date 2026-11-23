@@ -31,45 +31,12 @@ SFMLTextRenderer::SFMLTextRenderer(sf::RenderTexture* backBuffer)
     , m_loaded_font_path()
     , m_font_size(12)  // Default size to match GDI rendering
 {
-    // Try to load a default font as fallback
     LoadDefaultFont();
 }
 
 bool SFMLTextRenderer::LoadDefaultFont()
 {
-    // Try bundled fonts first (most portable), then system fonts
-    const char* font_paths[] = {
-        "fonts/tahoma.ttf",
-        "fonts/arial.ttf",
-        "fonts/segoeui.ttf",
-#ifdef _WIN32
-        "C:\\Windows\\Fonts\\tahoma.ttf",
-        "C:\\Windows\\Fonts\\arial.ttf",
-        "C:\\Windows\\Fonts\\segoeui.ttf",
-#elif defined(__APPLE__)
-        "/Library/Fonts/Tahoma.ttf",
-        "/Library/Fonts/Arial.ttf",
-        "/System/Library/Fonts/Supplemental/Tahoma.ttf",
-#else
-        "/usr/share/fonts/truetype/msttcorefonts/tahoma.ttf",
-        "/usr/share/fonts/truetype/msttcorefonts/arial.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/TTF/DejaVuSans.ttf",
-#endif
-    };
-
-    for (const char* path : font_paths)
-    {
-        if (m_font.openFromFile(path))
-        {
-            m_font.setSmooth(m_font_smoothing);
-            m_fontLoaded = true;
-            m_loaded_font_path = path;
-            return true;
-        }
-    }
-
-    return false;
+    return LoadFontFromFile(bundled_font_path);
 }
 
 bool SFMLTextRenderer::LoadFontFromFile(const char* fontPath)
@@ -83,46 +50,6 @@ bool SFMLTextRenderer::LoadFontFromFile(const char* fontPath)
         m_fontLoaded = true;
         m_loaded_font_path = fontPath;
         return true;
-    }
-
-    return false;
-}
-
-bool SFMLTextRenderer::LoadFontByName(const char* fontName)
-{
-    if (!fontName)
-        return false;
-
-    // Search directories: bundled first, then platform system fonts
-    const char* font_directories[] = {
-        "fonts/",
-#ifdef _WIN32
-        "C:\\Windows\\Fonts\\",
-#elif defined(__APPLE__)
-        "/Library/Fonts/",
-        "/System/Library/Fonts/Supplemental/",
-#else
-        "/usr/share/fonts/truetype/msttcorefonts/",
-        "/usr/share/fonts/truetype/",
-        "/usr/share/fonts/TTF/",
-#endif
-    };
-
-    const char* extensions[] = { ".ttf", ".otf", ".TTF", ".OTF", "" };
-
-    for (const char* dir : font_directories)
-    {
-        for (const char* ext : extensions)
-        {
-            std::string full_path = std::string(dir) + fontName + ext;
-            if (m_font.openFromFile(full_path))
-            {
-                m_font.setSmooth(m_font_smoothing);
-                m_fontLoaded = true;
-                m_loaded_font_path = full_path;
-                return true;
-            }
-        }
     }
 
     return false;

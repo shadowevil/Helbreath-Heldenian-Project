@@ -10,6 +10,10 @@
 
 namespace hb::shared::text {
 
+// The one font the client ships: Wine's Tahoma replacement (LGPL 2.1, licence beside it).
+// No system font is ever used.
+constexpr const char* bundled_font_path = "fonts/wine_tahoma.ttf";
+
 // ============== Basic Types ==============
 
 struct TextMetrics
@@ -53,9 +57,8 @@ public:
     virtual ~ITextRenderer() = default;
 
     // Font loading - client calls these to set up fonts
-    // Returns true on success. Engine has default fallback if these fail.
+    // Returns true on success. The engine loads bundled_font_path itself at construction.
     virtual bool LoadFontFromFile(const char* fontPath) = 0;
-    virtual bool LoadFontByName(const char* fontName) = 0;  // System font by name (e.g., "Arial")
 
     // Font configuration
     virtual void SetFontSize(int size) = 0;

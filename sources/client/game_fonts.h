@@ -14,7 +14,7 @@ namespace GameFont
 {
 	enum ID : int
 	{
-		// TTF Font (loaded from FONTS/default.ttf)
+		// TTF Font (hb::shared::text::bundled_font_path, Wine Tahoma)
 		Default = hb::shared::text::FONT_ID_DEFAULT,
 
 		// Bitmap Fonts (loaded during Screen_Loading)

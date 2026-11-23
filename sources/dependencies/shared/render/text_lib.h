@@ -20,7 +20,7 @@ namespace hb::shared::text {
 // Font ID 0 is reserved for the default TTF font.
 // Bitmap fonts use IDs 1 and up.
 
-constexpr int FONT_ID_DEFAULT = 0;      // TTF font (loaded from FONTS/default.ttf)
+constexpr int FONT_ID_DEFAULT = 0;      // TTF font (bundled_font_path, Wine Tahoma)
 constexpr int MAX_BITMAP_FONTS = 16;    // Maximum number of bitmap fonts
 
 // ============== Shadow Styles ==============

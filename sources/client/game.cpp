@@ -276,11 +276,7 @@ bool CGame::on_initialize()
 	audio_manager::get().initialize();
 	ChatCommandManager::get().initialize(this);
 	GameModeManager::initialize(this);
-#ifdef _DEBUG
-	GameModeManager::set_screen<Screen_Loading>();
-#else
 	GameModeManager::set_screen<Screen_Splash>();
-#endif
 	m_hide_local_cursor = false;
 
 	m_log_server_addr = DEF_SERVER_IP;
@@ -329,13 +325,13 @@ bool CGame::on_start()
 		return false;
 	}
 
-	// Preload the default font for text rendering
-	if (hb::shared::text::GetTextRenderer())
+	// The text renderer loads the bundled font (hb::shared::text::bundled_font_path) itself;
+	// without it no text can render, so refuse to start.
+	if (!hb::shared::text::GetTextRenderer() || !hb::shared::text::GetTextRenderer()->IsFontLoaded())
 	{
-		if (!hb::shared::text::GetTextRenderer()->LoadFontFromFile("fonts/default.ttf"))
-		{
-			// Font load failed — game will use fallback rendering
-		}
+		hb::logger::error("Unable to load default font {}", hb::shared::text::bundled_font_path);
+		hb::shared::render::Window::show_error("ERROR", "Unable to load default font");
+		return false;
 	}
 
 	// initialize sprite factory and register it globally

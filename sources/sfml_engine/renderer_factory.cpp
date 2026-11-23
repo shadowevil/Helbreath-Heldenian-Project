@@ -115,7 +115,7 @@ bool Renderer::Set(RendererType type)
                 SFMLWindow* sfmlWindow = static_cast<SFMLWindow*>(window);
                 sfmlRenderer->SetRenderWindow(sfmlWindow->GetRenderWindow());
 
-                // Create text renderer with back buffer (font loaded internally with fallback)
+                // Create text renderer with back buffer (loads the bundled font; check IsFontLoaded)
                 s_pTextRenderer = new hb::shared::text::SFMLTextRenderer(sfmlRenderer->GetBackBuffer());
                 hb::shared::text::SetTextRenderer(s_pTextRenderer);
             }

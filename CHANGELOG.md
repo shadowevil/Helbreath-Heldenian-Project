@@ -30,3 +30,9 @@ Login now checks the protocol version, and release servers also check the Build 
 Build output moved out of the source folder into separate build and bin folders, the solution moved to the repository root, and a new deploy step assembles the playable game folder from the built files and the staged static files without touching accounts, logs or settings. The old hand-bumped version system was removed.
 
 The game and map databases can now be generated from the SQL source folder; bans, admins and command permissions are carried over on every rebuild, and a database edited outside the generator is never silently overwritten.
+
+Screen transitions are now 50% faster: every screen fade runs at 1.5x speed, set by one `transition_speed` constant in `game_mode_manager.h`.
+
+The splash screen now also shows in Debug builds, and a left click skips it once it has been up for one second.
+
+The client now ships one font, Wine's Tahoma replacement (LGPL 2.1, licence beside it in `fonts/`), and never uses a system font. The unused Arial, Segoe UI and Microsoft Tahoma copies are gone, and the client refuses to start with "Unable to load default font" if `fonts/wine_tahoma.ttf` is missing.

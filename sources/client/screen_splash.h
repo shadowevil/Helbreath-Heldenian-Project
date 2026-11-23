@@ -33,6 +33,7 @@ private:
     static constexpr int NUM_CONTRIBUTORS = 5;
     static constexpr uint32_t TIME_PER_CONTRIBUTOR_MS = 2000;  // 2 seconds each
     static constexpr uint32_t FADE_DURATION_MS = 400;  // 0.4 second fade in/out
+    static constexpr uint32_t skip_allowed_after_ms = 1000;  // a click skips the splash after 1 second
 
     struct Credit
     {

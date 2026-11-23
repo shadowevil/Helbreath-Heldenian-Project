@@ -13,6 +13,7 @@
 #include "game_fonts.h"
 #include "text_lib_ext.h"
 #include "sprite_loader.h"
+#include "input.h"
 using namespace hb::client::sprite_id;
 
 Screen_Splash::Screen_Splash(CGame* game)
@@ -87,14 +88,16 @@ void Screen_Splash::on_uninitialize()
 
 void Screen_Splash::on_update()
 {
-    if (get_elapsed_ms() >= SPLASH_DURATION_MS)
+    const uint32_t elapsed = get_elapsed_ms();
+    const bool skip_clicked = elapsed >= skip_allowed_after_ms
+        && hb::shared::input::is_mouse_button_pressed(hb::shared::input::MouseButton::Left);
+    if (elapsed >= SPLASH_DURATION_MS || skip_clicked)
     {
         set_screen<Screen_Loading>();
         return;
     }
 
     // Update credit opacity based on elapsed time
-    uint32_t elapsed = get_elapsed_ms();
     for (int i = 0; i < NUM_CONTRIBUTORS; i++)
     {
         float alpha = get_contributor_alpha(elapsed, i);

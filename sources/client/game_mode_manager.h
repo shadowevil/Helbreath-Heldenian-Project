@@ -30,10 +30,12 @@ enum class TransitionState : uint8_t {
 
 class GameModeManager {
 public:
-    // Fade duration constants (in seconds)
-    static constexpr float FAST_FADE_DURATION = 0.15f;
-    static constexpr float DEFAULT_FADE_DURATION = 0.25f;
-    static constexpr float SLOW_FADE_DURATION = 0.5f;
+    // Fade duration constants (in seconds). transition_speed scales every screen transition:
+    // 1.5 = 50% faster than the original 0.15 / 0.25 / 0.5 s timings.
+    static constexpr float transition_speed = 1.5f;
+    static constexpr float FAST_FADE_DURATION = 0.15f / transition_speed;
+    static constexpr float DEFAULT_FADE_DURATION = 0.25f / transition_speed;
+    static constexpr float SLOW_FADE_DURATION = 0.5f / transition_speed;
 
     // Transition configuration
     struct TransitionConfig {

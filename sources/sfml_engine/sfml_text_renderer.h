@@ -20,7 +20,6 @@ public:
 
     // Font loading - client calls these to set up fonts
     bool LoadFontFromFile(const char* fontPath) override;
-    bool LoadFontByName(const char* fontName) override;
 
     // Font configuration
     void SetFontSize(int size) override;
@@ -47,7 +46,7 @@ public:
     void SetBackBuffer(sf::RenderTexture* backBuffer) { m_back_buffer = backBuffer; }
 
 private:
-    // Load default system font as fallback
+    // Load the bundled font (bundled_font_path)
     bool LoadDefaultFont();
 
     // Resolve font size for a draw/measure call.
