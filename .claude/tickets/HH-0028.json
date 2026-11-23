@@ -1,0 +1,26 @@
+{
+  "id": "HH-0028",
+  "summary": "High-quality cursors (task)",
+  "status": "in_progress",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T22:12:56Z",
+  "updated": "2026-11-23T22:12:57Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocked_by": [
+      "HH-0029",
+      "HH-0030",
+      "HH-0031"
+    ]
+  },
+  "body": "Replace the software cursor (`m_sprite[MouseCursor]`, sprite 8 of `interface/game_dialogs`, drawn by `CGame::draw_cursor`) with the user's high-resolution sheet `working/sprite_work/cursors.png`: sword, blue and red magic circles, five gauntlet hands (plain and blue/red outlined), hourglass, target corner brackets, black square. Drawn in screen space (phase 1 already moved the cursor there) at window resolution, same logical size and hotspot as today. Closes when its sub-tasks are done.\n\n**Done when:** every sub-task is done and the cursors are checked in game at 800x600 and 1440x1080.\n\nSource: user request 2026-11-23, art working\\sprite_work\\cursors.png (1406x124 RGBA, measured)."
+}

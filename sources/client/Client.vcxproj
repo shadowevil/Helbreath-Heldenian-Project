@@ -304,6 +304,7 @@
     <ClInclude Include="item_name_formatter.h" />
     <ClInclude Include="item_tooltip.h" />
     <ClInclude Include="item_sprite_metadata.h" />
+    <ClInclude Include="cursor_art.h" />
     <ClInclude Include="client_messages.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="skill.h" />
@@ -572,6 +573,7 @@
     <ClCompile Include="item_name_formatter.cpp" />
     <ClCompile Include="item_tooltip.cpp" />
     <ClCompile Include="item_sprite_metadata.cpp" />
+    <ClCompile Include="cursor_art.cpp" />
     <ClCompile Include="miniaudio_impl.cpp" />
     <ClCompile Include="weather_manager.cpp" />
     <ClCompile Include="floating_text_manager.cpp" />

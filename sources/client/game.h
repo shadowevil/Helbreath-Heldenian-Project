@@ -37,6 +37,7 @@
 #include "asio_socket.h"
 #include "io_service_pool.h"
 #include "sprite_id.h"
+#include "cursor_art.h"
 #include "misc.h"
 #include "chat_msg.h"
 #include "effect.h"
@@ -348,6 +349,8 @@ std::array<bool, hb::shared::limits::MaxItems> m_is_item_equipped{};
 	bool m_hide_local_cursor;
 	bool m_mouse_initialized = false;
 	bool m_screenshot_pending = false;
+	cursor_art m_cursor_art;          // High-resolution cursor art; falls back to m_sprite[MouseCursor]
+	bool m_cursor_art_tried = false;  // Load is attempted once, on the first cursor draw
 
 	bool m_force_disconn;
 

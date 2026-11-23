@@ -1013,6 +1013,29 @@ void SFMLRenderer::destroy_texture(hb::shared::render::ITexture* texture)
     delete texture;
 }
 
+void SFMLRenderer::draw_texture_region(hb::shared::render::ITexture* texture, float src_x, float src_y, float src_w, float src_h,
+                                       float dst_x, float dst_y, float dst_w, float dst_h)
+{
+    if (!texture || src_w <= 0.0f || src_h <= 0.0f || dst_w <= 0.0f || dst_h <= 0.0f)
+        return;
+
+    // A quad with float texture coordinates, so the destination can be fractional and the
+    // texture's smoothing/mipmaps do the resampling
+    sf::VertexArray quad(sf::PrimitiveType::TriangleStrip, 4);
+    quad[0].position = {dst_x, dst_y};
+    quad[1].position = {dst_x + dst_w, dst_y};
+    quad[2].position = {dst_x, dst_y + dst_h};
+    quad[3].position = {dst_x + dst_w, dst_y + dst_h};
+    quad[0].texCoords = {src_x, src_y};
+    quad[1].texCoords = {src_x + src_w, src_y};
+    quad[2].texCoords = {src_x, src_y + src_h};
+    quad[3].texCoords = {src_x + src_w, src_y + src_h};
+
+    sf::RenderStates states(sf::BlendAlpha);
+    states.texture = &static_cast<SFMLTexture*>(texture)->get_display_texture();
+    m_target->draw(quad, states);
+}
+
 void SFMLRenderer::set_clip_area(int x, int y, int w, int h)
 {
     // Clip belongs to the current target; applied to every draw as the view's scissor

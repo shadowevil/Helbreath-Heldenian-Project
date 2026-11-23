@@ -390,6 +390,7 @@ void CGame::on_uninitialize()
 	m_sprite.clear();
 	m_tile_spr.clear();
 	m_effect_sprites.clear();
+	m_cursor_art.unload();
 	hb::shared::sprite::Sprites::set_factory(nullptr);
 	m_sprite_factory.reset();
 
@@ -583,10 +584,22 @@ void CGame::draw_cursor()
 		break;
 	}
 
+	int frame = static_cast<int>(cursor);
+
+	// High-resolution cursor art, loaded on first use; same logical size and hotspot as the
+	// original frame. Any frame without HQ art (or no staged asset) falls back to the sprite below.
+	if (!m_cursor_art_tried)
+	{
+		m_cursor_art_tried = true;
+		std::string dir = hb::shared::sprite::Sprites::get_sprite_path() + "/interface/";
+		m_cursor_art.load(*m_Renderer, dir + "cursors_hq.png", dir + "cursors_hq.json");
+	}
+	if (m_cursor_art.draw(*m_Renderer, frame, mouse_x, mouse_y))
+		return;
+
 	// draw the cursor sprite
 	if (m_sprite[MouseCursor])
 	{
-		int frame = static_cast<int>(cursor);
 
 		// Item targeting cursor: ignore baked pivot offset and center on
 		// the mouse point so the grow/shrink animation scales symmetrically.

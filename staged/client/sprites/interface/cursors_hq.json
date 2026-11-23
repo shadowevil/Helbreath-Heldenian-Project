@@ -1,0 +1,369 @@
+{
+  "comment": "HQ software cursor art; frame index = cursor_type (sprite 8 of interface/game_dialogs). src: rect in cursors_hq.png. hotspot: texels from the src top-left. scale: texels per logical unit (4, so displays up to 4K sample downward). logical_size/logical_pivot: the original frame; the figure is drawn uniformly scaled to fit logical_size with the hotspot on the mouse point. sheet_rect: the figure in the artist's sheet working/sprite_work/cursors.png. Built from a Real-ESRGAN 2x upscale, Lanczos-resampled in premultiplied alpha, edge colour bled into transparent texels, 16px gutter.",
+  "frames": [
+    {
+      "frame": 0,
+      "src": [
+        16,
+        16,
+        135,
+        116
+      ],
+      "hotspot": [
+        3,
+        0
+      ],
+      "scale": 4,
+      "logical_size": [
+        34,
+        29
+      ],
+      "logical_pivot": [
+        -1,
+        -1
+      ],
+      "sheet_rect": [
+        330,
+        1,
+        122,
+        105
+      ]
+    },
+    {
+      "frame": 1,
+      "src": [
+        167,
+        16,
+        139,
+        140
+      ],
+      "hotspot": [
+        16.02,
+        28.0
+      ],
+      "scale": 4,
+      "logical_size": [
+        37,
+        35
+      ],
+      "logical_pivot": [
+        -4,
+        -7
+      ],
+      "sheet_rect": [
+        453,
+        1,
+        120,
+        121
+      ]
+    },
+    {
+      "frame": 2,
+      "src": [
+        322,
+        16,
+        120,
+        120
+      ],
+      "hotspot": [
+        4.0,
+        8.0
+      ],
+      "scale": 4,
+      "logical_size": [
+        34,
+        30
+      ],
+      "logical_pivot": [
+        -1,
+        -2
+      ],
+      "sheet_rect": [
+        574,
+        1,
+        100,
+        100
+      ]
+    },
+    {
+      "frame": 3,
+      "src": [
+        458,
+        16,
+        145,
+        144
+      ],
+      "hotspot": [
+        0,
+        0
+      ],
+      "scale": 4,
+      "logical_size": [
+        38,
+        36
+      ],
+      "logical_pivot": [
+        -2,
+        -1
+      ],
+      "sheet_rect": [
+        1,
+        1,
+        118,
+        117
+      ]
+    },
+    {
+      "frame": 4,
+      "src": [
+        619,
+        16,
+        140,
+        143
+      ],
+      "hotspot": [
+        0.0,
+        0.0
+      ],
+      "scale": 4,
+      "logical_size": [
+        35,
+        36
+      ],
+      "logical_pivot": [
+        0,
+        0
+      ],
+      "sheet_rect": [
+        120,
+        1,
+        104,
+        106
+      ]
+    },
+    {
+      "frame": 5,
+      "src": [
+        775,
+        16,
+        140,
+        143
+      ],
+      "hotspot": [
+        0.0,
+        0.0
+      ],
+      "scale": 4,
+      "logical_size": [
+        35,
+        36
+      ],
+      "logical_pivot": [
+        0,
+        0
+      ],
+      "sheet_rect": [
+        225,
+        1,
+        104,
+        106
+      ]
+    },
+    {
+      "frame": 6,
+      "src": [
+        931,
+        16,
+        144,
+        124
+      ],
+      "hotspot": [
+        4,
+        0
+      ],
+      "scale": 4,
+      "logical_size": [
+        36,
+        31
+      ],
+      "logical_pivot": [
+        -1,
+        -1
+      ],
+      "sheet_rect": [
+        675,
+        1,
+        122,
+        105
+      ]
+    },
+    {
+      "frame": 7,
+      "src": [
+        1091,
+        16,
+        148,
+        127
+      ],
+      "hotspot": [
+        4,
+        0
+      ],
+      "scale": 4,
+      "logical_size": [
+        37,
+        32
+      ],
+      "logical_pivot": [
+        -2,
+        -1
+      ],
+      "sheet_rect": [
+        798,
+        1,
+        122,
+        105
+      ]
+    },
+    {
+      "frame": 8,
+      "src": [
+        1255,
+        16,
+        107,
+        160
+      ],
+      "hotspot": [
+        -4.01,
+        28.0
+      ],
+      "scale": 4,
+      "logical_size": [
+        27,
+        40
+      ],
+      "logical_pivot": [
+        1,
+        -7
+      ],
+      "sheet_rect": [
+        921,
+        1,
+        80,
+        120
+      ]
+    },
+    {
+      "frame": 9,
+      "src": [
+        1378,
+        16,
+        140,
+        136
+      ],
+      "hotspot": [
+        70.0,
+        68.0
+      ],
+      "scale": 4,
+      "logical_size": [
+        35,
+        36
+      ],
+      "logical_pivot": [
+        -15,
+        -17
+      ],
+      "sheet_rect": [
+        1002,
+        1,
+        120,
+        117
+      ]
+    },
+    {
+      "frame": 10,
+      "src": [
+        1534,
+        16,
+        132,
+        128
+      ],
+      "hotspot": [
+        66.0,
+        64.0
+      ],
+      "scale": 4,
+      "logical_size": [
+        33,
+        32
+      ],
+      "logical_pivot": [
+        -15,
+        -15
+      ],
+      "sheet_rect": [
+        1123,
+        1,
+        104,
+        101
+      ]
+    },
+    {
+      "frame": 11,
+      "src": [
+        1682,
+        16,
+        104,
+        100
+      ],
+      "hotspot": [
+        52.0,
+        50.0
+      ],
+      "scale": 4,
+      "logical_size": [
+        26,
+        27
+      ],
+      "logical_pivot": [
+        -12,
+        -13
+      ],
+      "sheet_rect": [
+        1228,
+        1,
+        89,
+        86
+      ]
+    },
+    {
+      "frame": 12,
+      "src": [
+        1802,
+        16,
+        64,
+        64
+      ],
+      "hotspot": [
+        0.0,
+        0.0
+      ],
+      "scale": 4,
+      "logical_size": [
+        16,
+        16
+      ],
+      "logical_pivot": [
+        0,
+        0
+      ],
+      "sheet_rect": [
+        1332,
+        10,
+        64,
+        64
+      ]
+    }
+  ]
+}

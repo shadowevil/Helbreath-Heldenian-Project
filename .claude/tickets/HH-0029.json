@@ -1,0 +1,36 @@
+{
+  "id": "HH-0029",
+  "summary": "HQ cursors 1: map the sheet to the existing cursor frames and slice it",
+  "status": "verified",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T22:12:56Z",
+  "updated": "2026-11-23T22:23:46Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0028"
+    ]
+  },
+  "body": "Match each figure in cursors.png to the current cursor frame it replaces (frame index, size, pivot/hotspot), slice by alpha bounds, and stage the sheet plus a frame table (rects, hotspots in source pixels, scale vs. the original) under `staged/client/`.\n\n**Done when:** every cursor frame the client draws has an HQ frame or a recorded fallback to the original.\n\nSource: user request 2026-11-23, art working\\sprite_work\\cursors.png (1406x124 RGBA, measured).",
+  "comments": [
+    {
+      "author": "pm",
+      "at": "2026-11-23T22:21:36Z",
+      "body": "User, 2026-11-23: 'Store the cursors at whatever size you think is theoretically best for proper 4k and below scaling'. Chosen: 4x the original logical frame size. 4K's uniform UI scale is 2160/600 = 3.6 (derived), so 4x always downsamples, and its mip levels land exactly on 4x / 2x / 1x (4K, 1080p-class, 800x600). The artist sheet is about 3x (measured: hourglass 120 px for 40 logical px), so it is Real-ESRGAN upscaled 2x and Lanczos-resampled to exact 4x sizes, with edge colour bled into transparent texels against mipmap fringes."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-23T22:22:26Z",
+      "body": "Review (2026-11-23): pass with fixes. Dark fringe from transparent-black texels (43% of the sheet) and the frame 0 arrow tip about 1 logical px off; both are being fixed in the 4x re-stage (edge-colour dilation, exact tip alignment). No code change needed."
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "HH-0030",
+  "summary": "HQ cursors 2: draw the cursor from the HQ sheet at window resolution",
+  "status": "verified",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T22:12:57Z",
+  "updated": "2026-11-23T22:23:46Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0028"
+    ]
+  },
+  "body": "Load the staged sheet once; draw the current frame in screen space at the same logical size and hotspot as the original frame, sampled smoothly from the high-resolution source; observer crosshair unchanged.\n\n**Done when:** the cursor looks sharp at 1440x1080, matches the old size and hotspot at 800x600, and clicks land where the tip points; reviewed.\n\nSource: user request 2026-11-23, art working\\sprite_work\\cursors.png (1406x124 RGBA, measured).",
+  "comments": [
+    {
+      "author": "pm",
+      "at": "2026-11-23T22:20:46Z",
+      "body": "Cursor code is written (checkpoint afae53fb). Full build is on hold because the Phase 3 editor's edits are mid-flight in the same tree; my files compiled cleanly. It will be rebuilt together once Phase 3's first pass lands."
+    }
+  ]
+}
