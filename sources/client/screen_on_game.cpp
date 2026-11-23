@@ -718,7 +718,9 @@ void Screen_OnGame::on_render()
         m_sModY = val % 32;
     }
 
-    // Main scene rendering
+    // Main scene rendering: world pass into the logical-size world target
+    m_game->m_Renderer->begin_world();
+
     FrameTiming::begin_profile(ProfileStage::draw_background);
     draw_background(m_sDivX, m_sModX, m_sDivY, m_sModY);
     FrameTiming::end_profile(ProfileStage::draw_background);
@@ -773,6 +775,9 @@ void Screen_OnGame::on_render()
         && (m_gate_posit_y >= m_game->m_Camera.get_y() / 32) && (m_gate_posit_y <= m_game->m_Camera.get_y() / 32 + VIEW_TILE_HEIGHT())) {
         m_game->m_effect_sprites[101]->draw(m_gate_posit_x * 32 - m_game->m_Camera.get_x() - 96, m_gate_posit_y * 32 - m_game->m_Camera.get_y() - 69, m_game->m_entity_state.m_effect_frame % 30, hb::shared::sprite::DrawParams::alpha_blend(0.5f));
     }
+
+    // Composite the world onto the window; UI from here on draws in screen space
+    m_game->m_Renderer->end_world();
 
     // UI rendering
     FrameTiming::begin_profile(ProfileStage::DrawDialogs);

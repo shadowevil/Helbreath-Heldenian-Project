@@ -9,6 +9,54 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 
+// Visible bounds of the target's current view, in logical coordinates. Using view center/size
+// accounts for views with non-zero origins (e.g. detail LOD) and for the window's UI view,
+// whose logical size differs from the window's pixel size.
+static hb::shared::sprite::BoundRect get_view_bounds(const sf::RenderTarget& target)
+{
+    const sf::View& view = target.getView();
+    sf::Vector2f center = view.getCenter();
+    sf::Vector2f size = view.getSize();
+    hb::shared::sprite::BoundRect bounds;
+    bounds.left = static_cast<int>(center.x - size.x / 2.0f);
+    bounds.top = static_cast<int>(center.y - size.y / 2.0f);
+    bounds.right = static_cast<int>(center.x + size.x / 2.0f);
+    bounds.bottom = static_cast<int>(center.y + size.y / 2.0f);
+    return bounds;
+}
+
+// Smooths a sprite texture for one screen-space backdrop draw, then restores it. Only a draw whose
+// destination (logical units) covers the whole UI area smooths: bilinear sampling reads half a texel
+// outside the source rect, which bleeds neighbouring frames of packed sheets and seams sliced chrome,
+// so every other sprite stays nearest. Also needs renderer->wants_ui_smoothing() (screen space,
+// upscaleSmoothing on, UI scaled) and no m_nearest_filter (bitmap fonts).
+class scoped_ui_smoothing
+{
+public:
+    scoped_ui_smoothing(sf::Texture& texture, const SFMLRenderer* renderer, bool nearest_filter,
+                        int dest_x, int dest_y, int dest_w, int dest_h)
+        : m_texture(texture)
+        , m_active(!nearest_filter && !texture.isSmooth() && renderer && renderer->wants_ui_smoothing()
+                   && dest_x <= 0 && dest_y <= 0
+                   && dest_x + dest_w >= renderer->get_width() && dest_y + dest_h >= renderer->get_height())
+    {
+        if (m_active)
+            m_texture.setSmooth(true);
+    }
+
+    ~scoped_ui_smoothing()
+    {
+        if (m_active)
+            m_texture.setSmooth(false);
+    }
+
+    scoped_ui_smoothing(const scoped_ui_smoothing&) = delete;
+    scoped_ui_smoothing& operator=(const scoped_ui_smoothing&) = delete;
+
+private:
+    sf::Texture& m_texture;
+    bool m_active;
+};
 
 SFMLSprite::SFMLSprite(SFMLRenderer* renderer, const std::string& pakFilePath, int spriteIndex, bool alphaEffect)
     : m_renderer(renderer)
@@ -114,7 +162,7 @@ void SFMLSprite::draw(int x, int y, int frame, const hb::shared::sprite::DrawPar
     m_inUse = true;
     m_lastAccessTime = GameClock::get_time_ms();
 
-    DrawInternal(m_renderer->GetBackBuffer(), x, y, frame, params);
+    DrawInternal(m_renderer->get_current_target(), x, y, frame, params);
 
     m_inUse = false;
 }
@@ -148,7 +196,7 @@ void SFMLSprite::DrawToSurface(void* destSurface, int x, int y, int frame, const
     m_inUse = false;
 }
 
-void SFMLSprite::DrawInternal(sf::RenderTexture* target, int x, int y, int frame, const hb::shared::sprite::DrawParams& params)
+void SFMLSprite::DrawInternal(sf::RenderTarget* target, int x, int y, int frame, const hb::shared::sprite::DrawParams& params)
 {
     if (!target)
         return;
@@ -237,15 +285,12 @@ void SFMLSprite::DrawInternal(sf::RenderTexture* target, int x, int y, int frame
     m_boundRect.right = drawX + frameRect.width;
     m_boundRect.bottom = drawY + frameRect.height;
 
-    // Clip to render target's visible view bounds (world-space coordinates).
-    // Using view center/size accounts for views with non-zero origins (e.g. detail LOD).
-    sf::View currentView = target->getView();
-    sf::Vector2f viewCenter = currentView.getCenter();
-    sf::Vector2f viewSize = currentView.getSize();
-    int clipLeft = static_cast<int>(viewCenter.x - viewSize.x / 2.0f);
-    int clipTop = static_cast<int>(viewCenter.y - viewSize.y / 2.0f);
-    int clipRight = static_cast<int>(viewCenter.x + viewSize.x / 2.0f);
-    int clipBottom = static_cast<int>(viewCenter.y + viewSize.y / 2.0f);
+    // Clip to render target's visible view bounds (logical coordinates)
+    hb::shared::sprite::BoundRect view = get_view_bounds(*target);
+    int clipLeft = view.left;
+    int clipTop = view.top;
+    int clipRight = view.right;
+    int clipBottom = view.bottom;
 
     int srcX = frameRect.x;
     int srcY = frameRect.y;
@@ -282,6 +327,9 @@ void SFMLSprite::DrawInternal(sf::RenderTexture* target, int x, int y, int frame
     // Skip if completely clipped
     if (srcW <= 0 || srcH <= 0)
         return;
+
+    // Backdrop smoothing; set before the blend-mode code reads isSmooth(), so it neither re-toggles nor restores early
+    scoped_ui_smoothing ui_smoothing(m_texture, m_renderer, params.m_nearest_filter, drawX, drawY, srcW, srcH);
 
     // Create sprite for this frame with clipped source rect
     sf::IntRect srcRect(
@@ -483,7 +531,12 @@ void SFMLSprite::DrawWidth(int x, int y, int frame, int width, bool vertical)
     sprite.setPosition({static_cast<float>(drawX), static_cast<float>(drawY)});
 
     // Use explicit alpha blending to respect PNG transparency
-    m_renderer->GetBackBuffer()->draw(sprite, sf::RenderStates(sf::BlendAlpha));
+    if (sf::RenderTarget* target = m_renderer->get_current_target())
+    {
+        scoped_ui_smoothing ui_smoothing(m_texture, m_renderer, false,
+                                         drawX, drawY, srcRect.size.x, srcRect.size.y);
+        target->draw(sprite, sf::RenderStates(sf::BlendAlpha));
+    }
 
     // Update bounds
     m_boundRect.left = drawX;
@@ -518,7 +571,7 @@ void SFMLSprite::DrawShifted(int x, int y, int shiftX, int shiftY, int frame, co
         m_ambient_light_level = m_renderer->get_ambient_light_level();
     }
 
-    sf::RenderTexture* target = m_renderer->GetBackBuffer();
+    sf::RenderTarget* target = m_renderer->get_current_target();
     if (!target)
         return;
 
@@ -536,37 +589,35 @@ void SFMLSprite::DrawShifted(int x, int y, int shiftX, int shiftY, int frame, co
     int drawX = x + frameRect.pivotX;
     int drawY = y + frameRect.pivotY;
 
-    // get render target size for clipping
-    sf::Vector2u targetSize = target->getSize();
-    int targetWidth = static_cast<int>(targetSize.x);
-    int targetHeight = static_cast<int>(targetSize.y);
+    // Clip to the target's logical view bounds (matching DDraw's clipping logic); the window's
+    // pixel size is not the logical size, so never clip against target->getSize()
+    hb::shared::sprite::BoundRect view = get_view_bounds(*target);
 
-    // Clip to screen boundaries (matching DDraw's clipping logic)
-    if (drawX < 0)
+    if (drawX < view.left)
     {
-        int diff = -drawX;
+        int diff = view.left - drawX;
         srcX += diff;
         srcW -= diff;
         if (srcW <= 0) { m_inUse = false; return; }
-        drawX = 0;
+        drawX = view.left;
     }
-    else if (drawX + srcW > targetWidth)
+    else if (drawX + srcW > view.right)
     {
-        srcW -= (drawX + srcW) - targetWidth;
+        srcW -= (drawX + srcW) - view.right;
         if (srcW <= 0) { m_inUse = false; return; }
     }
 
-    if (drawY < 0)
+    if (drawY < view.top)
     {
-        int diff = -drawY;
+        int diff = view.top - drawY;
         srcY += diff;
         srcH -= diff;
         if (srcH <= 0) { m_inUse = false; return; }
-        drawY = 0;
+        drawY = view.top;
     }
-    else if (drawY + srcH > targetHeight)
+    else if (drawY + srcH > view.bottom)
     {
-        srcH -= (drawY + srcH) - targetHeight;
+        srcH -= (drawY + srcH) - view.bottom;
         if (srcH <= 0) { m_inUse = false; return; }
     }
 
@@ -596,6 +647,7 @@ void SFMLSprite::DrawShifted(int x, int y, int shiftX, int shiftY, int frame, co
     // draw to target
     sf::RenderStates states;
     states.blendMode = params.m_alpha < 1.0f ? sf::BlendAlpha : sf::BlendNone;
+    scoped_ui_smoothing ui_smoothing(m_texture, m_renderer, params.m_nearest_filter, drawX, drawY, srcW, srcH);
     target->draw(sprite, states);
 
     m_inUse = false;

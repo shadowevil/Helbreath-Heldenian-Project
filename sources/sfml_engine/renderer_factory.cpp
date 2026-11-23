@@ -115,8 +115,8 @@ bool Renderer::Set(RendererType type)
                 SFMLWindow* sfmlWindow = static_cast<SFMLWindow*>(window);
                 sfmlRenderer->SetRenderWindow(sfmlWindow->GetRenderWindow());
 
-                // Create text renderer with back buffer (loads the bundled font; check IsFontLoaded)
-                s_pTextRenderer = new hb::shared::text::SFMLTextRenderer(sfmlRenderer->GetBackBuffer());
+                // Create text renderer; it draws to the renderer's current target (loads the bundled font; check IsFontLoaded)
+                s_pTextRenderer = new hb::shared::text::SFMLTextRenderer(sfmlRenderer);
                 hb::shared::text::SetTextRenderer(s_pTextRenderer);
             }
         }
@@ -218,10 +218,10 @@ bool Window::realize()
         SFMLRenderer* sfmlRenderer = static_cast<SFMLRenderer*>(renderer);
         sfmlRenderer->SetRenderWindow(sfmlWindow->GetRenderWindow());
 
-        // Create text renderer now that we have back buffer
+        // Create text renderer now that the renderer has its targets
         if (!s_pTextRenderer)
         {
-            s_pTextRenderer = new hb::shared::text::SFMLTextRenderer(sfmlRenderer->GetBackBuffer());
+            s_pTextRenderer = new hb::shared::text::SFMLTextRenderer(sfmlRenderer);
             hb::shared::text::SetTextRenderer(s_pTextRenderer);
         }
     }

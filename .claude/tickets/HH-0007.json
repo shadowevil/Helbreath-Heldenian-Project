@@ -1,7 +1,7 @@
 {
   "id": "HH-0007",
   "summary": "Split 1b: begin_world / end_world composite and UI view",
-  "status": "in_review",
+  "status": "verified",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:29:35Z",
-  "updated": "2026-11-23T21:42:15Z",
+  "updated": "2026-11-23T21:47:01Z",
   "links": {
     "commits": [],
     "files": [],
@@ -26,6 +26,11 @@
       "author": "pm",
       "at": "2026-11-23T21:36:42Z",
       "body": "Review (2026-11-23) passed with fixes; back with the editor for: UI smoothing to follow upscaleSmoothing in screen space, h/v lines as scaled rects, screenshot stamp off the live frame, snake_case locals, CRLF restored on 7 files, reroute target after display-mode swap."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-23T21:43:33Z",
+      "body": "Re-review (2026-11-23): pass with one fix. UI smoothing must apply only to full-screen backdrops; sliced chrome and other sprites stay nearest (plan), to avoid frame-edge bleed. Back with the editor."
     }
   ]
 }

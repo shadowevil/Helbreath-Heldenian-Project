@@ -135,7 +135,8 @@ public:
 	void read_settings();
 	void write_settings();
 
-	void create_screen_shot();
+	void create_screen_shot();   // Queues a screenshot of the next rendered frame
+	void save_screen_shot();     // Stamps and saves the frame; on_render calls it before the present
 	void crusade_war_result(int winner_side);
 	void crusade_contribution_result(int war_contribution);
 	void cannot_construct(int code);
@@ -346,6 +347,7 @@ std::array<bool, hb::shared::limits::MaxItems> m_is_item_equipped{};
 
 	bool m_hide_local_cursor;
 	bool m_mouse_initialized = false;
+	bool m_screenshot_pending = false;
 
 	bool m_force_disconn;
 

@@ -1,7 +1,7 @@
 ﻿// sfml_renderer.h: SFML renderer implementing hb::shared::render::IRenderer interface
 //
 // Part of SFMLEngine static library
-// Uses sf::RenderTexture as back buffer and renders to sf::RenderWindow
+// World pass draws into an sf::RenderTexture; screen pass draws straight to the sf::RenderWindow
 //////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -44,6 +44,12 @@ public:
     bool end_frame_check_lost_surface() override;
     bool was_frame_presented() const override;
 
+    // World / Screen Space
+    void begin_world() override;
+    void end_world() override;
+    void fill_output(const hb::shared::render::Color& color) override;
+    float ui_scale() const override;
+
     // Frame Metrics
     uint32_t get_fps() const override;
     double get_delta_time() const override;
@@ -77,7 +83,7 @@ public:
     hb::shared::geometry::GameRectangle get_clip_area() const override;
 
     // screenshot
-    bool screenshot(const char* filename) override;
+    bool screenshot(const char* filename, const std::function<void()>& overlay = {}) override;
 
     // Resolution
     int get_width() const override;
@@ -105,8 +111,17 @@ public:
 
     // ============== SFML-Specific Access ==============
 
-    // get the back buffer render texture for sprite drawing
-    sf::RenderTexture* GetBackBuffer() { return &m_backBuffer; }
+    // The target every draw goes to: the world target inside begin_world/end_world, else the window
+    // through the UI view. Sprites, text and primitives must draw here, never to a fixed target.
+    sf::RenderTarget* get_current_target() { return m_target; }
+
+    // True when a draw now goes to screen space, the UI is scaled away from 1:1 and
+    // upscaleSmoothing is on: sprites should sample bilinear for that draw, like the world composite
+    bool wants_ui_smoothing() const
+    {
+        return m_upscale_smoothing && !m_in_world
+            && (m_ui_rect.size.x != static_cast<float>(m_width) || m_ui_rect.size.y != static_cast<float>(m_height));
+    }
 
     // Set the window to render to (called from SFMLWindow)
     // This also creates the render textures since they need an OpenGL context
@@ -124,9 +139,33 @@ private:
     // Create render textures (called when OpenGL context is available)
     bool CreateRenderTextures();
 
+    // Window client size in physical pixels
+    sf::Vector2f get_output_size() const;
+    // Recompute the output size, world rect and UI rect for this frame
+    void update_output_rects();
+    // 1:1 view over the window in output pixels, no scissor
+    sf::View output_view() const;
+    // Make the window the current target, drawing through the UI view
+    void route_to_screen();
+    // After the window is set or recreated: recompute rects and re-route screen-space draws
+    void refresh_routing();
+    // Apply the current target's view and clip (as a view scissor, rounded outward to whole pixels)
+    void apply_target_view();
+    // The full logical area (0, 0, m_width, m_height): every target's default clip
+    hb::shared::geometry::GameRectangle logical_area() const { return hb::shared::geometry::GameRectangle(0, 0, m_width, m_height); }
+    hb::shared::geometry::GameRectangle& active_clip();
+    const hb::shared::geometry::GameRectangle& active_clip() const;
+
     sf::RenderWindow* m_render_window;  // Not owned, set by SFMLWindow
     bool m_texturesCreated;
-    sf::RenderTexture m_backBuffer;
+    sf::RenderTexture m_world_target;   // Logical-size world pass, composited in end_world
+
+    // Draw routing
+    sf::RenderTarget* m_target;         // Current target: &m_world_target or m_render_window
+    bool m_in_world;
+    sf::Vector2f m_output_size;         // Window client size in pixels, for this frame
+    sf::FloatRect m_world_rect;         // Where the world target lands in the window (pixels)
+    sf::FloatRect m_ui_rect;            // Where the 800x600 UI space lands in the window (pixels)
 
     // Display properties
     int m_width;
@@ -134,7 +173,8 @@ private:
     bool m_fullscreen;
     bool m_fullscreen_stretch;
     bool m_upscale_smoothing;
-    hb::shared::geometry::GameRectangle m_clipArea;
+    hb::shared::geometry::GameRectangle m_world_clip;   // Logical units, world target
+    hb::shared::geometry::GameRectangle m_screen_clip;  // Logical units, UI space on the window
 
     // Engine-owned frame timing
     int m_fps_limit;

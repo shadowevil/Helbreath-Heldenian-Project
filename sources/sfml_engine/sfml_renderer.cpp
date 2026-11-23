@@ -11,9 +11,11 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/ConvexShape.hpp>
-#include <SFML/OpenGL.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/View.hpp>
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <exception>
 #include <thread>
@@ -44,6 +46,8 @@ void main()
 SFMLRenderer::SFMLRenderer()
     : m_render_window(nullptr)
     , m_texturesCreated(false)
+    , m_target(&m_world_target)
+    , m_in_world(false)
     , m_width(640)  // Default, updated in CreateRenderTextures
     , m_height(480) // Default, updated in CreateRenderTextures
     , m_fullscreen(false)
@@ -61,7 +65,8 @@ SFMLRenderer::SFMLRenderer()
     , m_lastPresentedFrameTime(std::chrono::steady_clock::now())
     , m_ambient_light_level(1)
 {
-    m_clipArea = hb::shared::geometry::GameRectangle(0, 0, m_width, m_height);
+    m_world_clip = logical_area();
+    m_screen_clip = m_world_clip;
 }
 
 SFMLRenderer::~SFMLRenderer()
@@ -143,30 +148,31 @@ bool SFMLRenderer::CreateRenderTextures()
     // Update dimensions from hb::shared::render::ResolutionConfig (initialized before renderer creation)
     m_width = RENDER_LOGICAL_WIDTH();
     m_height = RENDER_LOGICAL_HEIGHT();
-    m_clipArea = hb::shared::geometry::GameRectangle(0, 0, m_width, m_height);
+    m_world_clip = logical_area();
+    m_screen_clip = m_world_clip;
 
-    // Create back buffer render texture
-    if (!m_backBuffer.resize({static_cast<unsigned int>(m_width), static_cast<unsigned int>(m_height)}))
+    // Create the world render texture
+    if (!m_world_target.resize({static_cast<unsigned int>(m_width), static_cast<unsigned int>(m_height)}))
     {
-        printf("[ERROR] SFMLRenderer::CreateRenderTextures - Failed to create back buffer\n");
+        printf("[ERROR] SFMLRenderer::CreateRenderTextures - Failed to create world target\n");
         return false;
     }
 
     // Disable texture smoothing for pixel-perfect scaling (matches DDraw sharpness)
     // This uses nearest-neighbor filtering instead of bilinear
-    m_backBuffer.setSmooth(false);
+    m_world_target.setSmooth(false);
 
     // Disable texture repeating to prevent edge artifacts
-    m_backBuffer.setRepeated(false);
+    m_world_target.setRepeated(false);
 
     // Set explicit views to ensure 1:1 pixel mapping and prevent edge artifacts
     // The view must match exactly the surface dimensions
-    sf::View backBufferView(sf::FloatRect({0.f, 0.f}, {static_cast<float>(m_width), static_cast<float>(m_height)}));
-    m_backBuffer.setView(backBufferView);
+    sf::View world_view(sf::FloatRect({0.f, 0.f}, {static_cast<float>(m_width), static_cast<float>(m_height)}));
+    m_world_target.setView(world_view);
 
     // Clear buffer - use transparent for proper alpha compositing
-    m_backBuffer.clear(sf::Color::Transparent);
-    m_backBuffer.display();
+    m_world_target.clear(sf::Color::Transparent);
+    m_world_target.display();
 
     // Load additive offset shader for PutTransSpriteRGB emulation
     m_additive_offset_shader_loaded = m_additive_offset_shader.loadFromMemory(
@@ -193,12 +199,25 @@ const sf::Shader* SFMLRenderer::get_additive_offset_shader() const
 void SFMLRenderer::SetRenderWindow(sf::RenderWindow* window)
 {
     m_render_window = window;
+    if (!window)
+        m_in_world = false;  // No window to composite onto; route_to_screen falls back to the world target
 
     // Create render textures now that we have an OpenGL context
     if (window && !m_texturesCreated)
     {
         CreateRenderTextures();
     }
+
+    refresh_routing();
+}
+
+void SFMLRenderer::refresh_routing()
+{
+    // The window or its size may have changed: recompute the rects, and re-point screen-space
+    // draws at the (new) window. An open world pass keeps its target; end_world uses the new rects.
+    update_output_rects();
+    if (!m_in_world)
+        route_to_screen();
 }
 
 void SFMLRenderer::shutdown()
@@ -282,14 +301,16 @@ void SFMLRenderer::change_display_mode(hb::shared::types::NativeWindowHandle hWn
     if (m_texturesCreated)
     {
         // Check if textures need to be recreated by verifying they're still valid
-        sf::Vector2u backBufferSize = m_backBuffer.getSize();
-        if (backBufferSize.x == 0 || backBufferSize.y == 0)
+        sf::Vector2u world_size = m_world_target.getSize();
+        if (world_size.x == 0 || world_size.y == 0)
         {
             // Textures became invalid, recreate them
             m_texturesCreated = false;
             CreateRenderTextures();
         }
     }
+
+    refresh_routing();
 }
 
 void SFMLRenderer::begin_frame()
@@ -315,18 +336,208 @@ void SFMLRenderer::begin_frame()
     }
     m_skip_frame = false;
 
-    // Reset the view to ensure 1:1 pixel mapping (prevents edge artifacts)
-    sf::View pixelView(sf::FloatRect({0.f, 0.f}, {static_cast<float>(m_width), static_cast<float>(m_height)}));
-    m_backBuffer.setView(pixelView);
+    update_output_rects();
 
-    // Clear to TRANSPARENT black (alpha=0) so that sprite alpha compositing works correctly
-    // When we present to the window, we'll draw over a black background
-    m_backBuffer.clear(sf::Color::Transparent);
+    // Each target's clip starts the frame at its full logical area
+    m_world_clip = logical_area();
+    m_screen_clip = m_world_clip;
 
-    // Enable scissor test to clip all drawing to the logical resolution
-    // This prevents any content from being drawn outside the intended area
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(0, 0, m_width, m_height);
+    // Clear the whole window, letterbox bars included; an unscissored view so nothing is left stale
+    if (m_render_window)
+    {
+        m_render_window->setView(output_view());
+        m_render_window->clear(sf::Color::Black);
+    }
+
+    // Screen space until a screen opens a world pass
+    route_to_screen();
+}
+
+sf::Vector2f SFMLRenderer::get_output_size() const
+{
+    if (m_render_window)
+    {
+        // When DPI aware, the native client rect gives accurate physical pixel dimensions
+        int client_w = 0;
+        int client_h = 0;
+        if (hb::platform::get_client_size(m_render_window->getNativeHandle(), client_w, client_h)
+            && client_w > 0 && client_h > 0)
+        {
+            return {static_cast<float>(client_w), static_cast<float>(client_h)};
+        }
+
+        sf::Vector2u size = m_render_window->getSize();
+        if (size.x > 0 && size.y > 0)
+            return {static_cast<float>(size.x), static_cast<float>(size.y)};
+    }
+
+    // No window, or minimised to zero size: a 1:1 logical output keeps every view finite
+    return {static_cast<float>(m_width), static_cast<float>(m_height)};
+}
+
+void SFMLRenderer::update_output_rects()
+{
+    m_output_size = get_output_size();
+
+    const sf::Vector2f logical(static_cast<float>(m_width), static_cast<float>(m_height));
+    float scale_x = m_output_size.x / logical.x;
+    float scale_y = m_output_size.y / logical.y;
+
+    if (m_fullscreen && !m_fullscreen_stretch)
+    {
+        // Fullscreen letterbox: uniform scale to maintain aspect ratio, centred
+        float scale = (scale_y < scale_x) ? scale_y : scale_x;
+        sf::Vector2f dest(logical.x * scale, logical.y * scale);
+        m_world_rect = sf::FloatRect({(m_output_size.x - dest.x) / 2.0f, (m_output_size.y - dest.y) / 2.0f}, dest);
+    }
+    else
+    {
+        // Windowed or fullscreen stretch: fill entire window
+        m_world_rect = sf::FloatRect({0.0f, 0.0f}, m_output_size);
+    }
+
+    // Phase 1: the UI rect equals the world rect in every mode (uniform UI in stretch is Phase 4)
+    m_ui_rect = m_world_rect;
+}
+
+sf::View SFMLRenderer::output_view() const
+{
+    // 1:1 window pixels; SFML's default view changes with setSize(), so always set it explicitly
+    return sf::View(sf::FloatRect({0.f, 0.f}, m_output_size));
+}
+
+hb::shared::geometry::GameRectangle& SFMLRenderer::active_clip()
+{
+    return m_in_world ? m_world_clip : m_screen_clip;
+}
+
+const hb::shared::geometry::GameRectangle& SFMLRenderer::active_clip() const
+{
+    return m_in_world ? m_world_clip : m_screen_clip;
+}
+
+void SFMLRenderer::route_to_screen()
+{
+    m_in_world = false;
+    m_target = m_render_window ? static_cast<sf::RenderTarget*>(m_render_window) : &m_world_target;
+    apply_target_view();
+}
+
+void SFMLRenderer::apply_target_view()
+{
+    // Before the first frame the output rects are unset; compute them so the views stay finite
+    if (m_output_size.x <= 0.0f || m_output_size.y <= 0.0f)
+        update_output_rects();
+
+    const sf::Vector2f logical(static_cast<float>(m_width), static_cast<float>(m_height));
+    sf::View view(sf::FloatRect({0.f, 0.f}, logical));
+
+    // Where the logical space lands on the current target, in target pixels
+    sf::FloatRect area({0.f, 0.f}, logical);
+    sf::Vector2f target_size = logical;
+    if (!m_in_world)
+    {
+        area = m_ui_rect;
+        target_size = m_output_size;
+        view.setViewport(sf::FloatRect(
+            {area.position.x / target_size.x, area.position.y / target_size.y},
+            {area.size.x / target_size.x, area.size.y / target_size.y}));
+    }
+
+    // Clip (logical units, clamped to the logical area) -> target pixels, rounded outward
+    const hb::shared::geometry::GameRectangle& clip = active_clip();
+    float scale_x = area.size.x / logical.x;
+    float scale_y = area.size.y / logical.y;
+    float left = std::floor(area.position.x + static_cast<float>((std::max)(clip.Left(), 0)) * scale_x);
+    float top = std::floor(area.position.y + static_cast<float>((std::max)(clip.Top(), 0)) * scale_y);
+    float right = std::ceil(area.position.x + static_cast<float>((std::min)(clip.Right(), m_width)) * scale_x);
+    float bottom = std::ceil(area.position.y + static_cast<float>((std::min)(clip.Bottom(), m_height)) * scale_y);
+    left = std::clamp(left, 0.0f, target_size.x);
+    top = std::clamp(top, 0.0f, target_size.y);
+    right = std::clamp(right, left, target_size.x);
+    bottom = std::clamp(bottom, top, target_size.y);
+
+    // Scissor is a factor of the whole target; keep position + size within [0, 1]
+    float sx = left / target_size.x;
+    float sy = top / target_size.y;
+    float sw = (std::min)((right - left) / target_size.x, 1.0f - sx);
+    float sh = (std::min)((bottom - top) / target_size.y, 1.0f - sy);
+    view.setScissor(sf::FloatRect({sx, sy}, {sw, sh}));
+
+    m_target->setView(view);
+}
+
+void SFMLRenderer::begin_world()
+{
+    if (m_in_world || !m_texturesCreated)
+        return;
+
+    m_in_world = true;
+    m_target = &m_world_target;
+    m_world_clip = logical_area();
+    apply_target_view();
+
+    // Clear to TRANSPARENT black (alpha=0) so that sprite alpha compositing works correctly;
+    // the composite in end_world draws it over the window's black clear
+    m_world_target.clear(sf::Color::Transparent);
+}
+
+void SFMLRenderer::end_world()
+{
+    if (!m_in_world)
+        return;
+
+    m_world_target.display();
+    m_in_world = false;
+
+    if (m_render_window)
+    {
+        m_render_window->setView(output_view());
+
+        // Use explicit source rectangle to avoid including any texture padding
+        // SFML render textures may have internal padding beyond the requested size
+        sf::IntRect source_rect({0, 0}, {m_width, m_height});
+        sf::Sprite world_sprite(m_world_target.getTexture(), source_rect);
+        world_sprite.setScale({m_world_rect.size.x / static_cast<float>(m_width),
+                               m_world_rect.size.y / static_cast<float>(m_height)});
+        world_sprite.setPosition(m_world_rect.position);
+
+        // Toggle filtering for final upscale: smooth (bilinear) or crisp (nearest)
+        // Applied only during the composite so internal logical rendering remains unchanged.
+        const_cast<sf::Texture&>(m_world_target.getTexture()).setSmooth(m_upscale_smoothing);
+
+        m_render_window->draw(world_sprite, sf::RenderStates(sf::BlendAlpha));
+
+        // Restore nearest-neighbor for internal rendering
+        const_cast<sf::Texture&>(m_world_target.getTexture()).setSmooth(false);
+    }
+
+    route_to_screen();
+}
+
+void SFMLRenderer::fill_output(const hb::shared::render::Color& color)
+{
+    // Output fills are screen space; a world pass still open ends here
+    end_world();
+
+    if (color.a == 0 || !m_render_window)
+        return;
+
+    m_render_window->setView(output_view());
+    sf::RectangleShape rect(m_output_size);
+    rect.setFillColor(sf::Color(color.r, color.g, color.b, color.a));
+    m_render_window->draw(rect);
+
+    apply_target_view();
+}
+
+float SFMLRenderer::ui_scale() const
+{
+    // Phase 1: the UI rect is the world rect, which stretches per axis; report the smaller axis
+    float scale_x = m_ui_rect.size.x / static_cast<float>(m_width);
+    float scale_y = m_ui_rect.size.y / static_cast<float>(m_height);
+    float scale = (std::min)(scale_x, scale_y);
+    return (scale > 0.0f) ? scale : 1.0f;
 }
 
 void SFMLRenderer::end_frame()
@@ -334,86 +545,11 @@ void SFMLRenderer::end_frame()
     if (m_skip_frame)
         return;
 
-    // Disable scissor test before presenting
-    glDisable(GL_SCISSOR_TEST);
-
-    m_backBuffer.display();
+    // A world pass a screen left open still reaches the window
+    end_world();
 
     if (m_render_window && m_render_window->isOpen())
     {
-        m_render_window->clear(sf::Color::Black);
-
-        // get actual window size in physical pixels
-        float windowWidth, windowHeight;
-
-#ifdef _WIN32
-        // When DPI aware, use GetClientRect for accurate physical pixel dimensions
-        HWND hWnd = static_cast<HWND>(m_render_window->getNativeHandle());
-        if (hWnd)
-        {
-            RECT clientRect;
-            if (GetClientRect(hWnd, &clientRect))
-            {
-                windowWidth = static_cast<float>(clientRect.right - clientRect.left);
-                windowHeight = static_cast<float>(clientRect.bottom - clientRect.top);
-            }
-            else
-            {
-                sf::Vector2u size = m_render_window->getSize();
-                windowWidth = static_cast<float>(size.x);
-                windowHeight = static_cast<float>(size.y);
-            }
-        }
-        else
-#endif
-        {
-            sf::Vector2u size = m_render_window->getSize();
-            windowWidth = static_cast<float>(size.x);
-            windowHeight = static_cast<float>(size.y);
-        }
-
-        // Reset the view to match actual window size (1:1 pixel mapping)
-        // This is crucial after window resize - SFML's default view changes with setSize()
-        sf::View pixelView(sf::FloatRect({0.f, 0.f}, {windowWidth, windowHeight}));
-        m_render_window->setView(pixelView);
-
-        // Use explicit source rectangle to avoid including any texture padding
-        // SFML render textures may have internal padding beyond the requested size
-        sf::IntRect sourceRect({0, 0}, {m_width, m_height});
-        sf::Sprite backBufferSprite(m_backBuffer.getTexture(), sourceRect);
-
-        float scaleX = windowWidth / static_cast<float>(m_width);
-        float scaleY = windowHeight / static_cast<float>(m_height);
-
-        if (m_fullscreen && !m_fullscreen_stretch)
-        {
-            // Fullscreen letterbox: uniform scale to maintain aspect ratio
-            float scale = (scaleY < scaleX) ? scaleY : scaleX;
-
-            float destWidth = static_cast<float>(m_width) * scale;
-            float destHeight = static_cast<float>(m_height) * scale;
-            float offsetX = (windowWidth - destWidth) / 2.0f;
-            float offsetY = (windowHeight - destHeight) / 2.0f;
-
-            backBufferSprite.setScale({scale, scale});
-            backBufferSprite.setPosition({offsetX, offsetY});
-        }
-        else
-        {
-            // Windowed or fullscreen stretch: fill entire window
-            backBufferSprite.setScale({scaleX, scaleY});
-            backBufferSprite.setPosition({0.0f, 0.0f});
-        }
-
-        // Toggle filtering for final upscale: smooth (bilinear) or crisp (nearest)
-        // Applied only during present so internal logical rendering remains unchanged.
-        const_cast<sf::Texture&>(m_backBuffer.getTexture()).setSmooth(m_upscale_smoothing);
-
-        m_render_window->draw(backBufferSprite, sf::RenderStates(sf::BlendAlpha));
-
-        // Restore nearest-neighbor for internal rendering
-        const_cast<sf::Texture&>(m_backBuffer.getTexture()).setSmooth(false);
-
         m_render_window->display();
 
         // Track frame metrics at the actual point of present
@@ -476,14 +612,15 @@ double SFMLRenderer::get_delta_time_ms() const
 
 void SFMLRenderer::draw_pixel(int x, int y, const hb::shared::render::Color& color)
 {
-    if (x < m_clipArea.Left() || x >= m_clipArea.Right() ||
-        y < m_clipArea.Top() || y >= m_clipArea.Bottom())
+    const hb::shared::geometry::GameRectangle& clip = active_clip();
+    if (x < clip.Left() || x >= clip.Right() ||
+        y < clip.Top() || y >= clip.Bottom())
         return;
 
     sf::RectangleShape pixel({1.0f, 1.0f});
     pixel.setPosition({static_cast<float>(x), static_cast<float>(y)});
     pixel.setFillColor(sf::Color(color.r, color.g, color.b, color.a));
-    m_backBuffer.draw(pixel);
+    m_target->draw(pixel);
 }
 
 void SFMLRenderer::draw_line(int x0, int y0, int x1, int y1, const hb::shared::render::Color& color, hb::shared::render::BlendMode blend)
@@ -491,6 +628,23 @@ void SFMLRenderer::draw_line(int x0, int y0, int x1, int y1, const hb::shared::r
     if ((x0 == x1) && (y0 == y1)) return;
 
     sf::Color lineColor(color.r, color.g, color.b, color.a);
+    sf::RenderStates states((blend == hb::shared::render::BlendMode::Additive) ? sf::BlendAdd : sf::BlendAlpha);
+
+    // In screen space a line primitive stays one window pixel wide however far the UI view scales.
+    // Axis-aligned lines become filled rects one UI unit thick, covering [min, max) like the
+    // line primitive does, so they scale with the UI. Diagonals keep the line primitive.
+    if (!m_in_world && (x0 == x1 || y0 == y1))
+    {
+        float left = static_cast<float>((std::min)(x0, x1));
+        float top = static_cast<float>((std::min)(y0, y1));
+        float width = (x0 == x1) ? 1.0f : static_cast<float>(std::abs(x1 - x0));
+        float height = (y0 == y1) ? 1.0f : static_cast<float>(std::abs(y1 - y0));
+        sf::RectangleShape rect({width, height});
+        rect.setPosition({left, top});
+        rect.setFillColor(lineColor);
+        m_target->draw(rect, states);
+        return;
+    }
 
     sf::VertexArray line(sf::PrimitiveType::Lines, 2);
     line[0].position = sf::Vector2f(static_cast<float>(x0), static_cast<float>(y0));
@@ -498,7 +652,7 @@ void SFMLRenderer::draw_line(int x0, int y0, int x1, int y1, const hb::shared::r
     line[1].position = sf::Vector2f(static_cast<float>(x1), static_cast<float>(y1));
     line[1].color = lineColor;
 
-    m_backBuffer.draw(line, (blend == hb::shared::render::BlendMode::Additive) ? sf::BlendAdd : sf::BlendAlpha);
+    m_target->draw(line, states);
 }
 
 void SFMLRenderer::draw_rect_filled(int x, int y, int w, int h, const hb::shared::render::Color& color)
@@ -508,7 +662,7 @@ void SFMLRenderer::draw_rect_filled(int x, int y, int w, int h, const hb::shared
     sf::RectangleShape rect({static_cast<float>(w), static_cast<float>(h)});
     rect.setPosition({static_cast<float>(x), static_cast<float>(y)});
     rect.setFillColor(sf::Color(color.r, color.g, color.b, color.a));
-    m_backBuffer.draw(rect);
+    m_target->draw(rect);
 }
 
 void SFMLRenderer::draw_rect_outline(int x, int y, int w, int h, const hb::shared::render::Color& color, int thickness)
@@ -526,25 +680,25 @@ void SFMLRenderer::draw_rect_outline(int x, int y, int w, int h, const hb::share
     sf::RectangleShape top({fw, ft});
     top.setPosition({fx, fy});
     top.setFillColor(c);
-    m_backBuffer.draw(top);
+    m_target->draw(top);
 
     // Bottom edge
     sf::RectangleShape bottom({fw, ft});
     bottom.setPosition({fx, fy + fh - ft});
     bottom.setFillColor(c);
-    m_backBuffer.draw(bottom);
+    m_target->draw(bottom);
 
     // Left edge (between top and bottom)
     sf::RectangleShape left({ft, fh - 2.0f * ft});
     left.setPosition({fx, fy + ft});
     left.setFillColor(c);
-    m_backBuffer.draw(left);
+    m_target->draw(left);
 
     // Right edge (between top and bottom)
     sf::RectangleShape right({ft, fh - 2.0f * ft});
     right.setPosition({fx + fw - ft, fy + ft});
     right.setFillColor(c);
-    m_backBuffer.draw(right);
+    m_target->draw(right);
 }
 
 // Helper: generate rounded rect corner points into an array, deduplicating coincident points.
@@ -632,7 +786,7 @@ void SFMLRenderer::draw_rounded_rect_filled(int x, int y, int w, int h, int radi
     fan[count + 1].position = pts[0];
     fan[count + 1].color = c;
 
-    m_backBuffer.draw(fan);
+    m_target->draw(fan);
 }
 
 void SFMLRenderer::draw_rounded_rect_outline(int x, int y, int w, int h, int radius,
@@ -714,7 +868,7 @@ void SFMLRenderer::draw_rounded_rect_outline(int x, int y, int w, int h, int rad
     strip[totalPts * 2 + 1].position = strip[1].position;
     strip[totalPts * 2 + 1].color = sfColor;
 
-    m_backBuffer.draw(strip);
+    m_target->draw(strip);
 }
 
 void SFMLRenderer::begin_text_batch()
@@ -846,24 +1000,48 @@ void SFMLRenderer::destroy_texture(hb::shared::render::ITexture* texture)
 
 void SFMLRenderer::set_clip_area(int x, int y, int w, int h)
 {
-    m_clipArea = hb::shared::geometry::GameRectangle(x, y, w, h);
-
-    // Set SFML viewport/scissor
-    // Note: SFML doesn't have direct scissor support, but we store it for manual clipping
+    // Clip belongs to the current target; applied to every draw as the view's scissor
+    active_clip() = hb::shared::geometry::GameRectangle(x, y, w, h);
+    apply_target_view();
 }
 
 hb::shared::geometry::GameRectangle SFMLRenderer::get_clip_area() const
 {
-    return m_clipArea;
+    return active_clip();
 }
 
-bool SFMLRenderer::screenshot(const char* filename)
+bool SFMLRenderer::screenshot(const char* filename, const std::function<void()>& overlay)
 {
-    if (!filename)
+    if (!filename || !m_render_window)
         return false;
 
-    sf::Image screenshot = m_backBuffer.getTexture().copyToImage();
-    return screenshot.saveToFile(filename);
+    // A screenshot is of the composited window
+    end_world();
+
+    // Read back the window's current (not yet presented) frame
+    sf::Texture capture;
+    if (!capture.resize(m_render_window->getSize()))
+        return false;
+    capture.update(*m_render_window);
+
+    if (!overlay)
+        return capture.copyToImage().saveToFile(filename);
+
+    // Draw the overlay onto a copy of the capture, never the live frame: route screen-space draws to an
+    // off-screen target of the window's size, with the same UI view, then put the window back
+    sf::RenderTexture stamped;
+    if (!stamped.resize(capture.getSize()))
+        return false;
+    stamped.clear(sf::Color::Black);
+    stamped.draw(sf::Sprite(capture), sf::RenderStates(sf::BlendNone));
+
+    m_target = &stamped;
+    apply_target_view();
+    overlay();
+    stamped.display();
+    route_to_screen();
+
+    return stamped.getTexture().copyToImage().saveToFile(filename);
 }
 
 int SFMLRenderer::get_width() const
@@ -943,7 +1121,7 @@ int SFMLRenderer::get_text_width(const char* text)
 
 void* SFMLRenderer::get_back_buffer_native()
 {
-    return &m_backBuffer;
+    return &m_world_target;
 }
 
 void* SFMLRenderer::get_native_renderer()

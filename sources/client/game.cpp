@@ -675,18 +675,20 @@ void CGame::on_render()
 		GameModeManager::render();
 	}
 
-	// draw fade overlay if transitioning between game modes
+	// Everything below is screen space; close a world pass a screen left open
+	m_Renderer->end_world();
+
+	// draw fade overlay if transitioning between game modes (whole window, bars included)
 	if (GameModeManager::is_transitioning())
 	{
 		float alpha = GameModeManager::get_fade_alpha();
-		m_Renderer->draw_rect_filled(0, 0, m_Renderer->get_width(), m_Renderer->get_height(), hb::shared::render::Color::Black(static_cast<uint8_t>(alpha * 255.0f)));
+		m_Renderer->fill_output(hb::shared::render::Color::Black(static_cast<uint8_t>(alpha * 255.0f)));
 	}
 
 	// draw teleport fade overlay (fading to/from black during teleport transitions)
 	float tp_alpha = teleport_manager::get().get_fade_alpha();
 	if (tp_alpha > 0.0f) {
-		m_Renderer->draw_rect_filled(0, 0, m_Renderer->get_width(), m_Renderer->get_height(),
-			hb::shared::render::Color::Black(static_cast<uint8_t>(tp_alpha * 255.0f)));
+		m_Renderer->fill_output(hb::shared::render::Color::Black(static_cast<uint8_t>(tp_alpha * 255.0f)));
 	}
 
 	// Performance monitor overlay — top bar with FPS, latency, frame timing
@@ -694,6 +696,13 @@ void CGame::on_render()
 
 	// Cursor always on top - drawn LAST after everything including fade overlay
 	draw_cursor();
+
+	// Screenshot reads back the finished frame, so it is taken here, before the present
+	if (m_screenshot_pending)
+	{
+		m_screenshot_pending = false;
+		save_screen_shot();
+	}
 
 	// Flip to show the drawn content
 	FrameTiming::begin_profile(ProfileStage::Flip);
@@ -3600,6 +3609,13 @@ void CGame::response_panning_handler(char* data)
 **********************************************************************************************************************/
 void CGame::create_screen_shot()
 {
+	// The renderer captures the window mid-frame, so the save waits for the next rendered frame
+	m_screenshot_pending = true;
+}
+
+// save_screen_shot: stamp the time and save the frame; called by on_render before the present
+void CGame::save_screen_shot()
+{
 	char longMapName[128] = {};
 	get_official_map_name(m_map_name.c_str(), longMapName);
 
@@ -3614,9 +3630,14 @@ void CGame::create_screen_shot()
 
 	std::string timeStr = std::format("{:02d}:{:02d} - {:02d}:{:02d}:{:02d}",
 		tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-	hb::shared::text::draw_text_aligned(GameFont::Default, 500, 30, 150, 15, timeStr.c_str(),
-		hb::shared::text::TextStyle::from_color(GameColors::UIWhite),
-		hb::shared::text::Align::TopCenter);
+
+	// The timestamp goes onto the saved image only, never the live frame
+	auto stamp_time = [&timeStr]()
+	{
+		hb::shared::text::draw_text_aligned(GameFont::Default, 500, 30, 150, 15, timeStr.c_str(),
+			hb::shared::text::TextStyle::from_color(GameColors::UIWhite),
+			hb::shared::text::Align::TopCenter);
+	};
 
 	std::filesystem::create_directory("save");
 
@@ -3629,7 +3650,7 @@ void CGame::create_screen_shot()
 
 		if (!std::filesystem::exists(fileName))
 		{
-			m_Renderer->screenshot(fileName.c_str());
+			m_Renderer->screenshot(fileName.c_str(), stamp_time);
 			add_event_list(std::format(NOTIFYMSG_CREATE_SCREENSHOT1, fileName).c_str(), 10);
 			return;
 		}

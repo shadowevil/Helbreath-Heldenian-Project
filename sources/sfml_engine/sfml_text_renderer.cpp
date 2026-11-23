@@ -4,6 +4,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "sfml_text_renderer.h"
+#include "sfml_renderer.h"
 #include <SFML/Graphics/Text.hpp>
 #include <cstring>
 #include <string>
@@ -24,8 +25,8 @@ void SetTextRenderer(ITextRenderer* renderer)
     s_pTextRenderer = renderer;
 }
 
-SFMLTextRenderer::SFMLTextRenderer(sf::RenderTexture* backBuffer)
-    : m_back_buffer(backBuffer)
+SFMLTextRenderer::SFMLTextRenderer(SFMLRenderer* renderer)
+    : m_renderer(renderer)
     , m_fontLoaded(false)
     , m_font_smoothing(false)
     , m_loaded_font_path()
@@ -160,7 +161,8 @@ int SFMLTextRenderer::get_line_height(int fontSize) const
 void SFMLTextRenderer::draw_text(int x, int y, const char* text, const hb::shared::render::Color& color,
                                 int fontSize, bool bold)
 {
-    if (!text || !m_fontLoaded || !m_back_buffer)
+    sf::RenderTarget* target = m_renderer ? m_renderer->get_current_target() : nullptr;
+    if (!text || !m_fontLoaded || !target)
         return;
 
     sf::Text sfText(m_font, text, resolve_font_size(fontSize));
@@ -169,13 +171,14 @@ void SFMLTextRenderer::draw_text(int x, int y, const char* text, const hb::share
     if (bold)
         sfText.setStyle(sf::Text::Bold);
 
-    m_back_buffer->draw(sfText);
+    target->draw(sfText);
 }
 
 void SFMLTextRenderer::draw_text_aligned(int x, int y, int width, int height, const char* text, const hb::shared::render::Color& color,
                                         Align alignment, int fontSize, bool bold)
 {
-    if (!text || !m_fontLoaded || !m_back_buffer)
+    sf::RenderTarget* target = m_renderer ? m_renderer->get_current_target() : nullptr;
+    if (!text || !m_fontLoaded || !target)
         return;
 
     sf::Text sfText(m_font, text, resolve_font_size(fontSize));
@@ -208,7 +211,7 @@ void SFMLTextRenderer::draw_text_aligned(int x, int y, int width, int height, co
     sfText.setPosition({static_cast<float>(pixelX), static_cast<float>(pixelY)});
     sfText.setFillColor(sf::Color(color.r, color.g, color.b));
 
-    m_back_buffer->draw(sfText);
+    target->draw(sfText);
 }
 
 void SFMLTextRenderer::begin_batch()

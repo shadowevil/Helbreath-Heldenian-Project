@@ -7,15 +7,17 @@
 
 #include "text_renderer.h"
 #include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/RenderTexture.hpp>
 #include <string>
+
+class SFMLRenderer;
 
 namespace hb::shared::text {
 
 class SFMLTextRenderer : public ITextRenderer
 {
 public:
-    SFMLTextRenderer(sf::RenderTexture* backBuffer);
+    // Text draws to the renderer's current target (world target or window), never a fixed one
+    explicit SFMLTextRenderer(SFMLRenderer* renderer);
     ~SFMLTextRenderer() override = default;
 
     // Font loading - client calls these to set up fonts
@@ -42,9 +44,6 @@ public:
     void begin_batch() override;
     void end_batch() override;
 
-    // Allow updating the back buffer pointer if needed
-    void SetBackBuffer(sf::RenderTexture* backBuffer) { m_back_buffer = backBuffer; }
-
 private:
     // Load the bundled font (bundled_font_path)
     bool LoadDefaultFont();
@@ -54,8 +53,8 @@ private:
     // sf::Font lazily caches glyph pages per character size internally.
     unsigned int resolve_font_size(int fontSize) const;
 
-    sf::RenderTexture* m_back_buffer;
-    sf::Font m_font;              // Owned font (client-loaded or default)
+    SFMLRenderer* m_renderer;     // Not owned
+    sf::Font m_font;             // Owned font (client-loaded or default)
     bool m_fontLoaded;
     bool m_font_smoothing;
     std::string m_loaded_font_path; // Source path for active TTF, used to force reload on smoothing toggle

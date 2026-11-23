@@ -1,7 +1,7 @@
 {
   "id": "HH-0017",
   "summary": "korea-2024 2: pak-to-PNG converter",
-  "status": "in_progress",
+  "status": "done",
   "severity": "low",
   "owner_area": "tooling",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:29:40Z",
-  "updated": "2026-11-23T21:29:40Z",
+  "updated": "2026-11-23T21:42:54Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "4bd3ea3"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [

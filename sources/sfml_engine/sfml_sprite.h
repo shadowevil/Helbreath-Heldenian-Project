@@ -11,6 +11,7 @@
 #include "PAK.h"
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <string>
 #include <vector>
@@ -85,7 +86,7 @@ private:
     bool reload_from_pak();
 
     // draw implementation
-    void DrawInternal(sf::RenderTexture* target, int x, int y, int frame, const hb::shared::sprite::DrawParams& params);
+    void DrawInternal(sf::RenderTarget* target, int x, int y, int frame, const hb::shared::sprite::DrawParams& params);
 
     // Apply alpha degree effect
     void ApplyAmbientLightLevel();

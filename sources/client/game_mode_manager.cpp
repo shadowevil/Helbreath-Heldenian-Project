@@ -165,7 +165,7 @@ void GameModeManager::render_impl()
     if (m_pActiveOverlay)
     {
         if (m_pActiveOverlay->wants_background_dim())
-            m_game->m_Renderer->draw_rect_filled(0, 0, LOGICAL_MAX_X(), LOGICAL_MAX_Y(), hb::shared::render::Color::Black(128));
+            m_game->m_Renderer->fill_output(hb::shared::render::Color::Black(128));
         m_pActiveOverlay->on_render();
     }
 }
