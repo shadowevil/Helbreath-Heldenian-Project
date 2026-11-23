@@ -154,3 +154,24 @@ Contents: d-001 SDL versioning - d-002 clock-skew exchange - d-003 sources/bin/b
 - Quotes (selected answers): "Join acronym", "Drop the I", "Defer data", "Project files and CHANGELOG".
 - Decided: acronyms stay one word (`sfml_engine`, `ccontrols`); interface headers drop the `I` (`renderer.h`); `staged/` data files are not renamed in Phase R; `Helbreath.sln`, the `.vcxproj`/`.filters` files and `CHANGELOG.md` keep their names.
 - Recorded in: `.claude/tools/scripts/rename_to_naming_rule.decisions.json`.
+
+## d-022 Commit to Development only; no push until the user says so
+
+- Date: 2026-11-23.
+- Quote: "From now on only push to Development - don't push to origin until I say so".
+- Decided: work is committed locally on the `Development` branch only; nothing is pushed to `origin` until the user explicitly says so.
+- Recorded in: CLAUDE.md "Workflow".
+
+## d-023 Adopt the ticket system
+
+- Date: 2026-11-23.
+- Quote: "I want you to also adopt the ticketing system from @[ticket-master]"; selected answers "HH- / Heldenian", ".claude/tools/tickets", areas "client, server, shared, database, tooling, docs".
+- Decided: ticket system 1.5.4 with prefix `HH-`, board "Heldenian Tickets" on port 18550, CLI in `.claude/tools/tickets`.
+- Recorded in: `.claude/tickets/config.json`; `.claude/docs/tickets.md`; `.claude/skills/tickets/SKILL.md`.
+
+## d-024 World and screen space are drawn separately
+
+- Date: 2026-11-23.
+- Quotes: "UI/floating text and screens that are not maingame should be screenspace always never drawn at world resolution 800x600"; "Should remain uniform however the action bar must always take up the same percentage of screen space as 800x600 would"; selected answers "Native-res TTF", "Overlays on top", "Approve, start phase 1".
+- Decided: the world renders at 800x600 and is upscaled; UI, floating text and non-game screens render in screen space with native-resolution text and a uniform UI scale; the HUD action bar spans the world rect; world-anchored overlays draw above late world effects.
+- Recorded in: `.claude/design/plans/world-screen-split.md`.

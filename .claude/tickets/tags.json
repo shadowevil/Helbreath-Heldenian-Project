@@ -1,0 +1,66 @@
+{
+  "format": 2,
+  "next_id": 13,
+  "tags": {
+    "1": {
+      "name": "bug",
+      "color": "#e5484d",
+      "description": "Behaves wrongly; not a design question."
+    },
+    "2": {
+      "name": "cleanup",
+      "color": "#808080",
+      "description": "Dead code, dead data, structure; no behaviour change intended."
+    },
+    "3": {
+      "name": "client",
+      "color": "#33904f",
+      "description": "Area: the game client (screens, rendering, input, client-side handling)."
+    },
+    "4": {
+      "name": "docs",
+      "color": "#3b82c4",
+      "description": "A doc is wrong, stale or missing."
+    },
+    "5": {
+      "name": "peer",
+      "color": "#c7711a",
+      "description": "Example tag for an issue another project's session sent; use peer_<project> per sender if you need to tell them apart."
+    },
+    "6": {
+      "name": "performance",
+      "color": "#a87a0a",
+      "description": "Timing, hitches, cost."
+    },
+    "7": {
+      "name": "test",
+      "color": "#8e5bc9",
+      "description": "Test setup, test kits, verification evidence."
+    },
+    "8": {
+      "name": "tooling",
+      "color": "#2b8fa3",
+      "description": "Scripts and tools."
+    },
+    "9": {
+      "name": "server",
+      "color": "#c257b0",
+      "description": "Area: the game and login servers (handlers, world logic, networking)."
+    },
+    "10": {
+      "name": "shared",
+      "color": "#d9a21b",
+      "description": "Code shared by client and server: protocol, wire structs, common headers."
+    },
+    "11": {
+      "name": "database",
+      "color": "#a14fb8",
+      "description": "sources/database: schema, generated DBs, version gate."
+    },
+    "12": {
+      "name": "feature",
+      "color": "#2f9e6e",
+      "description": "New behaviour or capability."
+    }
+  }
+}

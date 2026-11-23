@@ -379,6 +379,8 @@ DocProject/Help/html
 !/.claude/docs/build.md
 !/.claude/docs/code-search.md
 !/.claude/docs/decisions.md
+!/.claude/docs/tickets.md
+!/.claude/skills/**/SKILL.md
 !/sources/readme_build_linux.md
 !/.claude/agents/*.md
 
@@ -407,3 +409,7 @@ tools/installer_creator/Helbreath/
 
 # Backup checkpoints (bak.py)
 **/*.bak_*
+
+# Ticket system runtime files (CLI temp file, tag-store lock)
+.claude/tickets/*.tmp
+.claude/tickets/tags.json.lock

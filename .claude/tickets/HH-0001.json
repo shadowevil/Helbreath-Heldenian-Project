@@ -1,0 +1,21 @@
+{
+  "id": "HH-0001",
+  "summary": "Ticket system adopted: smoke test",
+  "status": "in_review",
+  "severity": "low",
+  "owner_area": "tooling",
+  "target_patch": "next",
+  "tags": [
+    8,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:17:20Z",
+  "updated": "2026-11-23T21:17:34Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": []
+  },
+  "body": "Smoke test of the adopted ticket system.\n\nVerified 2026-11-23: validate OK, viewer endpoints /api/health /api/tickets /api/update checked on 127.0.0.1:18550, title Heldenian Tickets.\n"
+}

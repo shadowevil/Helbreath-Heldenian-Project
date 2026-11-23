@@ -1,0 +1,83 @@
+<!doctype html>
+<!-- A template: serve.py fills each {{name}} from .claude/tickets/config.json, HTML-escaped. -->
+<html lang="en" data-theme="dark" data-store-name="{{store_name}}" data-id-prefix="{{id_prefix}}" data-id-max-digits="{{id_max_digits}}" data-theme-key="{{theme_key}}" data-page-title="{{page_title}}" data-version="{{version}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{page_title}}</title>
+<meta name="description" content="Read-only view of the {{store_name}} project tickets (.claude/tickets).">
+<meta name="theme-color" content="#2d2d30">
+<meta name="color-scheme" content="dark light">
+<!-- The one-click update's token (B65): served only to a browser on this PC, sent back with the apply request. -->
+<meta name="tickets-update-token" content="{{update_token}}">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="{{short_name}}">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar">
+	<div class="brand">
+		<img class="brand-icon" src="/icons/icon-192.png" alt="">
+		<span class="brand-name">{{page_title}}</span>
+	</div>
+	<div class="topbar-actions">
+		<button type="button" class="icon-button" id="refresh-button" title="Reload tickets" aria-label="Reload tickets"></button>
+		<button type="button" class="icon-button" id="theme-button" title="Switch theme" aria-label="Switch theme"></button>
+	</div>
+</header>
+
+<div id="problems" class="problems" hidden></div>
+
+<main class="workspace">
+	<section class="list-pane" aria-label="Tickets">
+		<div class="filter-bar">
+			<input type="search" id="search" class="search" placeholder="Search summary and body" aria-label="Search" autocomplete="off">
+			<button type="button" class="filter-toggle" id="filter-toggle" aria-controls="filter-fields" aria-expanded="false">Filters</button>
+			<div class="filter-fields" id="filter-fields" role="dialog" aria-label="Filters">
+				<div class="sheet-head">
+					<span class="sheet-title">Filters</span>
+					<button type="button" class="text-button" id="filter-clear">Clear</button>
+					<button type="button" class="text-button primary" id="filter-done">Done</button>
+				</div>
+				<label class="field"><span>Status</span><select id="filter-status"></select></label>
+				<label class="field"><span>Severity</span><select id="filter-severity"></select></label>
+				<label class="field"><span>Tag</span><select id="filter-tag"></select></label>
+				<label class="field"><span>Owner</span><select id="filter-owner"></select></label>
+				<label class="field"><span>Patch</span><select id="filter-target"></select></label>
+				<label class="field"><span>Sort</span><select id="sort-select"></select></label>
+			</div>
+		</div>
+		<div class="status-strip" id="status-strip"></div>
+		<div class="list" id="list" role="list"></div>
+	</section>
+
+	<section class="detail-pane" id="detail" aria-label="Ticket detail" aria-live="polite"></section>
+</main>
+<!-- The status bar (B68): when the board last refreshed and the newest ticket edit, or why it cannot; the version and
+     the one-click update on the right. -->
+<footer class="statusbar" id="statusbar">
+	<div class="statusbar-left" role="status">
+		<span class="statusbar-item" id="status-refreshed">Loading...</span>
+		<span class="statusbar-item" id="status-latest"></span>
+	</div>
+	<div class="statusbar-right">
+		<span class="statusbar-item" id="status-version"></span>
+		<span class="statusbar-item statusbar-current" id="status-current" hidden>current</span>
+		<button type="button" class="update-badge" id="update-badge" hidden></button>
+	</div>
+</footer>
+<div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+<div class="update-backdrop" id="update-backdrop" hidden>
+	<div class="update-dialog" id="update-dialog" role="dialog" aria-modal="true" aria-labelledby="update-title"></div>
+</div>
+
+<script src="/lib/marked.min.js"></script>
+<script src="/lib/purify.min.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

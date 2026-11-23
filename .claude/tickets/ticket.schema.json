@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ticket.schema.json",
+  "title": "Ticket",
+  "description": "One ticket per file, .claude/tickets/<id>.json. Edit with tickets.py in the tool folder (src/tools/tickets or tools/tickets); rules in .claude/docs/tickets.md. tickets.py validate enforces this schema plus the cross-file checks a schema cannot express (file name = id, tags held by the tag store tags.json, the tag groups in config.json, ticket links resolve, no ticket links to itself, a block is listed on both tickets).",
+  "x-project-owned": [
+    "/properties/id/pattern",
+    "/$defs/ticket_ids/items/pattern",
+    "/properties/status/enum",
+    "/properties/severity/enum",
+    "/properties/owner_area/enum",
+    "/properties/author/enum"
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "summary",
+    "body",
+    "tags",
+    "status",
+    "severity",
+    "owner_area",
+    "target_patch",
+    "created",
+    "updated",
+    "author",
+    "links"
+  ],
+  "properties": {
+    "id": {
+      "description": "The store's id_prefix from .claude/tickets/config.json (capitals and a hyphen, e.g. XY-) plus at least four digits; tickets.py validate also checks the prefix is this store's. Never reused; the file is named after it.",
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]*-[0-9]{4,}$"
+    },
+    "summary": {
+      "description": "One line that says what is wrong or wanted.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "body": {
+      "description": "GitHub-flavoured markdown: the finding, the facts measured, the ask, and when it is done.",
+      "type": "string"
+    },
+    "tags": {
+      "description": "Ids of tags in the tag store, .claude/tickets/tags.json (format 2), each once, e.g. [1, 4]. Writers always write ids. A ticket from before 1.3.0 may still hold tag names until author.py --convert-all has run; readers resolve both. tickets.py checks the items itself (ids and names the store holds, and the tag groups), whatever this node says, so an older copy of this schema keeps working.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "minimum": 1
+          },
+          {
+            "type": "string",
+            "pattern": "^(?=.*[a-z_])[a-z0-9_]+$"
+          }
+        ]
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["open", "in_progress", "in_review", "user_review", "verified", "blocked", "done", "wont_do"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"]
+    },
+    "owner_area": {
+      "description": "The team area that writes the fix (CLAUDE.md, the team).",
+      "type": "string",
+      "enum": ["client", "server", "shared", "database", "tooling", "docs"]
+    },
+    "target_patch": {
+      "description": "Free text: 'next', a version such as '0.2.0', or 'backlog'.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40
+    },
+    "created": {
+      "$ref": "#/$defs/utc_timestamp"
+    },
+    "updated": {
+      "$ref": "#/$defs/utc_timestamp"
+    },
+    "author": {
+      "description": "Who filed it.",
+      "type": "string",
+      "enum": ["user", "pm", "client", "server", "shared", "database", "tooling", "docs", "peer"]
+    },
+    "links": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commits", "files", "tickets"],
+      "properties": {
+        "commits": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{7,40}$"
+          }
+        },
+        "files": {
+          "description": "Repo-relative paths, optionally path:line or path:line-line.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[^\\s:]+(:[0-9]+(-[0-9]+)?)?$"
+          }
+        },
+        "tickets": {
+          "description": "Related tickets, untyped (before 1.4.0); read as relates-to.",
+          "$ref": "#/$defs/ticket_ids"
+        },
+        "blocks": {
+          "description": "Tickets this one blocks; each lists this one in its blocked_by. Optional: writers add it as needed.",
+          "$ref": "#/$defs/ticket_ids"
+        },
+        "blocked_by": {
+          "description": "Tickets that block this one; each lists this one in its blocks. Optional.",
+          "$ref": "#/$defs/ticket_ids"
+        },
+        "relates_to": {
+          "description": "Related tickets. Optional.",
+          "$ref": "#/$defs/ticket_ids"
+        }
+      }
+    },
+    "comments": {
+      "description": "Optional. Appended by tickets.py comment, oldest first; the viewer shows the newest first.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["author", "at", "body"],
+        "properties": {
+          "author": {
+            "$ref": "#/properties/author"
+          },
+          "at": {
+            "$ref": "#/$defs/utc_timestamp"
+          },
+          "body": {
+            "description": "GitHub-flavoured markdown.",
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "ticket_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9]*-[0-9]{4,}$"
+      }
+    },
+    "utc_timestamp": {
+      "description": "ISO 8601 UTC to the second, e.g. 2026-09-29T21:40:00Z.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    }
+  }
+}

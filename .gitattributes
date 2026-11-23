@@ -70,3 +70,10 @@ sources/database/**/*.sql -text
 
 # Shell scripts run under Linux/WSL: always LF.
 *.sh text eol=lf
+
+# Ticket system: LF in the checkout so the tool matches the release byte for byte
+.claude/tools/tickets/** text eol=lf
+.claude/tools/tickets/icons/*.png binary
+.claude/skills/tickets/** text eol=lf
+.claude/hooks/tickets/** text eol=lf
+.claude/tickets/*.json text eol=lf

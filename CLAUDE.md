@@ -30,8 +30,9 @@ Commands and layout: `.claude/docs/build.md`. Windows: `powershell -ExecutionPol
 
 ## Workflow
 
-- **Git follows the global rules** (user, 2026-11-23): local commits and working-tree git (`git mv`, `git rm`, `git add`) are allowed; push and PRs only when the user asks; never pull, `reset --hard`, force, or rewrite history. Use `git diff` after refactoring to confirm no logic was lost. The Build ID generator runs read-only git (`git rev-parse`, `git status`) during a build.
+- **Git follows the global rules** (user, 2026-11-23): local commits and working-tree git (`git mv`, `git rm`, `git add`) are allowed; commit on `Development` only and never push to `origin` until the user says so ("From now on only push to Development - don't push to origin until I say so", user, 2026-11-23); PRs only when asked; never pull, `reset --hard`, force, or rewrite history. Use `git diff` after refactoring to confirm no logic was lost. The Build ID generator runs read-only git (`git rev-parse`, `git status`) during a build.
 - **Workflow tools** live in `.claude/tools/` (`bak.py`, `grep.py`), one-off scripts in `.claude/tools/scripts/`. Product tooling stays with its code: `tools/`, `sources/build_tools/`, `sources/database/`.
+- **Tickets** (`HH-`, for any finding or ask worth keeping; status tracks the work): CLI `python .claude/tools/tickets/tickets.py` (agents file via `author.py`), viewer `serve.py` on port 18550, rules `.claude/docs/tickets.md`, skill `tickets`.
 - **Default to Mode 1** (1-9 files): `bak.py guard <files>` (only files under `sources/`), edit with Read/Edit, `/simplify`, build, a separate read-only review agent (`ADVISOR: FORBIDDEN`) with the diff and the goal, then `bak.py commit <id>` (or `revert`). One logical change per cycle. Details: `.claude/docs/workflow.md`.
 - **Mode 2** (script, 10+ files) only when justified ("This touches N files with pattern X, script appropriate because Y"). Required before applying: `--dry-run`, then `--verify`, then apply. Details: `.claude/docs/workflow.md`, `.claude/docs/bulk-scripts-dry-run.md`.
 - After every `bak.py commit`, update `CHANGELOG.md`. A Discord post is a player-facing changelog on request.
