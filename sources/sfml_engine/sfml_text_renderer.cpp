@@ -6,6 +6,8 @@
 #include "sfml_text_renderer.h"
 #include "sfml_renderer.h"
 #include <SFML/Graphics/Text.hpp>
+#include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <string>
 #include <utility>
@@ -165,13 +167,38 @@ void SFMLTextRenderer::draw_text(int x, int y, const char* text, const hb::share
     if (!text || !m_fontLoaded || !target)
         return;
 
-    sf::Text sfText(m_font, text, resolve_font_size(fontSize));
-    sfText.setPosition({static_cast<float>(x), static_cast<float>(y)});
+    unsigned int logical_size = resolve_font_size(fontSize);
+    sf::Text sfText(m_font, text, logical_size);
     sfText.setFillColor(sf::Color(color.r, color.g, color.b));
     if (bold)
         sfText.setStyle(sf::Text::Bold);
 
-    target->draw(sfText);
+    draw_at_output_resolution(*target, sfText, logical_size, static_cast<float>(x), static_cast<float>(y));
+}
+
+void SFMLTextRenderer::draw_at_output_resolution(sf::RenderTarget& target, sf::Text& text, unsigned int logical_size,
+                                                 float x, float y) const
+{
+    // 1 in the world pass (world text stays at logical size until Phase 3) and at 800x600
+    float scale = m_renderer->text_scale();
+    if (std::abs(scale - 1.0f) < 0.001f)
+    {
+        text.setPosition({x, y});
+        target.draw(text);
+        return;
+    }
+
+    // Rasterise at window resolution: s = ui scale, character size = floor(logical size * s),
+    // drawn at 1/s so the UI view maps it back to logical size. Layout and measurement stay logical.
+    // floor, not round: hinted text then tends narrower than measured, so it never overhangs.
+    long pixel_size = static_cast<long>(std::floor(static_cast<float>(logical_size) * scale + 0.001f));
+    text.setCharacterSize(static_cast<unsigned int>((std::max)(pixel_size, 1L)));
+    text.setScale({1.0f / scale, 1.0f / scale});
+
+    // Snap the origin once to a whole window pixel; sf::Text keeps every glyph of a line on one shared
+    // baseline at an integer offset from it, so glyph y is never snapped on its own
+    text.setPosition(m_renderer->snap_to_output_pixel({x, y}));
+    target.draw(text);
 }
 
 void SFMLTextRenderer::draw_text_aligned(int x, int y, int width, int height, const char* text, const hb::shared::render::Color& color,
@@ -181,7 +208,9 @@ void SFMLTextRenderer::draw_text_aligned(int x, int y, int width, int height, co
     if (!text || !m_fontLoaded || !target)
         return;
 
-    sf::Text sfText(m_font, text, resolve_font_size(fontSize));
+    // Placement uses the logical-size metrics, so aligned text lands exactly where it did at 800x600
+    unsigned int logical_size = resolve_font_size(fontSize);
+    sf::Text sfText(m_font, text, logical_size);
     if (bold)
         sfText.setStyle(sf::Text::Bold);
     sf::FloatRect bounds = sfText.getLocalBounds();
@@ -208,10 +237,9 @@ void SFMLTextRenderer::draw_text_aligned(int x, int y, int width, int height, co
     int pixelX = static_cast<int>(drawX + 0.5f);
     int pixelY = static_cast<int>(drawY + 0.5f);
 
-    sfText.setPosition({static_cast<float>(pixelX), static_cast<float>(pixelY)});
     sfText.setFillColor(sf::Color(color.r, color.g, color.b));
 
-    target->draw(sfText);
+    draw_at_output_resolution(*target, sfText, logical_size, static_cast<float>(pixelX), static_cast<float>(pixelY));
 }
 
 void SFMLTextRenderer::begin_batch()

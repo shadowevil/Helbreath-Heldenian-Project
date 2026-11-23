@@ -115,6 +115,13 @@ public:
     // through the UI view. Sprites, text and primitives must draw here, never to a fixed target.
     sf::RenderTarget* get_current_target() { return m_target; }
 
+    // Window pixels per UI unit for text drawn now: ui_scale() in screen space, 1 in the world pass
+    float text_scale() const { return m_in_world ? 1.0f : ui_scale(); }
+
+    // Screen space: move a logical (UI-unit) point so it lands on a whole window pixel through the
+    // UI view, using the same integer viewport SFML rasterises with. Identity when the UI is 1:1.
+    sf::Vector2f snap_to_output_pixel(sf::Vector2f logical) const;
+
     // True when a draw now goes to screen space, the UI is scaled away from 1:1 and
     // upscaleSmoothing is on: sprites should sample bilinear for that draw, like the world composite
     bool wants_ui_smoothing() const

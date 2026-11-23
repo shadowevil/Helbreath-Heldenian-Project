@@ -7,6 +7,8 @@
 
 #include "text_renderer.h"
 #include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/RenderTarget.hpp>
+#include <SFML/Graphics/Text.hpp>
 #include <string>
 
 class SFMLRenderer;
@@ -52,6 +54,12 @@ private:
     // 0 = use m_font_size (default), nonzero = apply GDI-2 adjustment.
     // sf::Font lazily caches glyph pages per character size internally.
     unsigned int resolve_font_size(int fontSize) const;
+
+    // Draw text laid out at logical size with its origin at a logical position. In screen space it is
+    // rasterised at the window's resolution (character size logical * ui scale, drawn at 1/scale on a
+    // whole-pixel origin); in the world pass, or at 1:1, it draws exactly as given.
+    void draw_at_output_resolution(sf::RenderTarget& target, sf::Text& text, unsigned int logical_size,
+                                   float x, float y) const;
 
     SFMLRenderer* m_renderer;     // Not owned
     sf::Font m_font;             // Owned font (client-loaded or default)

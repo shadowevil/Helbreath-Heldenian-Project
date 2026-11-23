@@ -38,3 +38,5 @@ The splash screen now also shows in Debug builds, and a left click skips it once
 The client now ships one font, Wine's Tahoma replacement (LGPL 2.1, licence beside it in `fonts/`), and never uses a system font. The unused Arial, Segoe UI and Microsoft Tahoma copies are gone, and the client refuses to start with "Unable to load default font" if `fonts/wine_tahoma.ttf` is missing.
 
 The world and the interface now draw separately: the game world still renders at 800x600 and is scaled to the window, while menus, dialogs, the HUD, fades, the cursor and the performance monitor draw directly at the window's resolution. Full-screen backgrounds follow the smooth-upscaling setting; other interface art stays sharp. Screenshots capture the full window. (First step of the world/screen split; text and floating names follow in later steps.)
+
+Interface text is now drawn at the window's real resolution, so menus, dialogs and the HUD stay sharp at large window sizes; layout and line wrapping are unchanged. Names, chat bubbles and damage numbers over characters still use the old path until the next step.

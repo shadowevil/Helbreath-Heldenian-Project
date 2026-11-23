@@ -531,6 +531,21 @@ void SFMLRenderer::fill_output(const hb::shared::render::Color& color)
     apply_target_view();
 }
 
+sf::Vector2f SFMLRenderer::snap_to_output_pixel(sf::Vector2f logical) const
+{
+    // SFML rounds the view's viewport to whole pixels (RenderTarget::getViewport), so map through
+    // the rounded rect: pixel = vp.pos + logical * vp.size / logical_size
+    float vp_x = std::round(m_ui_rect.position.x);
+    float vp_y = std::round(m_ui_rect.position.y);
+    float scale_x = std::round(m_ui_rect.size.x) / static_cast<float>(m_width);
+    float scale_y = std::round(m_ui_rect.size.y) / static_cast<float>(m_height);
+    if (scale_x <= 0.0f || scale_y <= 0.0f)
+        return logical;
+
+    return {(std::round(vp_x + logical.x * scale_x) - vp_x) / scale_x,
+            (std::round(vp_y + logical.y * scale_y) - vp_y) / scale_y};
+}
+
 float SFMLRenderer::ui_scale() const
 {
     // Phase 1: the UI rect is the world rect, which stretches per axis; report the smaller axis
