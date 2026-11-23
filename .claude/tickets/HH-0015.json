@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:29:39Z",
-  "updated": "2026-11-23T21:42:55Z",
+  "updated": "2026-11-23T21:53:11Z",
   "links": {
     "commits": [
       "4bd3ea3"
@@ -24,5 +24,12 @@
       "HH-0018"
     ]
   },
-  "body": "Download every .pak in Original-Helbreath/History `sprites/korea-2024` (405 files, about 890 MB, measured via the GitHub API 2026-11-23) and convert each sprite sheet to `classic_ui/reference/<pak>/<nnn>.png` with a `frames.json`. Downloads in `build/downloads/korea-2024/`; output gitignored. Closes when its sub-tasks are done.\n\n**Done when:** every parsable pak is converted and spot-checked.\n\nSource: user request 2026-11-23.\n\n**Verified, 2026-11-23:** 405/405 paks downloaded (889,957,672 B, sizes match the API) and converted to 13,659 PNGs (461 MB) plus frames.json; spot checks of New-Dialog, Guard and EFFECT sheets passed; download folder deleted. Unverified: the 56 sprites whose key colour is absent fall back to the top-left pixel, not compared with the original client.\n"
+  "body": "Download every .pak in Original-Helbreath/History `sprites/korea-2024` (405 files, about 890 MB, measured via the GitHub API 2026-11-23) and convert each sprite sheet to `classic_ui/reference/<pak>/<nnn>.png` with a `frames.json`. Downloads in `build/downloads/korea-2024/`; output gitignored. Closes when its sub-tasks are done.\n\n**Done when:** every parsable pak is converted and spot-checked.\n\nSource: user request 2026-11-23.\n\n**Verified, 2026-11-23:** 405/405 paks downloaded (889,957,672 B, sizes match the API) and converted to 13,659 PNGs (461 MB) plus frames.json; spot checks of New-Dialog, Guard and EFFECT sheets passed; download folder deleted. Unverified: the 56 sprites whose key colour is absent fall back to the top-left pixel, not compared with the original client.\n",
+  "comments": [
+    {
+      "author": "pm",
+      "at": "2026-11-23T21:53:11Z",
+      "body": "Moved 2026-11-23 at the user's correction: the art belongs in the local working folder, now C:\\Users\\ShadowEvil\\source\\Helbreath-Heldenian-Project\\working\\classic_ui\\reference\\<pak>\\ (405 folders). The root classic_ui folder is removed and its .gitignore line dropped (working/ is already ignored). pak_to_png.py takes the output root as an argument, so no script change."
+    }
+  ]
 }

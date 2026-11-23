@@ -420,4 +420,3 @@ tools/installer_creator/Helbreath/
 # Ticket system runtime files (CLI temp file, tag-store lock)
 .claude/tickets/*.tmp
 .claude/tickets/tags.json.lock
-/classic_ui/reference/
