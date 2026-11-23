@@ -1,0 +1,24 @@
+{
+  "id": "HH-0013",
+  "summary": "Split 4a: uniform UI rect in stretch mode and mouse mapping",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:29:38Z",
+  "updated": "2026-11-23T21:29:38Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0005"
+    ]
+  },
+  "body": "In stretch mode the world fills the window while the UI keeps a uniform, centred scale. Mouse maps window -> UI units through the UI rect, and world picking maps through the world rect; `TransformMouseCoords` and `update_cursor_clip` share one rect helper.\n\n**Done when:** clicks hit dialogs and world targets correctly in letterbox and stretch; reviewed.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md."
+}

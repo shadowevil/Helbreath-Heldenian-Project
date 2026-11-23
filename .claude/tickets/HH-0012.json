@@ -1,0 +1,24 @@
+{
+  "id": "HH-0012",
+  "summary": "Split 3c: HUD action bar spans the world rect",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:29:38Z",
+  "updated": "2026-11-23T21:29:38Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0005"
+    ]
+  },
+  "body": "User decision: the action bar always takes the same share of the screen as at 800x600, so it draws in the world rect even when the rest of the UI is uniform and centred.\n\n**Done when:** in fullscreen stretch on a non-4:3 screen the bar spans the full width; reviewed.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md."
+}

@@ -1,0 +1,23 @@
+{
+  "id": "HH-0002",
+  "summary": "Speed up screen transitions 50%",
+  "status": "done",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:29:33Z",
+  "updated": "2026-11-23T21:29:33Z",
+  "links": {
+    "commits": [
+      "9cfd510"
+    ],
+    "files": [],
+    "tickets": []
+  },
+  "body": "Screen fades run 1.5x faster via `transition_speed` in `sources/client/game_mode_manager.h` (0.15/0.25/0.5 s -> 0.10/0.17/0.33 s, derived).\n\n**Done when:** fades shorter in game; reviewed, built Debug 0 errors.\n\nSource: user request 2026-11-23, commit 9cfd510."
+}

@@ -1,0 +1,32 @@
+{
+  "id": "HH-0005",
+  "summary": "World/screen space split (task)",
+  "status": "in_progress",
+  "severity": "high",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:29:34Z",
+  "updated": "2026-11-23T21:29:39Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocked_by": [
+      "HH-0006",
+      "HH-0007",
+      "HH-0008",
+      "HH-0009",
+      "HH-0010",
+      "HH-0011",
+      "HH-0012",
+      "HH-0013",
+      "HH-0014"
+    ]
+  },
+  "body": "The world keeps rendering at 800x600 and is upscaled to the window; UI, floating text and every non-game screen render in screen space at window resolution, with a fixed draw order. Today everything draws into one 800x600 back buffer (`sources/sfml_engine/sfml_renderer.cpp`, CreateRenderTextures and end_frame, as of 2026-11-23). Design and the user's decisions: `.claude/design/plans/world-screen-split.md` and d-024 in `.claude/docs/decisions.md`. Closes when its sub-tasks are done.\n\n**Done when:** every sub-task is done and the split is checked in game at 800x600, 1440x1080, fullscreen letterbox and stretch.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md."
+}

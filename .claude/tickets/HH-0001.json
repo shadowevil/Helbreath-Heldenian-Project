@@ -1,7 +1,7 @@
 {
   "id": "HH-0001",
   "summary": "Ticket system adopted: smoke test",
-  "status": "in_review",
+  "status": "done",
   "severity": "low",
   "owner_area": "tooling",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:17:20Z",
-  "updated": "2026-11-23T21:17:34Z",
+  "updated": "2026-11-23T21:20:14Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "c3f45ba"
+    ],
     "files": [],
     "tickets": []
   },

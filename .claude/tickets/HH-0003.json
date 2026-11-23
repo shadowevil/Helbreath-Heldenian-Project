@@ -1,0 +1,23 @@
+{
+  "id": "HH-0003",
+  "summary": "Show the splash in Debug and let a click skip it after 1 s",
+  "status": "done",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:29:34Z",
+  "updated": "2026-11-23T21:29:34Z",
+  "links": {
+    "commits": [
+      "9cfd510"
+    ],
+    "files": [],
+    "tickets": []
+  },
+  "body": "`sources/client/game.cpp` always starts on `Screen_Splash`; `screen_splash.cpp` skips to loading on a left-click press once 1 s has elapsed (all builds).\n\n**Done when:** splash shows in Debug and skips on click after 1 s; reviewed, built Debug 0 errors.\n\nSource: user request 2026-11-23, commit 9cfd510."
+}

@@ -1,0 +1,24 @@
+{
+  "id": "HH-0017",
+  "summary": "korea-2024 2: pak-to-PNG converter",
+  "status": "in_progress",
+  "severity": "low",
+  "owner_area": "tooling",
+  "target_patch": "next",
+  "tags": [
+    8,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:29:40Z",
+  "updated": "2026-11-23T21:29:40Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0015"
+    ]
+  },
+  "body": "`.claude/tools/scripts/pak_to_png.py`, built from the client's pak loader and cross-checked with Helbreath-SDL; failures logged and skipped.\n\n**Done when:** converter runs over all paks; failures listed.\n\nSource: user request 2026-11-23."
+}

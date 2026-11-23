@@ -1,0 +1,24 @@
+{
+  "id": "HH-0011",
+  "summary": "Split 3b: move the item tooltip out of draw_objects",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:29:37Z",
+  "updated": "2026-11-23T21:29:37Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0005"
+    ]
+  },
+  "body": "`screen_on_game_draw_objects.cpp` draws an item tooltip inside the world pass; move it to the screen-pass tooltip layer. Crusade markers stay in the world.\n\n**Done when:** tooltip draws in screen space at the cursor; reviewed.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md."
+}

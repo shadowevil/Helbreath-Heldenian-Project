@@ -1,0 +1,24 @@
+{
+  "id": "HH-0021",
+  "summary": "Docs audit 2: split multi-topic docs into index plus sidecar folders",
+  "status": "in_progress",
+  "severity": "low",
+  "owner_area": "docs",
+  "target_patch": "next",
+  "tags": [
+    4,
+    2
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:32:18Z",
+  "updated": "2026-11-23T21:32:18Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0019"
+    ]
+  },
+  "body": "Per the global docs standard, a doc with several standalone topics becomes `topic.md` (one line per entry: path, what, WHEN) plus `topic/<entry>.md`; cohesive docs get a Contents block and an assessment line instead.\n\n**Done when:** each split doc's index resolves and every reference is repaired.\n\nSource: user request 2026-11-23 (docs audit); standard ~/.claude/docs/documentation_standards.md."
+}

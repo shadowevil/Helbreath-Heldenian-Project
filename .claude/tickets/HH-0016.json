@@ -1,0 +1,24 @@
+{
+  "id": "HH-0016",
+  "summary": "korea-2024 1: download and size-verify the 405 paks",
+  "status": "in_progress",
+  "severity": "low",
+  "owner_area": "tooling",
+  "target_patch": "next",
+  "tags": [
+    8,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:29:40Z",
+  "updated": "2026-11-23T21:29:40Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0015"
+    ]
+  },
+  "body": "Resumable download into `build/downloads/korea-2024/`, each size checked against the API.\n\n**Done when:** 405 files present with matching sizes.\n\nSource: user request 2026-11-23."
+}

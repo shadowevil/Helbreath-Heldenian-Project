@@ -1,0 +1,23 @@
+{
+  "id": "HH-0004",
+  "summary": "Ship only Wine Tahoma and refuse startup without it",
+  "status": "done",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:29:34Z",
+  "updated": "2026-11-23T21:29:34Z",
+  "links": {
+    "commits": [
+      "9cfd510"
+    ],
+    "files": [],
+    "tickets": []
+  },
+  "body": "Removed arial, segoeui, MS tahoma and default.ttf from `staged/client/fonts/`; ship `wine_tahoma.ttf` (LGPL 2.1, licence beside it); no system-font lookup (`LoadFontByName` removed); startup refused with \"Unable to load default font\" when it is missing.\n\n**Done when:** deployed fonts folder holds only Wine Tahoma; reviewed, built Debug 0 errors.\n\nSource: user request 2026-11-23, commit 9cfd510."
+}

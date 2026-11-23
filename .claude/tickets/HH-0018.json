@@ -1,0 +1,24 @@
+{
+  "id": "HH-0018",
+  "summary": "korea-2024 3: spot-check converted art",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "tooling",
+  "target_patch": "next",
+  "tags": [
+    8,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:29:41Z",
+  "updated": "2026-11-23T21:30:30Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0015"
+    ]
+  },
+  "body": "View a UI, a character and an effect sheet for colour, transparency and layout.\n\n**Done when:** three sheets look correct.\n\nSource: user request 2026-11-23."
+}

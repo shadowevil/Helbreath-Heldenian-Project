@@ -1,0 +1,26 @@
+{
+  "id": "HH-0015",
+  "summary": "Extract korea-2024 sprites as PNG reference art (task)",
+  "status": "in_progress",
+  "severity": "low",
+  "owner_area": "tooling",
+  "target_patch": "next",
+  "tags": [
+    8,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:29:39Z",
+  "updated": "2026-11-23T21:29:41Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocked_by": [
+      "HH-0016",
+      "HH-0017",
+      "HH-0018"
+    ]
+  },
+  "body": "Download every .pak in Original-Helbreath/History `sprites/korea-2024` (405 files, about 890 MB, measured via the GitHub API 2026-11-23) and convert each sprite sheet to `classic_ui/reference/<pak>/<nnn>.png` with a `frames.json`. Downloads in `build/downloads/korea-2024/`; output gitignored. Closes when its sub-tasks are done.\n\n**Done when:** every parsable pak is converted and spot-checked.\n\nSource: user request 2026-11-23."
+}

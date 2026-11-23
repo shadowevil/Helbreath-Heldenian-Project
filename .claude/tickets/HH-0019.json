@@ -1,0 +1,26 @@
+{
+  "id": "HH-0019",
+  "summary": "Docs audit: stale content and lean index/sidecar splits (task)",
+  "status": "in_progress",
+  "severity": "low",
+  "owner_area": "docs",
+  "target_patch": "next",
+  "tags": [
+    4,
+    2
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:32:17Z",
+  "updated": "2026-11-23T21:32:18Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocked_by": [
+      "HH-0020",
+      "HH-0021",
+      "HH-0022"
+    ]
+  },
+  "body": "Audit every doc agents read under `.claude/docs/` (and `.claude/agents/`, `sources/README.md`) for stale content and for files that should become a lean index plus a sidecar folder, keeping each base index linked from CLAUDE.md's Docs index. Closes when its sub-tasks are done.\n\n**Done when:** every sub-task is done and a read-only review has passed.\n\nSource: user request 2026-11-23 (docs audit); standard ~/.claude/docs/documentation_standards.md."
+}

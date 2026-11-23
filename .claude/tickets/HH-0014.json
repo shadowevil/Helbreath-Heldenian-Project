@@ -1,0 +1,24 @@
+{
+  "id": "HH-0014",
+  "summary": "Split 5: verify the split on Windows and WSL builds and in game",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-23T21:29:39Z",
+  "updated": "2026-11-23T21:29:39Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0005"
+    ]
+  },
+  "body": "Build Debug and Release on Windows and the WSL client; manual check at 800x600, 1440x1080, fullscreen letterbox and fullscreen stretch.\n\n**Done when:** all builds pass and the in-game check is recorded on this ticket.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md."
+}
