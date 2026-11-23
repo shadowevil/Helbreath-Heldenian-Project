@@ -1,7 +1,7 @@
 {
   "id": "HH-0019",
   "summary": "Docs audit: stale content and lean index/sidecar splits (task)",
-  "status": "in_progress",
+  "status": "done",
   "severity": "low",
   "owner_area": "docs",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:32:17Z",
-  "updated": "2026-11-23T21:32:18Z",
+  "updated": "2026-11-23T21:38:36Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "724f610"
+    ],
     "files": [],
     "tickets": [],
     "blocked_by": [

@@ -1,7 +1,7 @@
 {
   "id": "HH-0020",
   "summary": "Docs audit 1: find and fix stale content",
-  "status": "in_review",
+  "status": "done",
   "severity": "low",
   "owner_area": "docs",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:32:17Z",
-  "updated": "2026-11-23T21:36:16Z",
+  "updated": "2026-11-23T21:38:35Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "724f610"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0019"
     ]
   },
-  "body": "Check each doc's claims against the current tree (paths, commands, layout after the 2026-11-23 restructure, ticket system, world/screen split plan) and fix or flag what is stale.\n\n**Done when:** every stale claim is fixed or listed for the user.\n\nSource: user request 2026-11-23 (docs audit); standard ~/.claude/docs/documentation_standards.md."
+  "body": "Check each doc's claims against the current tree (paths, commands, layout after the 2026-11-23 restructure, ticket system, world/screen split plan) and fix or flag what is stale.\n\n**Done when:** every stale claim is fixed or listed for the user.\n\nSource: user request 2026-11-23 (docs audit); standard ~/.claude/docs/documentation_standards.md.\n\n**Verified, 2026-11-23:** read-only review passed (coding-standards split diffed line by line, 28 paths checked, CLAUDE.md 9,921 B, all new files tracked); minor fixes applied before commit 724f610.\n"
 }

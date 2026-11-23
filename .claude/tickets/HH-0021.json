@@ -1,7 +1,7 @@
 {
   "id": "HH-0021",
   "summary": "Docs audit 2: split multi-topic docs into index plus sidecar folders",
-  "status": "in_review",
+  "status": "done",
   "severity": "low",
   "owner_area": "docs",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:32:18Z",
-  "updated": "2026-11-23T21:36:16Z",
+  "updated": "2026-11-23T21:38:35Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "724f610"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0019"
     ]
   },
-  "body": "Per the global docs standard, a doc with several standalone topics becomes `topic.md` (one line per entry: path, what, WHEN) plus `topic/<entry>.md`; cohesive docs get a Contents block and an assessment line instead.\n\n**Done when:** each split doc's index resolves and every reference is repaired.\n\nSource: user request 2026-11-23 (docs audit); standard ~/.claude/docs/documentation_standards.md."
+  "body": "Per the global docs standard, a doc with several standalone topics becomes `topic.md` (one line per entry: path, what, WHEN) plus `topic/<entry>.md`; cohesive docs get a Contents block and an assessment line instead.\n\n**Done when:** each split doc's index resolves and every reference is repaired.\n\nSource: user request 2026-11-23 (docs audit); standard ~/.claude/docs/documentation_standards.md.\n\n**Verified, 2026-11-23:** read-only review passed (coding-standards split diffed line by line, 28 paths checked, CLAUDE.md 9,921 B, all new files tracked); minor fixes applied before commit 724f610.\n"
 }

@@ -1,7 +1,7 @@
 {
   "id": "HH-0022",
   "summary": "Docs audit 3: CLAUDE.md Docs index links every base index",
-  "status": "in_review",
+  "status": "done",
   "severity": "low",
   "owner_area": "docs",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:32:18Z",
-  "updated": "2026-11-23T21:36:16Z",
+  "updated": "2026-11-23T21:38:36Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "724f610"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0019"
     ]
   },
-  "body": "CLAUDE.md's Docs index names each base index file once with a read-when, and stays lean (under about 10 KB).\n\n**Done when:** every index file is linked from CLAUDE.md and CLAUDE.md is under 10 KB.\n\nSource: user request 2026-11-23 (docs audit); standard ~/.claude/docs/documentation_standards.md."
+  "body": "CLAUDE.md's Docs index names each base index file once with a read-when, and stays lean (under about 10 KB).\n\n**Done when:** every index file is linked from CLAUDE.md and CLAUDE.md is under 10 KB.\n\nSource: user request 2026-11-23 (docs audit); standard ~/.claude/docs/documentation_standards.md.\n\n**Verified, 2026-11-23:** read-only review passed (coding-standards split diffed line by line, 28 paths checked, CLAUDE.md 9,921 B, all new files tracked); minor fixes applied before commit 724f610.\n"
 }

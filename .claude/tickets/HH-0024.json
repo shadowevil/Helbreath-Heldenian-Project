@@ -1,7 +1,7 @@
 {
   "id": "HH-0024",
   "summary": "Docs 10 KB 1: write the rule doc documentation.md",
-  "status": "open",
+  "status": "done",
   "severity": "low",
   "owner_area": "docs",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:38:17Z",
-  "updated": "2026-11-23T21:38:18Z",
+  "updated": "2026-11-23T21:38:36Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "724f610"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0023"
     ]
   },
-  "body": "New `.claude/docs/documentation.md` states the rule, the audit procedure, the exceptions and the size check; CLAUDE.md links it.\n\n**Done when:** the doc is committed and linked from CLAUDE.md.\n\nSource: user request 2026-11-23 (d-026); .claude/docs/documentation.md."
+  "body": "New `.claude/docs/documentation.md` states the rule, the audit procedure, the exceptions and the size check; CLAUDE.md links it.\n\n**Done when:** the doc is committed and linked from CLAUDE.md.\n\nSource: user request 2026-11-23 (d-026); .claude/docs/documentation.md.\n\n**Verified, 2026-11-23:** read-only review passed (coding-standards split diffed line by line, 28 paths checked, CLAUDE.md 9,921 B, all new files tracked); minor fixes applied before commit 724f610.\n"
 }
