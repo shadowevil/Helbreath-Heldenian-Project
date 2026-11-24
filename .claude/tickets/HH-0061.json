@@ -1,7 +1,7 @@
 {
   "id": "HH-0061",
   "summary": "Panel kit 2: panel_kit runtime class (load json + atlas, compose, inner primitives, text recipes)",
-  "status": "open",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,12 +11,16 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:13Z",
-  "updated": "2026-11-24T20:30:13Z",
+  "updated": "2026-11-24T21:50:17Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "a3c0ab6a"
+    ],
     "files": [
       "sources/client/parchment_kit.h:36",
-      "sources/client/screen_test.cpp"
+      "sources/client/screen_test.cpp",
+      "sources/client/panel_kit.cpp",
+      ".claude/design/plans/panel-kit-runtime/api.md"
     ],
     "tickets": [
       "HH-0054"
@@ -25,5 +29,12 @@
       "HH-0059"
     ]
   },
-  "body": "Spec step 2. client/panel_kit.h/.cpp modelled on parchment_kit: load(<sprite_dir>/panelkit), compose(x,y,w,h,style) in the build order, inset/raised/rule/vrule/slot_ring/scrollbar/flourish/title, text recipes as draw lists; register a Liberation Serif font id.\n\nDone when: screen_test.cpp shows compose at 270x376, 362x164, 331x303 matching tools/panel_kit/compose.py within rounding."
+  "body": "Spec step 2. client/panel_kit.h/.cpp modelled on parchment_kit: load(<sprite_dir>/panelkit), compose(x,y,w,h,style) in the build order, inset/raised/rule/vrule/slot_ring/scrollbar/flourish/title, text recipes as draw lists; register a Liberation Serif font id.\n\nDone when: screen_test.cpp shows compose at 270x376, 362x164, 331x303 matching tools/panel_kit/compose.py within rounding.\n\n**Verified, 2026-11-24:** review passed with fixes, and the fixes are in. Windows and Linux builds pass. In game the select-character buttons, the character dialog buttons and the system menu tabs draw from the kit; the hover area matches the drawn button at the tab edges (measured). No warnings in the log. Committed a3c0ab6a.\n",
+  "comments": [
+    {
+      "author": "client",
+      "at": "2026-11-24T21:10:24Z",
+      "body": "Step 2 done (editor, 2026-11-24). Checkpoint 5a23803a (game.h, game.cpp, Client.vcxproj(.filters), panel_kit.h/.cpp).\n\nReshaped to the user's 2026-11-24 rulings (kit classes; predefined + custom buttons and dialogs; built on CControls, presentation only; game-specific so it stays in sources/client). API and the CControls / kit split: `.claude/design/plans/panel-kit-runtime/api.md`.\n\n- `sources/client/panel_kit.h/.cpp` (hb::client):\n  - `panel_kit`: loads `<sprites>/panelkit/panel_kit.json` + atlas (nearest copy for pieces, smooth copy for scaled flourishes), validates every referenced frame, registers the recipe fonts (Liberation Serif, Wine Tahoma) through `ITextRenderer::load_face`. False + `hb::logger::warn` on any problem. Primitives match compose.py: `compose` (bg inset 1 px -> inner shadow -> L/R bars -> T/B bars -> corners), `inset`, `raised`, `rule`, `vrule`, `slot_ring`, `scrollbar`, `flourish` (tinted `*_white` mask, emboss, additive), `button`, `text` (recipe draw lists, cap/lcap/rcap anchors, per-word layout, faux bold), `text_width`.\n  - `button_layout::small|wide` (from the JSON `buttons` block), `button_style` (custom), `kit_button` (text + position; `draw`, `render_handler` for cc::, `add_to(parent, id, kit)` creating a skinned cc::button).\n  - `dialog_size::character|chat_history|sys_menu` and `kit_dialog` (frame drawn on construction; `title`, `heading`, `field`, `inset`, `raised`, `rule`, `vrule`, `slot_ring`, `scrollbar`, `flourish`, `text_area`, `button`, all relative to the frame). The kit owns no dialog layout and no input state.\n- `CGame::get_panel_kit()`: lazy load once, `std::unique_ptr` owned by CGame, released before the sprite factory.\n\nDeviations: no screen_test compose check (Screen_Test unreachable from the bridge); compose at 270x376 / 362x164 / 331x303 is verified in step 4-6 screenshots against compose.py. `title`/`heading` flourish placement follows the scratch dialogs.py rule (gap from the ink, right mirrored) and is unverified until step 4. CControls needed no change (`set_render_handler` is the skin hook)."
+    }
+  ]
 }

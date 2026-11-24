@@ -1,7 +1,7 @@
 {
   "id": "HH-0060",
   "summary": "Panel kit 1: renderer nearest sampling, tint and additive blend for draw_texture_region",
-  "status": "in_progress",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,12 +11,15 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:13Z",
-  "updated": "2026-11-24T20:40:47Z",
+  "updated": "2026-11-24T21:50:17Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "a3c0ab6a"
+    ],
     "files": [
       "sources/dependencies/shared/render/renderer.h:113",
-      "sources/sfml_engine/sfml_renderer.cpp:1101"
+      "sources/sfml_engine/sfml_renderer.cpp:1101",
+      "sources/dependencies/shared/render/primitive_types.h"
     ],
     "tickets": [
       "HH-0054"
@@ -25,5 +28,17 @@
       "HH-0059"
     ]
   },
-  "body": "Spec step 1. Nearest-sampled texture load (stretched 1 px rows and 9-slice edges must not blur or bleed); draw_texture_region overload with vertex colour + alpha|additive blend (SFML: sf::BlendAdd). Tint the baked `divider_*_white` masks.\n\nDone when: a test screen draws divider_knot_white tinted (196,176,126) additive 0.5 and rule_dark stretched to 200 px without blur; Windows and Linux builds clean."
+  "body": "Spec step 1. Nearest-sampled texture load (stretched 1 px rows and 9-slice edges must not blur or bleed); draw_texture_region overload with vertex colour + alpha|additive blend (SFML: sf::BlendAdd). Tint the baked `divider_*_white` masks.\n\nDone when: a test screen draws divider_knot_white tinted (196,176,126) additive 0.5 and rule_dark stretched to 200 px without blur; Windows and Linux builds clean.\n\n**Verified, 2026-11-24:** review passed with fixes, and the fixes are in. Windows and Linux builds pass. In game the select-character buttons, the character dialog buttons and the system menu tabs draw from the kit; the hover area matches the drawn button at the tab edges (measured). No warnings in the log. Committed a3c0ab6a.\n",
+  "comments": [
+    {
+      "author": "client",
+      "at": "2026-11-24T21:10:24Z",
+      "body": "Step 1 done (editor, 2026-11-24). Checkpoint b9e4b5ac.\n\n- `primitive_types.h`: `texture_filter {smooth, nearest}` and `draw_tint {color, blend}`.\n- `IRenderer::create_texture_from_file(path, texture_filter = smooth)`; SFML: nearest = `setSmooth(false)` and no mipmaps (no blur on stretched 1 px rows, no atlas bleed when minified).\n- `IRenderer::draw_texture_region(..., alpha, const draw_tint&)`: vertex colour times alpha, `sf::BlendAdd` for additive (dst + src * a, the kit's additive rule). A negative src width/height mirrors (flourishes). The old overload forwards to it (same output: white, alpha, truncation unchanged).\n- Text (needed by the recipes; spec put it in step 2): the TTF path dropped alpha and had one face. `ITextRenderer::load_face(path)`, `measure_run`, `draw_run` with exact pixel size (no GDI -2), tracking (SFML letter spacing solved from the space advance), colour alpha, additive, float origin (snapped to output pixels; at 1:1 rounded, so faux-bold +0.5 lands on +1).\n\nDeviation: no screen_test panel (Screen_Test is unreachable from the agent bridge). Tint/additive are exercised by kit flourishes from step 4 on; the nearest sampling and text runs are exercised by the kit buttons (HH-0062 screenshots). The divider_knot tinted additive check is therefore unverified until step 4."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-24T21:32:14Z",
+      "body": "Correction (editor, 2026-11-24, after the user's text-blending question): `draw_run` no longer rounds the origin. The whole part is snapped to an output pixel and the fractional part kept, so the recipes' +0.5 faux-bold copy lands between pixels; `load_face` fonts always sample smoothly (the Antialias Font setting and its default are unchanged and apply to the bundled font). Measurements: HH-0062."
+    }
+  ]
 }

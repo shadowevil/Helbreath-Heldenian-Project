@@ -1,7 +1,7 @@
 {
   "id": "HH-0062",
   "summary": "Panel kit 3: kit buttons (small 74x20, wide 176x24) via cc::button render handler and dialog helper",
-  "status": "open",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,12 +11,16 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:14Z",
-  "updated": "2026-11-24T20:30:14Z",
+  "updated": "2026-11-24T21:50:17Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "a3c0ab6a"
+    ],
     "files": [
       "sources/ccontrols/control.h:68",
-      "sources/client/dialog_box_character.cpp:180"
+      "sources/client/dialog_box_character.cpp:180",
+      "sources/client/panel_kit.cpp",
+      ".claude/design/plans/panel-kit-runtime/api.md"
     ],
     "tickets": [
       "HH-0054"
@@ -25,5 +29,17 @@
       "HH-0059"
     ]
   },
-  "body": "Spec step 3. panel_kit::button(rect, label, size, hover); plug into cc::control::set_render_handler and replace draw_new_dialog_box(InterfaceNdButton, ...) users.\n\nDone when: Party / Level Set. and the select-character wide buttons draw from the kit with yellow hover; clicks unchanged."
+  "body": "Spec step 3. panel_kit::button(rect, label, size, hover); plug into cc::control::set_render_handler and replace draw_new_dialog_box(InterfaceNdButton, ...) users.\n\nDone when: Party / Level Set. and the select-character wide buttons draw from the kit with yellow hover; clicks unchanged.\n\n**Verified, 2026-11-24:** review passed with fixes, and the fixes are in. Windows and Linux builds pass. In game the select-character buttons, the character dialog buttons and the system menu tabs draw from the kit; the hover area matches the drawn button at the tab edges (measured). No warnings in the log. Committed a3c0ab6a.\n",
+  "comments": [
+    {
+      "author": "client",
+      "at": "2026-11-24T21:10:24Z",
+      "body": "Step 3 (editor, 2026-11-24). Checkpoints 5a23803a (game.cpp bridge) and a8490e3c (7 screen/overlay files).\n\n- Kit buttons are `kit_button` (layout `button_layout::small|wide` + text + position, or a custom `button_style`); `panel_kit::button` draws face (tiled, origin at x+1,y+1) -> frame edges tiled between the 4x4 corners -> corners -> caps at inset 2 -> label recipe (small: Tahoma 11 tracking 1 faux bold; wide: Liberation Serif 14 tracking 0.5, per word, gap 8, shadow + 0.65 fill bold under a plain fill). Hover = yellow fill + hover face.\n- Bridge: `CGame::draw_new_dialog_box(InterfaceNdButton, x, y, frame)` maps every baked text-button frame (0-49, 51-60, 63-68, 70-77) to its label, size and hover state and draws the kit button at the frame's own place (pivot included, so the select-character wide buttons land where they were); other frames (cards, plates, sys-menu boxes 78-82) and a missing kit draw the sprite. Dialog transparency keeps its 0.25 opacity.\n- The 16 menu-screen/overlay render handlers that drew `m_sprite[InterfaceNdButton]->draw(sb.x, sb.y, frame)` now call `draw_new_dialog_box` with the same frame, so all 33 users draw from the kit; hit-testing, hover and clicks are unchanged (cc:: on screens, existing input code in dialogs).\n- New code uses the class API directly (`kit_button(...).add_to(root, id, kit)` / `kit_dialog::button`), see `.claude/design/plans/panel-kit-runtime/api.md`.\n\nDeviation from the spec: one central bridge instead of editing each of the ~180 dialog call sites; dialogs move to `kit_dialog` in steps 4-7 and the bridge goes with the sprite in step 8."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-24T21:32:05Z",
+      "body": "Text blending (user, 2026-11-24: \"The text is quite crisp - is there a AA setting we can add to make them look more blended?\").\n\nMeasured at 1x (800x600) against the reference composer drawing the same buttons on the same captured background; MAE over the crop, lower = closer (sheets: build/screenshots/hh0062_text_{small,wide}_{1x,3x}.jpg):\n\n| variant | small labels | wide labels |\n|---|---|---|\n| bold copy rounded to +1, Antialias Font off | 2.40 | 7.04 |\n| rounded, Antialias Font on | 2.40 | 6.71 |\n| fractional +0.5, Antialias Font off | 2.41 | 7.09 |\n| fractional +0.5, Antialias Font on | **0.69** | 6.89 |\n\n- The blend needs both: the +0.5 faux-bold copy drawn at a true half pixel (draw_run now keeps the fractional part of the origin) and a smooth glyph texture (otherwise the half pixel is nearest-sampled and the bold vanishes).\n- Shipped: fractional offsets, and the kit's own faces (load_face: Liberation Serif, the kit's Tahoma copy) always sample smoothly. The System Menu \"Antialias Font\" toggle and its default (off) are unchanged and still drive the bundled font for all other text. Result with the toggle off: small 0.69, wide 6.89 (same as fractional + AA on).\n- Wide labels stay at about 7: the client's Liberation Serif run is a little wider and heavier than PIL's (SFML lays glyphs out on hinted whole-pixel advances; PIL on fractional ones), so the words drift right by 1-3 px. Not fixed here; a follow-up could lay out per glyph with unhinted advances."
+    }
+  ]
 }
