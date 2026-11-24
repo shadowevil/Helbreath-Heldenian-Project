@@ -104,3 +104,5 @@ The Map item now shows a high-quality parchment map, built in the game from a ma
 - **Creatures:** each monster area shows up to three of the creatures that spawn there, standing and facing south-east, in place of the sword (HH-0050). The kit has 48 creatures; 22 structures, guards and summons were left out at the user's request (HH-0049). Areas with no creature art, such as the barracks training dummies, keep the sword.
 
 The corner minimap now has two zoom levels, the whole map and the mid view. The close view was dropped because the parchment map takes its place (d-033).
+
+The client now ships Liberation Serif (regular, bold, italic, bold italic) in `fonts/`, the open-licence counterpart to Times New Roman with identical letter widths, beside Wine Tahoma (HH-0053). No screen uses it yet.
