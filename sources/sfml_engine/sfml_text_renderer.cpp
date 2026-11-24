@@ -177,14 +177,15 @@ void SFMLTextRenderer::draw_text(int x, int y, const char* text, const hb::share
 }
 
 void SFMLTextRenderer::draw_at_output_resolution(sf::RenderTarget& target, sf::Text& text, unsigned int logical_size,
-                                                 float x, float y) const
+                                                 float x, float y, const sf::RenderStates& states,
+                                                 sf::Vector2f subpixel) const
 {
     // 1 in the world pass (world text stays at logical size until Phase 3) and at 800x600
     float scale = m_renderer->text_scale();
     if (std::abs(scale - 1.0f) < 0.001f)
     {
-        text.setPosition({x, y});
-        target.draw(text);
+        text.setPosition(sf::Vector2f{std::round(x), std::round(y)} + subpixel);
+        target.draw(text, states);
         return;
     }
 
@@ -197,8 +198,76 @@ void SFMLTextRenderer::draw_at_output_resolution(sf::RenderTarget& target, sf::T
 
     // Snap the origin once to a whole window pixel; sf::Text keeps every glyph of a line on one shared
     // baseline at an integer offset from it, so glyph y is never snapped on its own
-    text.setPosition(m_renderer->snap_to_output_pixel({x, y}));
-    target.draw(text);
+    text.setPosition(m_renderer->snap_to_output_pixel({x, y}) + subpixel);
+    target.draw(text, states);
+}
+
+int SFMLTextRenderer::load_face(const char* path)
+{
+    if (!path)
+        return -1;
+    for (std::size_t i = 0; i < m_faces.size(); i++)
+    {
+        if (m_faces[i].path == path)
+            return static_cast<int>(i) + 1;
+    }
+    auto font = std::make_unique<sf::Font>();
+    if (!font->openFromFile(path))
+        return -1;
+    // Styled runs always sample their glyphs smoothly, whatever the Antialias Font setting (which stays
+    // with the bundled font): the recipes' +0.5 faux-bold copy only blends with a smooth glyph texture
+    font->setSmooth(true);
+    m_faces.push_back({path, std::move(font)});
+    return static_cast<int>(m_faces.size());
+}
+
+const sf::Font* SFMLTextRenderer::face_font(int face_id) const
+{
+    if (face_id == 0)
+        return m_fontLoaded ? &m_font : nullptr;
+    if (face_id < 1 || face_id > static_cast<int>(m_faces.size()))
+        return nullptr;
+    return m_faces[static_cast<std::size_t>(face_id - 1)].font.get();
+}
+
+sf::Text SFMLTextRenderer::make_run(const sf::Font& font, const char* text, const text_run& run) const
+{
+    const unsigned int size = static_cast<unsigned int>((std::max)(run.pixel_size, 1));
+    sf::Text sf_text(font, text, size);
+    // SFML spaces letters by (space advance / 3) * (factor - 1) px; solve for the tracking. The factor is
+    // relative to the space advance, so it holds when the run is rasterised at another size.
+    const float space_advance = font.getGlyph(U' ', size, false).advance;
+    if (run.tracking != 0.0f && space_advance > 0.0f)
+        sf_text.setLetterSpacing(1.0f + 3.0f * run.tracking / space_advance);
+    return sf_text;
+}
+
+ink_box SFMLTextRenderer::measure_run(const char* text, const text_run& run) const
+{
+    const sf::Font* font = face_font(run.face);
+    if (!text || !font)
+        return {};
+    const sf::FloatRect bounds = make_run(*font, text, run).getLocalBounds();
+    return {bounds.position.x, bounds.position.y, bounds.position.x + bounds.size.x, bounds.position.y + bounds.size.y};
+}
+
+void SFMLTextRenderer::draw_run(float x, float y, const char* text, const text_run& run,
+                                const hb::shared::render::Color& color, hb::shared::render::BlendMode blend)
+{
+    sf::RenderTarget* target = m_renderer ? m_renderer->get_current_target() : nullptr;
+    const sf::Font* font = face_font(run.face);
+    if (!text || !font || !target)
+        return;
+
+    sf::Text sf_text = make_run(*font, text, run);
+    sf_text.setFillColor(sf::Color(color.r, color.g, color.b, color.a));
+    const sf::RenderStates states(blend == hb::shared::render::BlendMode::Additive ? sf::BlendAdd : sf::BlendAlpha);
+    // The whole-pixel part is snapped; the fractional part stays, so a faux-bold copy at +0.5 falls
+    // between pixels and blends (the face's glyph texture is smooth), as in text_fx.py
+    const float base_x = std::floor(x);
+    const float base_y = std::floor(y);
+    draw_at_output_resolution(*target, sf_text, sf_text.getCharacterSize(), base_x, base_y, states,
+                              {x - base_x, y - base_y});
 }
 
 void SFMLTextRenderer::draw_text_aligned(int x, int y, int width, int height, const char* text, const hb::shared::render::Color& color,

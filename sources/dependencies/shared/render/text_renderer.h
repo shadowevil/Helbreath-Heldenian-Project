@@ -51,6 +51,24 @@ enum Align : uint8_t
     VMask = 0x0C
 };
 
+// A styled TTF run (panel kit labels): an exact pixel size in a loaded face, with extra space
+// after every letter. Unlike fontSize below, pixel_size gets no GDI adjustment.
+struct text_run
+{
+    int face = 0;             // 0 = the bundled font, otherwise an id from load_face
+    int pixel_size = 12;      // FreeType pixel size (PIL's truetype size)
+    float tracking = 0.0f;    // extra logical px after every letter
+};
+
+// Ink box of a run in logical units, relative to the origin draw_run takes
+struct ink_box
+{
+    float left = 0.0f;
+    float top = 0.0f;
+    float right = 0.0f;
+    float bottom = 0.0f;
+};
+
 class ITextRenderer
 {
 public:
@@ -81,6 +99,21 @@ public:
                           int fontSize = 0, bool bold = false) = 0;
     virtual void draw_text_aligned(int x, int y, int width, int height, const char* text, const hb::shared::render::Color& color,
                                  Align alignment = Align::TopLeft, int fontSize = 0, bool bold = false) = 0;
+
+    // Styled runs. load_face returns a face id >= 1 for a TTF file (the same id again for a path
+    // already loaded), or -1 when it cannot be opened.
+    virtual int load_face(const char* path) { (void)path; return -1; }
+    virtual ink_box measure_run(const char* text, const text_run& run) const { (void)text; (void)run; return {}; }
+    // The run with its origin at (x, y): the whole part snapped to an output pixel, the fractional part
+    // kept, so a +0.5 faux-bold copy blends between pixels (load_face fonts always sample smoothly; the
+    // font smoothing setting applies to the bundled font only). color.a is the opacity; additive adds
+    // the glyphs to the target.
+    virtual void draw_run(float x, float y, const char* text, const text_run& run,
+                          const hb::shared::render::Color& color,
+                          hb::shared::render::BlendMode blend = hb::shared::render::BlendMode::Alpha)
+    {
+        (void)x; (void)y; (void)text; (void)run; (void)color; (void)blend;
+    }
 
     // Batching for performance (DDraw needs DC acquisition)
     virtual void begin_batch() = 0;

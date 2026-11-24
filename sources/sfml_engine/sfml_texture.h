@@ -22,8 +22,9 @@ public:
     // Render-target mode: creates both texture and render texture
     SFMLTexture(uint16_t width, uint16_t height);
 
-    // Image mode: loaded from pre-existing image (display-only, with mipmaps)
-    explicit SFMLTexture(const sf::Image& image);
+    // Image mode: loaded from pre-existing image (display-only); smooth = bilinear with mipmaps,
+    // otherwise nearest without mipmaps
+    SFMLTexture(const sf::Image& image, bool smooth);
 
     virtual ~SFMLTexture();
 

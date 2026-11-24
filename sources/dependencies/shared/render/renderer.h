@@ -105,13 +105,20 @@ public:
 
     // ============== Surface/Texture Management ==============
     virtual ITexture* create_texture(uint16_t width, uint16_t height) = 0;
-    virtual ITexture* create_texture_from_file(const char* path) = 0;  // Load image with mipmaps (display-only)
+    // Load an image for display only: smooth = bilinear with mipmaps, nearest = unfiltered, no mipmaps
+    virtual ITexture* create_texture_from_file(const char* path,
+                                               texture_filter filter = texture_filter::smooth) = 0;
     virtual void destroy_texture(ITexture* texture) = 0;
     // Draw part of a texture from create_texture_from_file on the current target, sampled with the
-    // texture's own filtering (smooth + mipmaps). src_* in texture pixels, dst_* in logical units.
+    // texture's own filtering. src_* in texture pixels, dst_* in logical units.
     // alpha is opacity (1 = opaque), the same meaning as DrawParams::m_alpha.
     virtual void draw_texture_region(ITexture* texture, float src_x, float src_y, float src_w, float src_h,
                                      float dst_x, float dst_y, float dst_w, float dst_h, float alpha = 1.0f) = 0;
+    // The same with a vertex colour and blend mode (see draw_tint). A negative src_w or src_h mirrors
+    // the region on that axis (src_x + src_w is then the region's left edge).
+    virtual void draw_texture_region(ITexture* texture, float src_x, float src_y, float src_w, float src_h,
+                                     float dst_x, float dst_y, float dst_w, float dst_h, float alpha,
+                                     const draw_tint& tint) = 0;
 
     // ============== Blitting ==============
     // Note: For transition, we keep direct surface access methods

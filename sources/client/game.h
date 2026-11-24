@@ -65,6 +65,7 @@
 #include "game_events.h"
 #include "formula_engine.h"
 #include "agent_bridge_config.h"
+#include "panel_kit.h"
 #ifdef DEF_CLAUDE_TESTING
 namespace hb::client { class agent_bridge; }
 #endif
@@ -156,7 +157,11 @@ public:
 	void grand_magic_result(const char* map_name, int ares_crusade_points, int elv_crusade_points, int ares_industry_points, int elv_industry_points, int ares_crusade_casualties, int ares_industry_casualties, int elv_crusade_casualties, int elv_industry_casualties);
 	void meteor_strike_coming(int code);
 
+	// InterfaceNdButton text-button frames draw from the panel kit when it is loaded (the frame picks
+	// the label, size and hover state); every other frame, or no kit, draws the sprite
 	void draw_new_dialog_box(char type, int sX, int sY, int frame, bool is_no_color_key = false, bool is_trans = false);
+	// The panel kit, loaded on first use; nullptr when <sprites>/panelkit is missing or bad
+	hb::client::panel_kit* get_panel_kit();
 	void add_map_status_info(const char* data, bool is_last_data);
 	void request_map_status(const char* map_name, int mode);
 	// draw_dialog_boxs REMOVED — use get_dialog_box_manager().draw_all()
@@ -362,6 +367,8 @@ std::array<bool, hb::shared::limits::MaxItems> m_is_item_equipped{};
 	bool m_screenshot_pending = false;
 	cursor_art m_cursor_art;          // High-resolution cursor art; falls back to m_sprite[MouseCursor]
 	bool m_cursor_art_tried = false;  // Load is attempted once, on the first cursor draw
+	std::unique_ptr<hb::client::panel_kit> m_panel_kit;   // Dialog panels and text buttons (get_panel_kit)
+	bool m_panel_kit_tried = false;                       // Load is attempted once
 
 	bool m_force_disconn;
 

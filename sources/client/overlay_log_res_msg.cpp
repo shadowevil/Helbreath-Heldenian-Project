@@ -46,7 +46,7 @@ void Overlay_LogResMsg::on_initialize()
     btn_ok->set_render_handler([this](const cc::control& c) {
         auto sb = c.screen_bounds();
         int frame = c.is_highlighted() ? 1 : 0;
-        m_game->m_sprite[InterfaceNdButton]->draw(sb.x, sb.y, frame);
+        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, frame);
     });
 
     m_controls.set_focus_order({BTN_OK});

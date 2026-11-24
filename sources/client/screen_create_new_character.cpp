@@ -181,7 +181,7 @@ void Screen_CreateNewCharacter::on_initialize()
     btn_create->set_render_handler([this](const cc::control& c) {
         auto sb = c.screen_bounds();
         int frame = (c.is_focused() && m_bNewCharFlag) ? 25 : 24;
-        m_game->m_sprite[InterfaceNdButton]->draw(sb.x, sb.y, frame);
+        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, frame);
     });
 
     // Cancel button
@@ -193,7 +193,7 @@ void Screen_CreateNewCharacter::on_initialize()
     });
     btn_cancel->set_render_handler([this](const cc::control& c) {
         auto sb = c.screen_bounds();
-        m_game->m_sprite[InterfaceNdButton]->draw(sb.x, sb.y, c.is_focused() ? 17 : 16);
+        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, c.is_focused() ? 17 : 16);
     });
 
     // Warrior preset button
@@ -219,7 +219,7 @@ void Screen_CreateNewCharacter::on_initialize()
     btn_warrior->set_render_handler([this](const cc::control& c) {
         auto sb = c.screen_bounds();
         bool highlight = c.is_focused() || m_selected_class == BTN_WARRIOR;
-        m_game->m_sprite[InterfaceNdButton]->draw(sb.x, sb.y, highlight ? 68 : 67);
+        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, highlight ? 68 : 67);
     });
 
     // Mage preset button
@@ -245,7 +245,7 @@ void Screen_CreateNewCharacter::on_initialize()
     btn_mage->set_render_handler([this](const cc::control& c) {
         auto sb = c.screen_bounds();
         bool highlight = c.is_focused() || m_selected_class == BTN_MAGE;
-        m_game->m_sprite[InterfaceNdButton]->draw(sb.x, sb.y, highlight ? 66 : 65);
+        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, highlight ? 66 : 65);
     });
 
     // Priest preset button
@@ -271,7 +271,7 @@ void Screen_CreateNewCharacter::on_initialize()
     btn_priest->set_render_handler([this](const cc::control& c) {
         auto sb = c.screen_bounds();
         bool highlight = c.is_focused() || m_selected_class == BTN_MASTER;
-        m_game->m_sprite[InterfaceNdButton]->draw(sb.x, sb.y, highlight ? 64 : 63);
+        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, highlight ? 64 : 63);
     });
 
     // Focus order: textbox + action buttons only (toggles excluded)

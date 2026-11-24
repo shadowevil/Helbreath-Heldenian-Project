@@ -412,6 +412,7 @@ void CGame::on_uninitialize()
 	m_tile_spr.clear();
 	m_effect_sprites.clear();
 	m_cursor_art.unload();
+	m_panel_kit.reset();
 	hb::shared::sprite::Sprites::set_factory(nullptr);
 	m_sprite_factory.reset();
 
@@ -2969,9 +2970,94 @@ void CGame::add_map_status_info(const char* data, bool is_last_data)
 	}
 }
 
+namespace
+{
+	// The text buttons baked into InterfaceNdButton (game_dialogs sprite 10), by frame: their label and
+	// whether the frame is the hover state. Size comes from the frame (74x20 small, 176x24 wide).
+	struct baked_button
+	{
+		const char* label = nullptr;   // nullptr = not a text button (cards, plates, boxes)
+		bool hover = false;
+	};
+
+	constexpr int baked_frame_count = 78;
+
+	// Indexed by frame, built at compile time from the frame list
+	constexpr std::array<baked_button, baked_frame_count> baked_buttons = []
+	{
+		struct entry
+		{
+			int frame;
+			baked_button button;
+		};
+		constexpr entry list[] = {
+			{0, {"Ok", false}}, {1, {"Ok", true}}, {2, {"No", false}}, {3, {"No", true}},
+			{4, {"Quest", false}}, {5, {"Quest", true}}, {6, {"Continue", false}}, {7, {"Continue", true}},
+			{8, {"Log Out", false}}, {9, {"Log Out", true}}, {10, {"Level Set.", false}}, {11, {"Level Set.", true}},
+			{12, {"I Agree", false}}, {13, {"I Agree", true}}, {14, {"Disagree", false}}, {15, {"Disagree", true}},
+			{16, {"Cancel", false}}, {17, {"Cancel", true}}, {18, {"Yes", false}}, {19, {"Yes", true}},
+			{20, {"Change", false}}, {21, {"Change", true}}, {22, {"Connect", false}}, {23, {"Connect", true}},
+			{24, {"Create", false}}, {25, {"Create", true}}, {26, {"Clear", false}}, {27, {"Clear", true}},
+			{28, {"Reset", false}}, {29, {"Reset", true}}, {30, {"Purchase", false}}, {31, {"Purchase", true}},
+			{32, {"Accept", false}}, {33, {"Accept", true}}, {34, {"Reject", false}}, {35, {"Reject", true}},
+			{36, {"Restart", false}}, {37, {"Restart", true}}, {38, {"Sell", false}}, {39, {"Sell", true}},
+			{40, {"Decline", false}}, {41, {"Decline", true}}, {42, {"Repair", false}}, {43, {"Repair", true}},
+			{44, {"Party", false}}, {45, {"Party", true}}, {46, {"Upgrade", false}}, {47, {"Upgrade", true}},
+			{48, {"Alchemy", false}}, {49, {"Alchemy", true}},
+			{51, {"Start", false}}, {52, {"Create New Character", false}}, {53, {"Delete Character", false}},
+			{54, {"Change Password", false}}, {55, {"Log Out", false}},
+			{56, {"Start", true}}, {57, {"Create New Character", true}}, {58, {"Delete Character", true}},
+			{59, {"Change Password", true}}, {60, {"Log Out", true}},
+			{63, {"Master", false}}, {64, {"Master", true}}, {65, {"Magician", false}}, {66, {"Magician", true}},
+			{67, {"Warrior", false}}, {68, {"Warrior", true}},
+			{70, {"General", false}}, {71, {"General", true}}, {72, {"Graphics", false}}, {73, {"Graphics", true}},
+			{74, {"Audio", false}}, {75, {"System", false}}, {76, {"Audio", true}}, {77, {"System", true}},
+		};
+		std::array<baked_button, baked_frame_count> table{};
+		for (const entry& e : list)
+			table[e.frame] = e.button;
+		return table;
+	}();
+
+	const baked_button* baked_button_of(int frame)
+	{
+		if (frame < 0 || frame >= baked_frame_count || !baked_buttons[frame].label)
+			return nullptr;
+		return &baked_buttons[frame];
+	}
+}
+
+hb::client::panel_kit* CGame::get_panel_kit()
+{
+	if (!m_panel_kit_tried)
+	{
+		m_panel_kit_tried = true;
+		auto kit = std::make_unique<hb::client::panel_kit>();
+		if (kit->load(*m_Renderer, hb::shared::sprite::Sprites::get_sprite_path()))
+			m_panel_kit = std::move(kit);
+	}
+	return m_panel_kit.get();
+}
+
 void CGame::draw_new_dialog_box(char type, int sX, int sY, int frame, bool is_no_color_key, bool is_trans)
 {
 	if (m_sprite[type] == 0) return;
+	if (type == InterfaceNdButton)
+	{
+		const baked_button* baked = baked_button_of(frame);
+		hb::client::panel_kit* kit = baked ? get_panel_kit() : nullptr;
+		if (kit)
+		{
+			// The sprite frame's own place and size (its pivot positions the wide buttons), so the drawn button
+			// is exactly the area callers hit-test
+			const hb::shared::sprite::SpriteRect r = m_sprite[type]->GetFrameRect(frame);
+			const auto layout = r.width >= 176 ? hb::client::button_layout::wide : hb::client::button_layout::small;
+			// Dialog transparency draws each kit layer at 0.25, so overlaps compound (accepted, HH-0062 review)
+			kit->button(kit->style_of(layout), baked->label, {sX + r.pivotX, sY + r.pivotY, r.width, r.height},
+				baked->hover, is_trans ? 0.25f : 1.0f);
+			return;
+		}
+	}
 	if (is_no_color_key == false)
 	{
 		if (is_trans == true)

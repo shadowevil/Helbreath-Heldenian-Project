@@ -81,10 +81,13 @@ public:
 
     // Surface/Texture Management
     hb::shared::render::ITexture* create_texture(uint16_t width, uint16_t height) override;
-    hb::shared::render::ITexture* create_texture_from_file(const char* path) override;
+    hb::shared::render::ITexture* create_texture_from_file(const char* path, hb::shared::render::texture_filter filter) override;
     void destroy_texture(hb::shared::render::ITexture* texture) override;
     void draw_texture_region(hb::shared::render::ITexture* texture, float src_x, float src_y, float src_w, float src_h,
                              float dst_x, float dst_y, float dst_w, float dst_h, float alpha) override;
+    void draw_texture_region(hb::shared::render::ITexture* texture, float src_x, float src_y, float src_w, float src_h,
+                             float dst_x, float dst_y, float dst_w, float dst_h, float alpha,
+                             const hb::shared::render::draw_tint& tint) override;
 
     // Clip Area
     void set_clip_area(int x, int y, int w, int h) override;

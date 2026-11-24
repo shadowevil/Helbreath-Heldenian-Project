@@ -1058,7 +1058,7 @@ static sf::Image downsample_half(const sf::Image& src)
     return dst;
 }
 
-hb::shared::render::ITexture* SFMLRenderer::create_texture_from_file(const char* path)
+hb::shared::render::ITexture* SFMLRenderer::create_texture_from_file(const char* path, hb::shared::render::texture_filter filter)
 {
     if (!path)
     {
@@ -1085,7 +1085,7 @@ hb::shared::render::ITexture* SFMLRenderer::create_texture_from_file(const char*
     // sf::Texture(image) throws on GPU upload failure; honour the nullptr-on-failure contract
     try
     {
-        return new SFMLTexture(image);
+        return new SFMLTexture(image, filter == hb::shared::render::texture_filter::smooth);
     }
     catch (const std::exception&)
     {
@@ -1101,9 +1101,19 @@ void SFMLRenderer::destroy_texture(hb::shared::render::ITexture* texture)
 void SFMLRenderer::draw_texture_region(hb::shared::render::ITexture* texture, float src_x, float src_y, float src_w, float src_h,
                                        float dst_x, float dst_y, float dst_w, float dst_h, float alpha)
 {
-    if (!texture || src_w <= 0.0f || src_h <= 0.0f || dst_w <= 0.0f || dst_h <= 0.0f)
+    draw_texture_region(texture, src_x, src_y, src_w, src_h, dst_x, dst_y, dst_w, dst_h, alpha,
+                        hb::shared::render::draw_tint{});
+}
+
+void SFMLRenderer::draw_texture_region(hb::shared::render::ITexture* texture, float src_x, float src_y, float src_w, float src_h,
+                                       float dst_x, float dst_y, float dst_w, float dst_h, float alpha,
+                                       const hb::shared::render::draw_tint& tint)
+{
+    if (!texture || src_w == 0.0f || src_h == 0.0f || dst_w <= 0.0f || dst_h <= 0.0f)
         return;
-    const sf::Color vertex_color(255, 255, 255, static_cast<std::uint8_t>(std::clamp(alpha, 0.0f, 1.0f) * 255.0f));
+    const float opacity = std::clamp(alpha, 0.0f, 1.0f) * (static_cast<float>(tint.color.a) / 255.0f);
+    const sf::Color vertex_color(tint.color.r, tint.color.g, tint.color.b,
+                                 static_cast<std::uint8_t>(opacity * 255.0f));
 
     // A quad with float texture coordinates, so the destination can be fractional and the
     // texture's smoothing/mipmaps do the resampling
@@ -1119,7 +1129,8 @@ void SFMLRenderer::draw_texture_region(hb::shared::render::ITexture* texture, fl
     for (std::size_t i = 0; i < 4; i++)
         quad[i].color = vertex_color;
 
-    sf::RenderStates states(sf::BlendAlpha);
+    // BlendAdd is dst + src * src_alpha: the kit's additive rule (dst + tint * mask * opacity)
+    sf::RenderStates states(tint.blend == hb::shared::render::BlendMode::Additive ? sf::BlendAdd : sf::BlendAlpha);
     states.texture = &static_cast<SFMLTexture*>(texture)->get_display_texture();
     m_target->draw(quad, states);
 }

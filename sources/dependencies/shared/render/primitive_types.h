@@ -27,4 +27,22 @@ enum class BlendMode : uint8_t
 	Additive    // Additive blending (glow effects)
 };
 
+// Sampling of a texture loaded with IRenderer::create_texture_from_file.
+// smooth: bilinear with mipmaps (scaled art). nearest: no filtering and no mipmaps, so stretched
+// 1 px rows and 9-slice edges stay sharp and atlas neighbours never bleed in (pixel-art kits).
+enum class texture_filter : uint8_t
+{
+	smooth,
+	nearest
+};
+
+// Colour and blend of an IRenderer::draw_texture_region call. The colour multiplies every texel
+// (white = unchanged; tint white masks, not black ones) and its alpha multiplies the draw's alpha.
+// Alpha blending draws over the target; additive adds texel * colour * alpha to it.
+struct draw_tint
+{
+	Color color = Color::White();
+	BlendMode blend = BlendMode::Alpha;
+};
+
 } // namespace hb::shared::render

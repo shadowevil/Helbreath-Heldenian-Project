@@ -8,8 +8,11 @@
 #include "text_renderer.h"
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <memory>
 #include <string>
+#include <vector>
 
 class SFMLRenderer;
 
@@ -42,11 +45,29 @@ public:
     void draw_text_aligned(int x, int y, int width, int height, const char* text, const hb::shared::render::Color& color,
                          Align alignment = Align::TopLeft, int fontSize = 0, bool bold = false) override;
 
+    // Styled runs in extra faces
+    int load_face(const char* path) override;
+    ink_box measure_run(const char* text, const text_run& run) const override;
+    void draw_run(float x, float y, const char* text, const text_run& run, const hb::shared::render::Color& color,
+                  hb::shared::render::BlendMode blend) override;
+
     // Batching (no-op for SFML, no DC acquisition needed)
     void begin_batch() override;
     void end_batch() override;
 
 private:
+    struct face
+    {
+        std::string path;
+        std::unique_ptr<sf::Font> font;
+    };
+
+    // The font for a run's face id, or nullptr when it is not loaded
+    const sf::Font* face_font(int face_id) const;
+
+    // A run laid out at its logical pixel size, tracking applied
+    sf::Text make_run(const sf::Font& font, const char* text, const text_run& run) const;
+
     // Load the bundled font (bundled_font_path)
     bool LoadDefaultFont();
 
@@ -59,7 +80,8 @@ private:
     // rasterised at the window's resolution (character size logical * ui scale, drawn at 1/scale on a
     // whole-pixel origin); in the world pass, or at 1:1, it draws exactly as given.
     void draw_at_output_resolution(sf::RenderTarget& target, sf::Text& text, unsigned int logical_size,
-                                   float x, float y) const;
+                                   float x, float y, const sf::RenderStates& states = sf::RenderStates::Default,
+                                   sf::Vector2f subpixel = {}) const;
 
     SFMLRenderer* m_renderer;     // Not owned
     sf::Font m_font;             // Owned font (client-loaded or default)
@@ -67,6 +89,7 @@ private:
     bool m_font_smoothing;
     std::string m_loaded_font_path; // Source path for active TTF, used to force reload on smoothing toggle
     unsigned int m_font_size;     // Default SFML character size (GDI-adjusted)
+    std::vector<face> m_faces;    // load_face fonts; face id = index + 1
 };
 
 } // namespace hb::shared::text

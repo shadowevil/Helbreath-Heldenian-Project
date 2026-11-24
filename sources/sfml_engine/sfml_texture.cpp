@@ -29,16 +29,20 @@ SFMLTexture::SFMLTexture(uint16_t width, uint16_t height)
     m_renderTexture.display();
 }
 
-// Image mode constructor — loaded from pre-existing image with mipmaps
-SFMLTexture::SFMLTexture(const sf::Image& image)
+// Image mode constructor — loaded from pre-existing image; smooth adds bilinear filtering and mipmaps
+SFMLTexture::SFMLTexture(const sf::Image& image, bool smooth)
     : m_width(static_cast<uint16_t>(image.getSize().x))
     , m_height(static_cast<uint16_t>(image.getSize().y))
     , m_image_mode(true)
 {
     m_texture = sf::Texture(image);
-    m_texture.setSmooth(true);
-    // Mipmaps are a quality improvement only; without them the texture still draws
-    [[maybe_unused]] const bool mipmapped = m_texture.generateMipmap();
+    m_texture.setSmooth(smooth);
+    // Mipmaps are a quality improvement only; without them the texture still draws.
+    // A nearest texture has none, so minified draws never blend atlas neighbours in.
+    if (smooth)
+    {
+        [[maybe_unused]] const bool mipmapped = m_texture.generateMipmap();
+    }
 }
 
 SFMLTexture::~SFMLTexture()

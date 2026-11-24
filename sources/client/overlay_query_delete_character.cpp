@@ -59,7 +59,7 @@ void Overlay_QueryDeleteCharacter::on_initialize()
     btn_yes->set_render_handler([this](const cc::control& c) {
         auto sb = c.screen_bounds();
         int frame = c.is_highlighted() ? 19 : 18;
-        m_game->m_sprite[InterfaceNdButton]->draw(sb.x, sb.y, frame);
+        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, frame);
     });
 
     // No button — cancel
@@ -71,7 +71,7 @@ void Overlay_QueryDeleteCharacter::on_initialize()
     btn_no->set_render_handler([this](const cc::control& c) {
         auto sb = c.screen_bounds();
         int frame = c.is_highlighted() ? 3 : 2;
-        m_game->m_sprite[InterfaceNdButton]->draw(sb.x, sb.y, frame);
+        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, frame);
     });
 
     m_controls.set_focus_order({BTN_YES, BTN_NO});

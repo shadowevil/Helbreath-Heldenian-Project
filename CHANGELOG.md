@@ -124,3 +124,10 @@ New dialog and button kit (HH-0054). It is built from the user's `panel_building
 - **Tool:** `tools/panel_kit/build_panel_kit.py` rebuilds the kit, and `--check` confirms it is unchanged. `compose.py` previews panels.
 - **Plans:** the client plans are `.claude/design/plans/panel-kit-runtime.md` and `hud-kit-runtime.md` (HH-0059 to HH-0068).
 - **In the game:** nothing draws with the kit yet.
+
+The game's text buttons now draw from the new dialog and button kit (HH-0060 to HH-0062). This covers the menu screens, the overlays and the dialogs, in normal and yellow hover states, and clicks behave as before.
+- **Renderer:** it can load crisp textures, tint and additively blend texture draws, and mirror pieces. Text can be drawn in extra fonts at exact pixel sizes, with letter spacing.
+- **Kit classes:** the new `panel_kit` classes in the client give preset button layouts, where the caller supplies only text and position, plus custom buttons. They also give preset or custom dialog frames that each dialog fills with its own layout.
+- **CControls:** the kit only draws, and CControls keeps all behaviour through its existing render hook.
+- **Kit text:** it is always smoothed. The Antialias Font option still controls all other text.
+- **Missing kit:** the client falls back to the old button sprites.

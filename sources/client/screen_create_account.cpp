@@ -89,7 +89,7 @@ void Screen_CreateAccount::on_initialize()
             if (tb && !tb->is_valid()) { all_valid = false; break; }
         }
         int frame = (all_valid && c.is_highlighted()) ? 25 : 24;
-        m_game->m_sprite[InterfaceNdButton]->draw(sb.x, sb.y, frame);
+        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, frame);
     });
 
     auto* btn_clear = m_controls.add<cc::button>(BTN_CLEAR, cc::rect{392, 398, 72, 20});
@@ -105,7 +105,7 @@ void Screen_CreateAccount::on_initialize()
     btn_clear->set_render_handler([this](const cc::control& c) {
         auto sb = c.screen_bounds();
         int frame = c.is_highlighted() ? 27 : 26;
-        m_game->m_sprite[InterfaceNdButton]->draw(sb.x, sb.y, frame);
+        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, frame);
     });
 
     auto* btn_cancel = m_controls.add<cc::button>(BTN_CANCEL, cc::rect{488, 398, 72, 20});
@@ -114,7 +114,7 @@ void Screen_CreateAccount::on_initialize()
     btn_cancel->set_render_handler([this](const cc::control& c) {
         auto sb = c.screen_bounds();
         int frame = c.is_highlighted() ? 17 : 16;
-        m_game->m_sprite[InterfaceNdButton]->draw(sb.x, sb.y, frame);
+        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, frame);
     });
 
     m_controls.set_focus_order({TXT_ACCOUNT, TXT_PASSWORD, TXT_CONFIRM, TXT_EMAIL,
