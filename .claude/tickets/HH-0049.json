@@ -1,7 +1,7 @@
 {
   "id": "HH-0049",
   "summary": "Map kit: drop 22 non-needed creatures from the creature atlas",
-  "status": "in_progress",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-24T17:04:26Z",
-  "updated": "2026-11-24T17:04:26Z",
+  "updated": "2026-11-24T17:06:49Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "bbc5b1a"
+    ],
     "files": [],
     "tickets": [],
     "relates_to": [
       "HH-0048"
     ]
   },
-  "body": "The map kit's creature atlas (HH-0048) holds 70 creatures. The user ruled that 22 of them are not needed in the kit (2026-11-24): \"dummy, arrow_guard_tower, cannon_guard_tower, mana_collector, detector, energy_shield, grand_magic_generator, mana_stone, light_war_beetle, gods_hand_knight, gods_hand_knight_ck, temple_knight, battle_golem, catapult, abaddon, sorceress, template_knight_atk, master_elf, dark_knight, helbreath_tank, crusade_barricade_turrent, apocalypse_cannon ... Those are not needed in the minimap kit\". \"template_knight_atk\" is read as `temple_knight_atk` and \"crusade_barricade_turrent\" as `crusade_barricade_turret`, which are the atlas names.\n\n**Done when:** `build_kit.py` excludes the 22, and the rebuilt `creatures.png/json` and every `placements.json` hold the remaining 48 and none of the 22.\n\nSource: user message, 2026-11-24; atlas list in `.claude/scratch/mapkit_agent/creatures_contact.png`.\n"
+  "body": "The map kit's creature atlas (HH-0048) holds 70 creatures. The user ruled that 22 of them are not needed in the kit (2026-11-24): \"dummy, arrow_guard_tower, cannon_guard_tower, mana_collector, detector, energy_shield, grand_magic_generator, mana_stone, light_war_beetle, gods_hand_knight, gods_hand_knight_ck, temple_knight, battle_golem, catapult, abaddon, sorceress, template_knight_atk, master_elf, dark_knight, helbreath_tank, crusade_barricade_turrent, apocalypse_cannon ... Those are not needed in the minimap kit\". \"template_knight_atk\" is read as `temple_knight_atk` and \"crusade_barricade_turrent\" as `crusade_barricade_turret`, which are the atlas names.\n\n**Done when:** `build_kit.py` excludes the 22, and the rebuilt `creatures.png/json` and every `placements.json` hold the remaining 48 and none of the 22.\n\nSource: user message, 2026-11-24; atlas list in `.claude/scratch/mapkit_agent/creatures_contact.png`.\n\n**Verified, 2026-11-24:** I rebuilt the kit with `NOT_IN_KIT`. `creatures.json` now has 48 entries and none of the 22. In all 79 placements, none of the 105 creature references is excluded (checked by script and by the reviewer). No `ink.png` changed. The read-only review passed. Committed as bbc5b1a.\n"
 }
