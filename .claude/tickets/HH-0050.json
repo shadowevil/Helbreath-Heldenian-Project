@@ -1,7 +1,7 @@
 {
   "id": "HH-0050",
   "summary": "Map kit: draw creatures on the parchment monster areas",
-  "status": "in_progress",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-24T17:35:14Z",
-  "updated": "2026-11-24T17:35:14Z",
+  "updated": "2026-11-24T17:41:43Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "259e357"
+    ],
     "files": [],
     "tickets": [],
     "relates_to": [
       "HH-0049"
     ]
   },
-  "body": "Goal: draw the creatures on the parchment monster areas (user, 2026-11-24). build_kit.py replaces the sword icon of a monster area that has creature art with up to 3 creature icons (frames added to icons.json as creature_<name>, sheet creatures.png), one shared scale clamped to a min and max on-kit height. Areas without creature art keep the sword. No client change: parchment_kit.cpp already loads any icons.json frame and its sheet.\n\nDone when: the kit is rebuilt, every monster area with creature art shows creatures instead of the sword, ink PNGs are unchanged, and previews of middleland, huntzone1 and a dungeon map (300 and 1200) were checked by eye.\n"
+  "body": "Goal: draw the creatures on the parchment monster areas (user, 2026-11-24). build_kit.py replaces the sword icon of a monster area that has creature art with up to 3 creature icons (frames added to icons.json as creature_<name>, sheet creatures.png), one shared scale clamped to a min and max on-kit height. Areas without creature art keep the sword. No client change: parchment_kit.cpp already loads any icons.json frame and its sheet.\n\nDone when: the kit is rebuilt, every monster area with creature art shows creatures instead of the sword, ink PNGs are unchanged, and previews of middleland, huntzone1 and a dungeon map (300 and 1200) were checked by eye.\n\n**Verified, 2026-11-24:** The read-only review passed and its two nits are fixed (the docstring and the comment alignment). Data checks: all 48 `creature_*` frames match creatures.json, every placements icon resolves, all rects are in bounds and inside the margin, there are at most 3 per area, and no ink.png changed. In game on `default`, the Map item shows the three slime areas as creatures instead of swords. Committed as the commit linked here.\n"
 }
