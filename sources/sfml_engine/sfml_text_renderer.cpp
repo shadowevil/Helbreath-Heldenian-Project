@@ -202,22 +202,22 @@ void SFMLTextRenderer::draw_at_output_resolution(sf::RenderTarget& target, sf::T
     target.draw(text, states);
 }
 
-int SFMLTextRenderer::load_face(const char* path)
+int SFMLTextRenderer::load_face(const char* path, bool smooth)
 {
     if (!path)
         return -1;
     for (std::size_t i = 0; i < m_faces.size(); i++)
     {
-        if (m_faces[i].path == path)
+        if (m_faces[i].path == path && m_faces[i].smooth == smooth)
             return static_cast<int>(i) + 1;
     }
     auto font = std::make_unique<sf::Font>();
     if (!font->openFromFile(path))
         return -1;
-    // Styled runs always sample their glyphs smoothly, whatever the Antialias Font setting (which stays
-    // with the bundled font): the recipes' +0.5 faux-bold copy only blends with a smooth glyph texture
-    font->setSmooth(true);
-    m_faces.push_back({path, std::move(font)});
+    // Per face, whatever the Antialias Font setting (which stays with the bundled font): a recipe's
+    // +0.5 faux-bold copy only blends with a smooth glyph texture
+    font->setSmooth(smooth);
+    m_faces.push_back({path, smooth, std::move(font)});
     return static_cast<int>(m_faces.size());
 }
 

@@ -2,6 +2,11 @@
 #include "dialog_box.h"
 #include "item/item_enums.h"
 
+namespace hb::client
+{
+	class kit_dialog;
+}
+
 struct EquipSlotLayout
 {
 	hb::shared::item::EquipPos equipPos;
@@ -27,8 +32,9 @@ private:
 	void draw_stat(int x1, int x2, int y, int baseStat, int angelicBonus);
 	void draw_equipped_item(hb::shared::item::EquipPos equipPos, int drawX, int drawY,
 		const char* equip_poi_status, bool highlight, int spriteOffset = 0);
-	void draw_hover_button(int sX, int sY, int btnX, int btnY,
-		short mouse_x, short mouse_y, int hoverFrame, int normalFrame);
+	// kit = the kit frame when the panel kit draws this dialog, else nullptr (the sprite frames)
+	void draw_hover_button(const hb::client::kit_dialog* kit, int sX, int sY, int btnX, int btnY,
+		short mouse_x, short mouse_y, int hoverFrame, int normalFrame, const char* label);
 	void draw_male_character(short sX, short sY, short mouse_x, short mouse_y,
 		const char* equip_poi_status, char& collison);
 	void draw_female_character(short sX, short sY, short mouse_x, short mouse_y,

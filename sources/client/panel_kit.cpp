@@ -19,7 +19,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -68,9 +68,10 @@ namespace hb::client
 			return Color(static_cast<uint8_t>(c.r * k), static_cast<uint8_t>(c.g * k), static_cast<uint8_t>(c.b * k));
 		}
 
-		std::vector<std::string> split_words(std::string_view text)
+		// fn(word) for each space-separated word, as views into text (no allocation)
+		template <typename F>
+		void for_each_word(std::string_view text, F&& fn)
 		{
-			std::vector<std::string> words;
 			std::size_t i = 0;
 			while (i < text.size())
 			{
@@ -80,10 +81,9 @@ namespace hb::client
 				while (j < text.size() && text[j] != ' ')
 					j++;
 				if (j > i)
-					words.emplace_back(text.substr(i, j - i));
+					fn(text.substr(i, j - i));
 				i = j;
 			}
-			return words;
 		}
 
 		constexpr kit_point dialog_sizes[] = {{270, 376}, {364, 162}, {331, 303}};
@@ -107,8 +107,17 @@ namespace hb::client
 			bool bold = false;
 		};
 
+		// Ink box [left, right) x [top, bottom) of a run relative to its origin
+		struct ink_rect
+		{
+			int left = 0, top = 0, right = 0, bottom = 0;
+		};
+
 		struct text_recipe
 		{
+			// Ink boxes of the texts drawn so far, by text (string_view lookup: nothing is built per frame).
+			// A std::map, so an entry's key stays put and its c_str() can be handed to draw_run.
+			mutable std::map<std::string, ink_rect, std::less<>> inks;
 			int face = -1;
 			int px = 0;
 			float tracking = 0.0f;
@@ -179,7 +188,6 @@ namespace hb::client
 
 		// Memos (draw-path lookups and text measurement, filled on first use; never input state)
 		mutable std::map<std::string, frame_set, std::less<>> frame_sets;
-		mutable std::unordered_map<std::string, std::pair<int, int>> inks;
 
 		const frame_set& frames_of(const std::string& prefix) const
 		{
@@ -341,20 +349,21 @@ namespace hb::client
 
 		// ---------------------------------------------------------- text recipes
 
-		// Ink columns [left, right) of a run, faux bold included when bold
-		// (memoised: labels are measured once, not every frame)
-		std::pair<int, int> ink(const text_recipe& r, const std::string& s, bool bold) const
+		using ink_entry = std::pair<const std::string, ink_rect>;
+
+		// The run's ink box in recipe r, faux bold included when the recipe is bold, measured once per text;
+		// the entry's key is the text, kept alive for draw_run
+		const ink_entry& ink(const text_recipe& r, std::string_view s) const
 		{
-			std::string key = std::to_string(r.face) + '/' + std::to_string(r.px) + '/' + std::to_string(r.tracking) + '/'
-				+ std::to_string(bold ? r.bold_dx : 0.0f) + '|' + s;
-			auto it = inks.find(key);
-			if (it != inks.end())
-				return it->second;
-			const hb::shared::text::ink_box box = text->measure_run(s.c_str(), {r.face, r.px, r.tracking});
-			const std::pair<int, int> columns{static_cast<int>(std::floor(box.left)),
-				static_cast<int>(std::ceil(box.right + (bold ? r.bold_dx : 0.0f)))};
-			inks.emplace(std::move(key), columns);
-			return columns;
+			auto it = r.inks.find(s);
+			if (it != r.inks.end())
+				return *it;
+			std::string key(s);
+			const hb::shared::text::ink_box box = text->measure_run(key.c_str(), {r.face, r.px, r.tracking});
+			const float bold = r.bold ? r.bold_dx : 0.0f;
+			const ink_rect rect{static_cast<int>(std::floor(box.left)), static_cast<int>(std::floor(box.top)),
+				static_cast<int>(std::ceil(box.right + bold)), static_cast<int>(std::ceil(box.bottom))};
+			return *r.inks.emplace(std::move(key), rect).first;
 		}
 
 		void passes(const text_recipe& r, const std::string& s, int ox, int oy, const Color& fill, float alpha) const
@@ -363,7 +372,13 @@ namespace hb::client
 			for (const text_draw& d : r.draws)
 			{
 				Color c = d.fill_scale >= 0.0f ? scaled(fill, d.fill_scale) : d.color;
-				c.a = static_cast<uint8_t>(std::clamp(d.alpha * alpha, 0.0f, 1.0f) * 255.0f);
+				float a = std::clamp(d.alpha * alpha, 0.0f, 1.0f);
+				// text_fx emboldens one mask (the union of both copies) and draws it once at a; two copies
+				// at a would stack to 1 - (1 - a)^2 where they overlap (2a when additive). Each copy at
+				// 1 - sqrt(1 - a) (a / 2) stacks back to a there, which is nearly all of the glyph.
+				if (d.bold)
+					a = d.additive ? a * 0.5f : 1.0f - std::sqrt(1.0f - a);
+				c.a = static_cast<uint8_t>(a * 255.0f);
 				const auto blend = d.additive ? hb::shared::render::BlendMode::Additive : hb::shared::render::BlendMode::Alpha;
 				const float x = static_cast<float>(ox + d.dx);
 				const float y = static_cast<float>(oy + d.dy);
@@ -379,17 +394,26 @@ namespace hb::client
 				return 0;
 			if (!r.per_word)
 			{
-				const auto [l, rt] = ink(r, std::string(s), r.bold);
-				return rt - l;
+				const ink_rect& i = ink(r, s).second;
+				return i.right - i.left;
 			}
-			const std::vector<std::string> words = split_words(s);
 			int total = 0;
-			for (const std::string& w : words)
+			int words = 0;
+			for_each_word(s, [&](std::string_view w)
 			{
-				const auto [l, rt] = ink(r, w, r.bold);
-				total += rt - l;
-			}
-			return total + r.word_gap * (words.empty() ? 0 : static_cast<int>(words.size()) - 1);
+				const ink_rect& i = ink(r, w).second;
+				total += i.right - i.left;
+				words++;
+			});
+			return total + r.word_gap * (words > 0 ? words - 1 : 0);
+		}
+
+		// The run origin's y for ink box i: the cap height ("H") centred on y, or the ink box itself for middle
+		static int origin_y(const text_recipe& r, const ink_rect& i, int y, text_anchor::type anchor)
+		{
+			if (anchor != text_anchor::middle || r.per_word)
+				return y - r.cap_mid;
+			return y - floor_div(i.top + i.bottom, 2);
 		}
 
 		void draw_text(const text_recipe& r, std::string_view s, int x, int y, text_anchor::type anchor,
@@ -397,28 +421,26 @@ namespace hb::client
 		{
 			if (!text || s.empty())
 				return;
-			// Vertical: the cap height ("H") centred on y
-			const int oy = y - r.cap_mid;
 
 			if (!r.per_word)
 			{
-				const std::string run(s);
-				const auto [l, rt] = ink(r, run, r.bold);
-				const int ox = anchor == text_anchor::lcap ? x - l
-					: anchor == text_anchor::rcap ? x - rt : x - floor_div(l + rt, 2);
-				passes(r, run, ox, oy, fill, alpha);
+				const auto& [run, i] = ink(r, s);
+				const int ox = anchor == text_anchor::lcap ? x - i.left
+					: anchor == text_anchor::rcap ? x - i.right : x - floor_div(i.left + i.right, 2);
+				passes(r, run, ox, origin_y(r, i, y, anchor), fill, alpha);
 				return;
 			}
 
 			// Per word: ink boxes laid out left to right with word_gap between them, the run anchored
+			const int oy = y - r.cap_mid;
 			const int total = width(r, s);
 			int cx = anchor == text_anchor::lcap ? x : anchor == text_anchor::rcap ? x - total : x - ceil_div(total, 2);
-			for (const std::string& w : split_words(s))
+			for_each_word(s, [&](std::string_view w)
 			{
-				const auto [l, rt] = ink(r, w, r.bold);
-				passes(r, w, cx - l, oy, fill, alpha);
-				cx += rt - l + r.word_gap;
-			}
+				const auto& [word, i] = ink(r, w);
+				passes(r, word, cx - i.left, oy, fill, alpha);
+				cx += i.right - i.left + r.word_gap;
+			});
 		}
 	};
 
@@ -543,12 +565,15 @@ namespace hb::client
 				if (font.size() < 4 || font.substr(font.size() - 4) != ".ttf" || font.find_first_of("/\\") != std::string::npos)
 					continue;
 				kit_data::text_recipe rec;
-				rec.face = text->load_face(("fonts/" + font).c_str());
+				// "smooth": linear glyph sampling (else nearest); "subpixel": keep a fractional bold_dx
+				rec.face = text->load_face(("fonts/" + font).c_str(), r.value("smooth", true));
 				if (rec.face < 0)
 					throw std::runtime_error("cannot load fonts/" + font);
 				rec.px = r.at("px").get<int>();
 				rec.tracking = r.value("tracking", 0.0f);
 				rec.bold_dx = r.value("bold_dx", 0.0f);
+				if (!r.value("subpixel", true))
+					rec.bold_dx = std::round(rec.bold_dx);
 				rec.per_word = r.value("per_word", false);
 				rec.word_gap = r.value("word_gap", 0);
 				const hb::shared::text::ink_box cap = text->measure_run("H", {rec.face, rec.px, rec.tracking});
@@ -805,6 +830,14 @@ namespace hb::client
 		return r ? m_data->width(*r, text) : 0;
 	}
 
+	int panel_kit::cap_middle(std::string_view recipe, std::string_view text, int y, text_anchor::type anchor) const
+	{
+		const kit_data::text_recipe* r = m_data ? m_data->recipe(recipe) : nullptr;
+		if (!r || !m_data->text)
+			return y;
+		return kit_data::origin_y(*r, m_data->ink(*r, text).second, y, anchor) + r->cap_mid;
+	}
+
 	// ------------------------------------------------------------------ kit_button
 
 	kit_button::kit_button(button_layout::type layout, std::string text, kit_point position)
@@ -892,7 +925,7 @@ namespace hb::client
 	{
 		const int cx = m_origin.x + m_size.x / 2;
 		const int cy = m_origin.y + y;
-		m_kit.text("title_red", text, cx, cy, text_anchor::cap, fill, m_alpha);
+		m_kit.text("title_red", text, cx, cy, text_anchor::middle, fill, m_alpha);
 		side_flourishes("title_red", text, cx, cy, flourish, gap);
 	}
 
@@ -901,18 +934,20 @@ namespace hb::client
 	{
 		if (flourish.empty())
 			return;
-		// One each side, gap px from the ink, the right one mirrored
+		// One each side, gap px from the ink, the right one mirrored, centred on the cap height of the
+		// text as drawn (middle anchor), so descenders do not pull them down
 		const int reach = m_kit.text_width(recipe, text) / 2 + gap + m_kit.flourish_size(flourish).x / 2;
-		m_kit.flourish(flourish, cx - reach, cy, false, 0.0f, m_alpha);
-		m_kit.flourish(flourish, cx + reach, cy, true, 0.0f, m_alpha);
+		const int fy = m_kit.cap_middle(recipe, text, cy, text_anchor::middle);
+		m_kit.flourish(flourish, cx - reach, fy, false, 0.0f, m_alpha);
+		m_kit.flourish(flourish, cx + reach, fy, true, 0.0f, m_alpha);
 	}
 
-	void kit_dialog::heading(std::string_view text, int y, std::string_view flourish, int gap, int flourish_dy) const
+	void kit_dialog::heading(std::string_view text, int y, std::string_view flourish, int gap) const
 	{
 		const int cx = m_origin.x + m_size.x / 2;
 		const int cy = m_origin.y + y;
-		m_kit.text("heading", text, cx, cy, text_anchor::cap, {}, m_alpha);
-		side_flourishes("heading", text, cx, cy + flourish_dy, flourish, gap);
+		m_kit.text("heading", text, cx, cy, text_anchor::middle, {}, m_alpha);
+		side_flourishes("heading", text, cx, cy, flourish, gap);
 	}
 
 	void kit_dialog::field(std::string_view label, const kit_rect& box, std::string_view value, const Color& value_color) const

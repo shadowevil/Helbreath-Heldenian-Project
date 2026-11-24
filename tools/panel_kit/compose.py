@@ -14,6 +14,7 @@ writes a preview (a character-style panel and the two button sizes in both state
 """
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -188,6 +189,12 @@ def _flourish(kit, c, p):
 	tinted_draw(c, mask, x, y, spec["tint"], spec["blend"], spec["opacity"])
 
 
+def _bold_dx(r):
+	"""A recipe's faux-bold offset; "subpixel": false rounds it half up to a whole pixel, as the client does."""
+	dx = r.get("bold_dx", 0)
+	return math.floor(dx + 0.5) if r.get("subpixel", True) is False else dx
+
+
 def _button(kit, c, p):
 	x, y, w, h = p["rect"]
 	b = kit.doc["buttons"]
@@ -213,11 +220,11 @@ def _button(kit, c, p):
 		base = {"face": face, "px": r["px"], "tracking": r.get("tracking", 0),
 				"embolden_passes": r.get("bold_passes", "all")}
 		if not r.get("per_word"):
-			text_fx.render(c, (x + w // 2, y + h // 2), p["label"], dict(base, embolden=r["bold_dx"], fill=tuple(fill)),
+			text_fx.render(c, (x + w // 2, y + h // 2), p["label"], dict(base, embolden=_bold_dx(r), fill=tuple(fill)),
 						   anchor="cap")
 			return
 		sh = r["draws"][0]
-		under = dict(base, embolden=r["bold_dx"], fill=tuple(int(v * 0.65) for v in fill),
+		under = dict(base, embolden=_bold_dx(r), fill=tuple(int(v * 0.65) for v in fill),
 					 shadow={"dx": sh["dx"], "dy": sh["dy"], "color": sh["color"], "alpha": sh["alpha"]})
 		top = dict(base, fill=tuple(fill))
 		words = p["label"].split()
@@ -232,14 +239,44 @@ def _button(kit, c, p):
 			cx += iw + r["word_gap"]
 
 
+def _heading(kit, c, p):
+	"""A text recipe (default "heading") with its ink centred on (x, y), x defaulting to the panel centre, and
+	optionally a flourish each side, gap px from the ink, the right one mirrored (kit_dialog::heading / title).
+	The flourishes centre on the text's cap height (cap top to baseline), not its ink box, so descenders do not
+	pull them down (user, 2026-11-24). Normal-blend draws only."""
+	r = kit.doc["text_recipes"][p.get("recipe", "heading")]
+	if any(d.get("blend", "normal") != "normal" for d in r["draws"]):
+		raise ValueError("heading: recipe %r has a non-normal blend draw; text_fx draws normal only"
+						 % p.get("recipe", "heading"))
+	face = "serif" if "serif" in r["font"] else "tahoma"
+	base = {"face": face, "px": r["px"], "tracking": r.get("tracking", 0), "embolden": _bold_dx(r),
+			"embolden_passes": r.get("bold_passes", "all")}
+	cx, cy = p.get("x", c.width // 2), p["y"]
+	for d in r["draws"]:
+		fill = p.get("fill", r.get("fill")) if d["color"] == "fill" else d["color"]
+		text_fx.render(c, (cx + d["dx"], cy + d["dy"]), p["text"], dict(base, fill=tuple(fill), alpha=d["alpha"]),
+					   anchor="mm")
+	if not p.get("flourish"):
+		return
+	m, pad, _ = text_fx.glyph_mask(p["text"], base)
+	ink = m.getbbox()
+	hb = text_fx.font(face, r["px"]).getbbox("H")
+	fy = cy - (ink[1] + ink[3]) // 2 + (2 * pad + hb[1] + hb[3]) // 2
+	spec = kit.doc["flourishes"][p["flourish"]]
+	fw = round(kit.piece(p["flourish"]).width * spec["scale"])
+	reach = (ink[2] - ink[0]) // 2 + p.get("gap", 6) + fw // 2
+	_flourish(kit, c, {"name": p["flourish"], "x": cx - reach, "y": fy})
+	_flourish(kit, c, {"name": p["flourish"], "x": cx + reach, "y": fy, "mirror": True})
+
+
 INNER = {"inset": _inset, "raised": _raised, "rule": _rule, "vrule": _vrule, "slot_ring": _slot_ring,
-		 "scrollbar": _scrollbar, "flourish": _flourish, "button": _button}
+		 "scrollbar": _scrollbar, "flourish": _flourish, "button": _button, "heading": _heading}
 
 
 def preview(kit):
 	panel = compose(kit, (270, 376), inner=[
-		{"type": "flourish", "name": "divider_knot", "x": 70, "y": 42},
-		{"type": "flourish", "name": "divider_knot", "x": 200, "y": 42, "mirror": True},
+		{"type": "heading", "text": "Name & Status", "y": 40, "flourish": "divider_knot"},
+		{"type": "heading", "text": "Equipment & Characteristics", "y": 91},
 		{"type": "inset", "rect": (14, 49, 242, 34)},
 		{"type": "inset", "rect": (14, 100, 242, 178), "field": None},
 		{"type": "inset", "rect": (18, 104, 102, 169), "field": "stone_doll"},

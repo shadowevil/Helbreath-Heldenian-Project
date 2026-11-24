@@ -13,6 +13,7 @@
 #include "shared_calculations.h"
 #include "balance_constants.h"
 #include <format>
+#include <optional>
 #include <string>
 #include "input.h"
 #include "audio_manager.h"
@@ -171,14 +172,57 @@ void DialogBox_Character::draw_equipped_item(hb::shared::item::EquipPos equipPos
 }
 
 // Helper: draw hover button
-void DialogBox_Character::draw_hover_button(int sX, int sY, int btnX, int btnY,
-	short mouse_x, short mouse_y, int hoverFrame, int normalFrame)
+void DialogBox_Character::draw_hover_button(const hb::client::kit_dialog* kit, int sX, int sY, int btnX, int btnY,
+	short mouse_x, short mouse_y, int hoverFrame, int normalFrame, const char* label)
 {
 	bool hover = (mouse_x >= sX + btnX) && (mouse_x <= sX + btnX + ui_layout::btn_size_x) &&
 	              (mouse_y >= sY + btnY) && (mouse_y <= sY + btnY + ui_layout::btn_size_y);
+	if (kit)
+	{
+		kit->button(hb::client::button_layout::small, label, {btnX, btnY}, hover);
+		return;
+	}
 	const bool dialogTrans = config_manager::get().is_dialog_transparency_enabled();
 	draw_new_dialog_box(InterfaceNdButton, sX + btnX, sY + btnY,
 		hover ? hoverFrame : normalFrame, false, dialogTrans);
+}
+
+namespace
+{
+	// The dialog's frame and fixed art from the panel kit, at the original sprite's positions (dialog
+	// coordinates; layout from the approved rebuild, .claude/scratch/panel_kit/dialogs.py character()).
+	// Values, the doll and the buttons are drawn by on_draw on top.
+	void draw_kit_frame(const hb::client::kit_dialog& d)
+	{
+		constexpr hb::shared::render::Color title_fill{140, 8, 8};
+		d.title("Character Info.", 19, title_fill);
+		d.heading("Name & Status", 40, "divider_knot");
+		d.inset({14, 49, 242, 34});                       // name and status lines
+		d.heading("Equipment & Characteristics", 91);
+		d.inset({14, 100, 242, 178}, "");                 // equipment and characteristics group
+		d.inset({18, 104, 102, 169}, "stone_doll");       // doll box
+		d.slot_ring(37, 123);
+		d.slot_ring(101, 183);
+		d.slot_ring(34, 195);
+
+		// Label and value box rows; the values themselves are the client's put_aligned_string text
+		struct row
+		{
+			const char* label;
+			hb::client::kit_rect box;
+		};
+		static constexpr row rows[] = {
+			{"Level", {176, 104, 77, 17}}, {"EXP", {176, 122, 77, 17}}, {"Next EXP", {176, 140, 77, 17}},
+			{"Health", {176, 170, 77, 17}}, {"Mana", {176, 187, 77, 17}}, {"Stamina", {176, 205, 77, 17}},
+			{"Max.Load", {176, 238, 77, 17}}, {"EK.Count", {176, 255, 77, 17}},
+			{"Str.", {51, 281, 35, 18}}, {"Dex.", {51, 300, 35, 18}}, {"Int.", {134, 281, 35, 18}},
+			{"Mag.", {134, 300, 35, 18}}, {"Vit.", {218, 281, 35, 18}}, {"Chr.", {218, 300, 35, 18}},
+		};
+		for (const row& r : rows)
+			d.field(r.label, r.box, {});
+
+		d.rule(14, 322, 242);
+	}
 }
 
 void DialogBox_Character::build_equip_status_array(char (&equip_poi_status)[DEF_MAXITEMEQUIPPOS]) const
@@ -246,7 +290,18 @@ void DialogBox_Character::on_draw()
 	char collison = -1;
 	const bool dialogTrans = config_manager::get().is_dialog_transparency_enabled();
 
-	draw_new_dialog_box(InterfaceNdText, sX, sY, 0, false, dialogTrans);
+	// The panel kit draws the frame when it is loaded; else the original sprite frame
+	std::optional<hb::client::kit_dialog> kit;
+	if (hb::client::panel_kit* panel_kit = m_game->get_panel_kit())
+	{
+		kit.emplace(*panel_kit, hb::client::dialog_size::character, hb::client::kit_point{sX, sY},
+			dialogTrans ? 0.25f : 1.0f);
+		draw_kit_frame(*kit);
+	}
+	else
+	{
+		draw_new_dialog_box(InterfaceNdText, sX, sY, 0, false, dialogTrans);
+	}
 
 	// Player name and PK/contribution
 	std::string txt2;
@@ -348,9 +403,10 @@ void DialogBox_Character::on_draw()
 	}
 
 	// draw buttons (Quest, Party, LevelUp)
-	draw_hover_button(sX, sY, 15, 340, mouse_x, mouse_y, 5, 4);   // Quest
-	draw_hover_button(sX, sY, 98, 340, mouse_x, mouse_y, 45, 44); // Party
-	draw_hover_button(sX, sY, 180, 340, mouse_x, mouse_y, 11, 10); // LevelUp
+	const hb::client::kit_dialog* frame = kit ? &*kit : nullptr;
+	draw_hover_button(frame, sX, sY, 15, 340, mouse_x, mouse_y, 5, 4, "Quest");
+	draw_hover_button(frame, sX, sY, 98, 340, mouse_x, mouse_y, 45, 44, "Party");
+	draw_hover_button(frame, sX, sY, 180, 340, mouse_x, mouse_y, 11, 10, "Level Set.");
 }
 
 void DialogBox_Character::draw_male_character(short sX, short sY, short mouse_x, short mouse_y,

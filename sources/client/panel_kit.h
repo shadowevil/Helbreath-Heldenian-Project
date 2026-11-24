@@ -73,7 +73,8 @@ namespace hb::client
 		{
 			cap,     // x = centre of the ink, y = centre of the cap height
 			lcap,    // x = left edge of the ink
-			rcap     // x = right edge of the ink
+			rcap,    // x = right edge of the ink
+			middle   // (x, y) = centre of the ink box (titles and headings)
 		};
 	}
 
@@ -155,6 +156,9 @@ namespace hb::client
 		hb::shared::render::Color recipe_fill(std::string_view recipe, bool hover = false) const;
 		// Ink width of text in a recipe (faux bold included), for auto-sized buttons and flourish gaps
 		int text_width(std::string_view recipe, std::string_view text) const;
+		// y of the cap-height centre (cap top to baseline) of text drawn at y with anchor: where
+		// side flourishes centre so they line up with the letters
+		int cap_middle(std::string_view recipe, std::string_view text, int y, text_anchor::type anchor) const;
 		// Gap between a field label's right edge and its value box (field_label recipe)
 		int label_gap() const;
 
@@ -210,12 +214,13 @@ namespace hb::client
 		kit_point size() const { return m_size; }
 		kit_point origin() const { return m_origin; }
 
-		// Red title (title_red recipe) with the cap centred on y; flourish "" = none, one each side gap px
+		// Red title (title_red recipe), its ink centred on (frame centre, y); flourish "" = none, one each side gap px
 		// from the ink, the right one mirrored
 		void title(std::string_view text, int y, const hb::shared::render::Color& fill,
 			std::string_view flourish = "", int gap = 14) const;
-		// Section heading (heading recipe), optional flourishes as for title
-		void heading(std::string_view text, int y, std::string_view flourish = "", int gap = 6, int flourish_dy = 2) const;
+		// Section heading (heading recipe), optional flourishes as for title. Flourishes centre on the
+		// text's cap height (cap top to baseline), not its ink box
+		void heading(std::string_view text, int y, std::string_view flourish = "", int gap = 6) const;
 		// Field label (right-aligned, field_label gap left of the box) + value box (inset) + value text
 		// centred in the box in the client's default font and colour
 		void field(std::string_view label, const kit_rect& box, std::string_view value,

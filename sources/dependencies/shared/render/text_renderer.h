@@ -100,14 +100,15 @@ public:
     virtual void draw_text_aligned(int x, int y, int width, int height, const char* text, const hb::shared::render::Color& color,
                                  Align alignment = Align::TopLeft, int fontSize = 0, bool bold = false) = 0;
 
-    // Styled runs. load_face returns a face id >= 1 for a TTF file (the same id again for a path
-    // already loaded), or -1 when it cannot be opened.
-    virtual int load_face(const char* path) { (void)path; return -1; }
+    // Styled runs. load_face returns a face id >= 1 for a TTF file (the same id again for a path and
+    // smooth already loaded), or -1 when it cannot be opened. smooth = the glyph texture samples
+    // linearly (a fractional origin blends between pixels) rather than nearest; the font smoothing
+    // setting applies to the bundled font only.
+    virtual int load_face(const char* path, bool smooth = true) { (void)path; (void)smooth; return -1; }
     virtual ink_box measure_run(const char* text, const text_run& run) const { (void)text; (void)run; return {}; }
     // The run with its origin at (x, y): the whole part snapped to an output pixel, the fractional part
-    // kept, so a +0.5 faux-bold copy blends between pixels (load_face fonts always sample smoothly; the
-    // font smoothing setting applies to the bundled font only). color.a is the opacity; additive adds
-    // the glyphs to the target.
+    // kept, so with a smooth face a +0.5 faux-bold copy blends between pixels. color.a is the opacity;
+    // additive adds the glyphs to the target.
     virtual void draw_run(float x, float y, const char* text, const text_run& run,
                           const hb::shared::render::Color& color,
                           hb::shared::render::BlendMode blend = hb::shared::render::BlendMode::Alpha)

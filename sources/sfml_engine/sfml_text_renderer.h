@@ -46,7 +46,7 @@ public:
                          Align alignment = Align::TopLeft, int fontSize = 0, bool bold = false) override;
 
     // Styled runs in extra faces
-    int load_face(const char* path) override;
+    int load_face(const char* path, bool smooth = true) override;
     ink_box measure_run(const char* text, const text_run& run) const override;
     void draw_run(float x, float y, const char* text, const text_run& run, const hb::shared::render::Color& color,
                   hb::shared::render::BlendMode blend) override;
@@ -59,6 +59,7 @@ private:
     struct face
     {
         std::string path;
+        bool smooth = true;
         std::unique_ptr<sf::Font> font;
     };
 

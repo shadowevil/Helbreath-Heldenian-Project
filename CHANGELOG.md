@@ -131,3 +131,5 @@ The game's text buttons now draw from the new dialog and button kit (HH-0060 to 
 - **CControls:** the kit only draws, and CControls keeps all behaviour through its existing render hook.
 - **Kit text:** it is always smoothed. The Antialias Font option still controls all other text.
 - **Missing kit:** the client falls back to the old button sprites.
+
+The character dialog now draws from the kit (HH-0063). It has the red title, both headings with flourishes centred on the text, the label and value fields, the slot rings and the kit buttons, all at their original positions. Clicks behave as before. Kit headings no longer stack their shadow twice, so they read sharper. The kit text styles accept per-style smoothing settings, though none needed changing. With no kit, the dialog uses the old sprite.
