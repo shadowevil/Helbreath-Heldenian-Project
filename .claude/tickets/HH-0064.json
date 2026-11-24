@@ -1,7 +1,7 @@
 {
   "id": "HH-0064",
   "summary": "Panel kit 5: chat history dialog from the kit",
-  "status": "open",
+  "status": "in_review",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:14Z",
-  "updated": "2026-11-24T20:30:14Z",
+  "updated": "2026-11-24T22:49:56Z",
   "links": {
     "commits": [],
     "files": [
@@ -24,5 +24,12 @@
       "HH-0059"
     ]
   },
-  "body": "Spec step 5. Replace Game2 frame 4 + Text frame 22 and the Game2 frame 7 thumb with compose + kit scrollbar.\n\nDone when: scroll and drag behave as today."
+  "body": "Spec step 5. Replace Game2 frame 4 + Text frame 22 and the Game2 frame 7 thumb with compose + kit scrollbar.\n\nDone when: scroll and drag behave as today.",
+  "comments": [
+    {
+      "author": "client",
+      "at": "2026-11-24T22:49:55Z",
+      "body": "Chat history converted to a kit_dialog. Checkpoint 16738041 (panel_kit.cpp/.h, dialog_box_chat_history.cpp/.h).\n\nLayout, from the approved rebuild (dialogs.py chat_history()):\n- frame: dialog_size::chat_history, 364x162 (the original rect; the mockup was 362x164)\n- title \"History\" at y 15, fill (144,16,12), with divider_wave flourishes 14 px out\n- text area: inset (13,28,327,121) in stone_field\n- scrollbar: kit groove and thumb in (340,28,15,121); thumb pos = 1 - scroll / (max - 8), so the newest line puts it at the bottom, as the sprite thumb did\n\nBehaviour is unchanged:\n- Scrolling, the track and its hit rects, and the press claim all stay in the dialog.\n- There is no cc:: scroll control, so the scrollbar input is the dialog's own, as before.\n- The sprite frame and thumb remain the fallback when the kit is missing.\n\nPer-frame allocation removed from the kit draw path:\n- flourish masks are resolved at load, not built from name + \"_white\" each draw\n- kit_dialog::button(layout, ...) draws directly instead of building a kit_button\n- kit_button keeps an optional custom style instead of copying the layout's style\n\nBuilds: Windows Debug with no new warnings; Linux client with 0 warnings; deployed.\n\n| Check | Result |\n|---|---|\n| Opens from the HUD Chat Log icon | verified |\n| Messages show in the history colours | verified |\n| Wheel scrolls the lines | verified |\n| Wheel to the top moves the thumb to the top | verified |\n| Thumb at the bottom for the newest line | verified |\n| Journal clean | verified |\n| Character dialog buttons after the kit_button change | verified |\n| Thumb or track drag | unverified: needs the button held across frames; hb_mouse_down is rejected by the client (\"unknown argument 'ctrl'\"), and a bridge click does not register |\n| Dragging the dialog | unverified, for the same reason |\n\nThe dialog has no hover controls.\n\nScreenshots (build/screenshots):\n- hh0064_before_chat_history.jpg\n- hh0064_after_chat_history.jpg\n- hh0064_after_wheel.jpg\n- hh0064_after_wheel_top.jpg"
+    }
+  ]
 }

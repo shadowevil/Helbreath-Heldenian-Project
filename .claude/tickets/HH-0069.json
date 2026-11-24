@@ -1,7 +1,7 @@
 {
   "id": "HH-0069",
   "summary": "MCP: hb_close_window reply errors; hb_mouse_down sends an unknown 'ctrl' argument",
-  "status": "open",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,23 @@
   ],
   "author": "pm",
   "created": "2026-11-24T20:45:00Z",
-  "updated": "2026-11-24T22:24:41Z",
+  "updated": "2026-11-24T22:53:16Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "d1a0b04a"
+    ],
     "files": [],
     "tickets": [],
     "relates_to": [
       "HH-0032"
     ]
   },
-  "body": "hb_close_window returns \"internal error: sequence item 0: expected str instance, dict found\" even though the window does close (seen 2026-11-24 during the parchment map check). The MCP server seems to join a list of dicts as strings when it formats the reply.\n\n**Done when:** hb_close_window reports the closed window normally.\n\nSource: main session, 2026-11-24, in-game check.\n\n**Also seen, 2026-11-24:** hb_mouse_down is refused by the client with \"unknown argument 'ctrl'\", so dragging a dialog can't be tested through the bridge. The MCP server seems to send a ctrl field the client's mouse_down command does not accept.\n"
+  "body": "hb_close_window returns \"internal error: sequence item 0: expected str instance, dict found\" even though the window does close (seen 2026-11-24 during the parchment map check). The MCP server seems to join a list of dicts as strings when it formats the reply.\n\n**Done when:** hb_close_window reports the closed window normally.\n\nSource: main session, 2026-11-24, in-game check.\n\n**Also seen, 2026-11-24:** hb_mouse_down is refused by the client with \"unknown argument 'ctrl'\", so dragging a dialog can't be tested through the bridge. The MCP server seems to send a ctrl field the client's mouse_down command does not accept.\n\n**Closed, 2026-11-24:** both bugs were already fixed in source by d1a0b04a. The errors came from the installed MCP server process, which started before that commit. Verified live by calling the current code directly: a drag moved the character dialog by exactly the mouse delta, and close_window replies cleanly. The self-test passes. The running MCP server needs a restart or reconnect to pick it up.\n",
+  "comments": [
+    {
+      "author": "tooling",
+      "at": "2026-11-24T22:53:02Z",
+      "body": "Agent result 2026-11-24: neither bug reproduces in the source; both were already fixed by commit d1a0b04a (HH-0042, 23:49 on 11-23).\n\n- hb_mouse_down / hb_mouse_up: the handler now drops shift/ctrl before sending (agent_mcp.py:5266-5269). It built them into the args at 5262-5263 since 76ea3c31, which is what the client refused (\"unknown argument 'ctrl'\"; the client command table at sources/client/agent_bridge.cpp:193-194 takes only x y space button timeout_ms). Passing ctrl/shift now returns a clear error pointing at hb_modifiers.\n- hb_close_window: rows now format as \"name (#id)\" (agent_mcp.py:4273-4275). Before, it was a \", \".join over a list of dicts.\n- The installed MCP server (python PID 11972, started 23:11 on 11-23) predates that commit and still serves the old schema (hb_mouse_down lists ctrl). It needs a restart / MCP reconnect to pick the fix up.\n\nVerified against a live Debug client on port 8894, driving agent_mcp.call_tool directly (.claude/scratch/agent_mcp_fix/):\n- mouse_down, 3x mouse_move, mouse_up moved character_info from (30,30) to (230,190), the exact mouse delta. Screenshots: build/screenshots/hh0069_drag_before.jpg and hh0069_drag_after.jpg.\n- close_window name=character_info -> \"closed: character_info (#1)\"; name=all -> \"closed: character_info (#1), guide_map (#9)\".\n- hb_driver_selftest.py passes.\n\nNo code change made, no client change needed."
+    }
+  ]
 }
