@@ -1,0 +1,16 @@
+{
+ "map": "btfield",
+ "size": 1200,
+ "tiles": [
+  300,
+  300
+ ],
+ "px_per_tile": 3.2667,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": []
+}

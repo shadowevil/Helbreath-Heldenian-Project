@@ -1,0 +1,194 @@
+{
+ "map": "elvfarm",
+ "size": 1200,
+ "tiles": [
+  250,
+  250
+ ],
+ "px_per_tile": 3.92,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 400.4,
+   "y": 238.5,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    4
+   ],
+   "npc_types": [
+    22
+   ],
+   "creatures": [
+    "amphis"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 757.1,
+   "y": 301.2,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    3
+   ],
+   "npc_types": [
+    16
+   ],
+   "creatures": [
+    "giant_ant"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 631.7,
+   "y": 350.2,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0
+   ],
+   "npc_types": [
+    10
+   ],
+   "creatures": [
+    "slime"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 612.1,
+   "y": 577.6,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0
+   ],
+   "npc_types": [
+    10
+   ],
+   "creatures": [
+    "slime"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 290.6,
+   "y": 726.6,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    3
+   ],
+   "npc_types": [
+    16
+   ],
+   "creatures": [
+    "giant_ant"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 929.6,
+   "y": 893.2,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    4
+   ],
+   "npc_types": [
+    22
+   ],
+   "creatures": [
+    "amphis"
+   ]
+  },
+  {
+   "icon": "barrack",
+   "x": 433.4,
+   "y": 593.8,
+   "w": 109.9,
+   "h": 104.3,
+   "kind": "building",
+   "dest": "elvbrk11"
+  },
+  {
+   "icon": "shop",
+   "x": 430.7,
+   "y": 749.5,
+   "w": 71.4,
+   "h": 66.5,
+   "kind": "building",
+   "dest": "gshop_2f"
+  },
+  {
+   "icon": "blacksmith",
+   "x": 532.7,
+   "y": 791.7,
+   "w": 74.2,
+   "h": 67.9,
+   "kind": "building",
+   "dest": "bsmith_2f"
+  },
+  {
+   "icon": "warehouse",
+   "x": 348.7,
+   "y": 800.9,
+   "w": 71.4,
+   "h": 85.4,
+   "kind": "building",
+   "dest": "wrhus_2f"
+  },
+  {
+   "icon": "portal_blue",
+   "x": 536.5,
+   "y": 637.4,
+   "w": 64.2,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "elvine",
+   "faction": "elvine"
+  },
+  {
+   "icon": "stairs_down",
+   "x": 612.5,
+   "y": 882.7,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "middled1n"
+  },
+  {
+   "icon": "arrow_270",
+   "x": 178.4,
+   "y": 675.8,
+   "w": 72.0,
+   "h": 48.2,
+   "kind": "exit",
+   "dest": "elvine",
+   "direction_deg": 270
+  },
+  {
+   "icon": "arrow_180",
+   "x": 715.1,
+   "y": 945.6,
+   "w": 48.2,
+   "h": 72.0,
+   "kind": "exit",
+   "dest": "2ndmiddle",
+   "direction_deg": 180
+  }
+ ]
+}

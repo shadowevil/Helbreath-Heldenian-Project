@@ -1,0 +1,125 @@
+{
+ "map": "abaddon",
+ "size": 1200,
+ "tiles": [
+  200,
+  200
+ ],
+ "px_per_tile": 4.9,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 590.5,
+   "y": 251.7,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    38
+   ],
+   "npc_types": [
+    52
+   ],
+   "creatures": [
+    "gargoyle"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 384.7,
+   "y": 362.0,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    34
+   ],
+   "npc_types": [
+    70
+   ],
+   "creatures": [
+    "barlog"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 595.4,
+   "y": 499.2,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    27,
+    33,
+    47
+   ],
+   "npc_types": [
+    72,
+    73,
+    76
+   ],
+   "creatures": [
+    "claw_turtle",
+    "fire_wyvern",
+    "giant_plant"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 294.0,
+   "y": 528.6,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    5
+   ],
+   "npc_types": [
+    14
+   ],
+   "creatures": [
+    "orc_mage"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 355.3,
+   "y": 707.5,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    38
+   ],
+   "npc_types": [
+    52
+   ],
+   "creatures": [
+    "gargoyle"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 580.7,
+   "y": 812.8,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    39
+   ],
+   "npc_types": [
+    71
+   ],
+   "creatures": [
+    "centaur"
+   ]
+  }
+ ]
+}

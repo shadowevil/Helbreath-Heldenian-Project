@@ -1,0 +1,57 @@
+{
+ "map": "resurr1",
+ "size": 1200,
+ "tiles": [
+  200,
+  200
+ ],
+ "px_per_tile": 4.9,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "portal_red",
+   "x": 266.6,
+   "y": 184.6,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "aresden",
+   "faction": "aresden"
+  },
+  {
+   "icon": "portal_red",
+   "x": 854.6,
+   "y": 184.6,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "aresden",
+   "faction": "aresden"
+  },
+  {
+   "icon": "portal_red",
+   "x": 266.6,
+   "y": 576.6,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "aresden",
+   "faction": "aresden"
+  },
+  {
+   "icon": "portal_red",
+   "x": 854.6,
+   "y": 576.6,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "aresden",
+   "faction": "aresden"
+  }
+ ]
+}

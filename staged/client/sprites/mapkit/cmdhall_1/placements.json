@@ -1,0 +1,37 @@
+{
+ "map": "cmdhall_1",
+ "size": 1200,
+ "tiles": [
+  100,
+  100
+ ],
+ "px_per_tile": 25.9259,
+ "origin_x": -683.3333,
+ "origin_y": -648.4444,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "portal_red",
+   "x": 591.4,
+   "y": 508.0,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "aresden",
+   "faction": "aresden"
+  },
+  {
+   "icon": "arrow_270",
+   "x": 328.7,
+   "y": 623.8,
+   "w": 72.0,
+   "h": 48.2,
+   "kind": "exit",
+   "dest": "aresden",
+   "direction_deg": 270
+  }
+ ]
+}

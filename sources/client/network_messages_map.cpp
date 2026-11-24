@@ -3,6 +3,7 @@
 #include "packet/shared_packets.h"
 #include "lan_eng.h"
 #include "dialog_box_ids.h"
+#include "dialog_box_map.h"
 #include "audio_manager.h"
 #include <cstdio>
 #include <cstring>
@@ -46,7 +47,17 @@ namespace NetworkMessageHandlers {
 		if (!pkt) return;
 		w1 = pkt->map_id;
 		w2 = pkt->map_type;
-		if (w2 == 0) game->add_event_list(NOTIFYMSG_SHOW_MAP1, 10);
-		else game->get_dialog_box_manager().enable_dialog_box(DialogBoxId::Map, 0, w1, w2 - 1);
+		auto& dialogs = game->get_dialog_box_manager();
+		if (w2 != 0)
+		{
+			dialogs.enable_dialog_box(DialogBoxId::Map, 0, w1, w2 - 1);
+			return;
+		}
+		// map_type 0: the server has no frame for this map; the client's map kit may still have it. Check
+		// first: an already open dialog stays enabled when on_enable refuses, hiding the no-map message.
+		if (DialogBox_Map::kit_has_map(game->m_map_name))
+			dialogs.enable_dialog_box(DialogBoxId::Map, 0, w1, DialogBox_Map::no_legacy_frame);
+		if (!dialogs.is_enabled(DialogBoxId::Map))
+			game->add_event_list(NOTIFYMSG_SHOW_MAP1, 10);
 	}
 } // namespace NetworkMessageHandlers

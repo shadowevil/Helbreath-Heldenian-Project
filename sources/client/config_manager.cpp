@@ -9,7 +9,7 @@
 using json = nlohmann::json;
 
 // 4:3 resolutions for validation (must match DialogBox_SysMenu)
-static constexpr int minimap_zoom_max = hb::client::minimap::tier_count - 1; // tiers: 0 whole map, 1 mid, 2 zoomed in
+static constexpr int minimap_zoom_max = hb::client::minimap::tier_count - 1; // tiers: 0 whole map, 1 mid
 
 static const struct { int w, h; } s_ValidResolutions[] = {
 	//{ 640, 480 },

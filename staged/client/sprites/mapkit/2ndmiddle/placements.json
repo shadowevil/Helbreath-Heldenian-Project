@@ -1,0 +1,142 @@
+{
+ "map": "2ndmiddle",
+ "size": 1200,
+ "tiles": [
+  250,
+  250
+ ],
+ "px_per_tile": 3.92,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 561.1,
+   "y": 354.2,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    8
+   ],
+   "npc_types": [
+    18
+   ],
+   "creatures": [
+    "zombie"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 563.1,
+   "y": 552.1,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    17,
+    18
+   ],
+   "npc_types": [
+    13,
+    28
+   ],
+   "creatures": [
+    "cyclops",
+    "troll"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 874.7,
+   "y": 667.8,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    13
+   ],
+   "npc_types": [
+    12
+   ],
+   "creatures": [
+    "stone_golem"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 288.7,
+   "y": 714.8,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    9
+   ],
+   "npc_types": [
+    17
+   ],
+   "creatures": [
+    "scorpion"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 761.0,
+   "y": 810.8,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    5
+   ],
+   "npc_types": [
+    14
+   ],
+   "creatures": [
+    "orc_mage"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 612.1,
+   "y": 857.9,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    8
+   ],
+   "npc_types": [
+    18
+   ],
+   "creatures": [
+    "zombie"
+   ]
+  },
+  {
+   "icon": "arrow_0",
+   "x": 581.8,
+   "y": 178.3,
+   "w": 48.2,
+   "h": 72.0,
+   "kind": "exit",
+   "dest": "elvfarm",
+   "direction_deg": 0
+  },
+  {
+   "icon": "arrow_180",
+   "x": 638.6,
+   "y": 941.7,
+   "w": 48.2,
+   "h": 72.0,
+   "kind": "exit",
+   "dest": "arefarm",
+   "direction_deg": 180
+  }
+ ]
+}

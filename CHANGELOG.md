@@ -95,3 +95,12 @@ Fixed: using the Map item crashed the game server (HH-0046). The Map now works a
 A tool without a linked skill can no longer reach the skill code on the server.
 
 New tool `tools/parchment_map/make_parchment.py` draws a parchment map in the style of the original Map item maps for any map file, with no text. It works on newly generated maps too (HH-0047). The project skill `parchment-map` explains how to use it. The game does not use the generated maps yet.
+
+The Map item now shows a high-quality parchment map, built in the game from a map kit, for all 79 maps, interiors included (HH-0048).
+- **What it shows:** the user's parchment paper, the map's ink, and icons for buildings, monster areas, portals, dungeon entrances, barrack stairs and exits.
+- **Where it works:** it also opens on maps the server has no map for.
+- **Maps without a kit** still show the old map picture.
+- **New tool:** `tools/parchment_map/build_kit.py` rebuilds the kit.
+- **For later use:** the kit also holds a standing, south-east-facing picture of each of the 70 killable creatures. These are not drawn yet.
+
+The corner minimap now has two zoom levels, the whole map and the mid view. The close view was dropped because the parchment map takes its place (d-033).

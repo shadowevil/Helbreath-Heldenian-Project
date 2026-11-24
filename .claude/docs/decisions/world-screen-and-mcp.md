@@ -43,3 +43,10 @@
 - Quotes: "Using SDL's minimaps can we replace our minimap functionality with SDL's version which uses 3 tier minimaps? We don't need the 2k version though"; answers chosen by the user: "Hide it" (maps without SDL art) and "JPG q92 (Recommended)" (image format).
 - Decided: the minimap shows SDL's baked levels 01-03 per map (level 00, the 2096 px level, is left out), stored in `staged/` as JPG quality 92. Maps without SDL art show no minimap.
 - Recorded in: HH-0045.
+
+## d-033 Two-tier minimap; the top tier becomes the parchment map view
+
+- Date: 2026-11-24.
+- Quote: "Minimap stays as it is, but has two levels, the lower quality full map zoom level. A step up from that which is what we have now. Then we bake 1 parchment at what the tier 3 minimap is now, and replace that so now instead of 3 tier minimap it's 2 tier with a dedicated parchment map view?"
+- Decided: the corner minimap keeps SDL's two lower levels (whole map, mid) and drops the finest level; that level's role moves to one baked parchment per map, shown as the dedicated parchment map view. Supersedes d-032's three tiers.
+- Recorded in: HH-0048.

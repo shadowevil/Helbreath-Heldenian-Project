@@ -312,6 +312,7 @@
     <ClInclude Include="item_sprite_metadata.h" />
     <ClInclude Include="cursor_art.h" />
     <ClInclude Include="minimap.h" />
+    <ClInclude Include="parchment_kit.h" />
     <ClInclude Include="client_messages.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="skill.h" />
@@ -584,6 +585,7 @@
     <ClCompile Include="item_sprite_metadata.cpp" />
     <ClCompile Include="cursor_art.cpp" />
     <ClCompile Include="minimap.cpp" />
+    <ClCompile Include="parchment_kit.cpp" />
     <ClCompile Include="miniaudio_impl.cpp" />
     <ClCompile Include="weather_manager.cpp" />
     <ClCompile Include="floating_text_manager.cpp" />

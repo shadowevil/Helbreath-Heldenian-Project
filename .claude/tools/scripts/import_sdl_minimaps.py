@@ -1,9 +1,9 @@
-"""Import Helbreath-SDL's minimap pyramid levels 01-03 as JPG q92 into staged/ (HH-0045, d-032).
+"""Import Helbreath-SDL's minimap pyramid levels 02-03 as JPG q92 into staged/ (HH-0045, d-032, d-033).
 
-Reads (read-only)  Helbreath-SDL/Helbreath/working/minimaps/<map>/01.png .. 03.png
-Writes             staged/client/sprites/minimaps/<map>/01.jpg .. 03.jpg
+Reads (read-only)  Helbreath-SDL/Helbreath/working/minimaps/<map>/02.png .. 03.png
+Writes             staged/client/sprites/minimaps/<map>/02.jpg .. 03.jpg
 
-Level 00 (2096 px, SDL's big-map level) is never read. Only maps whose .amd exists in
+Levels 00 (2096 px) and 01 (finest; replaced by the parchment map view, d-033) are never read. Only maps whose .amd exists in
 staged/shared/mapdata/ are imported. --dry-run lists the plan and writes nothing.
 """
 import argparse
@@ -16,7 +16,7 @@ REPO = Path(__file__).resolve().parents[3]
 SOURCE = Path(r"C:\Users\ShadowEvil\source\Helbreath-SDL\Helbreath\working\minimaps")
 DEST = REPO / "staged" / "client" / "sprites" / "minimaps"
 MAPDATA = REPO / "staged" / "shared" / "mapdata"
-LEVELS = ("01", "02", "03")
+LEVELS = ("02", "03")
 QUALITY = 92
 
 

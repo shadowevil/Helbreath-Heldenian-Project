@@ -1,0 +1,27 @@
+{
+ "map": "areuni",
+ "size": 1200,
+ "tiles": [
+  200,
+  200
+ ],
+ "px_per_tile": 4.9,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "arrow_0",
+   "x": 512.2,
+   "y": 194.4,
+   "w": 48.2,
+   "h": 72.0,
+   "kind": "exit",
+   "dest": "huntzone2",
+   "direction_deg": 0
+  }
+ ]
+}

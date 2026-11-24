@@ -1,0 +1,37 @@
+{
+ "map": "cmdhall_2",
+ "size": 1200,
+ "tiles": [
+  100,
+  100
+ ],
+ "px_per_tile": 25.9259,
+ "origin_x": -683.3333,
+ "origin_y": -648.4444,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "portal_blue",
+   "x": 593.8,
+   "y": 508.0,
+   "w": 64.2,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "elvine",
+   "faction": "elvine"
+  },
+  {
+   "icon": "arrow_270",
+   "x": 328.7,
+   "y": 623.8,
+   "w": 72.0,
+   "h": 48.2,
+   "kind": "exit",
+   "dest": "elvine",
+   "direction_deg": 270
+  }
+ ]
+}

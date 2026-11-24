@@ -1,0 +1,181 @@
+{
+ "map": "middleland",
+ "size": 1200,
+ "tiles": [
+  524,
+  524
+ ],
+ "px_per_tile": 1.8702,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 881.8,
+   "y": 469.2,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    22
+   ],
+   "npc_types": [
+    29
+   ],
+   "creatures": [
+    "ogre"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 562.4,
+   "y": 540.8,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    3,
+    29
+   ],
+   "npc_types": [
+    16,
+    48
+   ],
+   "creatures": [
+    "giant_ant",
+    "stalker"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 889.5,
+   "y": 704.0,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    5,
+    22,
+    36
+   ],
+   "npc_types": [
+    14,
+    29,
+    31
+   ],
+   "creatures": [
+    "orc_mage",
+    "ogre",
+    "demon"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 705.1,
+   "y": 717.0,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    23
+   ],
+   "npc_types": [
+    58
+   ],
+   "creatures": [
+    "mountain_giant"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 226.5,
+   "y": 783.8,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    18,
+    22
+   ],
+   "npc_types": [
+    13,
+    29
+   ],
+   "creatures": [
+    "cyclops",
+    "ogre"
+   ]
+  },
+  {
+   "icon": "portal_red",
+   "x": 922.7,
+   "y": 545.4,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "icebound"
+  },
+  {
+   "icon": "stairs_down",
+   "x": 440.8,
+   "y": 513.8,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "middled1x"
+  },
+  {
+   "icon": "stairs_down",
+   "x": 781.8,
+   "y": 606.1,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "toh1"
+  },
+  {
+   "icon": "arrow_315",
+   "x": 277.9,
+   "y": 118.6,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "elvine",
+   "direction_deg": 315
+  },
+  {
+   "icon": "arrow_0",
+   "x": 675.0,
+   "y": 132.3,
+   "w": 48.2,
+   "h": 72.0,
+   "kind": "exit",
+   "dest": "elvine",
+   "direction_deg": 0
+  },
+  {
+   "icon": "arrow_180",
+   "x": 741.4,
+   "y": 987.7,
+   "w": 48.2,
+   "h": 72.0,
+   "kind": "exit",
+   "dest": "aresden",
+   "direction_deg": 180
+  },
+  {
+   "icon": "arrow_225",
+   "x": 370.5,
+   "y": 988.0,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "aresden",
+   "direction_deg": 225
+  }
+ ]
+}

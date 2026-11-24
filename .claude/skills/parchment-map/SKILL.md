@@ -1,6 +1,6 @@
 ---
 name: parchment-map
-description: Make a Helbreath "parchment" map (the picture the Map item opens, interface/newmaps style) from a map's .amd file, including a generated tile map with no other art, at the client's 300x300 or in high quality (1200x1200 with --scale 4). Use when asked to make, rebuild or preview a parchment / world map / newmaps frame for a map, or to pass a generated tile map in and get a parchment map out. No text labels and, by default, no icons are drawn; icon positions can be written as JSON for an icon kit.
+description: Make a Helbreath "parchment" map (the picture the Map item opens, interface/newmaps style) from a map's .amd file, including a generated tile map with no other art, at the client's 300x300 or in high quality (1200x1200 with --scale 4). Use when asked to make, rebuild or preview a parchment / world map / newmaps frame for a map, or to pass a generated tile map in and get a parchment map out. No text labels and, by default, no icons are drawn; icon positions can be written as JSON for an icon kit. Also use to rebuild the client's runtime map kit (staged/client/sprites/mapkit) with build_kit.py.
 ---
 
 # Parchment map
@@ -33,6 +33,9 @@ Options:
   Omit it for a map with no rows yet.
 - `--icons-json <path>` - write the icon placements as JSON (see below). Nothing is drawn for them.
 - `--icons` - also draw the old cut-out icons (off by default; LANCZOS-upscaled above scale 1, so soft).
+- `--ink-layer <png>` - also write the ink alone as a straight-alpha RGBA PNG at the output size. Drawn
+  source-over on the same paper it reproduces the written map (measured max 8 levels, mean 0.46, at scale 4);
+  the hatching's emboss highlight is the part it cannot carry. This is what the runtime kit ships per map.
 - `--minimap <dir>` - minimap art (`01.jpg`/`02.jpg`/`03.jpg`). Optional; it only changes which neighbouring
   tile sheets count as one terrain. A missing folder or images prints one `note:` line and uses the palette.
 - `--seed N` - torn edge choice and ink mottling; the same seed gives a byte-identical file (default 1).
@@ -47,17 +50,20 @@ Outputs go under the session's `.claude/scratch/`; packing into `interface/newma
 ## Icon placements (for the icon kit)
 
 Icons are not drawn: the user is making an icon kit to place on these maps. `--icons-json` writes
-`{map, image, size, scale, tiles, px_per_tile, tile_to_px, placements: [...]}`. Each placement has `kind`
-(`exit`, `portal`, `building`, `entrance`, `monster_area`), `x`/`y` in pixels of the written PNG (so at the
-chosen `--scale`), `anchor` (`center`, or `bottom` = the icon's bottom edge centred there), the old `icon` name,
-and where known: `dest` (destination map), `direction_deg` (exits, 0 = north, clockwise), `faction`
-(portals), `building`, `tile`, and for monster areas the merged `generators`.
+`{map, image, size, scale, tiles, px_per_tile, tile_to_px, origin_x, origin_y, placements: [...]}`
+(tile centre px = origin + (tile + 0.5) * px_per_tile). Each placement has `kind`
+(`exit`, `portal`, `building`, `stairs`, `entrance`, `monster_area`), `x`/`y` in pixels of the written PNG (so at
+the chosen `--scale`), `anchor` (`center`, or `bottom` = the icon's bottom edge centred there), the old `icon`
+name (the cut-out `--icons` draws), and where known: `dest` (destination map), `direction_deg` (exits, 0 = north,
+clockwise), `faction` (portals), `building` (the true building: city_hall, cathedral, command_hall, guild_hall,
+wizard_tower, shop, warehouse, blacksmith, barrack, jail), `tile`, and for monster areas the merged `generators`.
 
 | Kind | Rule | Source |
 |---|---|---|
 | exit | Teleport cluster near the edge of the land; arrow pointing outward, pulled 6 px (x scale) inland. | .amd teleport flag (0x40) |
 | portal | Teleport to an outdoor map away from the edge; `faction` elvine / aresden. | DB `map_teleport_locations` + `maps.location_name` |
-| building | Teleport into a shop / blacksmith / warehouse / city hall / guild hall / church / barrack / magic tower / jail; bottom at the door. | DB `maps.display_name`, else destination name prefix |
+| building | Teleport into a building; bottom at the door. By destination prefix: `cityhall_` city_hall, `cath_` cathedral, `cmdhall_` command_hall, `gldhall_` guild_hall, `wzdtwr_` wizard_tower, `gshop_` shop, `wrhus_`/`arewrhus`/`elvwrhus` warehouse, `bsmith_` blacksmith, `arebrk`/`elvbrk` barrack, `*jail` jail. | Destination name prefix, else DB `maps.display_name` words |
+| stairs | Teleport from one barrack map to another (a floor change inside the barracks). | Source and destination both `arebrk*`/`elvbrk*` |
 | entrance | Destination named Dungeon / Mine / Tower of Hell. | DB, else name pattern |
 | monster_area | `map_spot_mob_generators` rects (not 1-tile spots, guard posts with max_mobs <= 2, or whole-map generators), merged within 25 px (x scale), at most 6. | DB only |
 
@@ -99,4 +105,18 @@ Unknown tile sprite ids (not in the palette) still get outlines; they are never 
   a walkable strip along a map edge draws as a straight line; interiors (no originals) mark exits as portals.
 - The palette and the hatch table are keyed on the client's tile sprite ids; a generated map that uses new
   sprite sheets gets outlines but no hatching until `HATCH_SHEETS` and `build_assets.py palette` are updated.
-- The client still loads 300x300 frames; a 1200 px parchment needs client-side support before it can be used.
+- The client composes the runtime kit (below) in the Map dialog; the old 300x300 newmaps frames remain only for
+  maps the kit lacks.
+
+## Runtime kit
+
+`python tools/parchment_map/build_kit.py [--dry-run] [--maps a,b] [--jobs N]` writes
+`staged/client/sprites/mapkit/`: `paper.png` (1200), `<map>/ink.png` (`--ink-layer` at `--scale 4`),
+`<map>/placements.json` (tile_to_px numbers and icons already laid out as kit-pixel rects in draw order),
+`icons.png` + `icons.json` (the user's atlas `working/sprite_work/map_icons.png`, frames copied onto a padded
+sheet, plus its north-pointing `exit_arrow` baked in 8 rotations `arrow_<deg>`), `creatures.png` + `creatures.json`
+(every killable creature standing, facing south-east, native scale, with pivot and npc ids; monster areas in
+placements.json list `npc_ids`/`npc_types`/`creatures`, not drawn) and `index.json`. Intermediates go to
+`build/mapkit_work/`. Icon sizes (building factor, other heights) and layout rules are constants at the top of
+build_kit.py. Re-run it after editing the atlas, the paper, a map or the database, then deploy. `working/` is
+gitignored, so the atlas exists only on the user's machine; without it, keep the committed `icons.png`/`icons.json`.

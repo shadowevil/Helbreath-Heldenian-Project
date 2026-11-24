@@ -1,0 +1,57 @@
+{
+ "map": "resurr2",
+ "size": 1200,
+ "tiles": [
+  200,
+  200
+ ],
+ "px_per_tile": 4.9,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "portal_blue",
+   "x": 269.0,
+   "y": 184.6,
+   "w": 64.2,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "elvine",
+   "faction": "elvine"
+  },
+  {
+   "icon": "portal_blue",
+   "x": 857.0,
+   "y": 184.6,
+   "w": 64.2,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "elvine",
+   "faction": "elvine"
+  },
+  {
+   "icon": "portal_blue",
+   "x": 269.0,
+   "y": 576.6,
+   "w": 64.2,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "elvine",
+   "faction": "elvine"
+  },
+  {
+   "icon": "portal_blue",
+   "x": 857.0,
+   "y": 576.6,
+   "w": 64.2,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "elvine",
+   "faction": "elvine"
+  }
+ ]
+}

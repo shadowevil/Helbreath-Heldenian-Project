@@ -2,7 +2,7 @@
 
 Usage:
   python tools/parchment_map/make_parchment.py <map.amd> -o <out.png> [--scale N] [--paper hq|patches|<image>]
-         [--mapinfo <map name | mapinfo dir>] [--icons-json <out.json>] [--icons]
+         [--mapinfo <map name | mapinfo dir>] [--icons-json <out.json>] [--icons] [--ink-layer <ink.png>]
          [--minimap <dir>] [--seed N] [--sheet <compare.png>] [--reference <png>] [-v]
 
   --scale N  output is 300*N px square (1 = the client's size; 4 = 1200, the project's HQ art size). The ink
@@ -13,6 +13,8 @@ Usage:
   --icons-json  write the icon placements (exits, portals, buildings, entrances, monster areas) as JSON in
              output pixels; no icons are drawn by default (an icon kit will be placed from this file).
   --icons    also draw the old cut-out icons (off by default).
+  --ink-layer  also write the ink alone as a transparent PNG at the output size: drawn over the same paper
+             (source-over) it gives the written map, less the hatching's emboss highlight (a runtime kit).
 
 Works from the .amd alone. Optional inputs refine it:
   --minimap  a folder of minimap art (01.jpg/02.jpg/03.jpg); used instead of the shipped tile palette as the
@@ -627,14 +629,21 @@ class MapInfo:
 # ---------------------------------------------------------------- icons
 
 ICON_DIR = DATA / "icons"
-BUILDING_WORDS = [("blacksmith", "bld_blacksmith"), ("shop", "bld_shop"), ("warehouse", "bld_warehouse"),
-                  ("cityhall", "bld_city_hall"), ("city hall", "bld_city_hall"), ("guildhall", "bld_guild_hall"),
-                  ("command hall", "bld_guild_hall"), ("barrack", "bld_guild_hall"), ("church", "bld_city_hall"),
-                  ("magic tower", "bld_wizard_tower"), ("jail", "bld_warehouse")]
-BUILDING_PREFIXES = [("bsmith", "bld_blacksmith"), ("gshop", "bld_shop"), ("wrhus", "bld_warehouse"), ("arewrhus", "bld_warehouse"),
-                     ("elvwrhus", "bld_warehouse"), ("cityhall", "bld_city_hall"), ("gldhall", "bld_guild_hall"),
-                     ("cmdhall", "bld_guild_hall"), ("arebrk", "bld_guild_hall"), ("elvbrk", "bld_guild_hall"),
-                     ("cath", "bld_city_hall"), ("wzdtwr", "bld_wizard_tower"), ("arejail", "bld_warehouse"), ("elvjail", "bld_warehouse")]
+# building behind a door, by destination map name (checked against the SDL building art over each door);
+# the name prefix decides, the database display name only for a destination no prefix matches
+BUILDING_PREFIXES = [("bsmith", "blacksmith"), ("gshop", "shop"), ("wrhus", "warehouse"), ("arewrhus", "warehouse"),
+                     ("elvwrhus", "warehouse"), ("cityhall", "city_hall"), ("cath", "cathedral"), ("gldhall", "guild_hall"),
+                     ("cmdhall", "command_hall"), ("arebrk", "barrack"), ("elvbrk", "barrack"), ("wzdtwr", "wizard_tower"),
+                     ("arejail", "jail"), ("elvjail", "jail")]
+BUILDING_WORDS = [("blacksmith", "blacksmith"), ("shop", "shop"), ("warehouse", "warehouse"), ("cityhall", "city_hall"),
+                  ("city hall", "city_hall"), ("cathedral", "cathedral"), ("church", "cathedral"), ("guildhall", "guild_hall"),
+                  ("guild hall", "guild_hall"), ("command hall", "command_hall"), ("barrack", "barrack"),
+                  ("magic tower", "wizard_tower"), ("wizard tower", "wizard_tower"), ("jail", "jail")]
+# the old cut-out drawn for each building with --icons (there are only six)
+OLD_BUILDING_ICON = {"blacksmith": "bld_blacksmith", "shop": "bld_shop", "warehouse": "bld_warehouse",
+                     "city_hall": "bld_city_hall", "cathedral": "bld_city_hall", "guild_hall": "bld_guild_hall",
+                     "command_hall": "bld_guild_hall", "barrack": "bld_guild_hall", "wizard_tower": "bld_wizard_tower",
+                     "jail": "bld_warehouse"}
 DUNGEON_WORDS = ("dungeon", "mine", "tower of hell")
 DUNGEON_NAME = re.compile(r"(d1[nx]?$|^dglv|^toh\d|dungeon)")
 SWORD_MERGE_PX = 25      # spawn areas closer than this on the frame share one sword
@@ -678,23 +687,29 @@ def teleport_clusters(m):
 
 
 def classify_destination(dest, info):
-	"""(kind, icon) for a teleport destination map name, from its database row or its name."""
+	"""(kind, detail) for a teleport destination map name: ('dungeon', 'dungeon'), ('building', <building>)
+	or ('outdoor', None). The name prefix decides the building; the database display name is the fallback."""
 	row = info.maps.get(dest, {}) if info else {}
 	label = str(row.get("display_name", "")).lower()
 	if any(w in label for w in DUNGEON_WORDS) or DUNGEON_NAME.search(dest):
 		return "dungeon", "dungeon"
-	for w, ic in BUILDING_WORDS:
-		if w in label:
-			return "building", ic
-	for p, ic in BUILDING_PREFIXES:
+	for p, building in BUILDING_PREFIXES:
 		if dest.startswith(p):
-			return "building", ic
+			return "building", building
+	for w, building in BUILDING_WORDS:
+		if w in label:
+			return "building", building
 	return "outdoor", None
+
+
+def is_barrack(name):
+	return name.startswith(("arebrk", "elvbrk"))
 
 
 def place_icons(m, rect, info):
 	"""Decide the icon placements: list of dicts {kind, icon, x, y, anchor ('center'|'bottom'), tile, dest,
-	...} in output pixels, and readable notes. kind: exit | portal | building | entrance | monster_area."""
+	...} in output pixels, and readable notes. kind: exit | portal | building | stairs (a barrack floor
+	change) | entrance | monster_area."""
 	ys, xs = np.nonzero(~m.blocked)
 	if len(xs) == 0:
 		return [], []
@@ -739,12 +754,16 @@ def place_icons(m, rect, info):
 			placed.append(dict(base, kind="portal", icon="portal_blue" if side == "elvine" else "portal_red",
 			                   faction=side or None, x=px, y=py + 2 * PX, anchor="bottom"))
 			notes.append(f"portal at tile ({tx:.0f},{ty:.0f})" + (f" -> {dest}" if dest else ""))
+		elif kind == "building" and ic == "barrack" and is_barrack(m.name):
+			# a floor change inside the barracks (one barrack map to another): stairs, not a building
+			placed.append(dict(base, kind="stairs", icon="dungeon", x=px, y=py, anchor="center"))
+			notes.append(f"stairs at tile ({tx:.0f},{ty:.0f}) -> {dest}")
 		elif kind == "dungeon":
 			placed.append(dict(base, kind="entrance", icon="dungeon", x=px, y=py, anchor="center"))
 			notes.append(f"dungeon at tile ({tx:.0f},{ty:.0f})" + (f" -> {dest}" if dest else ""))
 		else:
-			placed.append(dict(base, kind="building", icon=ic, building=ic[4:], x=px, y=py + 2 * PX, anchor="bottom"))
-			notes.append(f"building {ic[4:]} at tile ({tx:.0f},{ty:.0f})" + (f" -> {dest}" if dest else ""))
+			placed.append(dict(base, kind="building", icon=OLD_BUILDING_ICON[ic], building=ic, x=px, y=py + 2 * PX, anchor="bottom"))
+			notes.append(f"building {ic} at tile ({tx:.0f},{ty:.0f})" + (f" -> {dest}" if dest else ""))
 	# swords: spawn areas (not single-tile spot spawns), merged when close on the frame
 	if info and info.spawns:
 		pts = []
@@ -845,6 +864,7 @@ def compose(m, args):
 		rgb, alpha = patch_paper(rng)
 	else:
 		rgb, alpha = image_paper(DATA / HQ_PAPER if paper_choice == "hq" else Path(paper_choice), rng)
+	layer = ink_layer(ink, alpha, paper_choice != "patches") if getattr(args, "ink_layer", None) else None
 	k_ink = (1.0 - (1.0 - INK_FLOOR) * ink)[:, :, None]
 	if paper_choice == "patches":
 		rgb = rgb * k_ink
@@ -863,8 +883,32 @@ def compose(m, args):
 		a[:, :, 3] = alpha
 		img = Image.fromarray(a, "RGBA")
 	info = {"source": source, "known": known, "rect": rect, "ink": ink, "icons": drawn, "notes": notes,
-	        "placements": placed, "paper": paper_choice}
+	        "placements": placed, "paper": paper_choice, "ink_layer": layer}
 	return img, info
+
+
+def ink_layer(ink, paper_alpha, lean):
+	"""The ink alone as straight-alpha RGBA, so drawing it over the paper (source-over) gives compose()'s
+	multiply: paper * f + K = paper * (1 - a) + C * a with a = 1 - f and C = K / a. lean is the HQ paper's
+	lean towards INK_RGB (C is then dark brown); without it (patches) the ink is a black multiply.
+	Not carried: the hatching's emboss highlight, which lightens the paper. Coverage is cut by the
+	paper's alpha so nothing shows past the torn edge."""
+	d = 1.0 - INK_FLOOR
+	f = 1.0 - d * ink
+	if lean:
+		f = f * (1 - 0.3 * ink)
+	cut = paper_alpha.astype(np.float32) / 255.0
+	a8 = np.rint(np.clip(1.0 - f, 0, 1) * cut * 255.0)
+	if not lean:
+		return Image.fromarray(np.dstack([np.zeros(ink.shape + (3,), np.uint8), a8.astype(np.uint8)]), "RGBA")
+	# C from the stored alpha alone (ink solved back from a = (1.3 - F) i - 0.3 (1 - F) i^2), so RGB is a
+	# function of alpha: the same look as C from the float ink, and a much smaller PNG
+	a = np.where(cut > 0, a8 / 255.0 / np.maximum(cut, 1e-6), 0.0)
+	b, q = 1.3 - INK_FLOOR, 0.3 * d
+	i = (b - np.sqrt(np.maximum(b * b - 4 * q * a, 0))) / (2 * q)
+	# where the coverage is nil: the limit of K / a as the ink goes to 0, so filtering shows no fringe
+	rgb = np.where(a[:, :, None] > 0, INK_RGB * 0.3 * i[:, :, None] / np.maximum(a, 1e-6)[:, :, None], INK_RGB * 0.3 / b)
+	return Image.fromarray(np.dstack([np.clip(np.rint(rgb), 0, 255).astype(np.uint8), a8.astype(np.uint8)]), "RGBA")
 
 
 def placements_json(m, info, args):
@@ -883,6 +927,7 @@ def placements_json(m, info, args):
 		"map": m.name, "image": Path(args.out).name, "size": SIZE, "scale": PX,
 		"tiles": [m.sx, m.sy], "px_per_tile": round(float(info["rect"][0]), 4),
 		"tile_to_px": "x = %.3f + (tile_x + 0.5) * %.4f, y = %.3f + (tile_y + 0.5) * %.4f" % (info["rect"][1], info["rect"][0], info["rect"][2], info["rect"][0]),
+		"origin_x": round(float(info["rect"][1]), 4), "origin_y": round(float(info["rect"][2]), 4),
 		"anchor_note": "center: icon centred on (x, y); bottom: icon's bottom edge centred on (x, y)",
 		"mapinfo": bool(args.mapinfo),
 		"placements": clean(info["placements"]),
@@ -964,6 +1009,7 @@ def main(argv=None):
 	ap.add_argument("--paper", default="hq", help="'hq' (default, the shipped high-quality parchment), 'patches' (the old quilted paper) or an image path")
 	ap.add_argument("--icons-json", help="write the icon placements (exits, portals, buildings, entrances, monster areas) to this JSON file")
 	ap.add_argument("--icons", action="store_true", help="also draw the old cut-out icons (off by default; an icon kit will replace them)")
+	ap.add_argument("--ink-layer", help="also write the ink alone as a transparent PNG (drawn over the paper it gives the map, less the hatch emboss)")
 	ap.add_argument("-v", "--verbose", action="store_true", help="list every icon placement and why")
 	args = ap.parse_args(argv)
 	try:
@@ -979,6 +1025,10 @@ def main(argv=None):
 		if args.icons_json:
 			Path(args.icons_json).parent.mkdir(parents=True, exist_ok=True)
 			Path(args.icons_json).write_text(json.dumps(placements_json(m, info, args), indent=1), encoding="utf-8")
+		if args.ink_layer:
+			Path(args.ink_layer).parent.mkdir(parents=True, exist_ok=True)
+			info["ink_layer"].save(args.ink_layer, optimize=True)
+			msg += f", ink layer -> {args.ink_layer}"
 		for n in info["notes"] if args.verbose else []:
 			print("   " + n)
 		score = None

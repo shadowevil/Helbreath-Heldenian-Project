@@ -1,0 +1,27 @@
+{
+ "map": "cath_2",
+ "size": 1200,
+ "tiles": [
+  100,
+  100
+ ],
+ "px_per_tile": 17.9487,
+ "origin_x": -342.3077,
+ "origin_y": -229.641,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "portal_blue",
+   "x": 298.7,
+   "y": 394.9,
+   "w": 64.2,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "elvine",
+   "faction": "elvine"
+  }
+ ]
+}

@@ -141,6 +141,9 @@
     <ClInclude Include="minimap.h">
       <Filter>Managers</Filter>
     </ClInclude>
+    <ClInclude Include="parchment_kit.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
     <ClInclude Include="client_messages.h">
       <Filter>Network</Filter>
     </ClInclude>
@@ -752,6 +755,9 @@
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="minimap.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="parchment_kit.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="common_types.cpp">

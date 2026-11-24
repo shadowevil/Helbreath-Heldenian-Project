@@ -1,0 +1,70 @@
+{
+ "map": "maze",
+ "size": 1200,
+ "tiles": [
+  200,
+  200
+ ],
+ "px_per_tile": 4.9,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 558.6,
+   "y": 388.9,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    1
+   ],
+   "npc_types": [
+    55
+   ],
+   "creatures": [
+    "bunny"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 575.8,
+   "y": 621.7,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    26
+   ],
+   "npc_types": [
+    74
+   ],
+   "creatures": [
+    "giant_crayfish"
+   ]
+  },
+  {
+   "icon": "arrow_225",
+   "x": 273.0,
+   "y": 852.4,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "procella",
+   "direction_deg": 225
+  },
+  {
+   "icon": "arrow_135",
+   "x": 871.2,
+   "y": 886.7,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "direction_deg": 135
+  }
+ ]
+}

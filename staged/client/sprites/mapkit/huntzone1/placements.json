@@ -1,0 +1,56 @@
+{
+ "map": "huntzone1",
+ "size": 1200,
+ "tiles": [
+  200,
+  200
+ ],
+ "px_per_tile": 4.9,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "stairs_down",
+   "x": 635.6,
+   "y": 638.3,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "elvined1"
+  },
+  {
+   "icon": "arrow_45",
+   "x": 903.0,
+   "y": 180.7,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "huntzone3",
+   "direction_deg": 45
+  },
+  {
+   "icon": "arrow_315",
+   "x": 184.8,
+   "y": 337.5,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "elvuni",
+   "direction_deg": 315
+  },
+  {
+   "icon": "arrow_225",
+   "x": 336.7,
+   "y": 925.9,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "elvine",
+   "direction_deg": 225
+  }
+ ]
+}

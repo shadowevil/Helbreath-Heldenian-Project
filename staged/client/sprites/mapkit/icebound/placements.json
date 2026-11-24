@@ -1,0 +1,141 @@
+{
+ "map": "icebound",
+ "size": 1200,
+ "tiles": [
+  300,
+  300
+ ],
+ "px_per_tile": 3.2667,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 740.8,
+   "y": 246.0,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    20
+   ],
+   "npc_types": [
+    53
+   ],
+   "creatures": [
+    "beholder"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 472.9,
+   "y": 316.3,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    13
+   ],
+   "npc_types": [
+    12
+   ],
+   "creatures": [
+    "stone_golem"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 310.9,
+   "y": 420.0,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    13,
+    28
+   ],
+   "npc_types": [
+    12,
+    30
+   ],
+   "creatures": [
+    "stone_golem",
+    "liche"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 636.4,
+   "y": 497.1,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    28,
+    31
+   ],
+   "npc_types": [
+    30,
+    54
+   ],
+   "creatures": [
+    "liche",
+    "dark_elf"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 255.8,
+   "y": 738.6,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    10,
+    31
+   ],
+   "npc_types": [
+    11,
+    54
+   ],
+   "creatures": [
+    "skeleton",
+    "dark_elf"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 508.4,
+   "y": 880.2,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    10,
+    20
+   ],
+   "npc_types": [
+    11,
+    53
+   ],
+   "creatures": [
+    "skeleton",
+    "beholder"
+   ]
+  },
+  {
+   "icon": "arrow_135",
+   "x": 916.1,
+   "y": 910.4,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "middleland",
+   "direction_deg": 135
+  }
+ ]
+}

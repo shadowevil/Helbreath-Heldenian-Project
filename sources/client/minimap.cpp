@@ -1,4 +1,4 @@
-// minimap.cpp: Three-tier minimap pyramid for the corner guide map
+// minimap.cpp: Two-tier minimap for the corner guide map
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -54,9 +54,11 @@ namespace hb::client
 		if (folder.empty())
 			return;
 
+		// SDL's level files are 01 (finest) .. 03 (whole map); 01 is not shipped (d-033)
+		constexpr int first_level_file = 2;
 		for (int i = 0; i < tier_count; i++)
 		{
-			const std::string path = sprite_dir + "/minimaps/" + folder + "/0" + std::to_string(i + 1) + ".jpg";
+			const std::string path = sprite_dir + "/minimaps/" + folder + "/0" + std::to_string(i + first_level_file) + ".jpg";
 			m_levels[i].reset(renderer.create_texture_from_file(path.c_str()));
 			if (!m_levels[i] || m_levels[i]->get_width() == 0 || m_levels[i]->get_height() == 0)
 			{

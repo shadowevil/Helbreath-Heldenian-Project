@@ -1,0 +1,27 @@
+{
+ "map": "huntzone4",
+ "size": 1200,
+ "tiles": [
+  200,
+  200
+ ],
+ "px_per_tile": 4.9,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "portal_red",
+   "x": 175.9,
+   "y": 486.0,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "huntzone2",
+   "faction": "aresden"
+  }
+ ]
+}

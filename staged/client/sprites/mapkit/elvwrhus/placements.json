@@ -1,0 +1,37 @@
+{
+ "map": "elvwrhus",
+ "size": 1200,
+ "tiles": [
+  100,
+  100
+ ],
+ "px_per_tile": 20.5882,
+ "origin_x": -655.8824,
+ "origin_y": -237.8235,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "portal_blue",
+   "x": 434.1,
+   "y": 379.3,
+   "w": 64.2,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "elvine",
+   "faction": "elvine"
+  },
+  {
+   "icon": "portal_blue",
+   "x": 578.2,
+   "y": 394.8,
+   "w": 64.2,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "elvine",
+   "faction": "elvine"
+  }
+ ]
+}

@@ -1,0 +1,104 @@
+{
+ "map": "toh3",
+ "size": 1200,
+ "tiles": [
+  300,
+  300
+ ],
+ "px_per_tile": 3.2667,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 358.6,
+   "y": 721.3,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    1,
+    31
+   ],
+   "npc_types": [
+    54,
+    55
+   ],
+   "creatures": [
+    "dark_elf",
+    "bunny"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 822.4,
+   "y": 892.8,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    1,
+    20
+   ],
+   "npc_types": [
+    53,
+    55
+   ],
+   "creatures": [
+    "beholder",
+    "bunny"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 201.8,
+   "y": 950.0,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    1,
+    20
+   ],
+   "npc_types": [
+    53,
+    55
+   ],
+   "creatures": [
+    "beholder",
+    "bunny"
+   ]
+  },
+  {
+   "icon": "stairs_down",
+   "x": 550.4,
+   "y": 174.7,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "toh2"
+  },
+  {
+   "icon": "stairs_down",
+   "x": 374.0,
+   "y": 200.9,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "toh2"
+  },
+  {
+   "icon": "arrow_225",
+   "x": 218.3,
+   "y": 859.7,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "direction_deg": 225
+  }
+ ]
+}

@@ -1,0 +1,37 @@
+{
+ "map": "middled1n",
+ "size": 1200,
+ "tiles": [
+  220,
+  220
+ ],
+ "px_per_tile": 4.4545,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "portal_red",
+   "x": 897.4,
+   "y": 565.9,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "arefarm",
+   "faction": "aresden"
+  },
+  {
+   "icon": "arrow_315",
+   "x": 229.1,
+   "y": 231.7,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "elvfarm",
+   "direction_deg": 315
+  }
+ ]
+}

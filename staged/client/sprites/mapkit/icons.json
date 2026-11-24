@@ -1,0 +1,177 @@
+{
+ "frames": {
+  "sword": {
+   "image": "icons.png",
+   "x": 1352,
+   "y": 337,
+   "w": 176,
+   "h": 172
+  },
+  "portal_blue": {
+   "image": "icons.png",
+   "x": 1248,
+   "y": 32,
+   "w": 139,
+   "h": 208
+  },
+  "portal_red": {
+   "image": "icons.png",
+   "x": 1451,
+   "y": 32,
+   "w": 148,
+   "h": 206
+  },
+  "city_hall": {
+   "image": "icons.png",
+   "x": 926,
+   "y": 337,
+   "w": 146,
+   "h": 191
+  },
+  "cathedral": {
+   "image": "icons.png",
+   "x": 1663,
+   "y": 32,
+   "w": 207,
+   "h": 203
+  },
+  "command_hall": {
+   "image": "icons.png",
+   "x": 1136,
+   "y": 337,
+   "w": 152,
+   "h": 185
+  },
+  "guild_hall": {
+   "image": "icons.png",
+   "x": 1813,
+   "y": 337,
+   "w": 114,
+   "h": 148
+  },
+  "wizard_tower": {
+   "image": "icons.png",
+   "x": 566,
+   "y": 604,
+   "w": 99,
+   "h": 127
+  },
+  "shop": {
+   "image": "icons.png",
+   "x": 1298,
+   "y": 604,
+   "w": 102,
+   "h": 95
+  },
+  "warehouse": {
+   "image": "icons.png",
+   "x": 962,
+   "y": 604,
+   "w": 102,
+   "h": 122
+  },
+  "blacksmith": {
+   "image": "icons.png",
+   "x": 1128,
+   "y": 604,
+   "w": 106,
+   "h": 97
+  },
+  "barrack": {
+   "image": "icons.png",
+   "x": 1592,
+   "y": 337,
+   "w": 157,
+   "h": 149
+  },
+  "stairs_down": {
+   "image": "icons.png",
+   "x": 729,
+   "y": 604,
+   "w": 169,
+   "h": 124
+  },
+  "stairs_spiral": {
+   "image": "icons.png",
+   "x": 632,
+   "y": 337,
+   "w": 230,
+   "h": 199
+  },
+  "exit_arrow": {
+   "image": "icons.png",
+   "x": 32,
+   "y": 337,
+   "w": 136,
+   "h": 203
+  },
+  "arrow_0": {
+   "image": "icons.png",
+   "x": 232,
+   "y": 337,
+   "w": 136,
+   "h": 203
+  },
+  "arrow_45": {
+   "image": "icons.png",
+   "x": 32,
+   "y": 32,
+   "w": 240,
+   "h": 241
+  },
+  "arrow_90": {
+   "image": "icons.png",
+   "x": 32,
+   "y": 604,
+   "w": 203,
+   "h": 136
+  },
+  "arrow_135": {
+   "image": "icons.png",
+   "x": 336,
+   "y": 32,
+   "w": 240,
+   "h": 241
+  },
+  "arrow_180": {
+   "image": "icons.png",
+   "x": 432,
+   "y": 337,
+   "w": 136,
+   "h": 203
+  },
+  "arrow_225": {
+   "image": "icons.png",
+   "x": 640,
+   "y": 32,
+   "w": 240,
+   "h": 241
+  },
+  "arrow_270": {
+   "image": "icons.png",
+   "x": 299,
+   "y": 604,
+   "w": 203,
+   "h": 136
+  },
+  "arrow_315": {
+   "image": "icons.png",
+   "x": 944,
+   "y": 32,
+   "w": 240,
+   "h": 241
+  }
+ },
+ "buildings": [
+  "barrack",
+  "blacksmith",
+  "cathedral",
+  "city_hall",
+  "command_hall",
+  "guild_hall",
+  "shop",
+  "warehouse",
+  "wizard_tower"
+ ],
+ "building_factor": 0.7
+}

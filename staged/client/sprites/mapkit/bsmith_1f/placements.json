@@ -1,0 +1,37 @@
+{
+ "map": "bsmith_1f",
+ "size": 1200,
+ "tiles": [
+  100,
+  100
+ ],
+ "px_per_tile": 35.0,
+ "origin_x": -800.0,
+ "origin_y": -611.5,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "arrow_45",
+   "x": 686.3,
+   "y": 418.6,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "arefarm",
+   "direction_deg": 45
+  },
+  {
+   "icon": "arrow_270",
+   "x": 348.8,
+   "y": 595.2,
+   "w": 72.0,
+   "h": 48.2,
+   "kind": "exit",
+   "dest": "arefarm",
+   "direction_deg": 270
+  }
+ ]
+}

@@ -1,0 +1,27 @@
+{
+ "map": "elvuni",
+ "size": 1200,
+ "tiles": [
+  200,
+  200
+ ],
+ "px_per_tile": 4.9,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "arrow_45",
+   "x": 915.3,
+   "y": 200.3,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "huntzone1",
+   "direction_deg": 45
+  }
+ ]
+}

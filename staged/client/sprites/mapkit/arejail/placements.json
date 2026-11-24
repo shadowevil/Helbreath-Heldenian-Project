@@ -1,0 +1,16 @@
+{
+ "map": "arejail",
+ "size": 1200,
+ "tiles": [
+  200,
+  120
+ ],
+ "px_per_tile": 4.9,
+ "origin_x": 110.0,
+ "origin_y": 302.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": []
+}

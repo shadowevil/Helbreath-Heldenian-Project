@@ -1,0 +1,86 @@
+{
+ "map": "druncncity",
+ "size": 1200,
+ "tiles": [
+  200,
+  200
+ ],
+ "px_per_tile": 4.9,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 274.4,
+   "y": 244.4,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    5
+   ],
+   "npc_types": [
+    14
+   ],
+   "creatures": [
+    "orc_mage"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 269.5,
+   "y": 467.3,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    5
+   ],
+   "npc_types": [
+    14
+   ],
+   "creatures": [
+    "orc_mage"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 864.9,
+   "y": 805.5,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    5
+   ],
+   "npc_types": [
+    14
+   ],
+   "creatures": [
+    "orc_mage"
+   ]
+  },
+  {
+   "icon": "portal_red",
+   "x": 807.2,
+   "y": 327.5,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "inferniab"
+  },
+  {
+   "icon": "portal_red",
+   "x": 248.6,
+   "y": 425.5,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "inferniaa"
+  }
+ ]
+}

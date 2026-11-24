@@ -1,0 +1,252 @@
+{
+ "map": "elvine",
+ "size": 1200,
+ "tiles": [
+  300,
+  300
+ ],
+ "px_per_tile": 3.2667,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 531.9,
+   "y": 183.7,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0,
+    9
+   ],
+   "npc_types": [
+    10,
+    17
+   ],
+   "creatures": [
+    "slime",
+    "scorpion"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 226.3,
+   "y": 275.4,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0
+   ],
+   "npc_types": [
+    10
+   ],
+   "creatures": [
+    "slime"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 922.1,
+   "y": 664.2,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0
+   ],
+   "npc_types": [
+    10
+   ],
+   "creatures": [
+    "slime"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 236.0,
+   "y": 718.2,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    4
+   ],
+   "npc_types": [
+    22
+   ],
+   "creatures": [
+    "amphis"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 861.6,
+   "y": 775.2,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0
+   ],
+   "npc_types": [
+    10
+   ],
+   "creatures": [
+    "slime"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 508.8,
+   "y": 876.5,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0
+   ],
+   "npc_types": [
+    10
+   ],
+   "creatures": [
+    "slime"
+   ]
+  },
+  {
+   "icon": "cathedral",
+   "x": 470.3,
+   "y": 223.4,
+   "w": 144.9,
+   "h": 142.1,
+   "kind": "building",
+   "dest": "cath_2"
+  },
+  {
+   "icon": "wizard_tower",
+   "x": 667.1,
+   "y": 277.2,
+   "w": 69.3,
+   "h": 88.9,
+   "kind": "building",
+   "dest": "wzdtwr_2"
+  },
+  {
+   "icon": "command_hall",
+   "x": 768.4,
+   "y": 273.1,
+   "w": 106.4,
+   "h": 129.5,
+   "kind": "building",
+   "dest": "cmdhall_2"
+  },
+  {
+   "icon": "blacksmith",
+   "x": 841.5,
+   "y": 406.1,
+   "w": 74.2,
+   "h": 67.9,
+   "kind": "building",
+   "dest": "bsmith_2"
+  },
+  {
+   "icon": "warehouse",
+   "x": 730.9,
+   "y": 450.0,
+   "w": 71.4,
+   "h": 85.4,
+   "kind": "building",
+   "dest": "wrhus_2"
+  },
+  {
+   "icon": "city_hall",
+   "x": 519.9,
+   "y": 405.4,
+   "w": 102.2,
+   "h": 133.7,
+   "kind": "building",
+   "dest": "cityhall_2"
+  },
+  {
+   "icon": "guild_hall",
+   "x": 323.3,
+   "y": 471.8,
+   "w": 79.8,
+   "h": 103.6,
+   "kind": "building",
+   "dest": "gldhall_2"
+  },
+  {
+   "icon": "shop",
+   "x": 818.8,
+   "y": 544.3,
+   "w": 71.4,
+   "h": 66.5,
+   "kind": "building",
+   "dest": "gshop_2"
+  },
+  {
+   "icon": "warehouse",
+   "x": 371.6,
+   "y": 603.6,
+   "w": 71.4,
+   "h": 85.4,
+   "kind": "building",
+   "dest": "elvwrhus"
+  },
+  {
+   "icon": "stairs_down",
+   "x": 913.4,
+   "y": 342.8,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "elvined1"
+  },
+  {
+   "icon": "arrow_45",
+   "x": 783.8,
+   "y": 147.2,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "huntzone1",
+   "direction_deg": 45
+  },
+  {
+   "icon": "arrow_90",
+   "x": 956.5,
+   "y": 722.2,
+   "w": 72.0,
+   "h": 48.2,
+   "kind": "exit",
+   "dest": "elvfarm",
+   "direction_deg": 90
+  },
+  {
+   "icon": "arrow_135",
+   "x": 880.2,
+   "y": 943.0,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "middleland",
+   "direction_deg": 135
+  },
+  {
+   "icon": "arrow_225",
+   "x": 162.8,
+   "y": 952.8,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "middleland",
+   "direction_deg": 225
+  }
+ ]
+}

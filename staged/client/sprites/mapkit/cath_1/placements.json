@@ -1,0 +1,27 @@
+{
+ "map": "cath_1",
+ "size": 1200,
+ "tiles": [
+  100,
+  100
+ ],
+ "px_per_tile": 17.9487,
+ "origin_x": -342.3077,
+ "origin_y": -229.641,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "portal_red",
+   "x": 296.3,
+   "y": 394.9,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "aresden",
+   "faction": "aresden"
+  }
+ ]
+}

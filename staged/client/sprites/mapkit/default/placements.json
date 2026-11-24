@@ -1,0 +1,88 @@
+{
+ "map": "default",
+ "size": 1200,
+ "tiles": [
+  170,
+  170
+ ],
+ "px_per_tile": 5.7647,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 632.3,
+   "y": 577.9,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0
+   ],
+   "npc_types": [
+    10
+   ],
+   "creatures": [
+    "slime"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 468.1,
+   "y": 607.3,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0
+   ],
+   "npc_types": [
+    10
+   ],
+   "creatures": [
+    "slime"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 757.0,
+   "y": 768.7,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0
+   ],
+   "npc_types": [
+    10
+   ],
+   "creatures": [
+    "slime"
+   ]
+  },
+  {
+   "icon": "portal_red",
+   "x": 545.3,
+   "y": 456.1,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "arefarm",
+   "faction": "aresden"
+  },
+  {
+   "icon": "portal_blue",
+   "x": 818.7,
+   "y": 473.4,
+   "w": 64.2,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "elvfarm",
+   "faction": "elvine"
+  }
+ ]
+}

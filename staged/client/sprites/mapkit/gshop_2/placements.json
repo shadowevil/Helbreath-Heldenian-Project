@@ -1,0 +1,27 @@
+{
+ "map": "gshop_2",
+ "size": 1200,
+ "tiles": [
+  100,
+  100
+ ],
+ "px_per_tile": 29.1667,
+ "origin_x": -945.8333,
+ "origin_y": -614.4167,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "portal_blue",
+   "x": 489.1,
+   "y": 379.7,
+   "w": 64.2,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "elvine",
+   "faction": "elvine"
+  }
+ ]
+}

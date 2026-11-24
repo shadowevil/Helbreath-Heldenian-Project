@@ -1,0 +1,43 @@
+{
+ "map": "elvbrk12",
+ "size": 1200,
+ "tiles": [
+  150,
+  150
+ ],
+ "px_per_tile": 6.5333,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 616.6,
+   "y": 531.9,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    6
+   ],
+   "npc_types": [
+    34
+   ],
+   "creatures": [
+    "dummy"
+   ]
+  },
+  {
+   "icon": "stairs_spiral",
+   "x": 276.0,
+   "y": 285.0,
+   "w": 97.1,
+   "h": 84.0,
+   "kind": "stairs",
+   "dest": "elvbrk11"
+  }
+ ]
+}

@@ -1,0 +1,26 @@
+{
+ "map": "godh",
+ "size": 1200,
+ "tiles": [
+  250,
+  250
+ ],
+ "px_per_tile": 3.92,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "portal_red",
+   "x": 916.3,
+   "y": 721.6,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "hrampart"
+  }
+ ]
+}

@@ -1,0 +1,27 @@
+{
+ "map": "gldhall_1",
+ "size": 1200,
+ "tiles": [
+  100,
+  100
+ ],
+ "px_per_tile": 18.4211,
+ "origin_x": -302.6316,
+ "origin_y": -269.7895,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "portal_red",
+   "x": 771.2,
+   "y": 412.8,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "aresden",
+   "faction": "aresden"
+  }
+ ]
+}

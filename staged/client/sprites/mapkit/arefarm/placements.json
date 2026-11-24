@@ -1,0 +1,196 @@
+{
+ "map": "arefarm",
+ "size": 1200,
+ "tiles": [
+  250,
+  250
+ ],
+ "px_per_tile": 3.92,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 717.9,
+   "y": 209.1,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    3
+   ],
+   "npc_types": [
+    16
+   ],
+   "creatures": [
+    "giant_ant"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 586.6,
+   "y": 250.3,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0
+   ],
+   "npc_types": [
+    10
+   ],
+   "creatures": [
+    "slime"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 867.3,
+   "y": 462.9,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0,
+    13
+   ],
+   "npc_types": [
+    10,
+    12
+   ],
+   "creatures": [
+    "slime",
+    "stone_golem"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 714.0,
+   "y": 467.8,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    3
+   ],
+   "npc_types": [
+    16
+   ],
+   "creatures": [
+    "giant_ant"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 447.4,
+   "y": 703.0,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    3
+   ],
+   "npc_types": [
+    16
+   ],
+   "creatures": [
+    "giant_ant"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 363.1,
+   "y": 826.5,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    9
+   ],
+   "npc_types": [
+    17
+   ],
+   "creatures": [
+    "scorpion"
+   ]
+  },
+  {
+   "icon": "shop",
+   "x": 317.0,
+   "y": 322.2,
+   "w": 71.4,
+   "h": 66.5,
+   "kind": "building",
+   "dest": "gshop_1f"
+  },
+  {
+   "icon": "warehouse",
+   "x": 223.3,
+   "y": 381.4,
+   "w": 71.4,
+   "h": 85.4,
+   "kind": "building",
+   "dest": "wrhus_1f"
+  },
+  {
+   "icon": "blacksmith",
+   "x": 344.5,
+   "y": 399.7,
+   "w": 74.2,
+   "h": 67.9,
+   "kind": "building",
+   "dest": "bsmith_1f"
+  },
+  {
+   "icon": "barrack",
+   "x": 269.7,
+   "y": 532.0,
+   "w": 109.9,
+   "h": 104.3,
+   "kind": "building",
+   "dest": "arebrk11"
+  },
+  {
+   "icon": "portal_red",
+   "x": 545.9,
+   "y": 110.1,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "2ndmiddle"
+  },
+  {
+   "icon": "portal_red",
+   "x": 251.9,
+   "y": 417.8,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "aresden",
+   "faction": "aresden"
+  },
+  {
+   "icon": "stairs_down",
+   "x": 377.3,
+   "y": 349.6,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "middled1n"
+  },
+  {
+   "icon": "arrow_315",
+   "x": 164.7,
+   "y": 184.2,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "aresden",
+   "direction_deg": 315
+  }
+ ]
+}

@@ -1,0 +1,235 @@
+{
+ "map": "aresden",
+ "size": 1200,
+ "tiles": [
+  300,
+  300
+ ],
+ "px_per_tile": 3.2667,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 418.4,
+   "y": 204.7,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0,
+    9
+   ],
+   "npc_types": [
+    10,
+    17
+   ],
+   "creatures": [
+    "slime",
+    "scorpion"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 208.0,
+   "y": 669.7,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0
+   ],
+   "npc_types": [
+    10
+   ],
+   "creatures": [
+    "slime"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 899.2,
+   "y": 719.7,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0
+   ],
+   "npc_types": [
+    10
+   ],
+   "creatures": [
+    "slime"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 740.8,
+   "y": 846.9,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    4
+   ],
+   "npc_types": [
+    22
+   ],
+   "creatures": [
+    "amphis"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 528.4,
+   "y": 863.4,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    0
+   ],
+   "npc_types": [
+    10
+   ],
+   "creatures": [
+    "slime"
+   ]
+  },
+  {
+   "icon": "cathedral",
+   "x": 646.8,
+   "y": 275.7,
+   "w": 144.9,
+   "h": 142.1,
+   "kind": "building",
+   "dest": "cath_1"
+  },
+  {
+   "icon": "guild_hall",
+   "x": 440.9,
+   "y": 328.1,
+   "w": 79.8,
+   "h": 103.6,
+   "kind": "building",
+   "dest": "gldhall_1"
+  },
+  {
+   "icon": "wizard_tower",
+   "x": 260.0,
+   "y": 411.1,
+   "w": 69.3,
+   "h": 88.9,
+   "kind": "building",
+   "dest": "wzdtwr_1"
+  },
+  {
+   "icon": "city_hall",
+   "x": 519.9,
+   "y": 392.3,
+   "w": 102.2,
+   "h": 133.7,
+   "kind": "building",
+   "dest": "cityhall_1"
+  },
+  {
+   "icon": "warehouse",
+   "x": 796.2,
+   "y": 466.4,
+   "w": 71.4,
+   "h": 85.4,
+   "kind": "building",
+   "dest": "arewrhus"
+  },
+  {
+   "icon": "command_hall",
+   "x": 379.7,
+   "y": 508.2,
+   "w": 106.4,
+   "h": 129.5,
+   "kind": "building",
+   "dest": "cmdhall_1"
+  },
+  {
+   "icon": "shop",
+   "x": 495.4,
+   "y": 593.3,
+   "w": 71.4,
+   "h": 66.5,
+   "kind": "building",
+   "dest": "gshop_1"
+  },
+  {
+   "icon": "warehouse",
+   "x": 417.3,
+   "y": 633.0,
+   "w": 71.4,
+   "h": 85.4,
+   "kind": "building",
+   "dest": "wrhus_1"
+  },
+  {
+   "icon": "blacksmith",
+   "x": 606.3,
+   "y": 693.6,
+   "w": 74.2,
+   "h": 67.9,
+   "kind": "building",
+   "dest": "bsmith_1"
+  },
+  {
+   "icon": "stairs_down",
+   "x": 325.4,
+   "y": 761.0,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "aresdend1"
+  },
+  {
+   "icon": "arrow_315",
+   "x": 187.3,
+   "y": 147.2,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "middleland",
+   "direction_deg": 315
+  },
+  {
+   "icon": "arrow_45",
+   "x": 907.9,
+   "y": 147.2,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "middleland",
+   "direction_deg": 45
+  },
+  {
+   "icon": "arrow_135",
+   "x": 963.5,
+   "y": 722.5,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "arefarm",
+   "direction_deg": 135
+  },
+  {
+   "icon": "arrow_225",
+   "x": 192.2,
+   "y": 959.4,
+   "w": 85.1,
+   "h": 85.5,
+   "kind": "exit",
+   "dest": "huntzone2",
+   "direction_deg": 225
+  }
+ ]
+}

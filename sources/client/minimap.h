@@ -1,9 +1,9 @@
-// minimap.h: Three-tier minimap pyramid for the corner guide map
+// minimap.h: Two-tier minimap for the corner guide map
 //
-// Loads sprites/minimaps/<map>/01.jpg (finest), 02.jpg and 03.jpg (coarsest, the whole map). The
-// widget shows a fixed window of 170 level pixels along the long side (the native size of level 03),
-// centred on the player and clamped to the level, mapped into the widget. So the coarsest tier shows
-// the whole map, the middle one about a third and the finest about a sixth, at any window size.
+// Loads sprites/minimaps/<map>/02.jpg (mid) and 03.jpg (coarsest, the whole map); the finest level's
+// role belongs to the parchment map view (d-033). The widget shows a fixed window of 170 level pixels
+// along the long side (the native size of level 03), centred on the player and clamped to the level,
+// mapped into the widget. So the coarse tier shows the whole map and the mid one about a third.
 // A map without art leaves the minimap empty: nothing is drawn and the caller treats the area as world.
 //////////////////////////////////////////////////////////////////////
 
@@ -24,21 +24,20 @@ namespace hb::client
 	class minimap
 	{
 	public:
-		static constexpr int tier_count = 3;
+		static constexpr int tier_count = 2;
 		static constexpr int tier_full_map = 0;    // level 03, the whole map
 		static constexpr int tier_mid = 1;         // level 02
-		static constexpr int tier_zoomed_in = 2;   // level 01
 
 		minimap();
 		~minimap();
 
-		// Drops the previous textures, then loads the three levels of map_name (lowercased) from
+		// Drops the previous textures, then loads the two levels of map_name (lowercased) from
 		// <sprite_dir>/minimaps/<map>/. A missing folder or any level failing leaves it empty.
 		void load(hb::shared::render::IRenderer& renderer, const std::string& sprite_dir, const std::string& map_name);
 		void unload();
 		bool is_empty() const { return m_levels[0] == nullptr; }
 
-		// 0 = whole map, 1 = mid, 2 = zoomed in; clamped
+		// 0 = whole map, 1 = mid; clamped
 		void set_zoom_level(int level);
 		int get_zoom_level() const { return m_zoom_level; }
 
@@ -76,7 +75,7 @@ namespace hb::client
 			int player_tile_x, int player_tile_y) const;
 		int level_index() const;
 
-		// index 0 = 01.jpg (finest) ... 2 = 03.jpg (whole map)
+		// index 0 = 02.jpg (mid), 1 = 03.jpg (whole map)
 		std::array<std::unique_ptr<hb::shared::render::ITexture>, tier_count> m_levels;
 		int m_zoom_level = tier_mid;
 	};

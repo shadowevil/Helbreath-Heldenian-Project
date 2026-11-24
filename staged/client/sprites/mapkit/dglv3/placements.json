@@ -1,0 +1,53 @@
+{
+ "map": "dglv3",
+ "size": 1200,
+ "tiles": [
+  400,
+  400
+ ],
+ "px_per_tile": 2.45,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "stairs_down",
+   "x": 539.7,
+   "y": 290.0,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "dglv4"
+  },
+  {
+   "icon": "stairs_down",
+   "x": 907.2,
+   "y": 544.8,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "dglv4"
+  },
+  {
+   "icon": "stairs_down",
+   "x": 532.3,
+   "y": 590.5,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "dglv2"
+  },
+  {
+   "icon": "stairs_down",
+   "x": 216.3,
+   "y": 672.2,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "dglv4"
+  }
+ ]
+}

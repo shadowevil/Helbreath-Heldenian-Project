@@ -1,0 +1,128 @@
+{
+ "map": "inferniaa",
+ "size": 1200,
+ "tiles": [
+  150,
+  150
+ ],
+ "px_per_tile": 6.5333,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 352.0,
+   "y": 280.3,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    8
+   ],
+   "npc_types": [
+    18
+   ],
+   "creatures": [
+    "zombie"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 721.2,
+   "y": 313.0,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    18
+   ],
+   "npc_types": [
+    13
+   ],
+   "creatures": [
+    "cyclops"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 505.6,
+   "y": 460.0,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    47
+   ],
+   "npc_types": [
+    73
+   ],
+   "creatures": [
+    "fire_wyvern"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 809.4,
+   "y": 551.5,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    36
+   ],
+   "npc_types": [
+    31
+   ],
+   "creatures": [
+    "demon"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 682.0,
+   "y": 561.3,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    33
+   ],
+   "npc_types": [
+    72
+   ],
+   "creatures": [
+    "claw_turtle"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 388.0,
+   "y": 737.7,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    47
+   ],
+   "npc_types": [
+    73
+   ],
+   "creatures": [
+    "fire_wyvern"
+   ]
+  },
+  {
+   "icon": "portal_red",
+   "x": 856.2,
+   "y": 210.7,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "inferniab"
+  }
+ ]
+}

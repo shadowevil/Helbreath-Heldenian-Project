@@ -1,0 +1,62 @@
+{
+ "map": "aresdend1",
+ "size": 1200,
+ "tiles": [
+  200,
+  200
+ ],
+ "px_per_tile": 4.9,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "portal_red",
+   "x": 566.3,
+   "y": 208.3,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "aresden",
+   "faction": "aresden"
+  },
+  {
+   "icon": "portal_red",
+   "x": 556.9,
+   "y": 438.2,
+   "w": 69.0,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "huntzone2",
+   "faction": "aresden"
+  },
+  {
+   "icon": "stairs_down",
+   "x": 253.8,
+   "y": 239.4,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "dglv2"
+  },
+  {
+   "icon": "stairs_down",
+   "x": 424.9,
+   "y": 626.9,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance"
+  },
+  {
+   "icon": "stairs_down",
+   "x": 542.5,
+   "y": 705.3,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance"
+  }
+ ]
+}

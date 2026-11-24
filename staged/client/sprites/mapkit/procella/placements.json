@@ -1,0 +1,128 @@
+{
+ "map": "procella",
+ "size": 1200,
+ "tiles": [
+  250,
+  250
+ ],
+ "px_per_tile": 3.92,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "sword",
+   "x": 551.3,
+   "y": 201.3,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    29
+   ],
+   "npc_types": [
+    48
+   ],
+   "creatures": [
+    "stalker"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 837.5,
+   "y": 338.5,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    25
+   ],
+   "npc_types": [
+    80
+   ],
+   "creatures": [
+    "tentacle"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 368.7,
+   "y": 530.8,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    26,
+    48
+   ],
+   "npc_types": [
+    74,
+    81
+   ],
+   "creatures": [
+    "giant_crayfish",
+    "abaddon"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 767.3,
+   "y": 549.9,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    21,
+    27,
+    40
+   ],
+   "npc_types": [
+    60,
+    75,
+    76
+   ],
+   "creatures": [
+    "cannibal_plant",
+    "giant_lizard",
+    "giant_plant"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 349.4,
+   "y": 724.6,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    25
+   ],
+   "npc_types": [
+    80
+   ],
+   "creatures": [
+    "tentacle"
+   ]
+  },
+  {
+   "icon": "sword",
+   "x": 576.8,
+   "y": 906.9,
+   "w": 77.8,
+   "h": 76.0,
+   "kind": "monster_area",
+   "npc_ids": [
+    29
+   ],
+   "npc_types": [
+    48
+   ],
+   "creatures": [
+    "stalker"
+   ]
+  }
+ ]
+}

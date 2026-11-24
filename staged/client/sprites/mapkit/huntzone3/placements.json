@@ -1,0 +1,27 @@
+{
+ "map": "huntzone3",
+ "size": 1200,
+ "tiles": [
+  200,
+  200
+ ],
+ "px_per_tile": 4.9,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "portal_blue",
+   "x": 313.1,
+   "y": 843.7,
+   "w": 64.2,
+   "h": 96.0,
+   "kind": "portal",
+   "dest": "huntzone1",
+   "faction": "elvine"
+  }
+ ]
+}

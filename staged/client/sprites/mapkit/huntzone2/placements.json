@@ -1,0 +1,56 @@
+{
+ "map": "huntzone2",
+ "size": 1200,
+ "tiles": [
+  200,
+  200
+ ],
+ "px_per_tile": 4.9,
+ "origin_x": 110.0,
+ "origin_y": 106.0,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": [
+  {
+   "icon": "stairs_down",
+   "x": 576.8,
+   "y": 599.1,
+   "w": 87.2,
+   "h": 64.0,
+   "kind": "entrance",
+   "dest": "aresdend1"
+  },
+  {
+   "icon": "arrow_0",
+   "x": 431.3,
+   "y": 194.4,
+   "w": 48.2,
+   "h": 72.0,
+   "kind": "exit",
+   "dest": "aresden",
+   "direction_deg": 0
+  },
+  {
+   "icon": "arrow_90",
+   "x": 929.5,
+   "y": 584.1,
+   "w": 72.0,
+   "h": 48.2,
+   "kind": "exit",
+   "dest": "huntzone4",
+   "direction_deg": 90
+  },
+  {
+   "icon": "arrow_180",
+   "x": 656.7,
+   "y": 925.5,
+   "w": 48.2,
+   "h": 72.0,
+   "kind": "exit",
+   "dest": "areuni",
+   "direction_deg": 180
+  }
+ ]
+}

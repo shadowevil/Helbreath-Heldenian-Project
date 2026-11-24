@@ -1,0 +1,16 @@
+{
+ "map": "fightzone3",
+ "size": 1200,
+ "tiles": [
+  100,
+  100
+ ],
+ "px_per_tile": 20.5882,
+ "origin_x": -450.0,
+ "origin_y": -556.9412,
+ "box": [
+  110.0,
+  1090.0
+ ],
+ "icons": []
+}
