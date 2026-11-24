@@ -36,3 +36,10 @@
 - Quote: "You may create test accounts and characters as needed. No need to ask. Just keep track of them and reuse as needed".
 - Decided: agents create throwaway test accounts and characters on the local game server without asking. Each one is recorded in `.claude/local/test_accounts.json` (gitignored), and existing entries are reused before a new one is made. The given context was the running local Debug server in `game/server`.
 - Recorded in: `.claude/local/test_accounts.json`; memory `test-accounts`.
+
+## d-032 The minimap uses SDL's three-tier pyramid
+
+- Date: 2026-11-24.
+- Quotes: "Using SDL's minimaps can we replace our minimap functionality with SDL's version which uses 3 tier minimaps? We don't need the 2k version though"; answers chosen by the user: "Hide it" (maps without SDL art) and "JPG q92 (Recommended)" (image format).
+- Decided: the minimap shows SDL's baked levels 01-03 per map (level 00, the 2096 px level, is left out), stored in `staged/` as JPG quality 92. Maps without SDL art show no minimap.
+- Recorded in: HH-0045.

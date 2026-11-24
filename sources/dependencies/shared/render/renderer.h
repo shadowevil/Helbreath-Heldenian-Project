@@ -109,8 +109,9 @@ public:
     virtual void destroy_texture(ITexture* texture) = 0;
     // Draw part of a texture from create_texture_from_file on the current target, sampled with the
     // texture's own filtering (smooth + mipmaps). src_* in texture pixels, dst_* in logical units.
+    // alpha is opacity (1 = opaque), the same meaning as DrawParams::m_alpha.
     virtual void draw_texture_region(ITexture* texture, float src_x, float src_y, float src_w, float src_h,
-                                     float dst_x, float dst_y, float dst_w, float dst_h) = 0;
+                                     float dst_x, float dst_y, float dst_w, float dst_h, float alpha = 1.0f) = 0;
 
     // ============== Blitting ==============
     // Note: For transition, we keep direct surface access methods

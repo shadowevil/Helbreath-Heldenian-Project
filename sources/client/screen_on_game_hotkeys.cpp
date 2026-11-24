@@ -13,6 +13,7 @@
 #include "config_manager.h"
 #include "hotkey_manager.h"
 #include "dialog_box_chat_history.h"
+#include "dialog_box_guide_map.h"
 #include "dialog_box_item_drop_amount.h"
 #include "inventory_manager.h"
 #include "lan_eng.h"
@@ -152,14 +153,14 @@ bool Screen_OnGame::on_key_down(KeyCode key)
 	case KeyCode::Equal:
 		if (text_input_manager::get().is_active() == false)
 		{
-			config_manager::get().set_zoom_map_enabled(true);
+			get_dialog_box_manager().get_dialog_as<DialogBox_GuideMap>(DialogBoxId::GuideMap)->step_zoom(1);
 		}
 		return true;
 	case KeyCode::NumpadSubtract:
 	case KeyCode::Hyphen:
 		if (text_input_manager::get().is_active() == false)
 		{
-			config_manager::get().set_zoom_map_enabled(false);
+			get_dialog_box_manager().get_dialog_as<DialogBox_GuideMap>(DialogBoxId::GuideMap)->step_zoom(-1);
 		}
 		return true;
 	case KeyCode::F1:

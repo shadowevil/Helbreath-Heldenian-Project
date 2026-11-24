@@ -550,6 +550,8 @@ namespace {
 // other dialog in the UI rect. inclusive: edges count (mouse down), else strictly inside.
 bool mouse_over_dialog(const IDialogBox* dlg, bool inclusive)
 {
+	if (!dlg->is_hit_testable())
+		return false;
 	const hb::shared::geometry::GamePoint mouse = (dlg->get_id() == DialogBoxId::HudPanel)
 		? DialogBox_HudPanel::hud_mouse()
 		: hb::shared::geometry::GamePoint(hb::shared::input::get_mouse_x(), hb::shared::input::get_mouse_y());

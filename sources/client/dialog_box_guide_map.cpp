@@ -1,9 +1,11 @@
-﻿#include "dialog_box_guide_map.h"
+#include "dialog_box_guide_map.h"
 #include "config_manager.h"
 #include "cursor_target.h"
 #include "game.h"
 #include "global_def.h"
 #include "lan_eng.h"
+#include <algorithm>
+#include <cmath>
 #include <format>
 #include "input.h"
 
@@ -11,10 +13,59 @@
 using namespace hb::shared::action;
 using namespace hb::client::sprite_id;
 
+namespace
+{
+	constexpr int widget_size = 128;
+	constexpr int edge_refusal_tiles = 30;   // a double-click this close to a map edge does nothing
+}
+
 DialogBox_GuideMap::DialogBox_GuideMap(CGame* game)
 	: IDialogBox(DialogBoxId::GuideMap, game)
 {
-	set_default_rect(LOGICAL_MAX_X() - 128, 0, 128, 128);
+	set_default_rect(LOGICAL_MAX_X() - widget_size, 0, widget_size, widget_size);
+}
+
+void DialogBox_GuideMap::load_map(const std::string& map_name)
+{
+	if (m_game->m_Renderer == nullptr)
+		return;
+	m_minimap.load(*m_game->m_Renderer, hb::shared::sprite::Sprites::get_sprite_path(), map_name);
+	m_minimap.set_zoom_level(config_manager::get().get_minimap_zoom_level());
+}
+
+void DialogBox_GuideMap::step_zoom(int steps)
+{
+	const int level = std::clamp(config_manager::get().get_minimap_zoom_level() + steps, 0, hb::client::minimap::tier_count - 1);
+	config_manager::get().set_minimap_zoom_level(level);
+	m_minimap.set_zoom_level(level);
+}
+
+bool DialogBox_GuideMap::is_active() const
+{
+	return m_game->m_map_index >= 0 && !m_minimap.is_empty()
+		&& m_game->m_map_data->m_map_size_x != 0 && m_game->m_map_data->m_map_size_y != 0;
+}
+
+bool DialogBox_GuideMap::is_hit_testable() const
+{
+	return is_active();
+}
+
+void DialogBox_GuideMap::widget_origin(short& sX, short& sY) const
+{
+	sX = m_x;
+	sY = m_y;
+	if (sX < 20) sX = 0;
+	if (sY < 20) sY = 0;
+	if (sX > LOGICAL_WIDTH() - widget_size - 20) sX = LOGICAL_WIDTH() - widget_size;
+	if (sY > 547 - widget_size - 20) sY = 547 - widget_size;
+}
+
+bool DialogBox_GuideMap::mouse_in_widget(short sX, short sY) const
+{
+	const int mouse_x = hb::shared::input::get_mouse_x();
+	const int mouse_y = hb::shared::input::get_mouse_y();
+	return mouse_x >= sX && mouse_x < sX + widget_size && mouse_y >= sY && mouse_y < sY + widget_size;
 }
 
 void DialogBox_GuideMap::on_update()
@@ -26,110 +77,57 @@ void DialogBox_GuideMap::on_update()
 		m_game->m_monster_event_time = 0;
 		m_game->m_monster_id = 0;
 	}
+
+	if (!is_active())
+		return;
+
+	// the config holds the tier, so the sys menu and the keys stay in step with the map
+	m_minimap.set_zoom_level(config_manager::get().get_minimap_zoom_level());
+
+	const short wheel_delta = hb::shared::input::get_mouse_wheel_delta();
+	if (wheel_delta != 0)
+	{
+		short sX, sY;
+		widget_origin(sX, sY);
+		if (mouse_in_widget(sX, sY))
+			step_zoom(wheel_delta > 0 ? 1 : -1);
+	}
 }
 
 void DialogBox_GuideMap::draw_border(short sX, short sY)
 {
-	m_game->m_Renderer->draw_rect_outline(sX - 2, sY - 2, 132, 132, hb::shared::render::Color(50, 50, 50), 2);
+	m_game->m_Renderer->draw_rect_outline(sX - 2, sY - 2, widget_size + 4, widget_size + 4, hb::shared::render::Color(50, 50, 50), 2);
 }
 
-void DialogBox_GuideMap::draw_zoomed_map(short sX, short sY)
+void DialogBox_GuideMap::draw_map(short sX, short sY)
 {
-	if (m_game->m_map_data->m_map_size_x == 0 || m_game->m_map_data->m_map_size_y == 0)
-		return;
+	const auto& map = *m_game->m_map_data;
+	const int player_x = player().m_player_x;
+	const int player_y = player().m_player_y;
+	// the old sprite path drew the map at alpha 0.25 (opacity) with dialog transparency on
+	const float alpha = config_manager::get().is_dialog_transparency_enabled() ? 0.25f : 1.0f;
+	m_minimap.draw(*m_game->m_Renderer, sX, sY, widget_size, map.m_map_size_x, map.m_map_size_y, player_x, player_y, alpha);
 
-	int m_iMaxMapIndex = InterfaceGuideMap + m_game->m_map_index + 1;
-	uint32_t time = m_game->m_cur_time;
-
-	if (m_game->m_map_index >= 35)
-		m_iMaxMapIndex = InterfaceGuideMap + m_game->m_map_index + 1;
-
-	short shX = player().m_player_x - 64;
-	short shY = player().m_player_y - 64;
-	if (shX < 0) shX = 0;
-	if (shY < 0) shY = 0;
-	if (shX > m_game->m_map_data->m_map_size_x - 128) shX = m_game->m_map_data->m_map_size_x - 128;
-	if (shY > m_game->m_map_data->m_map_size_y - 128) shY = m_game->m_map_data->m_map_size_y - 128;
-
-	if (config_manager::get().is_dialog_transparency_enabled())
-		m_game->m_sprite[m_iMaxMapIndex]->DrawShifted(sX, sY, shX, shY, 0, hb::shared::sprite::DrawParams::alpha_blend(0.25f));
-	else
-		m_game->m_sprite[m_iMaxMapIndex]->DrawShifted(sX, sY, shX, shY, 0);
-
-	m_game->m_sprite[InterfaceNdCrusade]->draw(sX - shX + player().m_player_x, sY - shY + player().m_player_y, 37);
-
-	if ((m_game->m_cur_time - m_game->m_monster_event_time) < 30000)
+	float marker_x, marker_y;
+	if (m_minimap.tile_to_widget(sX, sY, widget_size, map.m_map_size_x, map.m_map_size_y, player_x, player_y,
+		player_x, player_y, marker_x, marker_y))
 	{
-		if ((m_game->m_cur_time % 500) < 370)
+		m_game->m_sprite[InterfaceNdCrusade]->draw(static_cast<int>(std::lround(marker_x)), static_cast<int>(std::lround(marker_y)), 37);
+	}
+
+	if ((m_game->m_cur_time - m_game->m_monster_event_time) < 30000 && (m_game->m_cur_time % 500) < 370)
+	{
+		if (m_minimap.tile_to_widget(sX, sY, widget_size, map.m_map_size_x, map.m_map_size_y, player_x, player_y,
+			m_game->m_event_x, m_game->m_event_y, marker_x, marker_y))
 		{
-			if (m_game->m_event_x >= shX && m_game->m_event_x <= shX + 128 &&
-				m_game->m_event_y >= shY && m_game->m_event_y <= shY + 128)
-			{
-				m_game->m_sprite[InterfaceMonster]->draw(sX + m_game->m_event_x - shX, sY + m_game->m_event_y - shY, m_game->m_monster_id);
-			}
+			m_game->m_sprite[InterfaceMonster]->draw(static_cast<int>(std::lround(marker_x)), static_cast<int>(std::lround(marker_y)), m_game->m_monster_id);
 		}
 	}
 }
 
-void DialogBox_GuideMap::draw_full_map(short sX, short sY)
+void DialogBox_GuideMap::draw_location_tooltip(short mouse_x, short mouse_y, int shX, int shY)
 {
-	if (m_game->m_map_data->m_map_size_x == 0 || m_game->m_map_data->m_map_size_y == 0)
-		return;
-
-	int m_iMinMapIndex = InterfaceGuideMap;
-	int m_iMinMapSquare = m_game->m_map_index;
-	uint32_t time = m_game->m_cur_time;
-
-	if (m_game->m_map_index >= 35)
-	{
-		m_iMinMapIndex = InterfaceGuideMap + 35;
-		m_iMinMapSquare = m_game->m_map_index - 35;
-	}
-
-	if (config_manager::get().is_dialog_transparency_enabled())
-		m_game->m_sprite[m_iMinMapIndex]->draw(sX, sY, m_iMinMapSquare, hb::shared::sprite::DrawParams::alpha_blend(0.25f));
-	else
-		m_game->m_sprite[m_iMinMapIndex]->draw(sX, sY, m_iMinMapSquare, hb::shared::sprite::DrawParams::no_color_key());
-
-	short shX = (player().m_player_x * 128) / (m_game->m_map_data->m_map_size_x);
-	short shY = (player().m_player_y * 128) / (m_game->m_map_data->m_map_size_y);
-	m_game->m_sprite[InterfaceNdCrusade]->draw(sX + shX, sY + shY, 37);
-
-	if ((m_game->m_cur_time - m_game->m_monster_event_time) < 30000)
-	{
-		if ((m_game->m_cur_time % 500) < 370)
-		{
-			shX = (m_game->m_event_x * 128) / (m_game->m_map_data->m_map_size_x);
-			shY = (m_game->m_event_y * 128) / (m_game->m_map_data->m_map_size_y);
-			m_game->m_sprite[InterfaceMonster]->draw(sX + shX, sY + shY, m_game->m_monster_id);
-		}
-	}
-}
-
-void DialogBox_GuideMap::draw_location_tooltip(short mouse_x, short mouse_y, short sX, short sY)
-{
-	std::string G_cTxt;
-	short shX, shY;
-	short size_y = m_size_y;
-
-	if (config_manager::get().is_zoom_map_enabled())
-	{
-		shX = player().m_player_x - 64;
-		shY = player().m_player_y - 64;
-		if (shX < 0) shX = 0;
-		if (shY < 0) shY = 0;
-		if (shX > m_game->m_map_data->m_map_size_x - 128) shX = m_game->m_map_data->m_map_size_x - 128;
-		if (shY > m_game->m_map_data->m_map_size_y - 128) shY = m_game->m_map_data->m_map_size_y - 128;
-		shX += mouse_x - sX;
-		shY += mouse_y - sY;
-	}
-	else
-	{
-		shX = (mouse_x - sX) * m_game->m_map_data->m_map_size_x / 128;
-		shY = (mouse_y - sY) * m_game->m_map_data->m_map_size_y / 128;
-	}
-
-	G_cTxt = std::format("{}, {}", shX, shY);
+	std::string G_cTxt = std::format("{}, {}", shX, shY);
 
 	// Aresden map locations
 	if (m_game->m_map_index == 11)
@@ -191,44 +189,31 @@ void DialogBox_GuideMap::draw_location_tooltip(short mouse_x, short mouse_y, sho
 
 void DialogBox_GuideMap::on_draw()
 {
+	if (!is_active()) return;
+
 	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
 	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
 	char lb = hb::shared::input::is_mouse_button_down(hb::shared::input::MouseButton::Left) ? 1 : 0;
-	if (m_game->m_map_index < 0) return;
 
-	short sX = m_x;
-	short sY = m_y;
-	short size_x = m_size_x;
-	short size_y = m_size_y;
-
-	// clamp position
-	if (sX < 20) sX = 0;
-	if (sY < 20) sY = 0;
-	if (sX > LOGICAL_WIDTH() - 128 - 20) sX = LOGICAL_WIDTH() - 128;
-	if (sY > 547 - 128 - 20) sY = 547 - 128;
+	short sX, sY;
+	widget_origin(sX, sY);
 
 	draw_border(sX, sY);
-
-	if (config_manager::get().is_zoom_map_enabled())
-		draw_zoomed_map(sX, sY);
-	else
-		draw_full_map(sX, sY);
+	draw_map(sX, sY);
 
 	if (lb != 0) return;
 
-	// Mouse hover - show zoom toggle hint and location tooltip
-	if (mouse_x >= sX && mouse_x < sX + size_y && mouse_y >= sY && mouse_y < sY + size_y)
+	// Mouse hover - location tooltip
+	if (mouse_in_widget(sX, sY))
 	{
-		short shY;
-		if (sY > 213) shY = sY - 17;
-		else shY = sY + size_y + 4;
-
-		if (config_manager::get().is_zoom_map_enabled())
-			put_string(sX, shY, DEF_MSG_GUIDEMAP_MIN, GameColors::UIPaleYellow);
-		else
-			put_string(sX, shY, DEF_MSG_GUIDEMAP_MAX, GameColors::UIPaleYellow);
-
-		draw_location_tooltip(mouse_x, mouse_y, sX, sY);
+		const auto& map = *m_game->m_map_data;
+		int tile_x, tile_y;
+		if (m_minimap.widget_to_tile(sX, sY, widget_size, map.m_map_size_x, map.m_map_size_y,
+			player().m_player_x, player().m_player_y,
+			static_cast<float>(mouse_x), static_cast<float>(mouse_y), tile_x, tile_y))
+		{
+			draw_location_tooltip(mouse_x, mouse_y, tile_x, tile_y);
+		}
 	}
 }
 
@@ -239,42 +224,21 @@ bool DialogBox_GuideMap::on_click()
 
 bool DialogBox_GuideMap::on_double_click()
 {
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
 	if (CursorTarget::get_cursor_type() != cursor_type::arrow) return false;
-	if (m_game->m_map_index < 0) return false;
+	if (!is_active()) return false;
 
-	short sX = m_x;
-	short sY = m_y;
-	short size_x = m_size_x;
-	short size_y = m_size_y;
+	short sX, sY;
+	widget_origin(sX, sY);
 
-	// clamp position (same as on_draw)
-	if (sX < 20) sX = 0;
-	if (sY < 20) sY = 0;
-	if (sX > LOGICAL_MAX_X() - 128 - 20) sX = LOGICAL_MAX_X() - 128;
-	if (sY > 547 - 128 - 20) sY = 547 - 128;
+	const auto& map = *m_game->m_map_data;
+	int shX, shY;
+	if (!m_minimap.widget_to_tile(sX, sY, widget_size, map.m_map_size_x, map.m_map_size_y,
+		player().m_player_x, player().m_player_y,
+		static_cast<float>(hb::shared::input::get_mouse_x()), static_cast<float>(hb::shared::input::get_mouse_y()), shX, shY))
+		return false;
 
-	short shX, shY;
-	if (config_manager::get().is_zoom_map_enabled())
-	{
-		shX = player().m_player_x - 64;
-		shY = player().m_player_y - 64;
-		if (shX < 0) shX = 0;
-		if (shY < 0) shY = 0;
-		if (shX > m_game->m_map_data->m_map_size_x - 128) shX = m_game->m_map_data->m_map_size_x - 128;
-		if (shY > m_game->m_map_data->m_map_size_y - 128) shY = m_game->m_map_data->m_map_size_y - 128;
-		shX = shX + mouse_x - sX;
-		shY = shY + mouse_y - sY;
-	}
-	else
-	{
-		shX = (m_game->m_map_data->m_map_size_x * (mouse_x - sX)) / 128;
-		shY = (m_game->m_map_data->m_map_size_y * (mouse_y - sY)) / 128;
-	}
-
-	if (shX < 30 || shY < 30) return false;
-	if (shX > m_game->m_map_data->m_map_size_x - 30 || shY > m_game->m_map_data->m_map_size_y - 30) return false;
+	if (shX < edge_refusal_tiles || shY < edge_refusal_tiles) return false;
+	if (shX > map.m_map_size_x - edge_refusal_tiles || shY > map.m_map_size_y - edge_refusal_tiles) return false;
 
 	if (config_manager::get().is_running_mode_enabled() && player().m_sp > 0)
 		player().m_Controller.set_command(Type::Run);

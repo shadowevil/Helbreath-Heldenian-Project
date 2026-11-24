@@ -574,7 +574,7 @@ void DialogBox_SysMenu::draw_graphics_tab(short sX, short sY)
 	{
 		put_string(labelX, lineY, "Map Zoom:", GameColors::UILabel);
 		put_string(labelX + 1, lineY, "Map Zoom:", GameColors::UILabel);
-		draw_toggle(smallBoxX, lineY, config_manager::get().is_zoom_map_enabled());
+		draw_toggle(smallBoxX, lineY, config_manager::get().get_minimap_zoom_level() > 0);
 	}
 
 	lineY += 18;
@@ -1236,8 +1236,9 @@ bool DialogBox_SysMenu::on_click_graphics(short sX, short sY)
 	if (is_item_visible(lineY))
 	{
 		if (is_in_toggle_area(smallBoxX, lineY)) {
-			bool enabled = config_manager::get().is_zoom_map_enabled();
-			config_manager::get().set_zoom_map_enabled(!enabled);
+			// on = a zoomed tier (mid or in), off = the whole map
+			const bool zoomed = config_manager::get().get_minimap_zoom_level() > 0;
+			config_manager::get().set_minimap_zoom_level(zoomed ? 0 : 1);
 			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
 			return true;
 		}

@@ -44,6 +44,9 @@ public:
 	// --- Behavioral flags (override in subclasses) ---
 	virtual bool is_draggable() const { return true; }
 	virtual bool cancels_text_input_on_enable() const { return true; }
+	// False while the dialog draws nothing: the manager then skips it for every mouse hit-test, so
+	// its area behaves as world (click, double-click, press, right-click, drop)
+	virtual bool is_hit_testable() const { return true; }
 
 	// --- Manager injection (called by DialogBoxManager::register_dialog_box) ---
 	void set_manager(DialogBoxManager& mgr) { m_manager = &mgr; }

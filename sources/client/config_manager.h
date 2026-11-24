@@ -65,7 +65,6 @@ public:
 	bool is_show_fps_enabled() const { return m_show_fps; }
 	bool is_show_latency_enabled() const { return m_show_latency; }
 	int get_detail_level() const { return m_detail_level; }
-	bool is_zoom_map_enabled() const { return m_zoom_map; }
 	bool is_dialog_transparency_enabled() const { return m_dialog_trans; }
 	bool is_running_mode_enabled() const { return m_running_mode; }
 	bool is_fullscreen_enabled() const { return m_fullscreen; }
@@ -73,7 +72,6 @@ public:
 	void set_show_fps_enabled(bool enabled);
 	void set_show_latency_enabled(bool enabled);
 	void set_detail_level(int level);
-	void set_zoom_map_enabled(bool enabled);
 	void set_dialog_transparency_enabled(bool enabled);
 	void set_running_mode_enabled(bool enabled);
 	void set_fullscreen_enabled(bool enabled);
@@ -171,7 +169,6 @@ private:
 	bool m_show_fps;
 	bool m_show_latency;
 	int m_detail_level;
-	bool m_zoom_map;
 	bool m_dialog_trans;
 	bool m_running_mode;
 	bool m_fullscreen;

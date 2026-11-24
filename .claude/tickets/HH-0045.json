@@ -1,0 +1,21 @@
+{
+  "id": "HH-0045",
+  "summary": "Minimap: SDL three-tier pyramid replaces the guide map",
+  "status": "in_progress",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-24T13:25:25Z",
+  "updated": "2026-11-24T13:25:25Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": []
+  },
+  "body": "Replace the guide-map minimap (`DialogBox_GuideMap`, `dialog_box_guide_map.cpp`, telescope-sprite art at 128x128) with Helbreath-SDL's three-tier minimap pyramid (d-032). SDL bakes four PNG levels per outdoor map (`Helbreath-SDL/Helbreath/working/minimaps/<map>/00-03.png`: 2096, 1048, 524, 170 px on the long side); its corner widget uses levels 01-03 and only its big map uses 00. We take 01-03 and leave 00 out.\n\n| fact | value | kind |\n|---|---|---|\n| maps with SDL art | 47 (outdoor maps) | measured |\n| our `.amd` files vs SDL's originals for those 47 | 47 byte-identical | measured |\n| levels 01-03 as PNG | 123.6 MB | measured |\n| as JPG q92, 4:4:4 | 29.5 MB, worst mean channel error 4.12/255 | measured |\n| transparency in any level | none | measured |\n\nBehaviour to port (SDL `src/client/minimap.cpp`, `minimap_dialog.cpp`): three zoom modes (full map at widget size; mid; zoomed-in) stepped by +/- and the wheel over the widget; a widget-size window centred on the player and clamped to the level, so the marker is centred except at map edges. Maps without art show no minimap at all and the corner behaves as world (user: \"Hide it\"). Kept from ours: the player dot, the blinking monster-event marker, the location tooltip and double-click-to-walk, mapped through the new view.\n\n**Done when:** the minimap shows SDL's art in all three tiers on an outdoor map, is hidden on an interior, tooltip and double-click walk land on the right tile in every tier, Windows and Linux Debug build, reviewed, and checked in game through the agent bridge.\n\nSource: user request 2026-11-24; measurements `.claude/scratch/pm/minimap/jpg_test.py`.\n"
+}

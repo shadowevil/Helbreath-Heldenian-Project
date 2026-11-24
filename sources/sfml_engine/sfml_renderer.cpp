@@ -1099,10 +1099,11 @@ void SFMLRenderer::destroy_texture(hb::shared::render::ITexture* texture)
 }
 
 void SFMLRenderer::draw_texture_region(hb::shared::render::ITexture* texture, float src_x, float src_y, float src_w, float src_h,
-                                       float dst_x, float dst_y, float dst_w, float dst_h)
+                                       float dst_x, float dst_y, float dst_w, float dst_h, float alpha)
 {
     if (!texture || src_w <= 0.0f || src_h <= 0.0f || dst_w <= 0.0f || dst_h <= 0.0f)
         return;
+    const sf::Color vertex_color(255, 255, 255, static_cast<std::uint8_t>(std::clamp(alpha, 0.0f, 1.0f) * 255.0f));
 
     // A quad with float texture coordinates, so the destination can be fractional and the
     // texture's smoothing/mipmaps do the resampling
@@ -1115,6 +1116,8 @@ void SFMLRenderer::draw_texture_region(hb::shared::render::ITexture* texture, fl
     quad[1].texCoords = {src_x + src_w, src_y};
     quad[2].texCoords = {src_x, src_y + src_h};
     quad[3].texCoords = {src_x + src_w, src_y + src_h};
+    for (std::size_t i = 0; i < 4; i++)
+        quad[i].color = vertex_color;
 
     sf::RenderStates states(sf::BlendAlpha);
     states.texture = &static_cast<SFMLTexture*>(texture)->get_display_texture();

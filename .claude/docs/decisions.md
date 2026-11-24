@@ -52,3 +52,4 @@ Sidecars are under `.claude/docs/decisions/`. Each line: id, title - scope; side
 - d-028 MCP ports, location, server commands - 8891-8898, `.claude/tools/agent_mcp/`, server commands deferred. Read before changing the bridge.
 - d-029 Full-width dims and bars cover the whole window in stretch - read before changing stretch-mode UI fills.
 - d-031 Test accounts and characters without asking - create as needed on the local server, track and reuse them. Read before an in-game test.
+- d-032 The minimap uses SDL's three-tier pyramid - levels 01-03 as JPG q92, no 2k level, hidden on maps without art. Read before changing the minimap or its images.

@@ -96,6 +96,7 @@
 
 // Dialog boxes
 #include "dialog_box_city_hall_menu.h"
+#include "dialog_box_guide_map.h"
 #include "dialog_box_npc_talk.h"
 #include "dialog_box_skill.h"
 #include "dialog_box_bank.h"
@@ -6329,6 +6330,7 @@ void CGame::init_data_response_handler(char* packet_data)
 	char mapMsgBuf[32]{};
 	m_map_index = get_official_map_name(m_map_name.c_str(), mapMsgBuf);
 	m_map_message = mapMsgBuf;
+	get_dialog_box_manager().get_dialog_as<DialogBox_GuideMap>(DialogBoxId::GuideMap)->load_map(m_map_name);
 	if (m_map_index < 0)
 	{
 		get_dialog_box_manager().get_dialog_box(DialogBoxId::GuideMap)->m_size_x = -1;

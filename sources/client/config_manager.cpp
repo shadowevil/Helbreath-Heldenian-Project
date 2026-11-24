@@ -1,6 +1,7 @@
 #include "config_manager.h"
 #include "global_def.h"
 #include "json.hpp"
+#include "minimap.h"
 #include <fstream>
 #include <cstring>
 #include <cstdlib>
@@ -8,7 +9,7 @@
 using json = nlohmann::json;
 
 // 4:3 resolutions for validation (must match DialogBox_SysMenu)
-static constexpr int minimap_zoom_max = 5;
+static constexpr int minimap_zoom_max = hb::client::minimap::tier_count - 1; // tiers: 0 whole map, 1 mid, 2 zoomed in
 
 static const struct { int w, h; } s_ValidResolutions[] = {
 	//{ 640, 480 },
@@ -77,7 +78,6 @@ void config_manager::set_defaults()
 	m_show_fps = false;
 	m_show_latency = false;
 	m_detail_level = 2;
-	m_zoom_map = true;
 	m_dialog_trans = false;
 	m_running_mode = false;
 #ifdef DEF_WINDOWED_MODE
@@ -97,7 +97,7 @@ void config_manager::set_defaults()
 	m_patching_grid = false; // Patching debug grid off by default
 	m_reduced_motion = false;
 	m_toggle_to_chat = true; // ON = current behavior (Enter required to chat)
-	m_minimap_zoom_level = 0; // Overview by default
+	m_minimap_zoom_level = 1; // Mid tier by default
 
 	m_dirty = false;
 }
@@ -218,10 +218,6 @@ bool config_manager::load(const char* filename)
 			if (display.contains("detailLevel"))
 			{
 				m_detail_level = clamp(display["detailLevel"].get<int>(), 0, 2);
-			}
-			if (display.contains("zoomMap"))
-			{
-				m_zoom_map = display["zoomMap"].get<bool>();
 			}
 			if (display.contains("dialogTransparency"))
 			{
@@ -358,7 +354,6 @@ bool config_manager::save(const char* filename)
 	j["display"]["showFps"] = m_show_fps;
 	j["display"]["showLatency"] = m_show_latency;
 	j["display"]["detailLevel"] = m_detail_level;
-	j["display"]["zoomMap"] = m_zoom_map;
 	j["display"]["dialogTransparency"] = m_dialog_trans;
 	j["display"]["runningMode"] = m_running_mode;
 	j["display"]["fullscreen"] = m_fullscreen;
@@ -588,16 +583,6 @@ void config_manager::set_detail_level(int level)
 	if (m_detail_level != level)
 	{
 		m_detail_level = level;
-		m_dirty = true;
-		save();
-	}
-}
-
-void config_manager::set_zoom_map_enabled(bool enabled)
-{
-	if (m_zoom_map != enabled)
-	{
-		m_zoom_map = enabled;
 		m_dirty = true;
 		save();
 	}

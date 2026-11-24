@@ -107,8 +107,6 @@ void Screen_Loading::LoadStage_Interface()
         m_game->m_sprite[InterfaceNdButton] = loader.get_sprite(10, false);
     });
 
-    make_sprite("interface/telescope", InterfaceGuideMap, 32, false);
-    make_sprite("interface/telescope2", InterfaceGuideMap + 35, 4, false);
     make_sprite("interface/monster", InterfaceMonster, 1, false);
 
     // load sprite_fonts sprites (font1, font2, sprfonts + number font, sprfonts2)

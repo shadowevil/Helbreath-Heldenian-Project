@@ -79,3 +79,10 @@ The Debug agent bridge can act in the game world (HH-0042):
 In-world `get_state` and `probe_point` report HP, MP, level, target, tile and object. Every bridge command now rejects unknown arguments.
 
 Fixed: in any text field, pressing Ctrl+A on an empty field and then typing no longer loses the first character (HH-0044). Character and account names typed that way used to lose their first letter.
+
+The corner minimap now uses Helbreath-SDL's detailed minimap art for the 47 outdoor maps, in three zoom levels: the whole map, a mid view, and a close view that follows the player (HH-0045).
+- Step between them with + and - or the mouse wheel over the minimap; the level is remembered.
+- The Map Zoom option in the system menu switches between the whole map and the mid view.
+- Building names on hover, double-click to walk, the monster alert and the transparency option all still work.
+- Maps without art, such as building interiors, show no minimap, and clicks in that corner reach the world.
+- The images ship as high-quality JPGs (29 MB), and the old telescope minimap art is no longer loaded.
