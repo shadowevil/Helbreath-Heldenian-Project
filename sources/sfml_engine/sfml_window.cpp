@@ -840,7 +840,39 @@ KeyCode SFMLWindow::SfmlKeyToKeyCode(sf::Keyboard::Key key)
     }
 }
 
-void SFMLWindow::TransformMouseCoords(int windowX, int windowY, int& logicalX, int& logicalY) const
+void SFMLWindow::window_to_ui(int window_x, int window_y, int& ui_x, int& ui_y) const
+{
+    TransformMouseCoords(window_x, window_y, ui_x, ui_y);
+}
+
+void SFMLWindow::ui_to_window(int ui_x, int ui_y, int& window_x, int& window_y) const
+{
+    const sf::Vector2i pixel = current_output_rects().ui.first_pixel_of_unit({ui_x, ui_y});
+    window_x = pixel.x;
+    window_y = pixel.y;
+}
+
+void SFMLWindow::clamp_ui(int& ui_x, int& ui_y) const
+{
+    clamp_ui(current_output_rects(), ui_x, ui_y);
+}
+
+void SFMLWindow::clamp_ui(const output_rects& rects, int& ui_x, int& ui_y)
+{
+    // The UI area, widened to the world rect's extent in UI units: in stretch the world fills
+    // the window, so the mouse reaches past 0..LOGICAL_MAX there (negative, or above the maximum)
+    const sf::Vector2f world_min = rects.ui.from_output(rects.world.rect.position);
+    const sf::Vector2f world_max = rects.ui.from_output({rects.world.rect.position.x + rects.world.rect.size.x - 1.0f,
+                                                         rects.world.rect.position.y + rects.world.rect.size.y - 1.0f});
+    const int min_x = (std::min)(0, static_cast<int>(std::floor(world_min.x)));
+    const int min_y = (std::min)(0, static_cast<int>(std::floor(world_min.y)));
+    const int max_x = (std::max)(LOGICAL_MAX_X(), static_cast<int>(std::floor(world_max.x)));
+    const int max_y = (std::max)(LOGICAL_MAX_Y(), static_cast<int>(std::floor(world_max.y)));
+    ui_x = std::clamp(ui_x, min_x, max_x);
+    ui_y = std::clamp(ui_y, min_y, max_y);
+}
+
+output_rects SFMLWindow::current_output_rects() const
 {
     // get actual window size in physical pixels
     float windowWidth, windowHeight;
@@ -863,25 +895,20 @@ void SFMLWindow::TransformMouseCoords(int windowX, int windowY, int& logicalX, i
         windowHeight = static_cast<float>(RENDER_LOGICAL_HEIGHT());
     }
 
-    // The game reads the mouse in UI units: window pixels -> the UI rect (same rects as the renderer)
-    const output_rects rects = compute_output_rects({windowWidth, windowHeight},
+    // The same rects as the renderer
+    return compute_output_rects({windowWidth, windowHeight},
         {static_cast<float>(RENDER_LOGICAL_WIDTH()), static_cast<float>(RENDER_LOGICAL_HEIGHT())},
         m_fullscreen && !m_fullscreen_stretch);
-    const sf::Vector2f ui = rects.ui.from_output({static_cast<float>(windowX), static_cast<float>(windowY)});
-    logicalX = static_cast<int>(std::floor(ui.x));
-    logicalY = static_cast<int>(std::floor(ui.y));
+}
 
-    // Clamp to the UI area, widened to the world rect's extent in UI units: in stretch the world fills
-    // the window, so the mouse reaches past 0..LOGICAL_MAX there (negative, or above the maximum)
-    const sf::Vector2f world_min = rects.ui.from_output(rects.world.rect.position);
-    const sf::Vector2f world_max = rects.ui.from_output({rects.world.rect.position.x + rects.world.rect.size.x - 1.0f,
-                                                         rects.world.rect.position.y + rects.world.rect.size.y - 1.0f});
-    const int min_x = (std::min)(0, static_cast<int>(std::floor(world_min.x)));
-    const int min_y = (std::min)(0, static_cast<int>(std::floor(world_min.y)));
-    const int max_x = (std::max)(LOGICAL_MAX_X(), static_cast<int>(std::floor(world_max.x)));
-    const int max_y = (std::max)(LOGICAL_MAX_Y(), static_cast<int>(std::floor(world_max.y)));
-    logicalX = std::clamp(logicalX, min_x, max_x);
-    logicalY = std::clamp(logicalY, min_y, max_y);
+void SFMLWindow::TransformMouseCoords(int windowX, int windowY, int& logicalX, int& logicalY) const
+{
+    // The game reads the mouse in UI units: window pixels -> the UI rect
+    const output_rects rects = current_output_rects();
+    const sf::Vector2i ui = rects.ui.unit_of_pixel({windowX, windowY});
+    logicalX = ui.x;
+    logicalY = ui.y;
+    clamp_ui(rects, logicalX, logicalY);
 }
 
 void SFMLWindow::apply_cursor_grab()

@@ -753,6 +753,13 @@ void CGame::on_render()
 	FrameTiming::begin_profile(ProfileStage::Flip);
 	m_Renderer->end_frame_check_lost_surface();
 	FrameTiming::end_profile(ProfileStage::Flip);
+#ifdef DEF_CLAUDE_TESTING
+	// one presented frame advances the agent input queue by one step
+	if (m_agent_bridge)
+	{
+		m_agent_bridge->frame_presented();
+	}
+#endif
 
 	// reset scroll delta now that dialogs have consumed it this frame
 	// (scroll accumulates across skip frames until a rendered frame processes it)

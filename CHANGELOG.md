@@ -54,3 +54,5 @@ Linux Debug builds of the client now behave like Windows Debug builds: they conn
 Groundwork for an agent bridge in Debug builds (HH-0035). Debug clients accept `--agent-bridge-port=N` (8891-8898, default 8891) and `--no-agent-bridge`. Linux now passes the whole command line to the game. None of this is compiled into Release.
 
 The Debug client now runs the agent bridge (HH-0037). It listens on 127.0.0.1 only and answers `ping`, `get_state` and `screenshot`, which saves a PNG of the window into `build/screenshots/` under a 20 MB folder cap. Malformed or hostile input is refused without stalling the game.
+
+The Debug agent bridge can now drive the client (HH-0038): mouse moves, clicks, wheel, keys, typing, setting text, held modifiers, waiting for a state, and a coordinate probe. Input goes through the same path as the real mouse and keyboard, one presented frame per step, and it is held during screen fades. Text typed into password fields never appears in replies or logs. The window-to-interface mapping now has one shared, exact implementation for both directions.

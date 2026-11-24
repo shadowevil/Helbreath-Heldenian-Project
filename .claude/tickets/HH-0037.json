@@ -1,7 +1,7 @@
 {
   "id": "HH-0037",
   "summary": "MCP server 4: phase 1a-pre, bridge core with ping, get_state, screenshot",
-  "status": "in_review",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -12,9 +12,11 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:44Z",
-  "updated": "2026-11-24T03:10:50Z",
+  "updated": "2026-11-24T03:18:20Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "260625f"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
@@ -25,5 +27,5 @@
       "HH-0035"
     ]
   },
-  "body": "Listener on a private io_context polled at the top of `CGame::on_update`, bound to `address_v4::loopback()` without reuse_address; framing, dispatch, deferred replies. Commands `ping`, `get_state`, `screenshot` (bare file name into `build/screenshots/`, refuses paths and `..`). About 5 files, ~700 lines (derived). Detail: plan phase 1a-pre, `design.md`, `commands.md`.\n\n**Done when:** a raw TCP client gets ping, state and a screenshot from a running Debug client; nothing listens off loopback; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028."
+  "body": "Listener on a private io_context polled at the top of `CGame::on_update`, bound to `address_v4::loopback()` without reuse_address; framing, dispatch, deferred replies. Commands `ping`, `get_state`, `screenshot` (bare file name into `build/screenshots/`, refuses paths and `..`). About 5 files, ~700 lines (derived). Detail: plan phase 1a-pre, `design.md`, `commands.md`.\n\n**Done when:** a raw TCP client gets ping, state and a screenshot from a running Debug client; nothing listens off loopback; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028.\n\n**Closed, 2026-11-24:** read-only Opus review passed twice (3 should-fix items and several nits fixed). Windows and WSL Debug builds have 0 warnings (measured). A live raw-TCP test passed 36/36 (measured): a 30k-deep id was refused in 215 ms, 2M bare newlines were handled in 81 ms, netstat shows loopback only, and a Release exe built before the fixes held no bridge strings (measured). Not verified: the Linux runtime.\n"
 }

@@ -13,6 +13,7 @@
 
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <cmath>
 
 // One logical space mapped onto the window: rect in window pixels, scale in pixels per logical unit
 struct output_space
@@ -30,6 +31,27 @@ struct output_space
     sf::Vector2f to_output(sf::Vector2f logical) const
     {
         return {rect.position.x + logical.x * scale.x, rect.position.y + logical.y * scale.y};
+    }
+
+    // The unit a window pixel falls in, as mouse input floors it (from_output, then floor)
+    sf::Vector2i unit_of_pixel(sf::Vector2i pixel) const
+    {
+        const sf::Vector2f logical = from_output({static_cast<float>(pixel.x), static_cast<float>(pixel.y)});
+        return {static_cast<int>(std::floor(logical.x)), static_cast<int>(std::floor(logical.y))};
+    }
+
+    // The first window pixel whose unit is `unit` (or, when the scale is below 1 and the unit has no pixel,
+    // the first one past it): the exact inverse of unit_of_pixel, at any fractional scale
+    sf::Vector2i first_pixel_of_unit(sf::Vector2i unit) const
+    {
+        const sf::Vector2f edge = to_output({static_cast<float>(unit.x), static_cast<float>(unit.y)});
+        sf::Vector2i pixel(static_cast<int>(std::ceil(edge.x)), static_cast<int>(std::ceil(edge.y)));
+        // the float edge can land a pixel either side of the floor; settle it with the forward mapping
+        while (unit_of_pixel({pixel.x - 1, pixel.y}).x >= unit.x) --pixel.x;
+        while (unit_of_pixel(pixel).x < unit.x) ++pixel.x;
+        while (unit_of_pixel({pixel.x, pixel.y - 1}).y >= unit.y) --pixel.y;
+        while (unit_of_pixel(pixel).y < unit.y) ++pixel.y;
+        return pixel;
     }
 };
 

@@ -23,6 +23,9 @@ public:
     void on_update() override;
     void on_render() override;
     bool on_net_response(uint16_t response_type, char* data) override;
+#ifdef DEF_CLAUDE_TESTING
+    cc::control_collection* agent_controls() override { return &m_controls; }
+#endif
 
 private:
     void submit_login();

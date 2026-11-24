@@ -98,6 +98,15 @@ public:
     // Wait for a message (used when inactive)
     virtual void wait_for_message() = 0;
 
+    // ============== Coordinate Mapping ==============
+    // Window pixels -> UI units: exactly the mapping real mouse input goes through (clamped the same way)
+    virtual void window_to_ui(int window_x, int window_y, int& ui_x, int& ui_y) const = 0;
+    // UI units -> window pixels through the same rects (unclamped): the first pixel window_to_ui maps into
+    // the unit, exact at fractional scales
+    virtual void ui_to_window(int ui_x, int ui_y, int& window_x, int& window_y) const = 0;
+    // Clamp a UI point to the range real mouse input can reach (window_to_ui applies the same clamp)
+    virtual void clamp_ui(int& ui_x, int& ui_y) const = 0;
+
     // ============== Event Handler ==============
     virtual void set_event_handler(IWindowEventHandler* handler) = 0;
     virtual IWindowEventHandler* get_event_handler() const = 0;

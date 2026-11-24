@@ -12,6 +12,7 @@
 
 #include "window.h"
 #include "input.h"  // For KeyCode enum
+#include "output_rects.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <string>
@@ -76,6 +77,11 @@ public:
     bool process_messages() override;
     void wait_for_message() override;
 
+    // Coordinate mapping
+    void window_to_ui(int window_x, int window_y, int& ui_x, int& ui_y) const override;
+    void ui_to_window(int ui_x, int ui_y, int& window_x, int& window_y) const override;
+    void clamp_ui(int& ui_x, int& ui_y) const override;
+
     // Event Handler
     void set_event_handler(hb::shared::render::IWindowEventHandler* handler) override;
     hb::shared::render::IWindowEventHandler* get_event_handler() const override;
@@ -91,6 +97,11 @@ private:
 
     // Transform window coordinates to logical game coordinates (640x480)
     void TransformMouseCoords(int windowX, int windowY, int& logicalX, int& logicalY) const;
+
+    // The world and UI rects for the current client size: the one copy both mapping directions use
+    output_rects current_output_rects() const;
+    // The range the mouse can reach in UI units for these rects (TransformMouseCoords clamps to it)
+    static void clamp_ui(const output_rects& rects, int& ui_x, int& ui_y);
 
     // Apply cursor grab based on mode: skip in fullscreen (cursor already confined),
     // apply user preference in windowed mode.
