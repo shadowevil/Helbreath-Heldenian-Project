@@ -1,7 +1,7 @@
 {
   "id": "HH-0046",
   "summary": "Server crash: using the Map item indexes skill -1",
-  "status": "in_progress",
+  "status": "done",
   "severity": "high",
   "owner_area": "server",
   "target_patch": "next",
@@ -11,11 +11,13 @@
   ],
   "author": "pm",
   "created": "2026-11-24T14:09:23Z",
-  "updated": "2026-11-24T14:09:23Z",
+  "updated": "2026-11-24T14:16:40Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "d5e8e49"
+    ],
     "files": [],
     "tickets": []
   },
-  "body": "Using the Map item (item 104) crashes the game server with an access violation; the client then drops to the main menu. Reported by the user on 2026-11-24 while playing `Tz4423` on the local Debug server.\n\n| fact | value | kind |\n|---|---|---|\n| crash | Server.exe 0xc0000005 at offset 0x44fafb, 2026-11-24 08:06:39 (Windows Application log) | measured |\n| symbolized | `ItemManager::use_item_handler`, `sources/server/item_manager.cpp:2435` (as of 2026-11-24): `m_skill_config_list[m_related_skill]->m_value_2` | measured (llvm-symbolizer against the matching Server.pdb) |\n| Map row in `items.data.sql` | item_type 5 (tool), sub_type 12 (map), effect 10 (ShowLocation), durability 35, related_skill -1 | measured |\n| tools with durability 0 | none, so the ShowLocation branch (`it == tool && m_durability == 0`) is unreachable | measured |\n| original (`HGServer/Game.cpp`, `Item.cfg` line 132) | Map is type 9 `DEF_ITEMTYPE_USE_PERM` with its own branch, separate from the skill-tool branch | measured |\n\nSo the Map falls into the skill-tool branch, which indexes `m_skill_using_status[-1]` and `m_skill_config_list[-1]`.\n\n**Done when:** the ShowLocation branch is selected by `item_sub_type::map`; the skill-tool branch refuses a related skill that is out of range or has no config; using the Map on a mapped area opens the map dialog and on other maps shows \"There isn't any map for this area..\"; the server stays up; reviewed.\n\nSource: user report 2026-11-24; WER report 67dd246b-3922-475f-84f3-ea4c75e5bfb6.\n"
+  "body": "Using the Map item (item 104) crashes the game server with an access violation; the client then drops to the main menu. Reported by the user on 2026-11-24 while playing `Tz4423` on the local Debug server.\n\n| fact | value | kind |\n|---|---|---|\n| crash | Server.exe 0xc0000005 at offset 0x44fafb, 2026-11-24 08:06:39 (Windows Application log) | measured |\n| symbolized | `ItemManager::use_item_handler`, `sources/server/item_manager.cpp:2435` (as of 2026-11-24): `m_skill_config_list[m_related_skill]->m_value_2` | measured (llvm-symbolizer against the matching Server.pdb) |\n| Map row in `items.data.sql` | item_type 5 (tool), sub_type 12 (map), effect 10 (ShowLocation), durability 35, related_skill -1 | measured |\n| tools with durability 0 | none, so the ShowLocation branch (`it == tool && m_durability == 0`) is unreachable | measured |\n| original (`HGServer/Game.cpp`, `Item.cfg` line 132) | Map is type 9 `DEF_ITEMTYPE_USE_PERM` with its own branch, separate from the skill-tool branch | measured |\n\nSo the Map falls into the skill-tool branch, which indexes `m_skill_using_status[-1]` and `m_skill_config_list[-1]`.\n\n**Done when:** the ShowLocation branch is selected by `item_sub_type::map`; the skill-tool branch refuses a related skill that is out of range or has no config; using the Map on a mapped area opens the map dialog and on other maps shows \"There isn't any map for this area..\"; the server stays up; reviewed.\n\nSource: user report 2026-11-24; WER report 67dd246b-3922-475f-84f3-ea4c75e5bfb6.\n\n**Verified, 2026-11-24:**\n- Windows Debug server and client builds pass. The Linux debug server and client builds pass with 0 warnings.\n- Review passed after two rounds: server fix, then the client half the first round found.\n- In game, on a server started by this session on the fixed build, with `Tz4423` on `default`:\n  - double-clicking the Map opened the map dialog (top_dialog 22);\n  - a second use opened it again;\n  - the server stayed up.\n\nThe client half was needed because our client also routed the Map through the skill-tool path, which needs free hands and leaves a stuck skill flag. The 3.82 client (`Original-Helbreath/History`, `community/3.82-bundle/Sources/Client/Game.cpp` ~29838) sends USE_PERM items at once.\n\n**Not tested:** the \"no map for this area\" message on an unmapped map.\n"
 }
