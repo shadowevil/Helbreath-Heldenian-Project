@@ -93,3 +93,5 @@ Fixed: using the Map item crashed the game server (HH-0046). The Map now works a
 - it can be used again straight away.
 
 A tool without a linked skill can no longer reach the skill code on the server.
+
+New tool `tools/parchment_map/make_parchment.py` draws a parchment map in the style of the original Map item maps for any map file, with no text. It works on newly generated maps too (HH-0047). The project skill `parchment-map` explains how to use it. The game does not use the generated maps yet.

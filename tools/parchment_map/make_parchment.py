@@ -1,0 +1,854 @@
+"""Make a Helbreath parchment map (the 300x300 RGBA picture the Map item opens) from a map's .amd file.
+
+Usage:
+  python tools/parchment_map/make_parchment.py <map.amd> -o <out.png>
+         [--minimap <dir with 01.jpg/02.jpg/03.jpg>] [--mapinfo <map name | sources/database/mapinfo dir>]
+         [--seed N] [--sheet <compare.png>] [--reference <png>] [--no-icons] [-v]
+
+Works from the .amd alone. Optional inputs refine it:
+  --minimap  a folder of minimap art (01.jpg/02.jpg/03.jpg); used instead of the shipped tile palette as the
+             per-tile colour (colour only decides which neighbouring tile sheets count as one terrain).
+             A missing folder or images: a one-line note, then the palette is used.
+  --mapinfo  map database rows (teleports, spawn generators, map names). If a directory exists at that
+             path, rows for the .amd's file name are read from its *.data.sql files; otherwise the value is
+             a map name and the rows for THAT name are read from sources/database/mapinfo.
+             Without it, exits and doors are guessed from teleport tiles and no monster areas are drawn.
+  --reference  a 300x300 original: the ink NCC against it is printed (with or without --sheet).
+  --sheet    also write a review sheet at 2x: [reference | generated | ink overlay (red original,
+             green generated, yellow both)] with --reference, else the generated map alone.
+
+Exit status 0 on success; 2 with one 'error: ...' line on stderr for a missing, truncated or non-.amd
+input (map sizes must be 1..4096) or an unreadable reference.
+Output is deterministic for a given seed. Console text is ASCII apart from echoed file paths. Needs numpy and Pillow.
+"""
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+
+import numpy as np
+from PIL import Image, ImageFilter
+
+HERE = Path(__file__).resolve().parent
+DATA = HERE / "data"
+REPO = HERE.parents[1]
+SIZE = 300
+BOX = 245            # the whole map is scaled into a BOX x BOX square, centred, as the originals do
+BOX_DY = -1          # (fitted on 7 originals: map edge at x 28-32, y 25-29, 243-246 px wide)
+PAPER_CONTRAST = 1.35
+INK_FLOOR = 0.38     # darkest ink multiplies the paper by this (measured on the originals: 0.37-0.40)
+
+
+# ---------------------------------------------------------------- map data
+
+MAX_MAP_SIZE = 4096
+
+
+def header_size(hdr, key, path):
+	"""MAPSIZEX / MAPSIZEY from the split 256-byte .amd header, checked to be 1..MAX_MAP_SIZE."""
+	try:
+		i = hdr.index(key)
+		if hdr[i + 1] != "=":
+			raise ValueError
+		v = int(hdr[i + 2])
+	except (ValueError, IndexError):
+		raise ValueError(f"{path}: not a .amd file (no '{key} = <n>' in the 256-byte header)") from None
+	if not 1 <= v <= MAX_MAP_SIZE:
+		raise ValueError(f"{path}: {key} = {v} is outside 1..{MAX_MAP_SIZE}")
+	return v
+
+
+class MapData:
+	def __init__(self, path):
+		data = Path(path).read_bytes()
+		hdr = data[:256].replace(b"\0", b" ").decode("ascii", "replace").replace("=", " = ").split()
+		self.sx = header_size(hdr, "MAPSIZEX", path)
+		self.sy = header_size(hdr, "MAPSIZEY", path)
+		need = 256 + self.sx * self.sy * 10
+		if len(data) < need:
+			raise ValueError(f"{path}: {len(data)} bytes, header says {self.sx}x{self.sy} needs {need}")
+		t = np.frombuffer(data[256:need], np.uint8).reshape(self.sy, self.sx, 10)
+		v = t[:, :, :8].copy().view("<i2").reshape(self.sy, self.sx, 4)
+		self.tile_spr, self.tile_frm, self.obj_spr, self.obj_frm = (v[:, :, i].astype(np.int32) for i in range(4))
+		flags = t[:, :, 8]
+		self.blocked = (flags & 0x80) != 0
+		self.teleport = (flags & 0x40) != 0
+		self.name = Path(path).stem.lower()
+
+	def upsampled(self, k):
+		"""The same map with every tile split into k x k sub-tiles (for drawing zoomed-in interiors)."""
+		u = object.__new__(MapData)
+		rep = lambda a: np.repeat(np.repeat(a, k, 0), k, 1)
+		u.sx, u.sy, u.name = self.sx * k, self.sy * k, self.name
+		for f in ("tile_spr", "tile_frm", "obj_spr", "obj_frm", "blocked", "teleport"):
+			setattr(u, f, rep(getattr(self, f)))
+		return u
+
+
+# ---------------------------------------------------------------- colour map
+
+def load_palette():
+	z = np.load(DATA / "tile_palette.npz")
+	return z["offsets"], z["counts"], z["rgba"]
+
+
+def colour_map(m, palette):
+	"""Per-tile mean colour of the tile sprite frame (and object, weighted by its coverage).
+	Returns (rgb float32 [sy,sx,3], known fraction)."""
+	offsets, counts, rgba = palette
+	spr = np.clip(m.tile_spr, 0, len(offsets) - 1)
+	frm = m.tile_frm
+	ok = (m.tile_spr >= 0) & (m.tile_spr < len(offsets)) & (offsets[spr] >= 0) & (frm >= 0) & (frm < counts[spr])
+	idx = np.where(ok, offsets[spr] + np.clip(frm, 0, None), 0)
+	col = rgba[idx][:, :, :3].astype(np.float32)
+	ok &= rgba[idx][:, :, 3] > 0
+	# unknown tiles: a stable pseudo colour per sprite id, so region borders still show
+	if not ok.all():
+		h = (m.tile_spr.astype(np.int64) * 2654435761) & 0xFFFFFF
+		pseudo = np.dstack([(h >> 16) & 255, (h >> 8) & 255, h & 255]).astype(np.float32) * 0.5 + 64
+		col = np.where(ok[:, :, None], col, pseudo)
+	ospr = np.clip(m.obj_spr, 0, len(offsets) - 1)
+	ook = (m.obj_spr > 0) & (m.obj_spr < len(offsets)) & (offsets[ospr] >= 0) & (m.obj_frm >= 0) & (m.obj_frm < counts[ospr])
+	oidx = np.where(ook, offsets[ospr] + np.clip(m.obj_frm, 0, None), 0)
+	ocol = rgba[oidx].astype(np.float32)
+	ow = np.where(ook, ocol[:, :, 3] / 255.0, 0.0) * 0.5
+	col = col * (1 - ow[:, :, None]) + ocol[:, :, :3] * ow[:, :, None]
+	return col, float(ok.mean())
+
+
+def minimap_colour(m, mdir):
+	"""Colour map from minimap art: the largest available image, resampled to one pixel per tile."""
+	for n in ("01.jpg", "02.jpg", "03.jpg"):
+		p = Path(mdir) / n
+		if p.is_file():
+			img = Image.open(p).convert("RGB").resize((m.sx, m.sy), Image.BOX)
+			return np.asarray(img, np.float32)
+	raise FileNotFoundError(f"no 01.jpg/02.jpg/03.jpg in {mdir}")
+
+
+# ---------------------------------------------------------------- image helpers
+
+def gblur(a, r):
+	"""Separable Gaussian blur of a 2-D float array (edge padded)."""
+	if r <= 0:
+		return a
+	k = int(r * 3) + 1
+	x = np.arange(-k, k + 1, dtype=np.float32)
+	g = np.exp(-x * x / (2 * r * r))
+	g /= g.sum()
+	p = np.pad(a, ((k, k), (0, 0)), mode="edge")
+	a = sum(g[i] * p[i:i + a.shape[0]] for i in range(2 * k + 1))
+	p = np.pad(a, ((0, 0), (k, k)), mode="edge")
+	return sum(g[i] * p[:, i:i + a.shape[1]] for i in range(2 * k + 1))
+
+
+def value_noise(rng, h, w, cells):
+	g = rng.random((cells + 1, cells + 1)).astype(np.float32)
+	return np.asarray(Image.fromarray((g * 255).astype(np.uint8)).resize((w, h), Image.BICUBIC), np.float32) / 255.0
+
+
+def fractal(rng, h, w, octaves=5, start=4, persistence=0.6):
+	out = np.zeros((h, w), np.float32)
+	amp = tot = 0.0
+	amp = 1.0
+	for o in range(octaves):
+		out += amp * value_noise(rng, h, w, start * 2 ** o)
+		tot += amp
+		amp *= persistence
+	return out / tot
+
+
+# ---------------------------------------------------------------- framing
+
+ROOM_SHARE = 0.5      # a main walkable area smaller than this share of the map is framed on its own
+ROOM_MARGIN = 1.4     # framed area = room box x this
+ROOM_MIN_TILES = 28   # never zoom in closer than this many tiles across
+
+
+def main_area(m):
+	"""Bounding box (x0, y0, x1, y1) of the walkable component holding the most teleport tiles (else the largest)."""
+	walk = ~m.blocked
+	lab = np.zeros(walk.shape, np.int32)
+	n = 0
+	best, best_key = None, None
+	for y0, x0 in zip(*np.nonzero(walk)):
+		if lab[y0, x0]:
+			continue
+		n += 1
+		stack = [(y0, x0)]
+		lab[y0, x0] = n
+		ys, xs, tel = [], [], 0
+		while stack:
+			y, x = stack.pop()
+			ys.append(y)
+			xs.append(x)
+			tel += bool(m.teleport[y, x])
+			for ny, nx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
+				if 0 <= ny < m.sy and 0 <= nx < m.sx and walk[ny, nx] and not lab[ny, nx]:
+					lab[ny, nx] = n
+					stack.append((ny, nx))
+		# teleports sit on walkable tiles next to doors; also count those just outside the component
+		key = (tel, len(ys))
+		if best_key is None or key > best_key:
+			best_key, best = key, (min(xs), min(ys), max(xs) + 1, max(ys) + 1)
+	return best
+
+
+def frame_rect(m):
+	"""(scale px/tile, ox, oy) with px = ox + (tile + 0.5) * scale. The originals draw the whole map in a
+	BOX-wide square; a map whose main walkable area is small (an interior, an arena) is framed on that area."""
+	area = main_area(m)
+	if area is not None:
+		x0, y0, x1, y1 = area
+		side = max(x1 - x0, y1 - y0)
+		if side < ROOM_SHARE * max(m.sx, m.sy):
+			side = min(max(side * ROOM_MARGIN, ROOM_MIN_TILES), max(m.sx, m.sy))
+			s = BOX / side
+			cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+			return s, SIZE / 2 - cx * s, SIZE / 2 - cy * s + BOX_DY
+	s = BOX / max(m.sx, m.sy)
+	w, h = m.sx * s, m.sy * s
+	return s, (SIZE - w) / 2, (SIZE - h) / 2 + BOX_DY
+
+
+def to_px(rect, tx, ty):
+	s, ox, oy = rect
+	return ox + (tx + 0.5) * s, oy + (ty + 0.5) * s
+
+
+# ---------------------------------------------------------------- ink
+
+FAMILY_COLOUR = 24.0     # sheets this close in mean colour ...
+FAMILY_BLOCKED = 0.35    # ... and in blocked share (object tiles excluded) are one terrain
+FAMILY_TOUCH = 8         # ... if they touch along at least this many tile edges
+STROKE_PX_PER_TILE = 1.45 # the beginner-zone original's scale; finer scales draw on sub-tiles
+INK_DEPTH = 2            # strokes are this many tiles deep, inside the smaller terrain
+STROKE_MIN_PX = 2.2      # on coarse maps (big cities, middleland) strokes are deepened to stay this wide
+INK_MIN_TILES = 5        # smaller ink specks are dropped
+
+
+def neighbours8(a, pad_mode="edge"):
+	"""The 8 shifted copies of a 2-D array (edge padded), as (dy, dx, view)."""
+	h, w = a.shape
+	p = np.pad(a, 1, mode=pad_mode)
+	return [(dy, dx, p[1 + dy:1 + dy + h, 1 + dx:1 + dx + w]) for dy in (-1, 0, 1) for dx in (-1, 0, 1) if dx or dy]
+
+
+def clean_labels(lab, passes=2):
+	"""A tile whose label appears in none of its 8 neighbours takes their most common label
+	(lone decoration tiles: flowers, stones, single variant tiles)."""
+	for _ in range(passes):
+		nb = np.stack([v for _, _, v in neighbours8(lab)])
+		lone = (nb != lab[None]).all(0)
+		if not lone.any():
+			break
+		ys, xs = np.nonzero(lone)
+		vals = nb[:, ys, xs]
+		for i in range(len(ys)):
+			u, c = np.unique(vals[:, i], return_counts=True)
+			lab[ys[i], xs[i]] = u[np.argmax(c)]
+	return lab
+
+
+def terrain_families(m, col, lab):
+	"""Union adjacent sheets that read as one terrain (similar colour and blockedness)."""
+	ids = np.unique(lab)
+	free = m.obj_spr <= 0
+	stats = {}
+	for i in ids:
+		k = lab == i
+		kf = k & free
+		stats[int(i)] = (col[k].mean(0), m.blocked[kf].mean() if kf.any() else m.blocked[k].mean(), int(k.sum()))
+	parent = {int(i): int(i) for i in ids}
+
+	def find(a):
+		while parent[a] != a:
+			parent[a] = parent[parent[a]]
+			a = parent[a]
+		return a
+	pairs = {}
+	for a, b in ((lab[:, 1:], lab[:, :-1]), (lab[1:, :], lab[:-1, :])):
+		diff = a != b
+		lo = np.minimum(a[diff], b[diff]).astype(np.int64)
+		hi = np.maximum(a[diff], b[diff]).astype(np.int64)
+		key, cnt = np.unique(lo * 100000 + hi, return_counts=True)
+		for k, c in zip(key, cnt):
+			pairs[int(k)] = pairs.get(int(k), 0) + int(c)
+	for k, c in pairs.items():
+		a, b = k // 100000, k % 100000
+		if c < FAMILY_TOUCH:
+			continue
+		ca, ba, _ = stats[a]
+		cb, bb, _ = stats[b]
+		if np.sqrt(((ca - cb) ** 2).sum()) < FAMILY_COLOUR and abs(ba - bb) < FAMILY_BLOCKED:
+			parent[find(a)] = find(b)
+	fam = np.vectorize(lambda v: find(int(v)))(lab) if len(ids) < 4096 else lab
+	return fam
+
+
+def ink_tiles(m, col, depth=INK_DEPTH):
+	"""Ink per tile in {0,1}, the way the originals trace a map (calibrated on 7 originals):
+	  1. the outline of the walkable land, drawn INK_DEPTH tiles into the blocked side (coasts, cliff
+	     and rock edges, the foot of walls, fences, small blocked islands as little rings);
+	  2. borders between two terrains that are both blocked (the top of a wall against the roof), drawn
+	     inside the smaller terrain, so a wall face shows as a double line;
+	borders between two walkable terrains (grass and dirt, plazas) are left bare."""
+	b = m.blocked
+	lab = clean_labels(m.tile_spr.copy())
+	fam = terrain_families(m, col, lab)
+	fams, inv, area = np.unique(fam, return_inverse=True, return_counts=True)
+	fam_area = area[inv.reshape(fam.shape)]
+	outline = np.zeros(b.shape, bool)
+	for _, _, nb in neighbours8(b):
+		outline |= b & ~nb
+	inner = np.zeros(b.shape, bool)
+	for (_, _, nf), (_, _, na), (_, _, nb) in zip(neighbours8(fam), neighbours8(fam_area), neighbours8(b)):
+		inner |= b & nb & (nf != fam) & ((na > fam_area) | ((na == fam_area) & (nf > fam)))
+	outline = deepen(outline, b, depth)
+	inner = deepen(inner, b & (fam >= 0), depth, fam)
+	ink = outline | inner
+	return drop_small(ink, INK_MIN_TILES).astype(np.float32)
+
+
+def deepen(seed, allowed, depth, same=None):
+	"""Grow a tile mask depth-1 steps into allowed tiles (and, with same, only within one label)."""
+	ink = seed.copy()
+	for _ in range(depth - 1):
+		grow = ink.copy()
+		if same is None:
+			for _, _, ni in neighbours8(ink):
+				grow |= ni
+		else:
+			for (_, _, ni), (_, _, ns) in zip(neighbours8(ink), neighbours8(same)):
+				grow |= ni & (ns == same)
+		ink = grow & allowed | seed
+	return ink
+
+
+def drop_small(b, min_tiles):
+	"""Remove 8-connected components of fewer than min_tiles tiles."""
+	h, w = b.shape
+	seen = np.zeros_like(b)
+	out = b.copy()
+	ys, xs = np.nonzero(b)
+	for y0, x0 in zip(ys, xs):
+		if seen[y0, x0]:
+			continue
+		stack = [(y0, x0)]
+		seen[y0, x0] = True
+		comp = []
+		while stack:
+			y, x = stack.pop()
+			comp.append((y, x))
+			for ny in (y - 1, y, y + 1):
+				for nx in (x - 1, x, x + 1):
+					if 0 <= ny < h and 0 <= nx < w and b[ny, nx] and not seen[ny, nx]:
+						seen[ny, nx] = True
+						stack.append((ny, nx))
+		if len(comp) < min_tiles:
+			for y, x in comp:
+				out[y, x] = False
+	return out
+
+
+def place(m, tiles, rect, blur=0.5):
+	"""Resample a tile-resolution layer onto the 300x300 frame (bilinear: blocky-soft, as the originals)."""
+	s, ox, oy = rect
+	w, h = max(1, int(round(m.sx * s))), max(1, int(round(m.sy * s)))
+	img = Image.fromarray((np.clip(tiles, 0, 1) * 255).astype(np.uint8)).resize((w, h), Image.BILINEAR)
+	a = gblur(np.asarray(img, np.float32) / 255.0, blur)
+	full = np.zeros((SIZE, SIZE), np.float32)
+	x0, y0 = int(round(ox)), int(round(oy))
+	xs0, ys0 = max(0, -x0), max(0, -y0)
+	xe, ye = min(w, SIZE - x0), min(h, SIZE - y0)
+	if xe > xs0 and ye > ys0:
+		full[y0 + ys0:y0 + ye, x0 + xs0:x0 + xe] = a[ys0:ye, xs0:xe]
+	return full
+
+
+def ink_pixels(m, tiles, rect, rng):
+	"""Strokes on the frame: random half-tone blocks along the stroke edges (the originals' strokes swell
+	and thin), then mottled like brushed ink."""
+	halo = np.zeros_like(tiles)
+	for _, _, n in neighbours8(tiles):
+		halo = np.maximum(halo, n)
+	halo = (halo - tiles) * (rng.random(tiles.shape) < 0.35) * rng.uniform(0.3, 0.7, tiles.shape)
+	core = tiles * rng.uniform(0.8, 1.0, tiles.shape)
+	mott = 0.62 + 0.38 * fractal(rng, SIZE, SIZE, octaves=4, start=12, persistence=0.75)
+	return np.clip(place(m, core + halo, rect) * mott * 1.1, 0, 1)
+
+
+# hatched terrain: tile sprite sheet -> hatch strength. Measured on the originals as the ink over blocked
+# tiles of each sheet away from the traced strokes (rock and cliff sheets are hatched; grass, sand,
+# roofs and water are not). Sheets not listed are not hatched.
+HATCH_SHEETS = {28: 1.0, 29: 0.9, 14: 0.7, 340: 0.65, 25: 0.6, 18: 0.5, 26: 0.35}
+HATCH_REACH = 12     # only blocked tiles this close (in tiles) to walkable land are hatched
+HATCH_DARK = 0.85    # hatch dashes are this dark relative to a full stroke
+HATCH_TONE = 0.30    # and the hatched ground between them this dark
+
+
+def hatch_tiles(m):
+	"""Hatch strength per tile: hatched sheets, blocked, near the walkable land."""
+	w = np.zeros(m.blocked.shape, np.float32)
+	for sid, v in HATCH_SHEETS.items():
+		w[m.tile_spr == sid] = v
+	near = ~m.blocked
+	for _ in range(HATCH_REACH):
+		g = near.copy()
+		for _, _, n in neighbours8(near):
+			g |= n
+		near = g
+	return w * (m.blocked & near)
+
+
+def hatch_texture(rng):
+	"""Embossed relief of staggered short dashes (the originals' rock hatching): returns (dark, light)."""
+	dark = np.zeros((SIZE, SIZE), np.float32)
+	period = 3
+	for y in range(0, SIZE, period):
+		x = -int(rng.integers(0, 6))
+		while x < SIZE:
+			length = int(rng.integers(3, 7))
+			gap = int(rng.integers(1, 4))
+			yy = y + (1 if rng.random() < 0.25 else 0)
+			if 0 <= yy < SIZE:
+				dark[yy, max(0, x):max(0, min(SIZE, x + length))] = 0.6 + 0.4 * rng.random()
+			x += length + gap
+	dark = gblur(dark, 0.55)
+	light = np.zeros_like(dark)
+	light[:-1] = dark[1:]                   # highlight just above each dash: the emboss
+	light = np.clip(light - dark, 0, 1)
+	return np.clip(dark * 1.6, 0, 1), light
+
+
+# ---------------------------------------------------------------- paper
+
+def paper(rng):
+	meta = json.loads((DATA / "paper_patches.json").read_text())
+	P, n, cols = meta["patch"], meta["count"], meta["cols"]
+	atlas = np.asarray(Image.open(DATA / "paper_patches.png").convert("RGB"), np.float32)
+	patches = [atlas[(i // cols) * P:(i // cols + 1) * P, (i % cols) * P:(i % cols + 1) * P] for i in range(n)]
+	overlap = P // 3
+	step = P - overlap
+	acc = np.zeros((SIZE + 2 * P, SIZE + 2 * P, 3), np.float32)
+	wsum = np.zeros((SIZE + 2 * P, SIZE + 2 * P, 1), np.float32)
+	ramp = np.minimum(1.0, np.minimum(np.arange(P) + 1, P - np.arange(P)) / overlap).astype(np.float32)
+	weight = (ramp[:, None] * ramp[None, :])[:, :, None]
+	for y in range(-overlap, SIZE, step):
+		for x in range(-overlap, SIZE, step):
+			p = np.rot90(patches[rng.integers(n)], rng.integers(4))
+			if rng.random() < 0.5:
+				p = p[:, ::-1]
+			yy, xx = y + overlap, x + overlap
+			acc[yy:yy + P, xx:xx + P] += p * weight
+			wsum[yy:yy + P, xx:xx + P] += weight
+	rgb = (acc / np.maximum(wsum, 1e-6))[overlap:overlap + SIZE, overlap:overlap + SIZE]
+	# large, soft stains
+	stain = fractal(rng, SIZE, SIZE, octaves=3, start=3, persistence=0.5)
+	rgb *= (0.93 + 0.12 * stain)[:, :, None]
+	rgb *= facets(rng)[:, :, None]
+	# blending overlapping patches flattens the crumple a little: restore its contrast
+	mean = gblur(rgb.mean(2), 6.0)[:, :, None]
+	rgb = mean + (rgb - mean) * PAPER_CONTRAST
+	if "mean_rgb" in meta:
+		rgb *= (np.array(meta["mean_rgb"], np.float32) / rgb.reshape(-1, 3).mean(0))[None, None, :]
+	return rgb
+
+
+def facets(rng, cells=110, amp=0.07):
+	"""Large crumple facets: flat-lit Voronoi cells, each tilted its own way (the patches carry the fine creases)."""
+	pts = rng.random((cells, 2)) * SIZE
+	tilt = rng.normal(0.0, 1.0, cells).astype(np.float32)
+	yy, xx = np.mgrid[0:SIZE, 0:SIZE].astype(np.float32)
+	best = np.full((SIZE, SIZE), 1e9, np.float32)
+	owner = np.zeros((SIZE, SIZE), np.int32)
+	for i, (px, py) in enumerate(pts):
+		d = (xx - px) ** 2 + (yy - py) ** 2
+		closer = d < best
+		owner[closer] = i
+		best[closer] = d[closer]
+	return 1.0 + amp * gblur(np.clip(tilt[owner], -2, 2) / 2, 0.8)
+
+
+def edge_alpha(rng):
+	files = sorted(DATA.glob("edge_alpha_*.png"))
+	return np.asarray(Image.open(files[rng.integers(len(files))]).convert("L"), np.uint8)
+
+
+def rim_shade(alpha):
+	prof = json.loads((DATA / "rim_profile.json").read_text())["lum_ratio_by_distance"][:16]
+	prof = np.array(prof + [1.0], np.float32)
+	prof = np.minimum(prof / max(prof[8:16].max(), 1e-6), 1.0)
+	mask = alpha > 0
+	dist = np.zeros(mask.shape, np.int32)
+	cur = mask.copy()
+	for d in range(len(prof) - 1):
+		dist[cur] = d
+		er = cur.copy()
+		er[1:, :] &= cur[:-1, :]; er[:-1, :] &= cur[1:, :]
+		er[:, 1:] &= cur[:, :-1]; er[:, :-1] &= cur[:, 1:]
+		cur = er
+	dist[cur] = len(prof) - 1
+	return prof[dist]
+
+
+# ---------------------------------------------------------------- map database (optional)
+
+def sql_rows(path, table):
+	"""Rows of `INSERT INTO "table" (cols) VALUES (...)` lines as dicts (ints where they parse)."""
+	rows = []
+	pat = re.compile(r'INSERT INTO "?%s"? \(([^)]*)\) VALUES \((.*)\);\s*$' % re.escape(table))
+	if not Path(path).exists():
+		return rows
+	for line in Path(path).read_text(encoding="utf-8", errors="replace").splitlines():
+		mt = pat.match(line)
+		if not mt:
+			continue
+		cols = [c.strip().strip('"') for c in mt.group(1).split(",")]
+		vals, cur, q = [], "", False
+		for ch in mt.group(2):
+			if ch == "'" and not q:
+				q = True
+			elif ch == "'" and q:
+				q = False
+			elif ch == "," and not q:
+				vals.append(cur.strip())
+				cur = ""
+				continue
+			cur += ch
+		vals.append(cur.strip())
+		row = {}
+		for c, v in zip(cols, vals):
+			v = v.strip("'") if v.startswith("'") else v
+			try:
+				row[c] = int(v)
+			except ValueError:
+				row[c] = v
+		rows.append(row)
+	return rows
+
+
+class MapInfo:
+	"""Teleport destinations, spawn generators and map names from sources/database/mapinfo (all optional)."""
+
+	def __init__(self, spec, map_name):
+		self.name = map_name
+		d = Path(spec)
+		if not d.is_dir():                      # a bare map name: rows for that name from the repo database
+			self.name = spec.lower()
+			d = REPO / "sources" / "database" / "mapinfo"
+		self.teleports = [r for r in sql_rows(d / "map_teleport_locations.data.sql", "map_teleport_locations") if r.get("map_name") == self.name]
+		self.spawns = [r for r in sql_rows(d / "map_spot_mob_generators.data.sql", "map_spot_mob_generators") if r.get("map_name") == self.name]
+		self.maps = {r["map_name"]: r for r in sql_rows(d / "maps.data.sql", "maps")}
+
+
+# ---------------------------------------------------------------- icons
+
+ICON_DIR = DATA / "icons"
+BUILDING_WORDS = [("blacksmith", "bld_blacksmith"), ("shop", "bld_shop"), ("warehouse", "bld_warehouse"),
+                  ("cityhall", "bld_city_hall"), ("city hall", "bld_city_hall"), ("guildhall", "bld_guild_hall"),
+                  ("command hall", "bld_guild_hall"), ("barrack", "bld_guild_hall"), ("church", "bld_city_hall"),
+                  ("magic tower", "bld_wizard_tower"), ("jail", "bld_warehouse")]
+BUILDING_PREFIXES = [("bsmith", "bld_blacksmith"), ("gshop", "bld_shop"), ("wrhus", "bld_warehouse"), ("arewrhus", "bld_warehouse"),
+                     ("elvwrhus", "bld_warehouse"), ("cityhall", "bld_city_hall"), ("gldhall", "bld_guild_hall"),
+                     ("cmdhall", "bld_guild_hall"), ("arebrk", "bld_guild_hall"), ("elvbrk", "bld_guild_hall"),
+                     ("cath", "bld_city_hall"), ("wzdtwr", "bld_wizard_tower"), ("arejail", "bld_warehouse"), ("elvjail", "bld_warehouse")]
+DUNGEON_WORDS = ("dungeon", "mine", "tower of hell")
+DUNGEON_NAME = re.compile(r"(d1[nx]?$|^dglv|^toh\d|dungeon)")
+SWORD_MERGE_PX = 25      # spawn areas closer than this on the frame share one sword
+SWORD_MAX = 6
+EDGE_BAND = 0.08         # teleports this close to the edge of the land (share of its size) are exits
+
+
+def icon(name):
+	return Image.open(ICON_DIR / f"{name}.png").convert("RGBA")
+
+
+def arrow(direction):
+	"""Red exit arrow pointing in one of 8 directions (0 = north, clockwise)."""
+	if direction % 2 == 0:
+		base, turns = icon("arrow_n"), direction // 2
+	else:
+		base, turns = icon("arrow_nw"), ((direction + 1) // 2) % 4
+	return base.rotate(-90 * turns, expand=True) if turns else base
+
+
+def teleport_clusters(m):
+	"""Groups of teleport tiles (gaps up to 2 tiles join a group): [(tiles list)]."""
+	t = m.teleport
+	seen = np.zeros_like(t)
+	out = []
+	for y0, x0 in zip(*np.nonzero(t)):
+		if seen[y0, x0]:
+			continue
+		stack, comp = [(y0, x0)], []
+		seen[y0, x0] = True
+		while stack:
+			y, x = stack.pop()
+			comp.append((y, x))
+			for ny in range(y - 2, y + 3):
+				for nx in range(x - 2, x + 3):
+					if 0 <= ny < m.sy and 0 <= nx < m.sx and t[ny, nx] and not seen[ny, nx]:
+						seen[ny, nx] = True
+						stack.append((ny, nx))
+		out.append(comp)
+	return out
+
+
+def classify_destination(dest, info):
+	"""(kind, icon) for a teleport destination map name, from its database row or its name."""
+	row = info.maps.get(dest, {}) if info else {}
+	label = str(row.get("display_name", "")).lower()
+	if any(w in label for w in DUNGEON_WORDS) or DUNGEON_NAME.search(dest):
+		return "dungeon", "dungeon"
+	for w, ic in BUILDING_WORDS:
+		if w in label:
+			return "building", ic
+	for p, ic in BUILDING_PREFIXES:
+		if dest.startswith(p):
+			return "building", ic
+	return "outdoor", None
+
+
+def place_icons(m, rect, info):
+	"""Decide the icons: [(icon image, x, y, anchor)] with anchor 'c' (centre) or 'b' (bottom centre)."""
+	ys, xs = np.nonzero(~m.blocked)
+	if len(xs) == 0:
+		return [], []
+	wx0, wx1, wy0, wy1 = xs.min(), xs.max(), ys.min(), ys.max()
+	cx, cy = (wx0 + wx1) / 2, (wy0 + wy1) / 2
+	edge_band = max(6, EDGE_BAND * max(wx1 - wx0, wy1 - wy0))
+	dest_at = {}
+	if info:
+		for r in info.teleports:
+			dest_at[(r["src_y"], r["src_x"])] = str(r["dest_map_name"]).lower()
+	placed, notes = [], []
+	for comp in teleport_clusters(m):
+		ty = float(np.mean([p[0] for p in comp]))
+		tx = float(np.mean([p[1] for p in comp]))
+		dests = [dest_at[p] for p in comp if p in dest_at]
+		dest = max(sorted(set(dests)), key=dests.count) if dests else None
+		near_edge = min(tx - wx0, wx1 - tx, ty - wy0, wy1 - ty) < edge_band
+		if dest:
+			kind, ic = classify_destination(dest, info)
+			faction = str(info.maps.get(dest, {}).get("location_name", dest)).lower() if info else dest
+		else:
+			# no database: an exit on the edge of the land is an arrow; a pad in open ground is a portal; a
+			# doorway hemmed in by blocked tiles gets the neutral entrance marker (the originals use it for
+			# dungeon mouths and some portals), since without the destination it may be a shop or a stair
+			y0, y1 = int(max(0, ty - 3)), int(min(m.sy, ty + 4))
+			x0, x1 = int(max(0, tx - 3)), int(min(m.sx, tx + 4))
+			openness = 1 - m.blocked[y0:y1, x0:x1].mean()
+			kind = "outdoor" if near_edge or openness > 0.7 else "dungeon"
+			ic, faction = None, ""
+		px, py = to_px(rect, tx, ty)
+		if kind == "outdoor" and near_edge:
+			ang = np.degrees(np.arctan2(tx - cx, -(ty - cy))) % 360
+			d = int(round(ang / 45)) % 8
+			im = arrow(d)
+			# pull the arrow a little inside the land, as the originals draw it
+			dx, dy = np.sin(np.radians(d * 45)), -np.cos(np.radians(d * 45))
+			placed.append((im, px - dx * 6, py - dy * 6, "c"))
+			notes.append(f"exit arrow dir {d * 45} at tile ({tx:.0f},{ty:.0f})" + (f" -> {dest}" if dest else ""))
+		elif kind == "outdoor":
+			im = icon("portal_blue" if faction.startswith("elv") else "portal_red")
+			placed.append((im, px, py + 2, "b"))
+			notes.append(f"portal at tile ({tx:.0f},{ty:.0f})" + (f" -> {dest}" if dest else ""))
+		elif kind == "dungeon":
+			placed.append((icon("dungeon"), px, py, "c"))
+			notes.append(f"dungeon at tile ({tx:.0f},{ty:.0f})" + (f" -> {dest}" if dest else ""))
+		else:
+			placed.append((icon(ic), px, py + 2, "b"))
+			notes.append(f"building {ic[4:]} at tile ({tx:.0f},{ty:.0f})" + (f" -> {dest}" if dest else ""))
+	# swords: spawn areas (not single-tile spot spawns), merged when close on the frame
+	if info and info.spawns:
+		pts = []
+		for r in info.spawns:
+			w, h = r.get("tile_w", 0), r.get("tile_h", 0)
+			# single-tile spots and guard posts are not monster areas; nor is a generator covering the whole map
+			if w * h <= 1 or r.get("max_mobs", 0) <= 2 or w * h > 0.25 * m.sx * m.sy:
+				continue
+			pts.append([*to_px(rect, r["tile_x"] + w / 2 - 0.5, r["tile_y"] + h / 2 - 0.5), w * h])
+		groups = []
+		for p in sorted(pts, key=lambda p: -p[2]):
+			for g in groups:
+				if np.hypot(g[0] - p[0], g[1] - p[1]) < SWORD_MERGE_PX:
+					tot = g[2] + p[2]
+					g[0], g[1], g[2] = (g[0] * g[2] + p[0] * p[2]) / tot, (g[1] * g[2] + p[1] * p[2]) / tot, tot
+					break
+			else:
+				groups.append(list(p))
+		for g in sorted(groups, key=lambda g: -g[2])[:SWORD_MAX]:
+			placed.append((icon("sword"), g[0], g[1], "c"))
+			notes.append(f"monster area at px ({g[0]:.0f},{g[1]:.0f})")
+	return placed, notes
+
+
+def draw_icons(img, placed):
+	"""Paste icons, skipping one that would mostly cover an icon already drawn."""
+	boxes = []
+	for im, x, y, anchor in placed:
+		left = int(round(x - im.width / 2))
+		top = int(round(y - im.height / 2 if anchor == "c" else y - im.height))
+		left = min(max(left, 14), SIZE - 14 - im.width)
+		top = min(max(top, 14), SIZE - 14 - im.height)
+		box = (left, top, left + im.width, top + im.height)
+		clash = False
+		for b in boxes:
+			ix = max(0, min(b[2], box[2]) - max(b[0], box[0]))
+			iy = max(0, min(b[3], box[3]) - max(b[1], box[1]))
+			if ix * iy > 0.5 * im.width * im.height:
+				clash = True
+				break
+		if clash:
+			continue
+		boxes.append(box)
+		img.alpha_composite(im, (left, top))
+	return len(boxes)
+
+
+# ---------------------------------------------------------------- compose
+
+def compose(m, args):
+	rng = np.random.default_rng(args.seed)
+	rect = frame_rect(m)
+	col = None
+	if args.minimap:
+		try:
+			col, known = minimap_colour(m, args.minimap), 1.0
+			source = "minimap"
+		except FileNotFoundError as e:
+			print(f"note: {e}; using the tile palette instead")
+	if col is None:
+		col, known = colour_map(m, load_palette())
+		source = "palette"
+	# strokes are about INK_DEPTH tiles at the originals' 1.0-1.45 px/tile; when zoomed in further (interiors),
+	# draw on sub-tiles so strokes keep that width in pixels
+	k = max(1, int(round(rect[0] / STROKE_PX_PER_TILE)))
+	mk, colk, rectk = (m.upsampled(k), np.repeat(np.repeat(col, k, 0), k, 1), (rect[0] / k, rect[1], rect[2])) if k > 1 else (m, col, rect)
+	depth = max(INK_DEPTH, int(round(STROKE_MIN_PX / rectk[0])))
+	tiles = ink_tiles(mk, colk, depth)
+	stroke = ink_pixels(mk, tiles, rectk, rng)
+	hmask = place(mk, hatch_tiles(mk), rectk, blur=1.0)
+	hdark, hlight = hatch_texture(rng)
+	ink = np.maximum(stroke, hmask * (HATCH_TONE + (HATCH_DARK - HATCH_TONE) * hdark))
+	# a zoomed-in interior must not run ink into the margin: fade it out at the BOX square
+	lo, hi = (SIZE - BOX) / 2, (SIZE + BOX) / 2
+	r = np.arange(SIZE, dtype=np.float32)
+	ramp = np.clip(np.minimum(r - lo, hi - r) / 6.0 + 0.5, 0, 1)
+	boxmask = np.minimum(ramp[:, None], ramp[None, :])
+	ink *= boxmask
+	hmask *= boxmask
+	stroke *= boxmask
+	rgb = paper(rng)
+	rgb = rgb * (1.0 - (1.0 - INK_FLOOR) * ink)[:, :, None]
+	rgb = rgb * (1.0 + 0.18 * (hmask * hlight * (1 - stroke)))[:, :, None]
+	alpha = edge_alpha(rng)
+	rgb *= rim_shade(alpha)[:, :, None]
+	img = Image.fromarray(np.dstack([np.clip(rgb, 0, 255).astype(np.uint8), alpha]), "RGBA")
+	notes, drawn = [], 0
+	if not args.no_icons:
+		minfo = MapInfo(args.mapinfo, m.name) if args.mapinfo else None
+		placed, notes = place_icons(m, rect, minfo)
+		drawn = draw_icons(img, placed)
+		# icons never reach past the torn edge
+		a = np.asarray(img, np.uint8).copy()
+		a[:, :, 3] = alpha
+		img = Image.fromarray(a, "RGBA")
+	info = {"source": source, "known": known, "rect": rect, "ink": ink, "icons": drawn, "notes": notes}
+	return img, info
+
+
+# ---------------------------------------------------------------- review sheet
+
+def reference_ink(ref):
+	"""Ink estimate of an original frame: darker than the local paper, wider than a crease; labels/icons masked."""
+	rgb = np.asarray(ref.convert("RGBA"), np.float32)
+	lum0 = rgb[:, :, :3].mean(2)
+	sat = rgb[:, :, :3].max(2) - rgb[:, :, :3].min(2)
+	lum = np.asarray(Image.fromarray(lum0.astype(np.uint8)).filter(ImageFilter.MedianFilter(3)), np.float32)
+	base = np.asarray(Image.fromarray(lum.astype(np.uint8)).filter(ImageFilter.GaussianBlur(10)), np.float32)
+	ink = np.clip(base - lum, 0, 255) / np.maximum(base, 1)
+	bad = (lum0 > 205) | (sat > 110) | (rgb[:, :, 2] > rgb[:, :, 0] + 10) | (rgb[:, :, 3] < 255)
+	bad = np.asarray(Image.fromarray((bad * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(9)), np.float32) > 0
+	return np.clip(ink / (1 - INK_FLOOR), 0, 1), bad
+
+
+def ncc(a, b, mask):
+	x = a[mask] - a[mask].mean()
+	y = b[mask] - b[mask].mean()
+	return float((x * y).sum() / (np.sqrt((x * x).sum() * (y * y).sum()) + 1e-9))
+
+
+def reference_score(info, ref_path):
+	"""(reference image, its ink, ink NCC of the generated map against it)."""
+	ref = Image.open(ref_path).convert("RGBA")
+	if ref.size != (SIZE, SIZE):
+		raise ValueError(f"{ref_path}: reference must be {SIZE}x{SIZE}, got {ref.size[0]}x{ref.size[1]}")
+	rink, bad = reference_ink(ref)
+	return ref, rink, ncc(gaussian(info["ink"], 1.5), gaussian(rink, 1.5), ~bad)
+
+
+def write_sheet(img, info, ref_path, out):
+	panels = [img]
+	score = None
+	if ref_path:
+		ref, rink, score = reference_score(info, ref_path)
+		gink = info["ink"]
+		ov = np.zeros((SIZE, SIZE, 4), np.uint8)
+		ov[:, :, 3] = 255
+		ov[:, :, 0] = np.clip(gaussian(rink, 1.0) * 400, 0, 255)          # red: original ink
+		ov[:, :, 1] = np.clip(gaussian(gink, 1.0) * 400, 0, 255)          # green: generated ink
+		panels = [ref, img, Image.fromarray(ov, "RGBA")]
+	gap = 8
+	sheet = Image.new("RGBA", (len(panels) * (SIZE + gap) - gap, SIZE), (40, 40, 40, 255))
+	for i, p in enumerate(panels):
+		sheet.alpha_composite(p, (i * (SIZE + gap), 0))
+	sheet = sheet.resize((sheet.width * 2, sheet.height * 2), Image.NEAREST)
+	Path(out).parent.mkdir(parents=True, exist_ok=True)
+	sheet.save(out)
+	return score
+
+
+def gaussian(a, r):
+	return gblur(a.astype(np.float32), r)
+
+
+def main(argv=None):
+	ap = argparse.ArgumentParser(description="Make a parchment map from a .amd file.")
+	ap.add_argument("amd")
+	ap.add_argument("-o", "--out", required=True)
+	ap.add_argument("--minimap")
+	ap.add_argument("--mapinfo")
+	ap.add_argument("--seed", type=int, default=1)
+	ap.add_argument("--sheet")
+	ap.add_argument("--reference")
+	ap.add_argument("--no-icons", action="store_true")
+	ap.add_argument("-v", "--verbose", action="store_true", help="list every icon placed and why")
+	args = ap.parse_args(argv)
+	try:
+		m = MapData(args.amd)
+		img, info = compose(m, args)
+		Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+		img.save(args.out)
+		msg = f"{m.name}: {m.sx}x{m.sy} tiles, colour {info['source']} ({info['known'] * 100:.0f}% known), scale {info['rect'][0]:.3f} px/tile -> {args.out}"
+		msg += f", icons {info['icons']}"
+		for n in info["notes"] if args.verbose else []:
+			print("   " + n)
+		score = None
+		if args.sheet:
+			score = write_sheet(img, info, args.reference, args.sheet)
+		elif args.reference:
+			score = reference_score(info, args.reference)[2]
+		if score is not None:
+			msg += f", ink ncc vs reference {score:.3f}"
+	except (OSError, ValueError, ZeroDivisionError) as e:
+		print(f"error: {e}", file=sys.stderr)
+		return 2
+	print(msg)
+	return 0
+
+
+if __name__ == "__main__":
+	sys.exit(main())

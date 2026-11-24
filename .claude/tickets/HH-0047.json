@@ -1,0 +1,21 @@
+{
+  "id": "HH-0047",
+  "summary": "Parchment-map generator and skill: rebuild Map item parchments from .amd",
+  "status": "verified",
+  "severity": "low",
+  "owner_area": "tooling",
+  "target_patch": "next",
+  "tags": [
+    8,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-24T15:16:50Z",
+  "updated": "2026-11-24T15:16:50Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": []
+  },
+  "body": "The user asked for a reusable way to rebuild the Map item's parchment maps for every map. In their words: \"Send an agent to keep refining the skill until we can pass it a generated tile map and get a proper parchment map out\", \"Goal is a recreation of the default map\", and \"the text on the parchment paper can be left out\".\n\nBuilt `tools/parchment_map/make_parchment.py`, which turns an `.amd` file into a 300x300 RGBA parchment with no text, in the style of `interface/newmaps`. Installed the project skill `parchment-map` after two read-only reviews (the first asked for fixes, the second passed).\n\n| fact | value | kind |\n|---|---|---|\n| `default` ink correlation with the original | 0.453 | measured |\n| paper mean colour, generated vs original | (174,145,101) vs (174,145,99) | measured |\n| maps rendered | 79 of 79, no failures, under 1 s each | measured |\n| bad input (truncated, wrong file, missing, size out of range) | one `error:` line, exit 2 | measured |\n\nWeak spots, from the agent's own read of the output:\n- cities lack the town road grid;\n- dense mazes come out busy;\n- some arenas and interiors show a straight line along the map edge;\n- farms get swords their originals don't have.\n\n**Not done:** using the generated maps in the client. The Map dialog only knows the 10 original maps.\n\n**Done when:** the tool and skill are committed. In-game use is a separate decision.\n\nSource: session 2026-11-24; sheets in `.claude/scratch/parchment_agent/final/`.\n"
+}
