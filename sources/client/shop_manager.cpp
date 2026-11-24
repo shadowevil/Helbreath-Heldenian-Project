@@ -3,6 +3,7 @@
 #include "packet/packet_shop.h"
 #include "packet/packet_helpers.h"
 #include "log.h"
+#include "agent_journal.h"
 
 using namespace hb::shared::net;
 
@@ -52,6 +53,9 @@ void shop_manager::send_request(int16_t npc_config_id)
 	req->npcConfigId = npc_config_id;
 
 	m_game->m_g_sock->send_msg(data, sizeof(hb::net::PacketShopRequest));
+#ifdef DEF_CLAUDE_TESTING
+	hb::client::journal_note_packet("packet_out", "game", data, sizeof(hb::net::PacketShopRequest));
+#endif
 }
 
 void shop_manager::handle_response(char* data)

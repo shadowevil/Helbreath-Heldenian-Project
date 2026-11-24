@@ -1,5 +1,7 @@
 #include "dialog_box_manager.h"
 #include "dialog_box.h"
+#include "agent_journal.h"
+#include <format>
 #include "dialog_box_warning_msg.h"
 #include "dialog_box_resurrect.h"
 #include "dialog_box_noticement.h"
@@ -245,6 +247,39 @@ bool DialogBoxManager::for_each_top_to_bottom(Func&& fn) const
 }
 
 #ifdef DEF_CLAUDE_TESTING
+std::string DialogBoxManager::agent_dialog_name(DialogBoxId::Type id)
+{
+	using namespace DialogBoxId;
+	static constexpr std::pair<Type, std::string_view> names[] = {
+		{CharacterInfo, "character_info"}, {Inventory, "inventory"}, {Magic, "magic"},
+		{ItemDropConfirm, "item_drop_confirm"}, {WarningBattleArea, "warning_battle_area"},
+		{GuildMenu, "guild_menu"}, {GuildOperation, "guild_operation"}, {GuideMap, "guide_map"},
+		{ChatHistory, "chat_history"}, {SaleMenu, "sale_menu"}, {LevelUpSetting, "level_up_setting"},
+		{CityHallMenu, "city_hall_menu"}, {Bank, "bank"}, {Skill, "skill"}, {MagicShop, "magic_shop"},
+		{ItemDropExternal, "item_drop_external"}, {Text, "text"}, {SystemMenu, "system_menu"},
+		{NpcActionQuery, "npc_action_query"}, {NpcTalk, "npc_talk"}, {Map, "map"},
+		{SellOrRepair, "sell_or_repair"}, {Fishing, "fishing"}, {Noticement, "noticement"},
+		{Manufacture, "manufacture"}, {Exchange, "exchange"}, {Quest, "quest"}, {HudPanel, "hud_panel"},
+		{SellList, "sell_list"}, {Party, "party"}, {CrusadeJob, "crusade_job"}, {ItemUpgrade, "item_upgrade"},
+		{Help, "help"}, {CrusadeCommander, "crusade_commander"}, {CrusadeConstructor, "crusade_constructor"},
+		{CrusadeSoldier, "crusade_soldier"}, {GiveItem, "give_item"}, {Slates, "slates"},
+		{ConfirmExchange, "confirm_exchange"}, {ChangeStatsMajestic, "change_stats_majestic"},
+		{StatusOverlay, "status_overlay"}, {Resurrect, "resurrect"}, {CommandHallMenu, "command_hall_menu"},
+		{RepairAll, "repair_all"},
+#ifdef TESTER_ONLY
+		{TesterMenu, "tester_menu"}, {ItemCreator, "item_creator"},
+#endif
+	};
+	for (const auto& [known, name] : names)
+	{
+		if (known == id)
+		{
+			return std::string(name);
+		}
+	}
+	return std::format("dialog{}", static_cast<std::size_t>(id));
+}
+
 std::vector<const IDialogBox*> DialogBoxManager::agent_dialogs_top_to_bottom() const
 {
 	std::vector<const IDialogBox*> dialogs;
@@ -332,9 +367,21 @@ void DialogBoxManager::enable_dialog_box(int box_id, int type, int64_t v1, int v
 			clamp_position(dlg);
 	}
 
+#ifdef DEF_CLAUDE_TESTING
+	const bool agent_opened = !dlg->is_enabled();
+#endif
 	dlg->set_enabled(true);
 
 	bring_to_front(box_id);
+#ifdef DEF_CLAUDE_TESTING
+	if (agent_opened)
+	{
+		hb::client::journal_record(hb::client::journal_channel::ui_window, "window_opened", [&](hb::client::journal_fields& fields)
+		{
+			fields.add("name", agent_dialog_name(dlg->get_id())).add("dialog_id", box_id);
+		});
+	}
+#endif
 }
 
 void DialogBoxManager::enable_dialog_box(DialogBoxId::Type id, int type, int64_t v1, int v2, const char* string)
@@ -351,6 +398,12 @@ void DialogBoxManager::disable_dialog_box(int box_id)
 
 	dlg->set_enabled(false);
 	remove_from_order(box_id);
+#ifdef DEF_CLAUDE_TESTING
+	hb::client::journal_record(hb::client::journal_channel::ui_window, "window_closed", [&](hb::client::journal_fields& fields)
+	{
+		fields.add("name", agent_dialog_name(dlg->get_id())).add("dialog_id", box_id);
+	});
+#endif
 }
 
 void DialogBoxManager::disable_dialog_box(DialogBoxId::Type id)

@@ -27,6 +27,7 @@
 
 #ifdef DEF_CLAUDE_TESTING
 
+#include "agent_journal.h"
 #include "asio_socket.h" // the project's ASIO configuration, then asio.hpp
 #include "input.h"       // KeyCode
 #include "json.hpp"
@@ -51,7 +52,7 @@ namespace hb::client
 		using json = nlohmann::json;
 
 		// Bumped when a command's arguments or result keys change incompatibly
-		static constexpr int bridge_protocol = 3;
+		static constexpr int bridge_protocol = 4;
 
 		agent_bridge();
 		~agent_bridge();
@@ -88,14 +89,31 @@ namespace hb::client
 
 		enum class deferred_kind { screenshot, wait };
 
-		// A request answered on a later frame: a screenshot, or a state-form wait_for
+		// One wait_for condition: a state key equal to a value, or a journal event matching channel/type/fields
+		struct wait_condition
+		{
+			json source;            // echoed back in the reply's `matched`
+			bool is_state = false;
+			std::string state_key;  // state form
+			json equals;
+			std::string channel;    // event form: a dotted prefix, matched by whole segment
+			std::string type;       // empty = any type
+			json match;             // top-level data keys that must equal these values
+			journal_data_filter data;
+		};
+
+		// A request answered on a later frame: a screenshot, or a wait_for
 		struct deferred_reply
 		{
 			json id;
 			deferred_kind kind;
 			std::string file_name; // screenshot
-			json conditions;       // wait: [{state, equals}], any one matching settles it
+			json conditions;       // wait: the raw conditions array
 			clock::time_point deadline;
+			std::vector<wait_condition> parsed; // wait: the same, read once at registration
+			std::uint64_t scan_seq = 0;    // wait: events from here on are candidates ("did it happen next")
+			std::uint64_t match_from = 0;  // wait: echoed as scan_from
+			std::uint64_t trail_since = 0; // wait: where the reply's event trail starts
 		};
 
 		enum class step_kind { move, button_down, button_up, wheel, key_down, key_up, chars };
@@ -174,6 +192,18 @@ namespace hb::client
 		bool run_wait_for(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
 		bool run_widgets(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
 		bool run_widget_click(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
+		bool run_journal_query(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
+		bool run_journal_drain(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
+		bool run_journal_config(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
+
+		// journal commands: argument readers (false sets `error`) and reply builders
+		static bool read_selector(const json& args, journal_selector& out, std::string& error);
+		static bool read_data_filter(const json& args, journal_data_filter& out, std::string& error);
+		static bool read_window(const json& args, journal_window& out, std::string& error);
+		static json journal_event_json(const journal_event& recorded);
+		static json journal_events_json(const std::vector<journal_event>& events);
+		static bool event_satisfies(const wait_condition& condition, const journal_event& recorded, const json& data);
+		void append_wait_trail(const deferred_reply& wait, json& result) const;
 
 		// the bodies of the entry points, which catch whatever escapes them and call disable
 		bool open_listener(std::uint16_t port);

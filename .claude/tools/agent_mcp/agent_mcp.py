@@ -612,7 +612,7 @@ class journal_pump:
 # untruncated drain sets the client's read cursor to m_next_seq and resets the dropped counter, so it
 # consumes EVERY event including the ones a channel filter excluded. A tap built on it would silently
 # eat the agent's own journal. (A dedicated journal_peek command would be cleaner; this works today.)
-TAP_CHANNELS = ("client.errors", "net.errors")
+TAP_CHANNELS = ("client.errors",)
 TAP_NEVER_MATCHES = {"channel": "tap.never_matches"}
 TAP_MAX_REPORTED = 8
 
@@ -1293,10 +1293,11 @@ TOOLS = [
 		"name": "hb_wait_for",
 		"description": "Wait until something actually happens, then return with the trail of what did. Give one or "
 		               "more conditions; the first to match ends the wait and is named in the reply. Two condition "
-		               "forms: an EVENT condition {channel, type, match?} matches a journal event (a state condition "
+		               "forms: an EVENT condition {channel, type?, match?{key: value}} matches a journal event (a state condition "
 		               "already true returns at once); a STATE condition {state, equals} matches the live value "
 		               "hb_get_state would report, e.g. {\"state\":\"screen\",\"equals\":\"Screen_OnGame\"}. A "
-		               "timeout is a normal outcome, not an error - satisfied:false with the events seen meanwhile, "
+		               "timeout is a normal outcome, not an error (timeout_ms 0 is allowed for event conditions: a look at "
+		               "what already happened) - satisfied:false with the events seen meanwhile, "
 		               "which is how you verify something did NOT happen. Use this instead of hb_wait + poll. The reply lists "
 		               "only the last 10 events of the trail by default (the event that fired is always shown); "
 		               "'trail' widens it (true = every event, N = the last N) or silences it (false). An EVENT condition also "
@@ -1316,7 +1317,8 @@ TOOLS = [
 					"items": {"type": "object"},
 				},
 				"timeout_ms": {"type": "integer",
-				               "description": "how long to wait before giving up (max {})".format(WAIT_FOR_MAX_MS)},
+				               "description": "how long to wait before giving up (0..{}; 0 only with event "
+				                              "conditions)".format(WAIT_FOR_MAX_MS)},
 				"since": {"type": "integer",
 				          "description": "seq to start the reply's trail from (e.g. a newest_seq from "
 				                         "hb_journal_drain, plus one); omit to start at the wait itself"},
@@ -1339,21 +1341,17 @@ TOOLS = [
 		               "to return to live. Reading consumes NOTHING: any number of reads, filtered any way, "
 		               "never hide an event from the next one, so there is no cursor to carry. To see what an "
 		               "action produced, note the header's newest_seq first and read with after_seq set to "
-		               "it. To page older, pass the reply's older_before_seq as before_seq. Events cover state "
-		               "deltas (movement, stats, stance, map incl. weather_changed, entities; per-entity "
-		               "entity_moved / entity_stopped are on state.entity.motion), audio and visual events "
-		               "(sound triggers, music_start / music_stop, damage numbers, effects), world-socket "
-		               "packets by type, UI events (screens, dialogs - window_closed's via is close, dismissed "
-		               "or esc - buttons, and ui.window/click_consumed {x,y,button,kind,owner} for a click a "
-		               "window, modal, bar or map took from the world), chat.message (chat_send, chat_line, say_message, say_dropped, "
-		               "say_anchor, picker_open/filter/insert/close, chat_resize) and the diagnostic channels "
-		               "client.warnings / client.errors / net.errors (net.warnings is declared but silent). "
-		               "Packet events cover the WORLD socket only, so login and character-select traffic does "
-		               "not appear. A run of CONSECUTIVE events with identical channel, type and data collapses "
-		               "into ONE row carrying 'count', 'seq_last' and 't_ms_last' (seq is the run's oldest "
-		               "event); use 'count' - under a filter a run's seqs are not contiguous. 'max' counts RAW "
-		               "events, not rows. If the window starts before the oldest retained event the header "
-		               "says so: the ring evicts its oldest events, so very old history can be gone.",
+		               "it. To page older, pass the reply's older_before_seq as before_seq. This client's "
+		               "channels and event types: ui.screen (screen_changed, screen_active), ui.window "
+		               "(window_opened, window_closed, overlay_opened, overlay_closed, click_consumed), state.map "
+		               "(map_changed), state.player (player_entered), net.packet (packet_in, packet_out; the "
+		               "message name is in data), chat.message (chat_line, chat_send), and the diagnostic "
+		               "channels client.warnings / client.errors (log_line). A run of CONSECUTIVE events with "
+		               "identical channel, type and data collapses into ONE row carrying 'count', 'seq_last' and "
+		               "'t_ms_last' (seq is the run's oldest event); use 'count' - under a filter a run's seqs are "
+		               "not contiguous. 'max' counts RAW events, not rows. If the window starts before the oldest "
+		               "retained event the header says so: the ring evicts its oldest events, so very old "
+		               "history can be gone.",
 		"inputSchema": {
 			"type": "object",
 			"properties": {
@@ -1364,7 +1362,7 @@ TOOLS = [
 					"items": {"type": "string"},
 				},
 				"types": {"type": "array", "items": {"type": "string"},
-				          "description": "only these EXACT event types, e.g. ['attack_event','entity_hp']. A "
+				          "description": "only these EXACT event types, e.g. ['screen_changed','chat_line']. A "
 				                         "packet's type is packet_in / packet_out; its message name is in data. "
 				                         "Omit for all."},
 				"exclude_types": {"type": "array", "items": {"type": "string"},
@@ -1386,13 +1384,6 @@ TOOLS = [
 				                             "object / entity / creature / attacker / target ids)"},
 				"message_contains": {"type": "string",
 				                     "description": "only events whose message or text field (a packet name, a chat line) contains this"},
-				"combat": {"type": "boolean",
-				           "description": "combat only: visual.damage (damage_number, evade_word) plus the attack_event "
-				                          "and entity_hp packets; 'channels' still overrides the channel set. Channel "
-				                          "names: state.player, state.map, state.entity, state.entity.motion, audio.sound, "
-				                          "visual.damage, visual.effect, render.bubble, perf.frame, net.packet, chat.message, "
-				                          "ui.screen, ui.window, ui.button, client.warnings, client.errors, net.warnings, "
-				                          "net.errors (hb_journal_config lists them live)"},
 			},
 		},
 	},
@@ -1406,29 +1397,29 @@ TOOLS = [
 			"properties": {
 				"channels": {
 					"type": "object",
-					"description": "channel selector -> enabled, e.g. {\"net\": false} to silence net.packet and "
-					               "net.log together, or {\"audio.sound\": false, \"audio.refused\": true} to keep "
-					               "only refusals",
+					"description": "channel selector -> enabled, e.g. {\"net\": false} to silence net.packet, or "
+					               "{\"chat\": false, \"ui.window\": true}. A selector that matches no channel is "
+					               "refused. Channels: ui.screen, ui.window, state.map, state.player, net.packet, "
+					               "chat.message, client.warnings, client.errors",
 				},
 				"capacity": {"type": "integer", "description": "new ring buffer capacity in events"},
+				"test_log": {"type": "string", "enum": ["warn", "error"],
+				             "description": "log one line at this level, to watch it land in client.warnings / "
+				                            "client.errors (a check of the log sink)"},
 			},
 		},
 	},
 	{
 		"name": "hb_subscribe",
 		"description": "Choose which events reach you while streaming: pick channels and grep them. Observational "
-		               "channels are state.player, state.map, state.entity (state.entity.motion is its "
-		               "entity_moved / entity_stopped half; 'state.entity' takes both), audio.sound, visual.damage, "
-		               "visual.effect, net.packet, chat.message, ui.screen, ui.window, ui.button; DIAGNOSTIC "
-		               "channels are client.warnings, client.errors, net.warnings, net.errors - so "
-		               "['client.errors','net.errors'] is a standing watch on everything that goes wrong, and "
-		               "['client'] catches every client-side complaint including a sound refusal. A selector "
-		               "matches by dotted-segment prefix, so 'net' takes net.packet and both net diagnostics. "
-		               "'filter' "
+		               "channels are ui.screen, ui.window, state.map, state.player, net.packet, chat.message; "
+		               "DIAGNOSTIC channels are client.warnings and client.errors - so ['client'] is a standing watch "
+		               "on everything the client complains about. A selector matches by dotted-segment prefix, so "
+		               "'ui' takes ui.screen and ui.window. 'filter' "
 		               "keeps only events matching a regex and 'exclude' drops those that match (exclude wins). Both "
 		               "are matched, case-insensitively, against the event's rendered line: '<channel>/<type> "
-		               "<compact json data>' - so 'char_footstep_run' hits an id inside the payload and "
-		               "'^audio[.]refused/' anchors on the channel. Call with no arguments to clear the filter.",
+		               "<compact json data>' - so 'Screen_Login' hits an id inside the payload and "
+		               "'^ui[.]screen/' anchors on the channel. Call with no arguments to clear the filter.",
 		"inputSchema": {
 			"type": "object",
 			"properties": {
@@ -2033,8 +2024,10 @@ TOOL_NAMES = {tool["name"] for tool in TOOLS}
 # and callable only when the client lists EVERY wire command the tool needs, so a client that has no widgets or
 # journal yet shows no hb_widgets, hb_flow or hb_journal_drain instead of tools that answer "unknown cmd".
 # A tool missing from this table needs no wire command of its own (hb_batch, hb_parallel, hb_clients, hb_wait).
-SUPPORTED_BRIDGE_PROTOCOLS = (2, 3)  # 3 adds widgets, widget_click, consumed_by and the probe's front
-EXPECTED_BRIDGE_PROTOCOL = 3  # the current one
+# 3 adds widgets, widget_click, consumed_by and the probe's front; 4 adds the journal (journal_query, journal_drain,
+# journal_config and wait_for's event form)
+SUPPORTED_BRIDGE_PROTOCOLS = (2, 3, 4)
+EXPECTED_BRIDGE_PROTOCOL = 4  # the current one
 TOOL_COMMANDS = {
 	"hb_ping": ("ping",),
 	"hb_get_state": ("get_state",),
@@ -2320,16 +2313,6 @@ def format_journal(result):
 		lines.append("OLDER EVENTS EXIST: page with before_seq={} (keep the same filters).".format(
 			result.get("older_before_seq")))
 	return "\n".join(lines)
-
-
-def thin_to_combat(result):
-	"""A journal reply without the packets that are not combat (everything but attack_event / entity_hp messages)."""
-	kept = [event for event in result.get("events") or []
-	        if event.get("channel") != "net.packet" or (event.get("data") or {}).get("message") in COMBAT_PACKET_MESSAGES]
-	thinned = dict(result)
-	thinned["events"] = kept
-	thinned.pop("raw", None)
-	return thinned
 
 
 def condition_query(condition, after_seq):
@@ -3281,11 +3264,7 @@ def canonical_key_name(name):
 
 
 JOURNAL_DRAIN_KEYS = ("client", "channels", "types", "exclude_types", "max", "limit", "from_ms", "to_ms", "after_seq",
-                      "before_seq", "object_id", "message_contains", "combat")
-# hb_journal_drain combat:true: the damage numbers and the combat packets only (HB-0724). The packet channel is
-# read whole and thinned here, because the client's filter cannot say "this channel, these messages".
-COMBAT_CHANNELS = ["visual.damage", "net.packet"]
-COMBAT_PACKET_MESSAGES = ("attack_event", "entity_hp")
+                      "before_seq", "object_id", "message_contains")
 # Where a caller tends to put a journal argument that belongs under another name.
 JOURNAL_DRAIN_HINTS = {
 	"from": "from_ms", "to": "to_ms", "since": "after_seq", "after": "after_seq", "before": "before_seq",
@@ -5006,7 +4985,7 @@ def append_tapped_errors(client, outcome):
 	for event in events[:TAP_MAX_REPORTED]:
 		lines.append("   " + format_event(event))
 	if len(events) > TAP_MAX_REPORTED:
-		lines.append("   ... and {} more - hb_journal_drain {{channels:['client.errors','net.errors']}}"
+		lines.append("   ... and {} more - hb_journal_drain {{channels:['client.errors']}}"
 		             .format(len(events) - TAP_MAX_REPORTED))
 	content = list(outcome.get("content") or [])
 	content.append({"type": "text", "text": "\n".join(lines)})
@@ -5110,8 +5089,9 @@ def _dispatch_tool(name, arguments, target=None):
 		if not isinstance(conditions, list) or not conditions:
 			return tool_error("hb_wait_for needs a non-empty 'conditions' array")
 		requested_ms = int(arguments.get("timeout_ms", 0))
-		if requested_ms <= 0:
-			return tool_error("hb_wait_for needs a positive 'timeout_ms'")
+		state_form = any(isinstance(item, dict) and "state" in item for item in conditions)
+		if requested_ms < 0 or (requested_ms == 0 and state_form):
+			return tool_error("hb_wait_for needs a positive 'timeout_ms' (0 is allowed only with event conditions)")
 		if requested_ms > WAIT_FOR_MAX_MS:
 			return tool_error("timeout_ms {} exceeds the {} ms maximum the client will hold a wait for"
 			                  .format(requested_ms, WAIT_FOR_MAX_MS))
@@ -5128,7 +5108,7 @@ def _dispatch_tool(name, arguments, target=None):
 		args = {"conditions": conditions, "timeout_ms": requested_ms}
 		if arguments.get("since") is not None:
 			args["since"] = int(arguments["since"])
-		if (parse_int(arguments.get("max_events")) or 1) > 1:
+		if (parse_int(arguments.get("max_events")) or 1) > 1 and requested_ms > 0:
 			return run_wait_many(arguments, args, target, requested_ms)
 		# The client answers its own timeout, so allow slack beyond it before calling the transport
 		# dead - otherwise a wait that legitimately ran its full course reads as a broken bridge.
@@ -5184,13 +5164,9 @@ def _dispatch_tool(name, arguments, target=None):
 		for key in ("types", "exclude_types"):
 			if arguments.get(key):
 				args[key] = [str(item) for item in arguments[key]]
-		if arguments.get("combat"):
-			args.setdefault("channels", list(COMBAT_CHANNELS))
 		result, error = require_bridge(target, "journal_query", args)
 		if error:
 			return tool_error(error)
-		if arguments.get("combat"):
-			result = thin_to_combat(result)
 		return {"content": text_content(headed(target, format_journal(result)))}
 
 	if name == "hb_journal_config":
@@ -5199,6 +5175,10 @@ def _dispatch_tool(name, arguments, target=None):
 			args["channels"] = {str(k): bool(v) for k, v in arguments["channels"].items()}
 		if arguments.get("capacity") is not None:
 			args["capacity"] = int(arguments["capacity"])
+		if arguments.get("test_log") is not None:
+			if arguments["test_log"] not in ("warn", "error"):
+				return tool_error("hb_journal_config test_log must be \"warn\" or \"error\"")
+			args["test_log"] = arguments["test_log"]
 		# No arguments is a READ-BACK, not a mistake: the client applies nothing and answers with the
 		# resolved concrete channel map, which is the only way to list the channels from the bridge.
 		# This used to be rejected, so the channel list had to be read out of agent_journal.h instead.

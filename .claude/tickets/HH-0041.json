@@ -1,7 +1,7 @@
 {
   "id": "HH-0041",
   "summary": "MCP server 8: phase 3, event journal",
-  "status": "open",
+  "status": "in_review",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -12,7 +12,7 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:46Z",
-  "updated": "2026-11-24T01:27:47Z",
+  "updated": "2026-11-24T04:41:17Z",
   "links": {
     "commits": [],
     "files": [],

@@ -107,6 +107,8 @@
 #include "dialog_box_npc_action_query.h"
 #include "dialog_box_manufacture.h"
 #include "agent_bridge.h"
+#include "agent_journal.h"
+#include "client_log_observer.h"
 
 
 using namespace hb::shared::net;
@@ -390,6 +392,7 @@ void CGame::on_uninitialize()
 {
 #ifdef DEF_CLAUDE_TESTING
 	m_agent_bridge.reset(); // closes the listener before the game it reads is torn down
+	hb::logger::set_observer(nullptr, nullptr); // the journal and the logger outlive CGame: stop observing before teardown
 #endif
 	write_settings();
 	change_game_mode(GameMode::Null);
@@ -647,6 +650,7 @@ void CGame::on_update()
 	// first, so a command sees (and later injects into) this iteration's state
 	if (m_agent_bridge)
 	{
+		hb::client::agent_journal::get().begin_frame(); // events of this iteration carry its frame number
 		m_agent_bridge->poll(*this);
 	}
 #endif
@@ -874,11 +878,31 @@ bool CGame::check_send_result(int result)
 	return true;
 }
 
+#ifdef DEF_CLAUDE_TESTING
+// net.packet journal event: the message id, type and size only, never a byte of the payload (a login packet
+// carries credentials). Observes only.
+void hb::client::journal_note_packet(const char* type, const char* link, const void* data, std::size_t size)
+{
+	hb::client::journal_record(hb::client::journal_channel::net_packet, type, [&](hb::client::journal_fields& fields)
+	{
+		if (size >= sizeof(hb::net::PacketHeader))
+		{
+			const auto* header = static_cast<const hb::net::PacketHeader*>(data);
+			fields.add("msg_id", header->msg_id).add("msg_type", header->msg_type);
+		}
+		fields.add("size", size).add("link", link);
+	});
+}
+#endif
+
 bool CGame::send_game_packet_impl(const hb::net::packet_base& pkt, size_t size, bool encrypt)
 {
 	if (!m_g_sock) return false;
 	uint8_t key = encrypt ? (static_cast<uint8_t>(rand() % 255) + 1) : 0;
 	int result = m_g_sock->send_msg(const_cast<char*>(reinterpret_cast<const char*>(&pkt)), static_cast<uint32_t>(size), key);
+#ifdef DEF_CLAUDE_TESTING
+	hb::client::journal_note_packet("packet_out", "game", &pkt, size);
+#endif
 	return check_send_result(result);
 }
 
@@ -887,6 +911,9 @@ bool CGame::send_game_packet_raw(const char* data, uint32_t size, bool encrypt)
 	if (!m_g_sock) return false;
 	uint8_t key = encrypt ? (static_cast<uint8_t>(rand() % 255) + 1) : 0;
 	int result = m_g_sock->send_msg(const_cast<char*>(data), size, key);
+#ifdef DEF_CLAUDE_TESTING
+	hb::client::journal_note_packet("packet_out", "game", data, size);
+#endif
 	return check_send_result(result);
 }
 
@@ -895,6 +922,12 @@ bool CGame::send_chat_message(const char* text)
 	if (teleport_manager::get().is_requested()) return false;
 	if (!text) return false;
 	if (check_local_chat_command(text)) return false;
+#ifdef DEF_CLAUDE_TESTING
+	hb::client::journal_record(hb::client::journal_channel::chat_message, "chat_send", [&](hb::client::journal_fields& fields)
+	{
+		fields.add("text", text);
+	});
+#endif
 
 	hb::net::PacketCommandChatMsgHeader req{};
 	req.header.msg_id = MsgId::CommandChatMsg;
@@ -1354,6 +1387,9 @@ void CGame::game_recv_msg_handler(uint32_t msg_size, char* data)
 	m_last_net_msg_id = header->msg_id;
 	m_last_net_msg_time = GameClock::get_time_ms();
 	m_last_net_msg_size = msg_size;
+#ifdef DEF_CLAUDE_TESTING
+	hb::client::journal_note_packet("packet_in", "game", data, msg_size);
+#endif
 
 	IGameScreen* screen = GameModeManager::get_active_screen();
 	if (screen && screen->on_game_msg(header->msg_id, header->msg_type, data, msg_size))
@@ -1677,6 +1713,9 @@ void CGame::connection_establish_handler(char where)
 		if (!m_pending_login_packet.empty()) {
 			char key = static_cast<char>(rand() % 255) + 1;
 			m_l_sock->send_msg(m_pending_login_packet.data(), static_cast<uint32_t>(m_pending_login_packet.size()), key);
+#ifdef DEF_CLAUDE_TESTING
+			hb::client::journal_note_packet("packet_out", "login", m_pending_login_packet.data(), m_pending_login_packet.size()); // id and size only
+#endif
 			m_pending_login_packet.clear();
 		}
 		break;
@@ -1852,6 +1891,9 @@ void CGame::request_full_object_data(uint16_t object_id)
 	header.msg_type = object_id;
 
 	ret = m_g_sock->send_msg(reinterpret_cast<char*>(&header), sizeof(header));
+#ifdef DEF_CLAUDE_TESTING
+	hb::client::journal_note_packet("packet_out", "game", &header, sizeof(header));
+#endif
 
 	switch (ret) {
 	case sock::Event::SocketClosed:
@@ -2205,6 +2247,9 @@ void CGame::log_response_handler(char* packet_data, uint32_t msg_size)
 
 void CGame::log_recv_msg_handler(char* data, uint32_t msg_size)
 {
+#ifdef DEF_CLAUDE_TESTING
+	hb::client::journal_note_packet("packet_in", "login", data, msg_size); // id and size only: login replies carry account data
+#endif
 	// Intercept balance config — sent before login response, must not close socket
 	const auto* header = hb::net::PacketCast<hb::net::PacketHeader>(data, sizeof(hb::net::PacketHeader));
 	if (header && header->msg_id == MsgId::BalanceConfigContents)
@@ -2421,6 +2466,12 @@ void CGame::chat_msg_handler(char* packet_data)
 		if (msg_type == 2 || msg_type == 3) return;
 	}
 
+#ifdef DEF_CLAUDE_TESTING
+	hb::client::journal_record(hb::client::journal_channel::chat_message, "chat_line", [&](hb::client::journal_fields& fields)
+	{
+		fields.add("chat_type", static_cast<int>(msg_type)).add("sender", name).add("text", temp).add("x", map_x).add("y", map_y);
+	});
+#endif
 	std::snprintf(message, sizeof(message), "%s: %s", name.c_str(), temp);
 	m_Renderer->begin_text_batch();
 	is_done = false;
@@ -3555,6 +3606,9 @@ void CGame::request_configs_from_server(bool items, bool magic, bool skills, boo
 	pkt.requestColorPalette = color_palette ? 1 : 0;
 	pkt.requestAttributeTypes = attribute_types ? 1 : 0;
 	m_g_sock->send_msg(reinterpret_cast<char*>(&pkt), sizeof(pkt));
+#ifdef DEF_CLAUDE_TESTING
+	hb::client::journal_note_packet("packet_out", "game", &pkt, sizeof(pkt));
+#endif
 }
 
 void CGame::check_configs_ready_and_enter_game()
@@ -6349,6 +6403,17 @@ void CGame::init_data_response_handler(char* packet_data)
 	m_player->m_player_y = pivot_y + hb::shared::view::PlayerPivotOffsetY;
 
 	m_player->m_player_dir = direction::south;
+#ifdef DEF_CLAUDE_TESTING
+	hb::client::journal_record(hb::client::journal_channel::state_map, "map_changed", [&](hb::client::journal_fields& fields)
+	{
+		fields.add("map", m_map_name).add("location", m_cur_location);
+	});
+	hb::client::journal_record(hb::client::journal_channel::state_player, "player_entered", [&](hb::client::journal_fields& fields)
+	{
+		fields.add("name", m_player->m_player_name).add("object_id", m_player->m_player_object_id)
+			.add("x", m_player->m_player_x).add("y", m_player->m_player_y).add("map", m_map_name);
+	});
+#endif
 
 	if (is_observer == false)
 	{

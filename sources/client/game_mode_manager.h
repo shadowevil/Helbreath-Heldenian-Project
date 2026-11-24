@@ -203,9 +203,16 @@ private:
         // Create overlay immediately (no fade transition for overlays)
         m_pActiveOverlay = std::make_unique<T>(m_game, std::forward<Args>(args)...);
         m_pActiveOverlay->on_initialize();
+#ifdef DEF_CLAUDE_TESTING
+        agent_note_overlay(true);
+#endif
     }
 
     void clear_overlay_impl();
+#ifdef DEF_CLAUDE_TESTING
+    // journal ui.window overlay_opened / overlay_closed for the active overlay (observes only)
+    void agent_note_overlay(bool opened);
+#endif
 
     void apply_screen_change();
 

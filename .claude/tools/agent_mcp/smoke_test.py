@@ -568,7 +568,7 @@ rpc("tools/call", {"name": "hb_ping", "arguments": {}})
 check("a client that lists more commands shows more tools",
       "hb_widgets" in {tool["name"] for tool in rpc("tools/list")["result"]["tools"]})
 
-for protocol, warns in ((2, False), (3, False), (9, True)):
+for protocol, warns in ((2, False), (3, False), (4, False), (5, True)):
     bridge.protocol = protocol
     text = rpc("tools/call", {"name": "hb_ping", "arguments": {}})["result"]["content"][0]["text"]
     check("bridge_protocol {} {}".format(protocol, "is warned about" if warns else "is accepted without a warning"),
@@ -1017,6 +1017,49 @@ filtered = rpc("tools/call", {"name": "hb_journal_drain", "arguments": {"object_
 wire = [r for r in bridge.seen if r["cmd"] == "journal_query"][-1]["args"]
 check("hb_journal_drain passes object_id and message_contains to the client",
       not filtered["result"].get("isError") and wire.get("object_id") == 19 and wire.get("message_contains") == "hello", wire)
+
+print("journal tools match the client's wire keys (bridge_protocol 4)")
+journal_before = len(bridge.seen)
+rpc("tools/call", {"name": "hb_journal_drain", "arguments": {
+    "channels": ["ui.screen"], "types": ["screen_changed"], "exclude_types": ["screen_active"], "max": 50,
+    "after_seq": 7, "before_seq": 90, "from_ms": 5, "to_ms": 900, "object_id": 3, "message_contains": "x"}})
+wire = [r for r in bridge.seen[journal_before:] if r["cmd"] == "journal_query"][-1]["args"]
+check("hb_journal_drain sends the selector flat to journal_query, with the window keys",
+      wire == {"channels": ["ui.screen"], "types": ["screen_changed"], "exclude_types": ["screen_active"], "max": 50,
+               "after_seq": 7, "before_seq": 90, "from_ms": 5, "to_ms": 900, "object_id": 3, "message_contains": "x"}, wire)
+combat = rpc("tools/call", {"name": "hb_journal_drain", "arguments": {"combat": True}})["result"]
+check("the SDL-only combat view is gone (an unknown key is refused)", combat.get("isError") and "combat" in combat["content"][0]["text"], combat)
+described = {tool["name"]: tool["description"] for tool in agent_mcp.TOOLS}
+check("the journal tool texts name this client's channels and none of SDL's",
+      all("ui.screen" in described[name] and "client.errors" in described[name] for name in ("hb_journal_drain", "hb_subscribe"))
+      and not any(word in described[name] for name in ("hb_journal_drain", "hb_subscribe", "hb_journal_config")
+                  for word in ("visual.damage", "audio.sound", "state.entity", "perf.frame")),
+      [described[name][:80] for name in ("hb_journal_drain", "hb_subscribe")])
+check("the error tap watches client.errors only", agent_mcp.TAP_CHANNELS == ("client.errors",), agent_mcp.TAP_CHANNELS)
+
+seen_before = len(bridge.seen)
+cfg = rpc("tools/call", {"name": "hb_journal_config", "arguments": {"channels": {"net": False}, "capacity": 1000, "test_log": "warn"}})["result"]
+wire = [r for r in bridge.seen[seen_before:] if r["cmd"] == "journal_config"][-1]["args"]
+check("hb_journal_config passes channels, capacity and test_log through",
+      not cfg.get("isError") and wire == {"channels": {"net": False}, "capacity": 1000, "test_log": "warn"}, (cfg, wire))
+seen_before = len(bridge.seen)
+bad_log = rpc("tools/call", {"name": "hb_journal_config", "arguments": {"test_log": "info"}})["result"]
+check("a test_log other than warn / error is refused before the wire",
+      bad_log.get("isError") and not [r for r in bridge.seen[seen_before:] if r["cmd"] == "journal_config"], bad_log)
+
+seen_before = len(bridge.seen)
+zero = rpc("tools/call", {"name": "hb_wait_for", "arguments": {"conditions": [{"channel": "chat.message", "type": "chat_line",
+                          "match": {"text": "hi"}}], "timeout_ms": 0, "since": 12}})["result"]
+wire = [r["args"] for r in bridge.seen[seen_before:] if r["cmd"] == "wait_for" and r["args"]["conditions"][0]["channel"] == "chat.message"][-1]
+check("hb_wait_for takes timeout_ms 0 with an event condition, and sends since",
+      not zero.get("isError") and wire["timeout_ms"] == 0 and wire["since"] == 12
+      and wire["conditions"][0]["match"] == {"text": "hi"}, (zero, wire))
+seen_before = len(bridge.seen)
+zero_state = rpc("tools/call", {"name": "hb_wait_for", "arguments": {
+    "conditions": [{"state": "screen", "equals": "Screen_Login"}], "timeout_ms": 0}})["result"]
+check("timeout_ms 0 stays refused for a state condition, before the wire",
+      zero_state.get("isError") and not [r for r in bridge.seen[seen_before:] if r["cmd"] == "wait_for"
+                                       and r["args"]["conditions"][0].get("state")], zero_state)
 cond = {"channel": "chat.message", "message_contains": "hello", "object_id": 19}
 rpc("tools/call", {"name": "hb_wait_for", "arguments": {"conditions": [cond], "timeout_ms": 500}})
 wire = [r["args"] for r in bridge.seen if r["cmd"] == "wait_for"
@@ -1243,11 +1286,6 @@ check("hb_probe sections drops the sections that were not asked for", '"render"'
 check("a walk wait that times out cancels the walk by default", "walk cancelled at (5,6)" in timed["result"]["content"][0]["text"], timed)
 kept = rpc("tools/call", {"name": "hb_walk_to", "arguments": {"x": 88, "y": 5, "wait": True, "timeout_ms": 500, "cancel_on_timeout": False}})
 check("cancel_on_timeout:false leaves the walk running", "cancelled" not in kept["result"]["content"][0]["text"], kept)
-mixed = {"events": [{"channel": "visual.damage", "type": "damage_number"},
-                    {"channel": "net.packet", "type": "packet_in", "data": {"message": "attack_event"}},
-                    {"channel": "net.packet", "type": "packet_in", "data": {"message": "motion_notice"}}], "raw": 3}
-check("combat keeps damage numbers and combat packets only", [e["type"] for e in agent_mcp.thin_to_combat(mixed)["events"]]
-      == ["damage_number", "packet_in"] and len(agent_mcp.thin_to_combat(mixed)["events"]) == 2, mixed)
 reuse_dir = os.path.join(SHOT_DIR, "reuse_probe")
 os.makedirs(reuse_dir, exist_ok=True)
 open(os.path.join(reuse_dir, "b_01.png"), "wb").close()
@@ -1382,7 +1420,8 @@ check("a call with no client registered says how to register one", after["result
       and "no client is registered" in after["result"]["content"][0]["text"], after)
 
 print("bridge protocol 2 or 3, discovery safety, tools built on SDL widget ids")
-check("protocol 3 is the current one", agent_mcp.EXPECTED_BRIDGE_PROTOCOL == 3 and agent_mcp.SUPPORTED_BRIDGE_PROTOCOLS == (2, 3))
+check("protocol 4 is the current one, 2 and 3 are still accepted",
+      agent_mcp.EXPECTED_BRIDGE_PROTOCOL == 4 and agent_mcp.SUPPORTED_BRIDGE_PROTOCOLS == (2, 3, 4))
 
 all_commands = frozenset(ALL_COMMANDS)
 for tool in ("hb_flow", "hb_click_widget", "hb_drag_slot", "hb_cast_at"):

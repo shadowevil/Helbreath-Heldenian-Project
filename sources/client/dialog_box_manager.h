@@ -5,6 +5,7 @@
 #include "claude_testing.h"
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -81,6 +82,8 @@ public:
 #ifdef DEF_CLAUDE_TESTING
 	// Agent bridge, read-only: every enabled dialog in click order (topmost layer first, then normal, then underlay)
 	std::vector<const IDialogBox*> agent_dialogs_top_to_bottom() const;
+	// The stable snake_case agent name of a dialog ("inventory"), or "dialog<N>" for an id with no entry
+	static std::string agent_dialog_name(DialogBoxId::Type id);
 #endif
 
 	// --- Rendering + Input (no mouse params — reads hb::shared::input) ---

@@ -60,3 +60,11 @@ The Debug agent bridge can now drive the client (HH-0038): mouse moves, clicks, 
 An MCP server for the Debug client is ported from Helbreath-SDL into `.claude/tools/agent_mcp/` and registered in `.mcp.json` (HH-0039). An agent can attach to a running Debug client to read its state, take screenshots and send input. Tools the client does not support yet stay hidden, and scanning for clients never takes over a client another session is driving.
 
 The Debug agent bridge can list and click named controls (HH-0040): every interactive control on the 11 menu screens and overlays has a stable name (`login.ok`, `main_menu.login`, ...). Dialogs and the HUD are listed as windows, and clicks report what consumed them. Password fields report only that they are masked.
+
+The Debug agent bridge keeps an event journal (HH-0041) covering:
+- screen changes, dialogs and overlays opening and closing, and clicks;
+- map changes and entering the game;
+- packet ids and sizes, never their contents;
+- chat lines, and client warnings and errors.
+
+An agent can read it, follow it, or wait for a specific event. The MCP server's journal tools follow it.

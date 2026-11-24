@@ -23,6 +23,7 @@
 #include <format>
 #include <fstream>
 #include <iterator>
+#include <limits>
 #include <span>
 
 namespace hb::client
@@ -165,39 +166,6 @@ namespace hb::client
 			return static_cast<std::size_t>(std::count_if(text.begin(), text.end(),
 				[](char c) { return (static_cast<unsigned char>(c) & 0xC0) != 0x80; }));
 		}
-
-		std::string dialog_name(DialogBoxId::Type id)
-		{
-			using namespace DialogBoxId;
-			static constexpr std::pair<Type, std::string_view> names[] = {
-				{CharacterInfo, "character_info"}, {Inventory, "inventory"}, {Magic, "magic"},
-				{ItemDropConfirm, "item_drop_confirm"}, {WarningBattleArea, "warning_battle_area"},
-				{GuildMenu, "guild_menu"}, {GuildOperation, "guild_operation"}, {GuideMap, "guide_map"},
-				{ChatHistory, "chat_history"}, {SaleMenu, "sale_menu"}, {LevelUpSetting, "level_up_setting"},
-				{CityHallMenu, "city_hall_menu"}, {Bank, "bank"}, {Skill, "skill"}, {MagicShop, "magic_shop"},
-				{ItemDropExternal, "item_drop_external"}, {Text, "text"}, {SystemMenu, "system_menu"},
-				{NpcActionQuery, "npc_action_query"}, {NpcTalk, "npc_talk"}, {Map, "map"},
-				{SellOrRepair, "sell_or_repair"}, {Fishing, "fishing"}, {Noticement, "noticement"},
-				{Manufacture, "manufacture"}, {Exchange, "exchange"}, {Quest, "quest"}, {HudPanel, "hud_panel"},
-				{SellList, "sell_list"}, {Party, "party"}, {CrusadeJob, "crusade_job"}, {ItemUpgrade, "item_upgrade"},
-				{Help, "help"}, {CrusadeCommander, "crusade_commander"}, {CrusadeConstructor, "crusade_constructor"},
-				{CrusadeSoldier, "crusade_soldier"}, {GiveItem, "give_item"}, {Slates, "slates"},
-				{ConfirmExchange, "confirm_exchange"}, {ChangeStatsMajestic, "change_stats_majestic"},
-				{StatusOverlay, "status_overlay"}, {Resurrect, "resurrect"}, {CommandHallMenu, "command_hall_menu"},
-				{RepairAll, "repair_all"},
-#ifdef TESTER_ONLY
-				{TesterMenu, "tester_menu"}, {ItemCreator, "item_creator"},
-#endif
-			};
-			for (const auto& [known, name] : names)
-			{
-				if (known == id)
-				{
-					return std::string(name);
-				}
-			}
-			return std::format("dialog{}", static_cast<std::size_t>(id));
-		}
 	}
 
 	// The one dispatch table; ping's commands[] is built from it, so the list never drifts from the code
@@ -218,6 +186,9 @@ namespace hb::client
 		{"wait_for", &agent_bridge::run_wait_for},
 		{"widgets", &agent_bridge::run_widgets},
 		{"widget_click", &agent_bridge::run_widget_click},
+		{"journal_query", &agent_bridge::run_journal_query},
+		{"journal_drain", &agent_bridge::run_journal_drain},
+		{"journal_config", &agent_bridge::run_journal_config},
 	};
 
 	agent_bridge::agent_bridge()
@@ -237,6 +208,7 @@ namespace hb::client
 	{
 		try
 		{
+			static_cast<void>(agent_journal::get()); // brings the log observer up before the first command
 			return open_listener(port);
 		}
 		catch (const std::exception& failure)
@@ -1243,6 +1215,12 @@ namespace hb::client
 		{
 			// taken before the press runs: a press can change the screen, and the queue can run later than it was asked
 			job.result["consumed_by"] = front_at(active_game, step.x, step.y);
+			const json& reached = job.result["consumed_by"];
+			journal_record(journal_channel::ui_window, "click_consumed", [&](journal_fields& fields)
+			{
+				fields.add("x", step.x).add("y", step.y).add("kind", reached.value("kind", std::string{}))
+					.add("owner", reached.value("owner", std::string{})).add("name", reached.value("name", std::string{}));
+			});
 		}
 		execute(step);
 		if (step.kind == step_kind::move)
@@ -1580,7 +1558,7 @@ namespace hb::client
 		for (const IDialogBox* dialog : dialogs.agent_dialogs_top_to_bottom())
 		{
 			widget_row row;
-			row.name = dialog_name(dialog->get_id());
+			row.name = DialogBoxManager::agent_dialog_name(dialog->get_id());
 			row.kind = "window";
 			row.owner = "dialog:" + row.name;
 			row.x = dialog->m_x;
@@ -1878,20 +1856,71 @@ namespace hb::client
 		if (conditions == args.end() || !conditions->is_array() || conditions->empty()
 			|| conditions->size() > max_wait_conditions)
 		{
-			error = std::format("wait_for requires 'conditions', an array of 1..{} state conditions", max_wait_conditions);
+			error = std::format("wait_for requires 'conditions', an array of 1..{} conditions", max_wait_conditions);
 			return true;
 		}
-		for (const json& condition : *conditions)
+		std::vector<wait_condition> parsed;
+		for (std::size_t index = 0; index < conditions->size(); ++index)
 		{
-			if (!condition.is_object() || !condition.contains("state") || !condition["state"].is_string()
-				|| !condition.contains("equals"))
+			const json& entry = (*conditions)[index];
+			wait_condition condition;
+			condition.source = entry;
+			const std::string where = std::format("condition {}: ", index);
+			if (!entry.is_object())
 			{
-				error = "each condition must be {\"state\": key, \"equals\": value} (event conditions come in phase 3)";
+				error = where + "not an object";
 				return true;
 			}
+			if (const auto channel = entry.find("channel"); channel != entry.end() && channel->is_string())
+			{
+				// event form: {channel, type?, match?, object_id?, message_contains?}
+				condition.channel = channel->get<std::string>();
+				const auto type = entry.find("type");
+				if (type != entry.end() && !type->is_null())
+				{
+					if (!type->is_string())
+					{
+						error = where + "'type' must be a string";
+						return true;
+					}
+					condition.type = type->get<std::string>();
+				}
+				condition.match = entry.value("match", json::object());
+				if (!condition.match.is_object())
+				{
+					error = where + "'match' must be an object";
+					return true;
+				}
+				std::string reason;
+				if (!read_data_filter(entry, condition.data, reason))
+				{
+					error = where + reason;
+					return true;
+				}
+			}
+			else if (const auto state = entry.find("state"); state != entry.end() && state->is_string())
+			{
+				const auto equals = entry.find("equals");
+				if (equals == entry.end())
+				{
+					error = where + "a state condition needs 'equals'";
+					return true;
+				}
+				condition.is_state = true;
+				condition.state_key = state->get<std::string>();
+				condition.equals = *equals;
+			}
+			else
+			{
+				error = where + "must be {\"state\": key, \"equals\": value} or an event {\"channel\": prefix, ...}";
+				return true;
+			}
+			parsed.push_back(std::move(condition));
 		}
 		int timeout_ms = default_wait_timeout_ms;
-		if (!read_int(args, "timeout_ms", false, 1, max_timeout_ms, timeout_ms, error))
+		int since = 0;
+		if (!read_int(args, "timeout_ms", false, 0, max_timeout_ms, timeout_ms, error)
+			|| !read_int(args, "since", false, 0, std::numeric_limits<int>::max(), since, error))
 		{
 			return true;
 		}
@@ -1902,47 +1931,136 @@ namespace hb::client
 			error = "too many waits pending";
 			return true;
 		}
-		m_deferred.push_back(deferred_reply{.id = id, .kind = deferred_kind::wait, .conditions = *conditions,
-			.deadline = clock::now() + std::chrono::milliseconds(timeout_ms)});
+		deferred_reply wait{.id = id, .kind = deferred_kind::wait, .conditions = *conditions,
+			.deadline = clock::now() + std::chrono::milliseconds(timeout_ms)};
+		wait.parsed = std::move(parsed);
+		// event conditions match only what arrives from HERE on; the trail defaults to the same point, so a timed-out
+		// reply never replays an older matching event, and a caller wanting history names a `since`
+		wait.scan_seq = agent_journal::get().next_seq();
+		wait.match_from = wait.scan_seq;
+		wait.trail_since = args.contains("since") && !args["since"].is_null() ? static_cast<std::uint64_t>(since) : wait.scan_seq;
+		m_deferred.push_back(std::move(wait));
 		return false; // settle_waits answers it, in this poll if it already holds
+	}
+
+	bool agent_bridge::event_satisfies(const wait_condition& condition, const journal_event& recorded, const json& data)
+	{
+		if (!journal_channel_matches(recorded.channel, condition.channel))
+		{
+			return false;
+		}
+		if (!condition.type.empty() && condition.type != recorded.type)
+		{
+			return false;
+		}
+		if (!condition.data.admits(recorded.data))
+		{
+			return false;
+		}
+		for (const auto& [key, value] : condition.match.items())
+		{
+			const auto found = data.find(key);
+			if (found == data.end() || *found != value)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	// The events since the wait's trail start, as a drain reply: OBSERVE, not consume, so a wait never swallows
+	// the dropped counter a caller's own journal_drain must see
+	void agent_bridge::append_wait_trail(const deferred_reply& wait, json& result) const
+	{
+		std::vector<journal_event> drained;
+		const agent_journal::drain_result drain = agent_journal::get().drain(wait.trail_since, journal_default_drain_max,
+			journal_selector{}, drained, journal_drain_accounting::observe);
+		result["cursor"] = drain.cursor;
+		result["dropped"] = drain.dropped;
+		result["truncated"] = drain.truncated;
+		result["raw"] = drained.size();
+		result["scan_from"] = wait.match_from; // where MATCHING began, which is not where the trail began
+		result["events"] = journal_events_json(drained);
 	}
 
 	void agent_bridge::settle_waits(CGame& active_game)
 	{
-		const bool any = std::any_of(m_deferred.begin(), m_deferred.end(),
-			[](const deferred_reply& pending) { return pending.kind == deferred_kind::wait; });
-		if (!any)
+		const auto is_wait = [](const deferred_reply& pending) { return pending.kind == deferred_kind::wait; };
+		if (!std::any_of(m_deferred.begin(), m_deferred.end(), is_wait))
 		{
 			return;
 		}
 		const json state = state_snapshot(active_game);
 		const clock::time_point now = clock::now();
-		std::vector<std::pair<json, json>> settled;
-		std::erase_if(m_deferred, [&](const deferred_reply& pending)
+
+		// ONE bounded peek for every wait holding an event condition, from the oldest scan point; what it could
+		// not reach this poll is reached on the next
+		std::vector<journal_event> events;
+		std::vector<json> event_data;
+		std::uint64_t scanned_through = 0;
+		bool peeked = false;
+		std::uint64_t lowest_scan = 0;
+		for (const deferred_reply& pending : m_deferred)
 		{
-			if (pending.kind != deferred_kind::wait)
+			const bool has_event = is_wait(pending)
+				&& std::any_of(pending.parsed.begin(), pending.parsed.end(), [](const wait_condition& c) { return !c.is_state; });
+			if (has_event && (!peeked || pending.scan_seq < lowest_scan))
+			{
+				lowest_scan = pending.scan_seq;
+				peeked = true;
+			}
+		}
+		if (peeked)
+		{
+			scanned_through = agent_journal::get().peek(lowest_scan, journal_default_drain_max, events);
+			event_data.reserve(events.size());
+			for (const journal_event& recorded : events)
+			{
+				json parsed = json::parse(recorded.data, nullptr, false);
+				event_data.push_back(parsed.is_object() ? std::move(parsed) : json::object());
+			}
+		}
+
+		std::vector<std::pair<json, json>> settled;
+		std::erase_if(m_deferred, [&](deferred_reply& pending)
+		{
+			if (!is_wait(pending))
 			{
 				return false;
 			}
 			json result = json::object();
-			for (std::size_t i = 0; i < pending.conditions.size(); ++i)
+			for (std::size_t i = 0; i < pending.parsed.size() && !result.contains("matched"); ++i)
 			{
-				const json& condition = pending.conditions[i];
-				const auto found = state.find(condition["state"].get_ref<const std::string&>());
-				if (found != state.end() && *found == condition["equals"])
+				const wait_condition& condition = pending.parsed[i];
+				if (condition.is_state)
 				{
-					result["matched"] = {{"index", i}, {"condition", condition}, {"observed", *found}};
-					break;
+					const auto found = state.find(condition.state_key);
+					if (found != state.end() && *found == condition.equals)
+					{
+						result["matched"] = {{"index", i}, {"condition", condition.source}, {"observed", *found}};
+					}
+					continue;
+				}
+				for (std::size_t e = 0; e < events.size(); ++e)
+				{
+					if (events[e].seq >= pending.scan_seq && event_satisfies(condition, events[e], event_data[e]))
+					{
+						result["matched"] = {{"index", i}, {"condition", condition.source},
+							{"event", journal_event_json(events[e])}};
+						break;
+					}
 				}
 			}
 			const bool satisfied = result.contains("matched");
 			if (!satisfied && now < pending.deadline)
 			{
+				pending.scan_seq = std::max(pending.scan_seq, scanned_through);
 				return false;
 			}
 			// a timeout is an ordinary outcome: ok, satisfied false, with the state as it was
 			result["satisfied"] = satisfied;
 			result["state"] = state;
+			append_wait_trail(pending, result);
 			settled.emplace_back(pending.id, std::move(result));
 			return true;
 		});
@@ -1951,6 +2069,280 @@ namespace hb::client
 			queue_reply(id, result, {});
 		}
 	}
+
+	//-------------------------------------------------------------------------
+	// the journal commands
+	//-------------------------------------------------------------------------
+
+	namespace
+	{
+		constexpr std::size_t min_coalesced_run = 3; // identical consecutive events in one reply collapse to a counted row
+
+		bool read_string_list(const agent_bridge::json& args, const char* key, std::vector<std::string>& out,
+			std::string& error)
+		{
+			const auto found = args.find(key);
+			if (found == args.end() || found->is_null())
+			{
+				return true;
+			}
+			if (!found->is_array() || !std::all_of(found->begin(), found->end(), [](const agent_bridge::json& e) { return e.is_string(); }))
+			{
+				error = std::format("'{}' must be an array of strings", key);
+				return false;
+			}
+			for (const agent_bridge::json& entry : *found)
+			{
+				out.push_back(entry.get<std::string>());
+			}
+			return true;
+		}
+
+		// a non-negative number, or absent
+		bool read_optional_u64(const agent_bridge::json& args, const char* key, std::optional<std::uint64_t>& out,
+			std::string& error)
+		{
+			out.reset();
+			const auto found = args.find(key);
+			if (found == args.end() || found->is_null())
+			{
+				return true;
+			}
+			if (!found->is_number_integer() || found->get<std::int64_t>() < 0)
+			{
+				error = std::format("'{}' must be a non-negative integer", key);
+				return false;
+			}
+			out = found->get<std::uint64_t>();
+			return true;
+		}
+
+		bool read_event_max(const agent_bridge::json& args, std::size_t fallback, std::size_t& out, std::string& error)
+		{
+			int requested = static_cast<int>(fallback);
+			if (!read_int(args, "max", false, 1, static_cast<int>(journal_max_capacity), requested, error))
+			{
+				return false;
+			}
+			out = static_cast<std::size_t>(requested);
+			return true;
+		}
+	}
+
+	bool agent_bridge::read_data_filter(const json& args, journal_data_filter& out, std::string& error)
+	{
+		std::optional<std::uint64_t> object_id;
+		if (!read_optional_u64(args, "object_id", object_id, error))
+		{
+			return false;
+		}
+		if (object_id)
+		{
+			out.set_object_id(static_cast<std::int64_t>(*object_id));
+		}
+		const auto needle = args.find("message_contains");
+		if (needle != args.end() && !needle->is_null())
+		{
+			if (!needle->is_string())
+			{
+				error = "'message_contains' must be a string";
+				return false;
+			}
+			out.set_message_contains(needle->get<std::string>());
+		}
+		return true;
+	}
+
+	bool agent_bridge::read_selector(const json& args, journal_selector& out, std::string& error)
+	{
+		return read_string_list(args, "channels", out.channels, error) && read_string_list(args, "types", out.types, error)
+			&& read_string_list(args, "exclude_types", out.exclude_types, error) && read_data_filter(args, out.data, error);
+	}
+
+	bool agent_bridge::read_window(const json& args, journal_window& out, std::string& error)
+	{
+		if (!read_optional_u64(args, "from_ms", out.from_ms, error) || !read_optional_u64(args, "to_ms", out.to_ms, error)
+			|| !read_optional_u64(args, "after_seq", out.after_seq, error)
+			|| !read_optional_u64(args, "before_seq", out.before_seq, error))
+		{
+			return false;
+		}
+		if (out.from_ms && out.to_ms && *out.from_ms > *out.to_ms)
+		{
+			error = "from_ms must not be later than to_ms";
+			return false;
+		}
+		if (out.after_seq && out.before_seq && *out.after_seq >= *out.before_seq)
+		{
+			error = "after_seq must be below before_seq";
+			return false;
+		}
+		return true;
+	}
+
+	agent_bridge::json agent_bridge::journal_event_json(const journal_event& recorded)
+	{
+		json parsed = json::parse(recorded.data, nullptr, false);
+		return {{"seq", recorded.seq}, {"t_ms", recorded.t_ms}, {"frame", recorded.frame},
+			{"channel", std::string(journal_channel_name(recorded.channel))}, {"type", recorded.type},
+			{"data", parsed.is_object() ? std::move(parsed) : json::object()}};
+	}
+
+	// Runs are consecutive IN THIS REPLY (after the filter); a reader counts with `count`
+	agent_bridge::json agent_bridge::journal_events_json(const std::vector<journal_event>& events)
+	{
+		json rows = json::array();
+		for (std::size_t start = 0; start < events.size();)
+		{
+			std::size_t past_run = start + 1;
+			while (past_run < events.size() && events[start].channel == events[past_run].channel
+				&& events[start].type == events[past_run].type && events[start].data == events[past_run].data)
+			{
+				++past_run;
+			}
+			json row = journal_event_json(events[start]);
+			if (past_run - start >= min_coalesced_run)
+			{
+				row["count"] = past_run - start;
+				row["seq_last"] = events[past_run - 1].seq;
+				row["t_ms_last"] = events[past_run - 1].t_ms;
+			}
+			rows.push_back(std::move(row));
+			start = past_run;
+		}
+		return rows;
+	}
+
+	bool agent_bridge::run_journal_drain(const json&, const json& args, CGame&, json& result, std::string& error)
+	{
+		journal_selector selector;
+		int since = 0;
+		std::size_t max_events = journal_default_drain_max;
+		if (!read_selector(args, selector, error) || !read_int(args, "since", false, 0, std::numeric_limits<int>::max(), since, error)
+			|| !read_event_max(args, journal_default_drain_max, max_events, error))
+		{
+			return true;
+		}
+		std::vector<journal_event> drained;
+		const agent_journal::drain_result drain = agent_journal::get().drain(static_cast<std::uint64_t>(since), max_events,
+			selector, drained, journal_drain_accounting::consume);
+		result["cursor"] = drain.cursor; // pass as the next `since`
+		result["dropped"] = drain.dropped; // evicted unread since the previous drain: never silent
+		result["truncated"] = drain.truncated;
+		result["raw"] = drained.size();
+		result["events"] = journal_events_json(drained);
+		return true;
+	}
+
+	bool agent_bridge::run_journal_query(const json&, const json& args, CGame&, json& result, std::string& error)
+	{
+		journal_selector selector;
+		journal_window window;
+		std::size_t max_events = journal_default_query_max;
+		if (!read_selector(args, selector, error) || !read_window(args, window, error)
+			|| !read_event_max(args, journal_default_query_max, max_events, error))
+		{
+			return true;
+		}
+		std::vector<journal_event> newest_first;
+		const agent_journal::query_result query = agent_journal::get().query(window, max_events, selector, newest_first);
+		std::reverse(newest_first.begin(), newest_first.end()); // rows are oldest first, collapsed as a drain's are
+		json echoed = json::object();
+		const auto echo = [&echoed](const char* key, const std::optional<std::uint64_t>& bound)
+		{
+			if (bound)
+			{
+				echoed[key] = *bound;
+			}
+		};
+		echo("from_ms", window.from_ms);
+		echo("to_ms", window.to_ms);
+		echo("after_seq", window.after_seq);
+		echo("before_seq", window.before_seq);
+		result["live"] = window.is_live();
+		result["window"] = std::move(echoed);
+		result["now_ms"] = query.now_ms;
+		result["newest_seq"] = query.newest_seq;
+		result["oldest_seq_retained"] = query.oldest_seq_retained;
+		result["oldest_t_ms_retained"] = query.oldest_t_ms_retained;
+		result["more_older"] = query.more_older;
+		if (query.more_older)
+		{
+			result["older_before_seq"] = query.older_before_seq;
+		}
+		result["raw"] = newest_first.size();
+		result["events"] = journal_events_json(newest_first);
+		return true;
+	}
+
+	bool agent_bridge::run_journal_config(const json&, const json& args, CGame&, json& result, std::string& error)
+	{
+		agent_journal& journal = agent_journal::get();
+		// keys are PREFIX selectors applied in sorted key order, so a narrow one ("net.packet") overrides the
+		// broad one ("net") it extends
+		if (const auto found = args.find("channels"); found != args.end() && !found->is_null())
+		{
+			if (!found->is_object() || !std::all_of(found->begin(), found->end(), [](const json& v) { return v.is_boolean(); }))
+			{
+				error = "channels must be an object of channel prefix -> bool";
+				return true;
+			}
+			for (const auto& [selector, wanted] : found->items())
+			{
+				bool any = false;
+				for (const journal_channel channel : journal_channels)
+				{
+					if (journal_channel_matches(channel, selector))
+					{
+						journal.set_enabled(channel, wanted.get<bool>());
+						any = true;
+					}
+				}
+				if (!any)
+				{
+					error = "no channel matches selector: " + selector;
+					return true;
+				}
+			}
+		}
+		if (const auto found = args.find("capacity"); found != args.end() && !found->is_null())
+		{
+			if (!found->is_number_integer() || found->get<std::int64_t>() < 0)
+			{
+				error = "capacity must be a non-negative integer";
+				return true;
+			}
+			journal.set_capacity(found->get<std::size_t>());
+		}
+		// a diagnostic aid: logs one line at the named level, so a caller can see it land in client.warnings or
+		// client.errors (the log sink's end-to-end check)
+		if (const auto found = args.find("test_log"); found != args.end() && !found->is_null())
+		{
+			if (!found->is_string() || (found->get<std::string>() != "warn" && found->get<std::string>() != "error"))
+			{
+				error = "test_log must be \"warn\" or \"error\"";
+				return true;
+			}
+			if (found->get<std::string>() == "warn")
+			{
+				hb::logger::warn("agent bridge: journal sink test line");
+			}
+			else
+			{
+				hb::logger::error("agent bridge: journal sink test line");
+			}
+		}
+		// the RESOLVED configuration, so a caller never has to assume its write took
+		json channels = json::object();
+		for (const journal_channel channel : journal_channels)
+		{
+			channels[std::string(journal_channel_name(channel))] = journal.enabled(channel);
+		}
+		result["channels"] = std::move(channels);
+		result["capacity"] = journal.capacity();
+		return true;
+	}
+
 }
 
 #endif

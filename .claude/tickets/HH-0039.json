@@ -1,7 +1,7 @@
 {
   "id": "HH-0039",
   "summary": "MCP server 6: phase 1b, Python MCP server and .mcp.json",
-  "status": "in_review",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:45Z",
-  "updated": "2026-11-24T04:13:43Z",
+  "updated": "2026-11-24T04:23:54Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "76ea3c3"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
@@ -26,5 +28,5 @@
       "HH-0038"
     ]
   },
-  "body": "Copy SDL's `agent_mcp/` to `.claude/tools/agent_mcp/` (d-028); retarget ports 8891-8898, paths and exe names; screenshot names not paths; redact masked fields; hide tools the client does not list in `ping`. Add the `.mcp.json` entry launched with `python`. ~200 lines changed on ~8,700 copied (derived). Detail: `python-reuse.md`.\n\n**Done when:** an agent attached via `.mcp.json` takes a screenshot and clicks a button in a running Debug client; self-tests pass; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028."
+  "body": "Copy SDL's `agent_mcp/` to `.claude/tools/agent_mcp/` (d-028); retarget ports 8891-8898, paths and exe names; screenshot names not paths; redact masked fields; hide tools the client does not list in `ping`. Add the `.mcp.json` entry launched with `python`. ~200 lines changed on ~8,700 copied (derived). Detail: `python-reuse.md`.\n\n**Done when:** an agent attached via `.mcp.json` takes a screenshot and clicks a button in a running Debug client; self-tests pass; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028.\n\n**Closed, 2026-11-24:** read-only review passed twice. Self-test 142/0, smoke test 281/0 (measured). Live run on 8893: ping, get_state, screenshot, click (measured). Not verified: the Linux runtime, and the SDL flows (hidden until HH-0042).\n"
 }

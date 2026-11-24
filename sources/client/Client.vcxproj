@@ -234,6 +234,8 @@
     <ClInclude Include="action_id_client.h" />
     <ClInclude Include="agent_bridge.h" />
     <ClInclude Include="agent_bridge_config.h" />
+    <ClInclude Include="agent_journal.h" />
+    <ClInclude Include="client_log_observer.h" />
     <ClInclude Include="benchmark.h" />
     <ClInclude Include="performance_monitor.h" />
     <ClInclude Include="build_item.h" />
@@ -499,6 +501,7 @@
     <ClCompile Include="player_renderer.cpp" />
     <ClCompile Include="npc_renderer.cpp" />
     <ClCompile Include="agent_bridge.cpp" />
+    <ClCompile Include="agent_journal.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="game_mode_manager.cpp" />
     <ClCompile Include="game_screen.cpp" />

@@ -12,6 +12,7 @@
 #include "config_manager.h"
 #include "renderer_factory.h"
 #include "log.h"
+#include "agent_journal.h"
 
 // ============== Singleton ==============
 
@@ -63,6 +64,9 @@ void GameModeManager::clear_overlay_impl()
 {
     if (m_pActiveOverlay)
     {
+#ifdef DEF_CLAUDE_TESTING
+        agent_note_overlay(false);
+#endif
         m_pActiveOverlay->on_uninitialize();
         // Defer destruction — the overlay may still be on the call stack
         // (e.g., clear_overlay() called from a button handler inside m_controls.update()).
@@ -70,6 +74,17 @@ void GameModeManager::clear_overlay_impl()
         m_dying_overlay = std::move(m_pActiveOverlay);
     }
 }
+
+#ifdef DEF_CLAUDE_TESTING
+void GameModeManager::agent_note_overlay(bool opened)
+{
+    hb::client::journal_record(hb::client::journal_channel::ui_window, opened ? "overlay_opened" : "overlay_closed",
+        [&](hb::client::journal_fields& fields)
+        {
+            fields.add("name", m_pActiveOverlay ? m_pActiveOverlay->get_type_id() : "");
+        });
+}
+#endif
 
 // ============== Frame update ==============
 
@@ -108,6 +123,12 @@ void GameModeManager::update_impl()
             // Transition complete
             m_transitionState = TransitionState::None;
             m_transitionTime = 0.0f;
+#ifdef DEF_CLAUDE_TESTING
+            hb::client::journal_record(hb::client::journal_channel::ui_screen, "screen_active", [&](hb::client::journal_fields& fields)
+            {
+                fields.add("screen", m_pCurrentScreen ? m_pCurrentScreen->get_type_id() : "");
+            });
+#endif
         }
         break;
 
@@ -238,6 +259,13 @@ void GameModeManager::apply_screen_change()
             GameMode screen_mode = m_pCurrentScreen->get_game_mode();
             if (screen_mode != GameMode::Null)
                 m_currentMode = screen_mode;
+
+#ifdef DEF_CLAUDE_TESTING
+            hb::client::journal_record(hb::client::journal_channel::ui_screen, "screen_changed", [&](hb::client::journal_fields& fields)
+            {
+                fields.add("screen", m_pCurrentScreen->get_type_id()).add("from", m_previousScreenType ? m_previousScreenType : "");
+            });
+#endif
 
             // Apply screen's preferred transition timing for fade-in
             m_config.fade_in_duration = m_pCurrentScreen->get_fade_in_duration();

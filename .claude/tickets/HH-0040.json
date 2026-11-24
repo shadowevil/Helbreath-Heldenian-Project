@@ -1,7 +1,7 @@
 {
   "id": "HH-0040",
   "summary": "MCP server 7: phase 2, widgets",
-  "status": "in_review",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -12,9 +12,11 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:45Z",
-  "updated": "2026-11-24T04:18:35Z",
+  "updated": "2026-11-24T04:23:54Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "52d2c98"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
@@ -24,5 +26,5 @@
       "HH-0039"
     ]
   },
-  "body": "`IGameScreen::agent_controls()`, name tables for the 11 CControls screens and overlays, dialog rects as coarse widgets; commands `widgets`, `widget_click`, click `consumed_by`, probe `front`. About 14 files, ~500 lines (derived); Mode 2 if justified.\n\n**Done when:** an agent lists and clicks named widgets on every CControls screen; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028."
+  "body": "`IGameScreen::agent_controls()`, name tables for the 11 CControls screens and overlays, dialog rects as coarse widgets; commands `widgets`, `widget_click`, click `consumed_by`, probe `front`. About 14 files, ~500 lines (derived); Mode 2 if justified.\n\n**Done when:** an agent lists and clicks named widgets on every CControls screen; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028.\n\n**Closed, 2026-11-24:** read-only review passed with fixes (HUD listed, re-aim at execution, disabled-control parity). Windows and WSL Debug 0 warnings; Release exe has no bridge strings; live tests 19/19 and 13/13 (all measured). Not verified: dialogs and HUD in the world (needs login), widget_stale live.\n"
 }
