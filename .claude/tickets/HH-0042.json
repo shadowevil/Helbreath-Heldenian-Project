@@ -1,7 +1,7 @@
 {
   "id": "HH-0042",
   "summary": "MCP server 9: phase 4, world commands and flows",
-  "status": "in_progress",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -12,9 +12,11 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:46Z",
-  "updated": "2026-11-24T04:45:53Z",
+  "updated": "2026-11-24T05:49:26Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "d1a0b04"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
@@ -24,5 +26,5 @@
       "HH-0039"
     ]
   },
-  "body": "`entities`, `tile_to_screen`, `walk_to`, `close_window`, `set_audio`, in-world get_state/probe keys; retarget `flows.py` and `world.py`. About 6 C++ files, ~600 lines, plus ~300 Python (derived).\n\n**Done when:** an agent logs in, walks to a tile and reads nearby entities; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028."
+  "body": "`entities`, `tile_to_screen`, `walk_to`, `close_window`, `set_audio`, in-world get_state/probe keys; retarget `flows.py` and `world.py`. About 6 C++ files, ~600 lines, plus ~300 Python (derived).\n\n**Done when:** an agent logs in, walks to a tile and reads nearby entities; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028.\n\n**Closed, 2026-11-24:** C++ committed in b2fa2e1, Python in d1a0b04. Both reviewed. Verified in world with test account htest8489: walk_to arrived/blocked/timeout and stops, tile_to_screen matches a real click, close_window works with the HUD protected, set_audio restored, journal state/net/chat events present. Through the MCP server: login, enter, walk and inventory close. Not verified: entities with rows (the map was empty) and the Linux runtime.\n"
 }

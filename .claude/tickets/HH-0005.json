@@ -1,7 +1,7 @@
 {
   "id": "HH-0005",
   "summary": "World/screen space split (task)",
-  "status": "in_progress",
+  "status": "user_review",
   "severity": "high",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:29:34Z",
-  "updated": "2026-11-24T01:24:05Z",
+  "updated": "2026-11-24T05:49:32Z",
   "links": {
     "commits": [],
     "files": [],
@@ -29,5 +29,12 @@
       "HH-0034"
     ]
   },
-  "body": "The world keeps rendering at 800x600 and is upscaled to the window; UI, floating text and every non-game screen render in screen space at window resolution, with a fixed draw order. Today everything draws into one 800x600 back buffer (`sources/sfml_engine/sfml_renderer.cpp`, CreateRenderTextures and end_frame, as of 2026-11-23). Design and the user's decisions: `.claude/design/plans/world-screen-split.md` and d-024 in `.claude/docs/decisions.md`. Closes when its sub-tasks are done.\n\n**Done when:** every sub-task is done and the split is checked in game at 800x600, 1440x1080, fullscreen letterbox and stretch.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md."
+  "body": "The world keeps rendering at 800x600 and is upscaled to the window; UI, floating text and every non-game screen render in screen space at window resolution, with a fixed draw order. Today everything draws into one 800x600 back buffer (`sources/sfml_engine/sfml_renderer.cpp`, CreateRenderTextures and end_frame, as of 2026-11-23). Design and the user's decisions: `.claude/design/plans/world-screen-split.md` and d-024 in `.claude/docs/decisions.md`. Closes when its sub-tasks are done.\n\n**Done when:** every sub-task is done and the split is checked in game at 800x600, 1440x1080, fullscreen letterbox and stretch.\n\nSource: user request 2026-11-23; plan .claude/design/plans/world-screen-split.md.",
+  "comments": [
+    {
+      "author": "pm",
+      "at": "2026-11-24T05:49:32Z",
+      "body": "Waits on HH-0014 (your in-game check of the split)."
+    }
+  ]
 }
