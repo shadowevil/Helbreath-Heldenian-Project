@@ -1,9 +1,18 @@
 """Make a Helbreath parchment map (the 300x300 RGBA picture the Map item opens) from a map's .amd file.
 
 Usage:
-  python tools/parchment_map/make_parchment.py <map.amd> -o <out.png>
-         [--minimap <dir with 01.jpg/02.jpg/03.jpg>] [--mapinfo <map name | sources/database/mapinfo dir>]
-         [--seed N] [--sheet <compare.png>] [--reference <png>] [--no-icons] [-v]
+  python tools/parchment_map/make_parchment.py <map.amd> -o <out.png> [--scale N] [--paper hq|patches|<image>]
+         [--mapinfo <map name | mapinfo dir>] [--icons-json <out.json>] [--icons]
+         [--minimap <dir>] [--seed N] [--sheet <compare.png>] [--reference <png>] [-v]
+
+  --scale N  output is 300*N px square (1 = the client's size; 4 = 1200, the project's HQ art size). The ink
+             is computed at the output resolution: the same strokes, drawn crisp at N > 1.
+  --paper    hq (default): the shipped high-quality parchment (data/paper_hq.png, torn edge in its alpha);
+             patches: the old paper quilted from the originals; or any image path (RGBA with its own torn
+             edge, or opaque: then an original's edge is used).
+  --icons-json  write the icon placements (exits, portals, buildings, entrances, monster areas) as JSON in
+             output pixels; no icons are drawn by default (an icon kit will be placed from this file).
+  --icons    also draw the old cut-out icons (off by default).
 
 Works from the .amd alone. Optional inputs refine it:
   --minimap  a folder of minimap art (01.jpg/02.jpg/03.jpg); used instead of the shipped tile palette as the
@@ -19,6 +28,7 @@ Works from the .amd alone. Optional inputs refine it:
 
 Exit status 0 on success; 2 with one 'error: ...' line on stderr for a missing, truncated or non-.amd
 input (map sizes must be 1..4096) or an unreadable reference.
+Exit status 2 also for --scale outside 1..8 or a missing --paper image.
 Output is deterministic for a given seed. Console text is ASCII apart from echoed file paths. Needs numpy and Pillow.
 """
 import argparse
@@ -31,11 +41,23 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 HERE = Path(__file__).resolve().parent
+
+
+def configure(scale):
+	"""Set the output scale: SIZE = 300*scale; every pixel constant below is multiplied by PX."""
+	global PX, SIZE, BOX, BOX_DY
+	if not 1 <= scale <= 8:
+		raise ValueError(f"--scale {scale} is outside 1..8")
+	PX, SIZE, BOX, BOX_DY = scale, BASE * scale, BASE_BOX * scale, BASE_BOX_DY * scale
 DATA = HERE / "data"
 REPO = HERE.parents[1]
-SIZE = 300
-BOX = 245            # the whole map is scaled into a BOX x BOX square, centred, as the originals do
-BOX_DY = -1          # (fitted on 7 originals: map edge at x 28-32, y 25-29, 243-246 px wide)
+BASE = 300           # the client's parchment size; --scale N renders BASE*N
+BASE_BOX = 245       # the whole map is scaled into a BOX x BOX square, centred, as the originals do
+BASE_BOX_DY = -1     # (fitted on 7 originals: map edge at x 28-32, y 25-29, 243-246 px wide)
+PX = 1               # output pixels per original pixel (--scale); set by configure()
+SIZE, BOX, BOX_DY = BASE, BASE_BOX, BASE_BOX_DY
+HQ_PAPER = "paper_hq.png"   # default paper (the user's high-quality parchment, torn edge in its alpha)
+INK_RGB = np.array([52, 36, 22], np.float32)   # dark-brown ink the strokes lean towards on the HQ paper
 PAPER_CONTRAST = 1.35
 INK_FLOOR = 0.38     # darkest ink multiplies the paper by this (measured on the originals: 0.37-0.40)
 
@@ -369,14 +391,29 @@ def place(m, tiles, rect, blur=0.5):
 
 def ink_pixels(m, tiles, rect, rng):
 	"""Strokes on the frame: random half-tone blocks along the stroke edges (the originals' strokes swell
-	and thin), then mottled like brushed ink."""
+	and thin), then mottled like brushed ink. At scale 1 the strokes are the originals' blocky-soft ones;
+	at higher scales the same tile shapes are drawn crisp: an anti-aliased edge on a slightly rough
+	threshold, with the tone and grain of brushed ink."""
 	halo = np.zeros_like(tiles)
 	for _, _, n in neighbours8(tiles):
 		halo = np.maximum(halo, n)
 	halo = (halo - tiles) * (rng.random(tiles.shape) < 0.35) * rng.uniform(0.3, 0.7, tiles.shape)
 	core = tiles * rng.uniform(0.8, 1.0, tiles.shape)
 	mott = 0.62 + 0.38 * fractal(rng, SIZE, SIZE, octaves=4, start=12, persistence=0.75)
-	return np.clip(place(m, core + halo, rect) * mott * 1.1, 0, 1)
+	if PX == 1:
+		return np.clip(place(m, core + halo, rect) * mott * 1.1, 0, 1)
+	field = place(m, core + halo, rect, blur=0.3 * PX)
+	rough = fractal(rng, SIZE, SIZE, octaves=3, start=BASE, persistence=0.55)
+	t = 0.45 + 0.10 * (rough - 0.5)
+	shape = np.clip((field - t) / 0.16 + 0.5, 0, 1)              # about 2 output px of anti-aliased edge per PX 4
+	tone = np.clip(place(m, core + halo, rect, blur=1.5 * PX) * 1.2, 0, 1)
+	# dry-brush grain: fine noise stretched along a random slant, so the fill shows bristle streaks
+	g = fractal(rng, SIZE // 2, SIZE * 2, octaves=3, start=BASE // 2, persistence=0.7)
+	g = np.asarray(Image.fromarray((g * 255).astype(np.uint8)).resize((SIZE * 2, SIZE * 2), Image.BILINEAR).rotate(35, Image.BILINEAR), np.float32)[SIZE // 2:SIZE // 2 + SIZE, SIZE // 2:SIZE // 2 + SIZE] / 255.0
+	grain = 0.70 + 0.30 * g
+	wick = 0.24 * gblur(shape, 2.2 * PX)          # ink soaked into the paper beside the stroke
+	ink = 0.95 * shape * (0.55 + 0.45 * tone) * grain * (0.75 + 0.25 * mott)
+	return np.clip(np.maximum(ink, wick * mott), 0, 1)
 
 
 # hatched terrain: tile sprite sheet -> hatch strength. Measured on the originals as the ink over blocked
@@ -405,24 +442,68 @@ def hatch_tiles(m):
 def hatch_texture(rng):
 	"""Embossed relief of staggered short dashes (the originals' rock hatching): returns (dark, light)."""
 	dark = np.zeros((SIZE, SIZE), np.float32)
-	period = 3
+	period = 3 * PX
 	for y in range(0, SIZE, period):
-		x = -int(rng.integers(0, 6))
+		x = -int(rng.integers(0, 6 * PX))
 		while x < SIZE:
-			length = int(rng.integers(3, 7))
-			gap = int(rng.integers(1, 4))
-			yy = y + (1 if rng.random() < 0.25 else 0)
+			length = int(rng.integers(3 * PX, 7 * PX))
+			gap = int(rng.integers(1 * PX, 4 * PX))
+			yy = y + (PX if rng.random() < 0.25 else 0)
 			if 0 <= yy < SIZE:
-				dark[yy, max(0, x):max(0, min(SIZE, x + length))] = 0.6 + 0.4 * rng.random()
+				dark[yy:yy + max(1, (2 * PX) // 3), max(0, x):max(0, min(SIZE, x + length))] = 0.6 + 0.4 * rng.random()
 			x += length + gap
-	dark = gblur(dark, 0.55)
+	dark = gblur(dark, 0.55 * PX)
 	light = np.zeros_like(dark)
-	light[:-1] = dark[1:]                   # highlight just above each dash: the emboss
+	light[:-PX] = dark[PX:]                 # highlight just above each dash: the emboss
 	light = np.clip(light - dark, 0, 1)
 	return np.clip(dark * 1.6, 0, 1), light
 
 
 # ---------------------------------------------------------------- paper
+
+def patch_paper(rng):
+	"""The old paper: quilted from bare-paper patches of the originals, built at 300 px. (rgb, alpha)."""
+	global SIZE
+	size_out = SIZE
+	SIZE = BASE
+	try:
+		rgb = paper(rng)
+		alpha = edge_alpha(rng)
+		rgb = rgb * rim_shade(alpha)[:, :, None]
+	finally:
+		SIZE = size_out
+	if SIZE != BASE:
+		rgb = np.dstack([np.asarray(Image.fromarray(np.clip(rgb[:, :, c], 0, 255).astype(np.uint8)).resize((SIZE, SIZE), Image.LANCZOS), np.float32) for c in range(3)])
+		alpha = np.asarray(Image.fromarray(alpha).resize((SIZE, SIZE), Image.LANCZOS), np.uint8)
+	return rgb, alpha
+
+
+EDGE_TINT = np.array([96, 58, 30], np.float32)   # burnt-brown the HQ paper's orange-red edge fringe is pulled to
+EDGE_TAME = 0.75                                  # how far (0 keeps the fringe as drawn, 1 replaces it)
+
+
+def image_paper(path, rng):
+	"""A paper texture image: resampled premultiplied (no colour bleeds from transparent pixels), interior
+	alpha made fully opaque, and its translucent torn-edge fringe tamed towards burnt brown. (rgb, alpha)."""
+	img = Image.open(path).convert("RGBA")
+	src = np.asarray(img, np.float32)
+	a = src[:, :, 3]
+	if a.min() >= 250:                        # no torn edge of its own: use one of the originals'
+		a = np.asarray(Image.fromarray(edge_alpha(rng)).resize(img.size, Image.LANCZOS), np.float32)
+	pre = np.dstack([src[:, :, :3] * (a[:, :, None] / 255.0), a])
+	res = np.dstack([np.asarray(Image.fromarray(np.clip(pre[:, :, c], 0, 255).astype(np.uint8)).resize((SIZE, SIZE), Image.LANCZOS), np.float32) for c in range(4)])
+	alpha = res[:, :, 3]
+	rgb = res[:, :, :3] / np.maximum(alpha[:, :, None] / 255.0, 1e-3)
+	# interior alpha: the texture's opaque level (252 in the shipped paper) becomes 255
+	solid = np.percentile(alpha[alpha > 0], 90)
+	alpha = np.clip(np.rint(alpha * (255.0 / max(solid, 1.0))), 0, 255)
+	alpha[alpha >= 248] = 255                 # resampling leaves 250-254 inside: the paper is solid there
+	# fringe: the translucent rim carries saturated orange-red; over a dark background it reads as a glow
+	w = EDGE_TAME * np.clip(1.0 - alpha / 255.0, 0, 1) ** 0.5
+	w = np.maximum(w, EDGE_TAME * (alpha < 128))
+	rgb = rgb * (1 - w[:, :, None]) + EDGE_TINT * w[:, :, None]
+	return np.clip(rgb, 0, 255), alpha.astype(np.uint8)
+
 
 def paper(rng):
 	meta = json.loads((DATA / "paper_patches.json").read_text())
@@ -612,7 +693,8 @@ def classify_destination(dest, info):
 
 
 def place_icons(m, rect, info):
-	"""Decide the icons: [(icon image, x, y, anchor)] with anchor 'c' (centre) or 'b' (bottom centre)."""
+	"""Decide the icon placements: list of dicts {kind, icon, x, y, anchor ('center'|'bottom'), tile, dest,
+	...} in output pixels, and readable notes. kind: exit | portal | building | entrance | monster_area."""
 	ys, xs = np.nonzero(~m.blocked)
 	if len(xs) == 0:
 		return [], []
@@ -643,23 +725,25 @@ def place_icons(m, rect, info):
 			kind = "outdoor" if near_edge or openness > 0.7 else "dungeon"
 			ic, faction = None, ""
 		px, py = to_px(rect, tx, ty)
+		base = {"tile": [round(tx, 1), round(ty, 1)], "tiles": len(comp), "dest": dest}
 		if kind == "outdoor" and near_edge:
 			ang = np.degrees(np.arctan2(tx - cx, -(ty - cy))) % 360
 			d = int(round(ang / 45)) % 8
-			im = arrow(d)
 			# pull the arrow a little inside the land, as the originals draw it
 			dx, dy = np.sin(np.radians(d * 45)), -np.cos(np.radians(d * 45))
-			placed.append((im, px - dx * 6, py - dy * 6, "c"))
+			placed.append(dict(base, kind="exit", icon=f"arrow_{d * 45}", direction_deg=d * 45,
+			                   x=px - dx * 6 * PX, y=py - dy * 6 * PX, anchor="center"))
 			notes.append(f"exit arrow dir {d * 45} at tile ({tx:.0f},{ty:.0f})" + (f" -> {dest}" if dest else ""))
 		elif kind == "outdoor":
-			im = icon("portal_blue" if faction.startswith("elv") else "portal_red")
-			placed.append((im, px, py + 2, "b"))
+			side = "elvine" if faction.startswith("elv") else ("aresden" if faction.startswith("are") else "")
+			placed.append(dict(base, kind="portal", icon="portal_blue" if side == "elvine" else "portal_red",
+			                   faction=side or None, x=px, y=py + 2 * PX, anchor="bottom"))
 			notes.append(f"portal at tile ({tx:.0f},{ty:.0f})" + (f" -> {dest}" if dest else ""))
 		elif kind == "dungeon":
-			placed.append((icon("dungeon"), px, py, "c"))
+			placed.append(dict(base, kind="entrance", icon="dungeon", x=px, y=py, anchor="center"))
 			notes.append(f"dungeon at tile ({tx:.0f},{ty:.0f})" + (f" -> {dest}" if dest else ""))
 		else:
-			placed.append((icon(ic), px, py + 2, "b"))
+			placed.append(dict(base, kind="building", icon=ic, building=ic[4:], x=px, y=py + 2 * PX, anchor="bottom"))
 			notes.append(f"building {ic[4:]} at tile ({tx:.0f},{ty:.0f})" + (f" -> {dest}" if dest else ""))
 	# swords: spawn areas (not single-tile spot spawns), merged when close on the frame
 	if info and info.spawns:
@@ -669,30 +753,44 @@ def place_icons(m, rect, info):
 			# single-tile spots and guard posts are not monster areas; nor is a generator covering the whole map
 			if w * h <= 1 or r.get("max_mobs", 0) <= 2 or w * h > 0.25 * m.sx * m.sy:
 				continue
-			pts.append([*to_px(rect, r["tile_x"] + w / 2 - 0.5, r["tile_y"] + h / 2 - 0.5), w * h])
+			pts.append([*to_px(rect, r["tile_x"] + w / 2 - 0.5, r["tile_y"] + h / 2 - 0.5), w * h, r])
 		groups = []
 		for p in sorted(pts, key=lambda p: -p[2]):
 			for g in groups:
-				if np.hypot(g[0] - p[0], g[1] - p[1]) < SWORD_MERGE_PX:
+				if np.hypot(g[0] - p[0], g[1] - p[1]) < SWORD_MERGE_PX * PX:
 					tot = g[2] + p[2]
 					g[0], g[1], g[2] = (g[0] * g[2] + p[0] * p[2]) / tot, (g[1] * g[2] + p[1] * p[2]) / tot, tot
+					g[3].append(p[3])
 					break
 			else:
-				groups.append(list(p))
+				groups.append([p[0], p[1], p[2], [p[3]]])
 		for g in sorted(groups, key=lambda g: -g[2])[:SWORD_MAX]:
-			placed.append((icon("sword"), g[0], g[1], "c"))
+			gens = [{"generator": r.get("generator_index"), "npc_config_id": r.get("npc_config_id"),
+			         "rect": [r["tile_x"], r["tile_y"], r["tile_w"], r["tile_h"]]} for r in g[3]]
+			placed.append({"kind": "monster_area", "icon": "sword", "x": g[0], "y": g[1], "anchor": "center",
+			               "area_tiles": g[2], "generators": gens})
 			notes.append(f"monster area at px ({g[0]:.0f},{g[1]:.0f})")
 	return placed, notes
 
 
+def icon_image(p):
+	"""The old cut-out icon for a placement, at the output scale (LANCZOS-resampled above scale 1)."""
+	if p["kind"] == "exit":
+		im = arrow(p["direction_deg"] // 45)
+	else:
+		im = icon(p["icon"])
+	return im.resize((im.width * PX, im.height * PX), Image.LANCZOS) if PX > 1 else im
+
+
 def draw_icons(img, placed):
-	"""Paste icons, skipping one that would mostly cover an icon already drawn."""
+	"""Paste the old cut-out icons (only with --icons), skipping one that would mostly cover an icon already drawn."""
 	boxes = []
-	for im, x, y, anchor in placed:
+	for p in placed:
+		im, x, y = icon_image(p), p["x"], p["y"]
 		left = int(round(x - im.width / 2))
-		top = int(round(y - im.height / 2 if anchor == "c" else y - im.height))
-		left = min(max(left, 14), SIZE - 14 - im.width)
-		top = min(max(top, 14), SIZE - 14 - im.height)
+		top = int(round(y - im.height / 2 if p["anchor"] == "center" else y - im.height))
+		left = min(max(left, 14 * PX), SIZE - 14 * PX - im.width)
+		top = min(max(top, 14 * PX), SIZE - 14 * PX - im.height)
 		box = (left, top, left + im.width, top + im.height)
 		clash = False
 		for b in boxes:
@@ -724,40 +822,71 @@ def compose(m, args):
 		col, known = colour_map(m, load_palette())
 		source = "palette"
 	# strokes are about INK_DEPTH tiles at the originals' 1.0-1.45 px/tile; when zoomed in further (interiors),
-	# draw on sub-tiles so strokes keep that width in pixels
-	k = max(1, int(round(rect[0] / STROKE_PX_PER_TILE)))
+	# draw on sub-tiles so strokes keep that width in pixels. The stroke shapes are decided at scale-1 pixel
+	# sizes (rect[0] / PX), so a --scale 4 map has the same strokes as scale 1, only drawn finer.
+	k = max(1, int(round(rect[0] / PX / STROKE_PX_PER_TILE)))
 	mk, colk, rectk = (m.upsampled(k), np.repeat(np.repeat(col, k, 0), k, 1), (rect[0] / k, rect[1], rect[2])) if k > 1 else (m, col, rect)
-	depth = max(INK_DEPTH, int(round(STROKE_MIN_PX / rectk[0])))
+	depth = max(INK_DEPTH, int(round(STROKE_MIN_PX * PX / rectk[0])))
 	tiles = ink_tiles(mk, colk, depth)
 	stroke = ink_pixels(mk, tiles, rectk, rng)
-	hmask = place(mk, hatch_tiles(mk), rectk, blur=1.0)
+	hmask = place(mk, hatch_tiles(mk), rectk, blur=1.0 * PX)
 	hdark, hlight = hatch_texture(rng)
 	ink = np.maximum(stroke, hmask * (HATCH_TONE + (HATCH_DARK - HATCH_TONE) * hdark))
 	# a zoomed-in interior must not run ink into the margin: fade it out at the BOX square
 	lo, hi = (SIZE - BOX) / 2, (SIZE + BOX) / 2
 	r = np.arange(SIZE, dtype=np.float32)
-	ramp = np.clip(np.minimum(r - lo, hi - r) / 6.0 + 0.5, 0, 1)
+	ramp = np.clip(np.minimum(r - lo, hi - r) / (6.0 * PX) + 0.5, 0, 1)
 	boxmask = np.minimum(ramp[:, None], ramp[None, :])
 	ink *= boxmask
 	hmask *= boxmask
 	stroke *= boxmask
-	rgb = paper(rng)
-	rgb = rgb * (1.0 - (1.0 - INK_FLOOR) * ink)[:, :, None]
+	paper_choice = getattr(args, "paper", None) or "hq"
+	if paper_choice == "patches":
+		rgb, alpha = patch_paper(rng)
+	else:
+		rgb, alpha = image_paper(DATA / HQ_PAPER if paper_choice == "hq" else Path(paper_choice), rng)
+	k_ink = (1.0 - (1.0 - INK_FLOOR) * ink)[:, :, None]
+	if paper_choice == "patches":
+		rgb = rgb * k_ink
+	else:
+		# the HQ paper is lighter and warmer than the originals: lean the ink towards dark brown as well
+		rgb = rgb * k_ink * (1 - 0.3 * ink[:, :, None]) + INK_RGB * 0.3 * ink[:, :, None]
 	rgb = rgb * (1.0 + 0.18 * (hmask * hlight * (1 - stroke)))[:, :, None]
-	alpha = edge_alpha(rng)
-	rgb *= rim_shade(alpha)[:, :, None]
 	img = Image.fromarray(np.dstack([np.clip(rgb, 0, 255).astype(np.uint8), alpha]), "RGBA")
-	notes, drawn = [], 0
-	if not args.no_icons:
-		minfo = MapInfo(args.mapinfo, m.name) if args.mapinfo else None
-		placed, notes = place_icons(m, rect, minfo)
+	minfo = MapInfo(args.mapinfo, m.name) if args.mapinfo else None
+	placed, notes = place_icons(m, rect, minfo)
+	drawn = 0
+	if getattr(args, "icons", False):
 		drawn = draw_icons(img, placed)
 		# icons never reach past the torn edge
 		a = np.asarray(img, np.uint8).copy()
 		a[:, :, 3] = alpha
 		img = Image.fromarray(a, "RGBA")
-	info = {"source": source, "known": known, "rect": rect, "ink": ink, "icons": drawn, "notes": notes}
+	info = {"source": source, "known": known, "rect": rect, "ink": ink, "icons": drawn, "notes": notes,
+	        "placements": placed, "paper": paper_choice}
 	return img, info
+
+
+def placements_json(m, info, args):
+	"""The icon placements for a later icon kit: positions in output pixels of the written PNG."""
+	def clean(v):
+		if isinstance(v, (np.floating, float)):
+			return round(float(v), 1)
+		if isinstance(v, (np.integer,)):
+			return int(v)
+		if isinstance(v, dict):
+			return {k: clean(x) for k, x in v.items()}
+		if isinstance(v, (list, tuple)):
+			return [clean(x) for x in v]
+		return v
+	return {
+		"map": m.name, "image": Path(args.out).name, "size": SIZE, "scale": PX,
+		"tiles": [m.sx, m.sy], "px_per_tile": round(float(info["rect"][0]), 4),
+		"tile_to_px": "x = %.3f + (tile_x + 0.5) * %.4f, y = %.3f + (tile_y + 0.5) * %.4f" % (info["rect"][1], info["rect"][0], info["rect"][2], info["rect"][0]),
+		"anchor_note": "center: icon centred on (x, y); bottom: icon's bottom edge centred on (x, y)",
+		"mapinfo": bool(args.mapinfo),
+		"placements": clean(info["placements"]),
+	}
 
 
 # ---------------------------------------------------------------- review sheet
@@ -784,10 +913,13 @@ def ncc(a, b, mask):
 def reference_score(info, ref_path):
 	"""(reference image, its ink, ink NCC of the generated map against it)."""
 	ref = Image.open(ref_path).convert("RGBA")
-	if ref.size != (SIZE, SIZE):
-		raise ValueError(f"{ref_path}: reference must be {SIZE}x{SIZE}, got {ref.size[0]}x{ref.size[1]}")
+	if ref.size != (BASE, BASE):
+		raise ValueError(f"{ref_path}: reference must be {BASE}x{BASE}, got {ref.size[0]}x{ref.size[1]}")
 	rink, bad = reference_ink(ref)
-	return ref, rink, ncc(gaussian(info["ink"], 1.5), gaussian(rink, 1.5), ~bad)
+	gink = info["ink"]
+	if gink.shape[0] != BASE:                 # score a scaled render on the original's 300 px grid
+		gink = np.asarray(Image.fromarray(gink.astype(np.float32), "F").resize((BASE, BASE), Image.BOX), np.float32)
+	return ref, rink, ncc(gaussian(gink, 1.5), gaussian(rink, 1.5), ~bad)
 
 
 def write_sheet(img, info, ref_path, out):
@@ -796,16 +928,20 @@ def write_sheet(img, info, ref_path, out):
 	if ref_path:
 		ref, rink, score = reference_score(info, ref_path)
 		gink = info["ink"]
-		ov = np.zeros((SIZE, SIZE, 4), np.uint8)
+		if gink.shape[0] != BASE:
+			gink = np.asarray(Image.fromarray(gink.astype(np.float32), "F").resize((BASE, BASE), Image.BOX), np.float32)
+		ov = np.zeros((BASE, BASE, 4), np.uint8)
 		ov[:, :, 3] = 255
 		ov[:, :, 0] = np.clip(gaussian(rink, 1.0) * 400, 0, 255)          # red: original ink
 		ov[:, :, 1] = np.clip(gaussian(gink, 1.0) * 400, 0, 255)          # green: generated ink
-		panels = [ref, img, Image.fromarray(ov, "RGBA")]
-	gap = 8
+		up = lambda im: im.resize((SIZE, SIZE), Image.NEAREST) if SIZE != BASE else im
+		panels = [up(ref), img, up(Image.fromarray(ov, "RGBA"))]
+	gap = 8 * PX
 	sheet = Image.new("RGBA", (len(panels) * (SIZE + gap) - gap, SIZE), (40, 40, 40, 255))
 	for i, p in enumerate(panels):
 		sheet.alpha_composite(p, (i * (SIZE + gap), 0))
-	sheet = sheet.resize((sheet.width * 2, sheet.height * 2), Image.NEAREST)
+	if PX == 1:
+		sheet = sheet.resize((sheet.width * 2, sheet.height * 2), Image.NEAREST)
 	Path(out).parent.mkdir(parents=True, exist_ok=True)
 	sheet.save(out)
 	return score
@@ -824,16 +960,25 @@ def main(argv=None):
 	ap.add_argument("--seed", type=int, default=1)
 	ap.add_argument("--sheet")
 	ap.add_argument("--reference")
-	ap.add_argument("--no-icons", action="store_true")
-	ap.add_argument("-v", "--verbose", action="store_true", help="list every icon placed and why")
+	ap.add_argument("--scale", type=int, default=1, help="output is 300*N px square (1 = the client's size, 4 = 1200)")
+	ap.add_argument("--paper", default="hq", help="'hq' (default, the shipped high-quality parchment), 'patches' (the old quilted paper) or an image path")
+	ap.add_argument("--icons-json", help="write the icon placements (exits, portals, buildings, entrances, monster areas) to this JSON file")
+	ap.add_argument("--icons", action="store_true", help="also draw the old cut-out icons (off by default; an icon kit will replace them)")
+	ap.add_argument("-v", "--verbose", action="store_true", help="list every icon placement and why")
 	args = ap.parse_args(argv)
 	try:
+		configure(args.scale)
+		if args.paper not in ("hq", "patches") and not Path(args.paper).is_file():
+			raise ValueError(f"--paper {args.paper}: no such image (use hq, patches or an image path)")
 		m = MapData(args.amd)
 		img, info = compose(m, args)
 		Path(args.out).parent.mkdir(parents=True, exist_ok=True)
 		img.save(args.out)
-		msg = f"{m.name}: {m.sx}x{m.sy} tiles, colour {info['source']} ({info['known'] * 100:.0f}% known), scale {info['rect'][0]:.3f} px/tile -> {args.out}"
-		msg += f", icons {info['icons']}"
+		msg = f"{m.name}: {m.sx}x{m.sy} tiles, colour {info['source']} ({info['known'] * 100:.0f}% known), {SIZE}px, {info['rect'][0]:.3f} px/tile, paper {info['paper']} -> {args.out}"
+		msg += f", placements {len(info['placements'])}" + (f", icons drawn {info['icons']}" if args.icons else "")
+		if args.icons_json:
+			Path(args.icons_json).parent.mkdir(parents=True, exist_ok=True)
+			Path(args.icons_json).write_text(json.dumps(placements_json(m, info, args), indent=1), encoding="utf-8")
 		for n in info["notes"] if args.verbose else []:
 			print("   " + n)
 		score = None
