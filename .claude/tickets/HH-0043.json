@@ -1,0 +1,26 @@
+{
+  "id": "HH-0043",
+  "summary": "MCP server 10: deferred server-side debug commands",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "backlog",
+  "tags": [
+    3,
+    9,
+    8,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-24T01:27:47Z",
+  "updated": "2026-11-24T01:27:47Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0032"
+    ]
+  },
+  "body": "Deferred by the user (d-028): `kill_player`, `set_status`, `set_god`, the bot flag (need new server debug messages, possibly a protocol_version bump), plus `inject_message` and `set_time_of_day`. Not to be started until the user decides.\n\n**Done when:** the user has decided; if included, planned and filed as its own sub-tasks.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028."
+}

@@ -1,0 +1,28 @@
+{
+  "id": "HH-0042",
+  "summary": "MCP server 9: phase 4, world commands and flows",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "backlog",
+  "tags": [
+    3,
+    12,
+    8
+  ],
+  "author": "pm",
+  "created": "2026-11-24T01:27:46Z",
+  "updated": "2026-11-24T01:27:48Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0032"
+    ],
+    "blocked_by": [
+      "HH-0039"
+    ]
+  },
+  "body": "`entities`, `tile_to_screen`, `walk_to`, `close_window`, `set_audio`, in-world get_state/probe keys; retarget `flows.py` and `world.py`. About 6 C++ files, ~600 lines, plus ~300 Python (derived).\n\n**Done when:** an agent logs in, walks to a tile and reads nearby entities; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028."
+}

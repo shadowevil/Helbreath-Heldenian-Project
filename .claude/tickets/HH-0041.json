@@ -1,0 +1,28 @@
+{
+  "id": "HH-0041",
+  "summary": "MCP server 8: phase 3, event journal",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "backlog",
+  "tags": [
+    3,
+    12,
+    8
+  ],
+  "author": "pm",
+  "created": "2026-11-24T01:27:46Z",
+  "updated": "2026-11-24T01:27:47Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0032"
+    ],
+    "blocked_by": [
+      "HH-0039"
+    ]
+  },
+  "body": "Port `agent_journal.h`, `journal_query/drain/config` and event `wait_for`; first emit sites ui.screen, ui.window, state.player/map, net.packet, chat.message; a new `hb::logger` sink for client.errors/warnings. Emit sites observe only. About 13 files, ~950 lines (derived).\n\n**Done when:** an agent waits on a screen change and reads chat and errors from the journal; no secrets in it; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028."
+}

@@ -1,0 +1,29 @@
+{
+  "id": "HH-0038",
+  "summary": "MCP server 5: phase 1a, input queue",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "backlog",
+  "tags": [
+    3,
+    12,
+    8
+  ],
+  "author": "pm",
+  "created": "2026-11-24T01:27:44Z",
+  "updated": "2026-11-24T01:27:47Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0032",
+      "HH-0039"
+    ],
+    "blocked_by": [
+      "HH-0037"
+    ]
+  },
+  "body": "`mouse_move`, `click`, `mouse_down/up`, `wheel`, `key`, `text`, `set_text`, `modifiers`, state `wait_for`, `probe_point`; each step waits one presented frame; adds `IWindow::window_to_ui` over `output_rects.h` and a `frame_presented()` hook. About 5 files, ~600 lines (derived).\n\n**Done when:** injected clicks and text work on login and in game, including during and after fades; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028."
+}

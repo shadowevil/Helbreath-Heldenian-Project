@@ -199,3 +199,17 @@ Contents: d-001 SDL versioning - d-002 clock-skew exchange - d-003 sources/bin/b
 - Quote: "After we finish all of the tickets, lets begin implementing SDL's MCP server for The Heldenien Project"; "Same debug guards as SDL".
 - Decided: the bridge compiles only under `DEF_CLAUDE_TESTING`, as in Helbreath-SDL. A shared header derives that macro from `_DEBUG` (SDL's is `src/shared/util/claude_testing.h`), and nothing defines it by hand. Work starts after the current tickets.
 - Recorded in: HH-0032.
+
+## d-028 Client agent MCP: ports, location, server commands
+
+- Date: 2026-11-24.
+- Quote (answers chosen by the user): bridge ports "8891-8898"; Python location ".claude/tools/agent_mcp"; SDL's server-side debug commands (kill, status, god) "Defer".
+- Decided: the client bridge listens on 127.0.0.1, ports 8891-8898, apart from SDL's 8791-8798. The ported Python lives in `.claude/tools/agent_mcp/`. Server-dependent commands are left out until the user decides on them.
+- Recorded in: HH-0032; `.claude/design/plans/client-agent-mcp.md`.
+
+## d-029 Full-width dims and bars cover the whole window in stretch
+
+- Date: 2026-11-24.
+- Quote (answer chosen by the user): "Whole window" for the dimmed backgrounds behind pop-ups and the chat and message bars on a widescreen window in stretch mode.
+- Decided: UI fills that span the full 800x600 design width cover the whole window, matching the stretched world; other UI keeps the uniform 4:3 scale.
+- Recorded in: HH-0034.

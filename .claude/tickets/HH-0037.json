@@ -1,0 +1,29 @@
+{
+  "id": "HH-0037",
+  "summary": "MCP server 4: phase 1a-pre, bridge core with ping, get_state, screenshot",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "backlog",
+  "tags": [
+    3,
+    12,
+    8
+  ],
+  "author": "pm",
+  "created": "2026-11-24T01:27:44Z",
+  "updated": "2026-11-24T01:27:47Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0032",
+      "HH-0038"
+    ],
+    "blocked_by": [
+      "HH-0035"
+    ]
+  },
+  "body": "Listener on a private io_context polled at the top of `CGame::on_update`, bound to `address_v4::loopback()` without reuse_address; framing, dispatch, deferred replies. Commands `ping`, `get_state`, `screenshot` (bare file name into `build/screenshots/`, refuses paths and `..`). About 5 files, ~700 lines (derived). Detail: plan phase 1a-pre, `design.md`, `commands.md`.\n\n**Done when:** a raw TCP client gets ping, state and a screenshot from a running Debug client; nothing listens off loopback; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028."
+}

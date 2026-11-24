@@ -1,0 +1,26 @@
+{
+  "id": "HH-0035",
+  "summary": "MCP server 2: phase 0, guard header and bridge flags",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "backlog",
+  "tags": [
+    3,
+    12,
+    8
+  ],
+  "author": "pm",
+  "created": "2026-11-24T01:27:37Z",
+  "updated": "2026-11-24T01:27:47Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0032",
+      "HH-0037"
+    ]
+  },
+  "body": "Add `claude_testing.h` (DEF_CLAUDE_TESTING from _DEBUG, d-027) and parse `--agent-bridge-port=N` / `--no-agent-bridge` inside the guard; Linux passes full argv to GameMain (`wmain.cpp:84-86`). Default port 8891 (d-028). About 3 files, ~50 lines (derived). Detail: plan phase 0, `design.md`.\n\n**Done when:** a Debug build parses the flags; a Release build launched with `--agent-bridge-port=8891` logs nothing, listens on nothing and has no `agent bridge` string; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028."
+}

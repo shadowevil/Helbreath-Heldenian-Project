@@ -1,0 +1,25 @@
+{
+  "id": "HH-0036",
+  "summary": "MCP server 3: phase 0L, define _DEBUG in Linux Debug builds (needs user go-ahead)",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "backlog",
+  "tags": [
+    3,
+    8,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-24T01:27:43Z",
+  "updated": "2026-11-24T01:27:44Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0032"
+    ]
+  },
+  "body": "Add `$<$<CONFIG:Debug>:_DEBUG>` on HelbreathClient in the client CMake. This wakes 18 existing `#ifdef _DEBUG` client sites on Linux for the first time (updater skip, DebugConsole, profiling; measured count). Do not start without the user's go-ahead. 1 file, ~3 lines.\n\n**Done when:** the user has approved; a WSL Debug build compiles and runs with the 18 sites active; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028."
+}
