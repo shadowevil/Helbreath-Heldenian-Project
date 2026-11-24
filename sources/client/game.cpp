@@ -3054,7 +3054,7 @@ void CGame::draw_new_dialog_box(char type, int sX, int sY, int frame, bool is_no
 			const auto layout = r.width >= 176 ? hb::client::button_layout::wide : hb::client::button_layout::small;
 			// Dialog transparency draws each kit layer at 0.25, so overlaps compound (accepted, HH-0062 review)
 			kit->button(kit->style_of(layout), baked->label, {sX + r.pivotX, sY + r.pivotY, r.width, r.height},
-				baked->hover, is_trans ? 0.25f : 1.0f);
+				baked->hover, hb::client::dialog_alpha(is_trans));
 			return;
 		}
 	}

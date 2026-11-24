@@ -295,7 +295,7 @@ void DialogBox_Character::on_draw()
 	if (hb::client::panel_kit* panel_kit = m_game->get_panel_kit())
 	{
 		kit.emplace(*panel_kit, hb::client::dialog_size::character, hb::client::kit_point{sX, sY},
-			dialogTrans ? 0.25f : 1.0f);
+			hb::client::dialog_alpha(dialogTrans));
 		draw_kit_frame(*kit);
 	}
 	else

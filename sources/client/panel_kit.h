@@ -104,6 +104,12 @@ namespace hb::client
 		int auto_pad = 12;
 	};
 
+	// A kit draw's opacity under the dialog transparency setting (the sprites' 0.25 blend), else opaque
+	constexpr float dialog_alpha(bool transparent)
+	{
+		return transparent ? 0.25f : 1.0f;
+	}
+
 	// Predefined dialog frame sizes (the original dialogs' sizes); any other size is custom
 	namespace dialog_size
 	{
@@ -145,6 +151,9 @@ namespace hb::client
 		void vrule(int x, int y, int h, float alpha = 1.0f) const;
 		void slot_ring(int cx, int cy, float alpha = 1.0f) const;
 		void scrollbar(const kit_rect& r, float pos, float alpha = 1.0f) const;   // pos 0 top .. 1 bottom
+		// The pos that puts the thumb's centre at y (clamped 0..1): the inverse of scrollbar's thumb placement,
+		// so a dragged thumb stays under the cursor
+		float scrollbar_pos_at(const kit_rect& r, int y) const;
 		// A flourish centred on (cx, cy) in its JSON tint and blend; scale <= 0 = the JSON scale
 		void flourish(std::string_view name, int cx, int cy, bool mirror = false, float scale = 0.0f, float alpha = 1.0f) const;
 		kit_point flourish_size(std::string_view name, float scale = 0.0f) const;
@@ -194,10 +203,8 @@ namespace hb::client
 	private:
 		const button_style& style(const panel_kit& kit) const;
 
-		bool m_predefined = true;
 		button_layout::type m_layout = button_layout::small;
-		mutable button_style m_style;   // the custom style, or the layout's once resolved
-		mutable bool m_resolved = false;
+		std::optional<button_style> m_style;   // a custom style; none = the layout's, read from the kit
 		std::string m_text;
 		kit_point m_position;
 	};
@@ -231,6 +238,7 @@ namespace hb::client
 		void vrule(int x, int y, int h) const;
 		void slot_ring(int cx, int cy) const;
 		void scrollbar(const kit_rect& r, float pos) const;
+		float scrollbar_pos_at(const kit_rect& r, int screen_y) const;   // r dialog-relative, y on screen
 		void flourish(std::string_view name, int cx, int cy, bool mirror = false, float scale = 0.0f) const;
 		// A text area: a darkened inset; returns the rect inside the bevel (absolute) for the caller's text
 		kit_rect text_area(const kit_rect& r, float darken = 0.8f) const;

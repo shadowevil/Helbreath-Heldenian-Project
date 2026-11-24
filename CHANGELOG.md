@@ -133,3 +133,5 @@ The game's text buttons now draw from the new dialog and button kit (HH-0060 to 
 - **Missing kit:** the client falls back to the old button sprites.
 
 The character dialog now draws from the kit (HH-0063). It has the red title, both headings with flourishes centred on the text, the label and value fields, the slot rings and the kit buttons, all at their original positions. Clicks behave as before. Kit headings no longer stack their shadow twice, so they read sharper. The kit text styles accept per-style smoothing settings, though none needed changing. With no kit, the dialog uses the old sprite.
+
+The chat history dialog now draws from the kit (HH-0064). It has the "History" title with flourishes, an inset text area and the kit scrollbar. The scrollbar's click and drag area matches the drawn groove, so the thumb stays under the cursor. Dragging the thumb and both dialogs is checked in game. The dialogs share one transparency helper.

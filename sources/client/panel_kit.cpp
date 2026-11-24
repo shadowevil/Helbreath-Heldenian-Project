@@ -87,6 +87,13 @@ namespace hb::client
 		}
 
 		constexpr kit_point dialog_sizes[] = {{270, 376}, {364, 162}, {331, 303}};
+
+		// A button's rect at position: the style's size, or from the text where the style leaves it 0
+		kit_rect button_rect(const panel_kit& kit, const button_style& s, std::string_view text, kit_point position)
+		{
+			const int w = s.w > 0 ? s.w : kit.text_width(s.recipe, text) + 2 * s.auto_pad;
+			return {position.x, position.y, w, s.h > 0 ? s.h : 20};
+		}
 	}
 
 	struct panel_kit::kit_data
@@ -145,6 +152,7 @@ namespace hb::client
 
 		struct flourish_spec
 		{
+			const piece* mask = nullptr;   // <name>_white, resolved at load (the pieces map is fixed by then)
 			float scale = 1.0f;
 			Color tint;
 			bool additive = false;
@@ -317,9 +325,9 @@ namespace hb::client
 		kit_point flourish_size(std::string_view name, float scale) const
 		{
 			auto it = flourishes.find(name);
-			const piece* p = find(std::string(name) + "_white");
-			if (it == flourishes.end() || !p)
+			if (it == flourishes.end())
 				return {};
+			const piece* p = it->second.mask;
 			const float sc = scale > 0.0f ? scale : it->second.scale;
 			return {static_cast<int>(std::lround(p->w * sc)), static_cast<int>(std::lround(p->h * sc))};
 		}
@@ -327,10 +335,10 @@ namespace hb::client
 		void flourish(std::string_view name, int cx, int cy, bool mirror, float scale, float alpha) const
 		{
 			auto it = flourishes.find(name);
-			const piece* p = find(std::string(name) + "_white");
-			if (it == flourishes.end() || !p)
+			if (it == flourishes.end())
 				return;
 			const flourish_spec& spec = it->second;
+			const piece* p = spec.mask;
 			const kit_point size = flourish_size(name, scale);
 			const float sx = mirror ? p->x + static_cast<float>(p->w) : p->x;
 			const float sw = mirror ? -static_cast<float>(p->w) : static_cast<float>(p->w);
@@ -549,7 +557,7 @@ namespace hb::client
 					s.emboss = true;
 					s.emboss_color = color_of(f.at("emboss"));
 				}
-				data->need(name + "_white");
+				s.mask = &data->need(name + "_white");
 				data->flourishes[name] = s;
 			}
 
@@ -761,6 +769,16 @@ namespace hb::client
 		m_data->draw(m_data->scroll_thumb, r.x + (r.w - thumb.w) / 2, ty, alpha);
 	}
 
+	float panel_kit::scrollbar_pos_at(const kit_rect& r, int y) const
+	{
+		if (!m_data)
+			return 0.0f;
+		const int th = m_data->need(m_data->scroll_thumb).h;
+		if (r.h <= th)
+			return 0.0f;
+		return std::clamp(static_cast<float>(y - r.y - th / 2) / static_cast<float>(r.h - th), 0.0f, 1.0f);
+	}
+
 	void panel_kit::flourish(std::string_view name, int cx, int cy, bool mirror, float scale, float alpha) const
 	{
 		if (m_data)
@@ -848,9 +866,7 @@ namespace hb::client
 	}
 
 	kit_button::kit_button(button_style style, std::string text, kit_point position)
-		: m_predefined(false)
-		, m_style(std::move(style))
-		, m_resolved(true)
+		: m_style(std::move(style))
 		, m_text(std::move(text))
 		, m_position(position)
 	{
@@ -858,20 +874,12 @@ namespace hb::client
 
 	const button_style& kit_button::style(const panel_kit& kit) const
 	{
-		if (!m_resolved && kit.is_loaded())
-		{
-			m_style = kit.style_of(m_layout);
-			m_resolved = true;
-		}
-		return m_style;
+		return m_style ? *m_style : kit.style_of(m_layout);
 	}
 
 	kit_rect kit_button::rect(const panel_kit& kit) const
 	{
-		const button_style& s = style(kit);
-		const int w = s.w > 0 ? s.w : kit.text_width(s.recipe, m_text) + 2 * s.auto_pad;
-		const int h = s.h > 0 ? s.h : 20;
-		return {m_position.x, m_position.y, w, h};
+		return button_rect(kit, style(kit), m_text, m_position);
 	}
 
 	void kit_button::draw(const panel_kit& kit, bool hover, float alpha) const
@@ -993,6 +1001,11 @@ namespace hb::client
 		m_kit.scrollbar(offset(r), pos, m_alpha);
 	}
 
+	float kit_dialog::scrollbar_pos_at(const kit_rect& r, int screen_y) const
+	{
+		return m_kit.scrollbar_pos_at(offset(r), screen_y);
+	}
+
 	void kit_dialog::flourish(std::string_view name, int cx, int cy, bool mirror, float scale) const
 	{
 		m_kit.flourish(name, m_origin.x + cx, m_origin.y + cy, mirror, scale, m_alpha);
@@ -1007,7 +1020,9 @@ namespace hb::client
 
 	void kit_dialog::button(button_layout::type layout, std::string_view text, kit_point position, bool hover) const
 	{
-		button(kit_button(layout, std::string(text), position), hover);
+		// Drawn directly, not through a kit_button: nothing is copied per frame
+		const button_style& s = m_kit.style_of(layout);
+		m_kit.button(s, text, button_rect(m_kit, s, text, {m_origin.x + position.x, m_origin.y + position.y}), hover, m_alpha);
 	}
 
 	void kit_dialog::button(const kit_button& b, bool hover) const
