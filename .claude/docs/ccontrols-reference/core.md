@@ -1,6 +1,6 @@
 # CControls: core pattern and controls
 
-*Part of the CControls reference; index and rules: `.claude/docs/ccontrols-reference.md`.*
+*Part of the CControls reference; index and rules: `.claude/docs/ccontrols-reference.md`. Assessed 2026-11-23 (docs standard sect. 1, HH-0026): kept whole at about 10.6 KB, 6% over the goal. It is one cohesive reference that a screen build reads end to end: the sections share one `control_collection` pattern and each presupposes the earlier ones, so splitting would leave fragments (sect. 6). The index already splits off the topics read only when used (`text-input.md`, `layout.md`).*
 
 Static C++20 UI control library (`sources/ccontrols/`). Namespace `cc::`. No game/engine dependencies.
 

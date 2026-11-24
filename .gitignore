@@ -384,6 +384,8 @@ DocProject/Help/html
 !/.claude/docs/build.md
 !/.claude/docs/code-search.md
 !/.claude/docs/decisions.md
+!/.claude/docs/decisions/
+!/.claude/docs/decisions/*.md
 !/.claude/docs/tickets.md
 !/.claude/docs/ticket-workflow.md
 !/.claude/docs/documentation.md
