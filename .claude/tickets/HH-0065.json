@@ -1,7 +1,7 @@
 {
   "id": "HH-0065",
   "summary": "Panel kit 6: system menu from the kit",
-  "status": "open",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:14Z",
-  "updated": "2026-11-24T20:30:14Z",
+  "updated": "2026-11-24T23:51:41Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "d20e6912"
+    ],
     "files": [
       "sources/client/dialog_box_sys_menu.cpp:154"
     ],
@@ -24,5 +26,12 @@
       "HH-0059"
     ]
   },
-  "body": "Spec step 6. Replace Game1 frame 0 + Text frame 6; button frames 6-9, 36-37, 70, 78-81, scroll Game1 3-4, slider Button 80 + Game2 8 become kit pieces.\n\nDone when: every tab draws and works."
+  "body": "Spec step 6. Replace Game1 frame 0 + Text frame 6; button frames 6-9, 36-37, 70, 78-81, scroll Game1 3-4, slider Button 80 + Game2 8 become kit pieces.\n\nDone when: every tab draws and works.\n\n**Verified, 2026-11-24:** review passed with fixes, and the fixes are in. Windows and Linux builds pass. In game, checked every tab, toggles, a slider drag, a graphics thumb drag, Log Out and a dialog drag; settings.json came out byte-identical. Shadows measured 2 px below and 2 px right on every line at 1.6x and 2.4x. The non-uniform-stretch shadow case is unverified on screen because no shadowed text draws there; the per-axis rounding is derived. Committed d20e6912.\n",
+  "comments": [
+    {
+      "author": "client",
+      "at": "2026-11-24T23:41:06Z",
+      "body": "Ready for review (client editor). Checkpoints be5daae1, 38aa63b7 (sys menu, kit, titles, flourishes) and 70d9455d (shadow fix: shared text_lib/text_renderer + sfml_engine text renderer).\n\n- System menu built from kit components (frame, title + waves, inset, value boxes, slider grooves/thumbs, Graphics scrollbar); positions kept; sprite fallback kept.\n- In game (1280x960, 1.6x): all tabs, Running Mode and Show FPS toggled twice, Master slider 100 -> 40 -> 100, Graphics thumb drag top -> bottom -> top, Log Out -> Continue (cancels and closes, as the original), dialog drag +100,+80. settings.json SHA-256 unchanged (8127AC2D...).\n- Titles: measured against the sprites and fixed per dialog (character y 20, history y 19, sys menu y 22); cap tops now within 0.6 logical px. Crops: build/screenshots/hh0065_titles_3x_before_fix.jpg, hh0065_titles_3x_fixed.jpg.\n- Flourishes: kit default black (40,29,16) normal, no emboss; per-call flourish_style override; character heading keeps warm additive (196,176,126) 0.5. build_panel_kit.py --check identical; compose.py agrees. Crops: hh0065_flourish_3x.jpg.\n- Chat shadow: shadow copies were drawn at x+1 / y+1 logical and snapped separately, so at 1.6x the offset was 1 or 2 output px per line. Copies now move by whole output pixels after the snap (draw_text_offset). Measured: every line 2 px below and 2 px right (before: 1 or 2 below, 1 right). Crops: hh0065_shadow_before_3x.jpg, hh0065_shadow_after_3x.jpg.\n- Builds: Windows Debug and Linux, 0 warnings."
+    }
+  ]
 }
