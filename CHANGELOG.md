@@ -118,3 +118,9 @@ The game and its tools no longer use `.pak` files (HH-0055).
   - **Renamed:** the item and minimap generators now write folders, as `sprite_generator.py` and `build_minimap_sprites.py`. When they rewrite a folder they list leftover image files and never delete them.
   - **Removed:** the pak-only tools, both `paklib.py` copies, `pak_to_png.py`, `pak_extract.py` and `fetch_korea_2024.py`.
 - **Files (HH-0058):** all 361 `.pak` files are removed, each only after its folder rebuilt it byte-for-byte. Deploy removes the deployed copies. The unused prebuilt libraries in `sources/dependencies/client/libs/` are removed too.
+
+New dialog and button kit (HH-0054). It is built from the user's `panel_building.png` and `button_panel.png` sheets.
+- **Kit:** `staged/client/sprites/panelkit/` holds one atlas (83 pieces) and a json with the recipes. It covers every background, border, corner, bevel and bevel circle, plus flourishes, the scrollbar and the buttons. The json also holds the text effects as draw lists, including the wide-button labels: Liberation Serif 14 px with a darker bold layer underneath and an 80% shadow.
+- **Tool:** `tools/panel_kit/build_panel_kit.py` rebuilds the kit, and `--check` confirms it is unchanged. `compose.py` previews panels.
+- **Plans:** the client plans are `.claude/design/plans/panel-kit-runtime.md` and `hud-kit-runtime.md` (HH-0059 to HH-0068).
+- **In the game:** nothing draws with the kit yet.

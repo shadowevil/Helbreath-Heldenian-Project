@@ -1,0 +1,1303 @@
+{
+ "kit": "panel_kit",
+ "version": 1,
+ "ticket": "HH-0054",
+ "inputs": {
+  "panel_building": {
+   "path": "working/sprite_work/panel_building.png",
+   "sha256": "baf04e68f4bce36231b2e1682a8101dfa34059c2210cbb00a031e73edb560ac6"
+  },
+  "button_panel": {
+   "path": "working/sprite_work/button_panel.png",
+   "sha256": "6cd9a5a4918fcfbffaf982d33587802a58ac7c134c54be705cd6c729e78982e6"
+  }
+ },
+ "compose_order": [
+  "size",
+  "background (1 px inset)",
+  "border",
+  "corners",
+  "inner placements"
+ ],
+ "frames": {
+  "corner_stone_tl": {
+   "image": "panel_kit.png",
+   "x": 634,
+   "y": 260,
+   "w": 40,
+   "h": 40,
+   "group": "corner_stone",
+   "use": "stone/bronze L corner, top-left (classic big dialogs)",
+   "source": "panel_building 2,2 40x40"
+  },
+  "corner_stone_tr": {
+   "image": "panel_kit.png",
+   "x": 676,
+   "y": 260,
+   "w": 40,
+   "h": 40,
+   "group": "corner_stone",
+   "use": "stone/bronze L corner, top-right",
+   "source": "panel_building 57,2 40x40"
+  },
+  "corner_stone_bl": {
+   "image": "panel_kit.png",
+   "x": 550,
+   "y": 260,
+   "w": 40,
+   "h": 40,
+   "group": "corner_stone",
+   "use": "stone/bronze L corner, bottom-left",
+   "source": "panel_building 2,56 40x40"
+  },
+  "corner_stone_br": {
+   "image": "panel_kit.png",
+   "x": 592,
+   "y": 260,
+   "w": 40,
+   "h": 40,
+   "group": "corner_stone",
+   "use": "stone/bronze L corner, bottom-right",
+   "source": "panel_building 57,56 40x40"
+  },
+  "corner_rivet_tl": {
+   "image": "panel_kit.png",
+   "x": 802,
+   "y": 260,
+   "w": 40,
+   "h": 37,
+   "group": "corner_rivet",
+   "use": "gold arm with steel rivet ball, top-left",
+   "source": "panel_building 112,2 40x37"
+  },
+  "corner_rivet_tr": {
+   "image": "panel_kit.png",
+   "x": 844,
+   "y": 260,
+   "w": 40,
+   "h": 37,
+   "group": "corner_rivet",
+   "use": "gold arm with steel rivet ball, top-right",
+   "source": "panel_building 167,2 40x37"
+  },
+  "corner_rivet_bl": {
+   "image": "panel_kit.png",
+   "x": 718,
+   "y": 260,
+   "w": 40,
+   "h": 37,
+   "group": "corner_rivet",
+   "use": "gold arm with steel rivet ball, bottom-left",
+   "source": "panel_building 112,56 40x37"
+  },
+  "corner_rivet_br": {
+   "image": "panel_kit.png",
+   "x": 760,
+   "y": 260,
+   "w": 40,
+   "h": 37,
+   "group": "corner_rivet",
+   "use": "gold arm with steel rivet ball, bottom-right",
+   "source": "panel_building 167,56 40x37"
+  },
+  "corner_gold_tl": {
+   "image": "panel_kit.png",
+   "x": 2,
+   "y": 518,
+   "w": 46,
+   "h": 36,
+   "group": "corner_gold",
+   "use": "rounded gold corner with pin, top-left (small gold boxes)",
+   "source": "panel_building 222,2 46x36"
+  },
+  "corner_gold_tr": {
+   "image": "panel_kit.png",
+   "x": 926,
+   "y": 260,
+   "w": 38,
+   "h": 37,
+   "group": "corner_gold",
+   "use": "rounded gold corner with pin, top-right",
+   "source": "panel_building 300,2 38x37"
+  },
+  "corner_gold_bl": {
+   "image": "panel_kit.png",
+   "x": 966,
+   "y": 260,
+   "w": 46,
+   "h": 36,
+   "group": "corner_gold",
+   "use": "rounded gold corner with pin, bottom-left",
+   "source": "panel_building 222,57 46x36"
+  },
+  "corner_gold_br": {
+   "image": "panel_kit.png",
+   "x": 886,
+   "y": 260,
+   "w": 38,
+   "h": 37,
+   "group": "corner_gold",
+   "use": "rounded gold corner with pin, bottom-right",
+   "source": "panel_building 300,56 38x37"
+  },
+  "bevel_box": {
+   "image": "panel_kit.png",
+   "x": 50,
+   "y": 518,
+   "w": 32,
+   "h": 32,
+   "group": "bevel",
+   "use": "inset bevel outline 32x32, raw sheet alpha (<= 59); use bevel_box_g3",
+   "source": "panel_building 346,2 32x32"
+  },
+  "ring_bevel": {
+   "image": "panel_kit.png",
+   "x": 152,
+   "y": 518,
+   "w": 32,
+   "h": 32,
+   "group": "bevel",
+   "use": "sunken bevelled circle 32x32, raw sheet alpha; use ring_bevel_26",
+   "source": "panel_building 441,45 32x32"
+  },
+  "divider_wave": {
+   "image": "panel_kit.png",
+   "x": 242,
+   "y": 518,
+   "w": 57,
+   "h": 25,
+   "group": "flourish",
+   "use": "wave flourish, black mask (System Menu / History titles)",
+   "source": "panel_building 386,2 57x25"
+  },
+  "divider_knot": {
+   "image": "panel_kit.png",
+   "x": 602,
+   "y": 518,
+   "w": 48,
+   "h": 14,
+   "group": "flourish",
+   "use": "knotted flourish, black mask (Name & Status heading)",
+   "source": "panel_building 446,8 48x14"
+  },
+  "divider_eye": {
+   "image": "panel_kit.png",
+   "x": 462,
+   "y": 518,
+   "w": 51,
+   "h": 17,
+   "group": "flourish",
+   "use": "eye scroll flourish, black mask (Commander / Soldier menus)",
+   "source": "panel_building 506,2 51x17"
+  },
+  "wood_light_top": {
+   "image": "panel_kit.png",
+   "x": 995,
+   "y": 518,
+   "w": 21,
+   "h": 9,
+   "group": "wood_light",
+   "use": "light grooved wood bar, top edge, raw 9 px",
+   "source": "panel_building 355,42 21x9"
+  },
+  "wood_light_bottom": {
+   "image": "panel_kit.png",
+   "x": 972,
+   "y": 518,
+   "w": 21,
+   "h": 9,
+   "group": "wood_light",
+   "use": "light grooved wood bar, bottom edge, raw 9 px",
+   "source": "panel_building 355,72 21x9"
+  },
+  "wood_light_left": {
+   "image": "panel_kit.png",
+   "x": 420,
+   "y": 518,
+   "w": 9,
+   "h": 21,
+   "group": "wood_light",
+   "use": "light grooved wood bar, left edge, raw 9 px",
+   "source": "panel_building 346,51 9x21"
+  },
+  "wood_light_right": {
+   "image": "panel_kit.png",
+   "x": 431,
+   "y": 518,
+   "w": 9,
+   "h": 21,
+   "group": "wood_light",
+   "use": "light grooved wood bar, right edge, raw 9 px",
+   "source": "panel_building 376,51 9x21"
+  },
+  "wood_dark_top": {
+   "image": "panel_kit.png",
+   "x": 949,
+   "y": 518,
+   "w": 21,
+   "h": 11,
+   "group": "wood_dark",
+   "use": "dark rough wood bar, top edge, raw",
+   "source": "panel_building 398,40 21x11"
+  },
+  "wood_dark_bottom": {
+   "image": "panel_kit.png",
+   "x": 926,
+   "y": 518,
+   "w": 21,
+   "h": 11,
+   "group": "wood_dark",
+   "use": "dark rough wood bar, bottom edge, raw",
+   "source": "panel_building 398,72 21x11"
+  },
+  "wood_dark_left": {
+   "image": "panel_kit.png",
+   "x": 442,
+   "y": 518,
+   "w": 8,
+   "h": 21,
+   "group": "wood_dark",
+   "use": "dark rough wood bar, left edge, raw",
+   "source": "panel_building 390,51 8x21"
+  },
+  "wood_dark_right": {
+   "image": "panel_kit.png",
+   "x": 452,
+   "y": 518,
+   "w": 8,
+   "h": 21,
+   "group": "wood_dark",
+   "use": "dark rough wood bar, right edge, raw",
+   "source": "panel_building 419,51 8x21"
+  },
+  "bg_stone": {
+   "image": "panel_kit.png",
+   "x": 260,
+   "y": 2,
+   "w": 256,
+   "h": 256,
+   "group": "background",
+   "use": "grey stone-cloth tile 256x256, raw",
+   "source": "panel_building 2,110 256x256"
+  },
+  "bg_leather": {
+   "image": "panel_kit.png",
+   "x": 2,
+   "y": 2,
+   "w": 256,
+   "h": 256,
+   "group": "background",
+   "use": "brown leather tile 256x256, raw",
+   "source": "panel_building 268,110 256x256"
+  },
+  "btn_box_a": {
+   "image": "panel_kit.png",
+   "x": 568,
+   "y": 518,
+   "w": 15,
+   "h": 15,
+   "group": "small_button",
+   "use": "framed orange arrow box (scrollbar thumb)",
+   "source": "panel_building 573,2 15x15"
+  },
+  "btn_box_b": {
+   "image": "panel_kit.png",
+   "x": 585,
+   "y": 518,
+   "w": 15,
+   "h": 15,
+   "group": "small_button",
+   "use": "framed orange down-arrow box",
+   "source": "panel_building 590,2 15x15"
+  },
+  "btn_round_plus": {
+   "image": "panel_kit.png",
+   "x": 758,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "outline circle plus",
+   "source": "panel_building 575,20 12x12"
+  },
+  "btn_round_minus": {
+   "image": "panel_kit.png",
+   "x": 730,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "outline circle minus",
+   "source": "panel_building 591,20 12x12"
+  },
+  "btn_round_plus_lit": {
+   "image": "panel_kit.png",
+   "x": 772,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "circle with lit plus glyph",
+   "source": "panel_building 575,36 12x12"
+  },
+  "btn_round_minus_lit": {
+   "image": "panel_kit.png",
+   "x": 744,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "circle with lit minus glyph",
+   "source": "panel_building 591,36 12x12"
+  },
+  "btn_sq_up": {
+   "image": "panel_kit.png",
+   "x": 898,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "tan square, light up arrow",
+   "source": "panel_building 575,52 12x12"
+  },
+  "btn_sq_down": {
+   "image": "panel_kit.png",
+   "x": 814,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "tan square, light down arrow",
+   "source": "panel_building 591,52 12x12"
+  },
+  "btn_sq_up_dark": {
+   "image": "panel_kit.png",
+   "x": 912,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "tan square, dark up arrow",
+   "source": "panel_building 575,68 12x12"
+  },
+  "btn_sq_down_dark": {
+   "image": "panel_kit.png",
+   "x": 828,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "tan square, dark down arrow",
+   "source": "panel_building 591,68 12x12"
+  },
+  "btn_sq_plus": {
+   "image": "panel_kit.png",
+   "x": 870,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "tan square, light plus",
+   "source": "panel_building 575,83 12x12"
+  },
+  "btn_sq_minus": {
+   "image": "panel_kit.png",
+   "x": 842,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "tan square, light minus",
+   "source": "panel_building 591,83 12x12"
+  },
+  "btn_sq_plus_dark": {
+   "image": "panel_kit.png",
+   "x": 884,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "tan square, dark plus",
+   "source": "panel_building 575,99 12x12"
+  },
+  "btn_sq_minus_dark": {
+   "image": "panel_kit.png",
+   "x": 856,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "tan square, dark minus",
+   "source": "panel_building 591,99 12x12"
+  },
+  "btn_round_up": {
+   "image": "panel_kit.png",
+   "x": 786,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "circle, lit up arrow",
+   "source": "panel_building 575,114 12x12"
+  },
+  "btn_round_down": {
+   "image": "panel_kit.png",
+   "x": 702,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "circle, lit down arrow",
+   "source": "panel_building 591,114 12x12"
+  },
+  "btn_round_up_dark": {
+   "image": "panel_kit.png",
+   "x": 800,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "circle, dark up arrow",
+   "source": "panel_building 575,130 12x12"
+  },
+  "btn_round_down_dark": {
+   "image": "panel_kit.png",
+   "x": 716,
+   "y": 518,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "circle, dark down arrow",
+   "source": "panel_building 591,130 12x12"
+  },
+  "arrow_up_small": {
+   "image": "panel_kit.png",
+   "x": 12,
+   "y": 556,
+   "w": 8,
+   "h": 7,
+   "group": "small_button",
+   "use": "small white up arrow 8x7",
+   "source": "panel_building 577,147 8x7"
+  },
+  "arrow_down_small": {
+   "image": "panel_kit.png",
+   "x": 2,
+   "y": 556,
+   "w": 8,
+   "h": 7,
+   "group": "small_button",
+   "use": "small white down arrow 8x7",
+   "source": "panel_building 593,147 8x7"
+  },
+  "ring": {
+   "image": "panel_kit.png",
+   "x": 186,
+   "y": 518,
+   "w": 26,
+   "h": 26,
+   "group": "small_button",
+   "use": "26x26 ring: radio / slot circle",
+   "source": "panel_building 576,158 26x26"
+  },
+  "btn_frame_tl": {
+   "image": "panel_kit.png",
+   "x": 236,
+   "y": 556,
+   "w": 4,
+   "h": 4,
+   "group": "btn_frame",
+   "use": "button frame corner top-left",
+   "source": "button_panel 221,2 4x4"
+  },
+  "btn_frame_t": {
+   "image": "panel_kit.png",
+   "x": 268,
+   "y": 556,
+   "w": 6,
+   "h": 3,
+   "group": "btn_frame",
+   "use": "button frame top edge, tile along x",
+   "source": "button_panel 226,2 6x3"
+  },
+  "btn_frame_tr": {
+   "image": "panel_kit.png",
+   "x": 242,
+   "y": 556,
+   "w": 4,
+   "h": 4,
+   "group": "btn_frame",
+   "use": "button frame corner top-right",
+   "source": "button_panel 233,2 4x4"
+  },
+  "btn_frame_l": {
+   "image": "panel_kit.png",
+   "x": 224,
+   "y": 556,
+   "w": 4,
+   "h": 4,
+   "group": "btn_frame",
+   "use": "button frame left edge, tile along y",
+   "source": "button_panel 221,7 4x4"
+  },
+  "btn_frame_r": {
+   "image": "panel_kit.png",
+   "x": 230,
+   "y": 556,
+   "w": 4,
+   "h": 4,
+   "group": "btn_frame",
+   "use": "button frame right edge, tile along y",
+   "source": "button_panel 233,7 4x4"
+  },
+  "btn_frame_bl": {
+   "image": "panel_kit.png",
+   "x": 212,
+   "y": 556,
+   "w": 4,
+   "h": 4,
+   "group": "btn_frame",
+   "use": "button frame corner bottom-left",
+   "source": "button_panel 221,12 4x4"
+  },
+  "btn_frame_b": {
+   "image": "panel_kit.png",
+   "x": 260,
+   "y": 556,
+   "w": 6,
+   "h": 3,
+   "group": "btn_frame",
+   "use": "button frame bottom edge, tile along x",
+   "source": "button_panel 226,13 6x3"
+  },
+  "btn_frame_br": {
+   "image": "panel_kit.png",
+   "x": 218,
+   "y": 556,
+   "w": 4,
+   "h": 4,
+   "group": "btn_frame",
+   "use": "button frame corner bottom-right",
+   "source": "button_panel 233,12 4x4"
+  },
+  "btn_face_normal": {
+   "image": "panel_kit.png",
+   "x": 387,
+   "y": 518,
+   "w": 25,
+   "h": 25,
+   "group": "btn_face",
+   "use": "button face 25x25, normal; tiled, never stretched",
+   "source": "button_panel 241,2 25x25"
+  },
+  "btn_face_hover": {
+   "image": "panel_kit.png",
+   "x": 360,
+   "y": 518,
+   "w": 25,
+   "h": 25,
+   "group": "btn_face",
+   "use": "button face 25x25, hover; tiled, never stretched",
+   "source": "button_panel 241,29 25x25"
+  },
+  "btn_cap_left": {
+   "image": "panel_kit.png",
+   "x": 22,
+   "y": 556,
+   "w": 5,
+   "h": 7,
+   "group": "btn_cap",
+   "use": "left arrow cap on the button's left middle",
+   "source": "button_panel 223,25 5x7"
+  },
+  "btn_cap_right": {
+   "image": "panel_kit.png",
+   "x": 29,
+   "y": 556,
+   "w": 5,
+   "h": 7,
+   "group": "btn_cap",
+   "use": "right arrow cap on the button's right middle",
+   "source": "button_panel 229,25 5x7"
+  },
+  "bevel_box_g3": {
+   "image": "panel_kit.png",
+   "x": 84,
+   "y": 518,
+   "w": 32,
+   "h": 32,
+   "group": "bevel",
+   "use": "inset bevel, alpha x3; 9-slice margin 3 for sunken fields",
+   "source": "bevel_box"
+  },
+  "bevel_box_g3_raised": {
+   "image": "panel_kit.png",
+   "x": 118,
+   "y": 518,
+   "w": 32,
+   "h": 32,
+   "group": "bevel",
+   "use": "raised bevel (inset rotated 180); 9-slice margin 3",
+   "source": "bevel_box"
+  },
+  "rule_dark": {
+   "image": "panel_kit.png",
+   "x": 276,
+   "y": 556,
+   "w": 24,
+   "h": 1,
+   "group": "bevel",
+   "use": "rule dark row 24x1; stretch along x",
+   "source": "bevel_box"
+  },
+  "rule_light": {
+   "image": "panel_kit.png",
+   "x": 302,
+   "y": 556,
+   "w": 24,
+   "h": 1,
+   "group": "bevel",
+   "use": "rule light row 24x1; stretch along x",
+   "source": "bevel_box"
+  },
+  "vrule_dark": {
+   "image": "panel_kit.png",
+   "x": 414,
+   "y": 518,
+   "w": 1,
+   "h": 24,
+   "group": "bevel",
+   "use": "vertical rule dark column 1x24; stretch along y",
+   "source": "bevel_box"
+  },
+  "vrule_light": {
+   "image": "panel_kit.png",
+   "x": 417,
+   "y": 518,
+   "w": 1,
+   "h": 24,
+   "group": "bevel",
+   "use": "vertical rule light column 1x24; stretch along y",
+   "source": "bevel_box"
+  },
+  "ring_bevel_26": {
+   "image": "panel_kit.png",
+   "x": 214,
+   "y": 518,
+   "w": 26,
+   "h": 26,
+   "group": "bevel",
+   "use": "slot ring 26x26, alpha x3 (character doll slots)",
+   "source": "ring_bevel"
+  },
+  "wood_light_top_t6": {
+   "image": "panel_kit.png",
+   "x": 168,
+   "y": 556,
+   "w": 42,
+   "h": 6,
+   "group": "border_wood_light",
+   "use": "wood_light top edge at 6 px, bar + mirror; tile along the edge",
+   "source": "wood_light_top"
+  },
+  "wood_light_bottom_t6": {
+   "image": "panel_kit.png",
+   "x": 124,
+   "y": 556,
+   "w": 42,
+   "h": 6,
+   "group": "border_wood_light",
+   "use": "wood_light bottom edge at 6 px, bar + mirror; tile along the edge",
+   "source": "wood_light_bottom"
+  },
+  "wood_light_left_t6": {
+   "image": "panel_kit.png",
+   "x": 534,
+   "y": 260,
+   "w": 6,
+   "h": 42,
+   "group": "border_wood_light",
+   "use": "wood_light left edge at 6 px, bar + mirror; tile along the edge",
+   "source": "wood_light_left"
+  },
+  "wood_light_right_t6": {
+   "image": "panel_kit.png",
+   "x": 542,
+   "y": 260,
+   "w": 6,
+   "h": 42,
+   "group": "border_wood_light",
+   "use": "wood_light right edge at 6 px, bar + mirror; tile along the edge",
+   "source": "wood_light_right"
+  },
+  "wood_dark_top_t6": {
+   "image": "panel_kit.png",
+   "x": 80,
+   "y": 556,
+   "w": 42,
+   "h": 6,
+   "group": "border_wood_dark",
+   "use": "wood_dark top edge at 6 px, bar + mirror; tile along the edge",
+   "source": "wood_dark_top"
+  },
+  "wood_dark_bottom_t6": {
+   "image": "panel_kit.png",
+   "x": 36,
+   "y": 556,
+   "w": 42,
+   "h": 6,
+   "group": "border_wood_dark",
+   "use": "wood_dark bottom edge at 6 px, bar + mirror; tile along the edge",
+   "source": "wood_dark_bottom"
+  },
+  "wood_dark_left_t6": {
+   "image": "panel_kit.png",
+   "x": 518,
+   "y": 260,
+   "w": 6,
+   "h": 42,
+   "group": "border_wood_dark",
+   "use": "wood_dark left edge at 6 px, bar + mirror; tile along the edge",
+   "source": "wood_dark_left"
+  },
+  "wood_dark_right_t6": {
+   "image": "panel_kit.png",
+   "x": 526,
+   "y": 260,
+   "w": 6,
+   "h": 42,
+   "group": "border_wood_dark",
+   "use": "wood_dark right edge at 6 px, bar + mirror; tile along the edge",
+   "source": "wood_dark_right"
+  },
+  "bg_stone_cloth": {
+   "image": "panel_kit.png",
+   "x": 518,
+   "y": 2,
+   "w": 256,
+   "h": 256,
+   "group": "background",
+   "use": "bg_stone x (1.17, 1.14, 1.0): classic outer cloth",
+   "source": "bg_stone"
+  },
+  "bg_stone_field": {
+   "image": "panel_kit.png",
+   "x": 260,
+   "y": 260,
+   "w": 256,
+   "h": 256,
+   "group": "background",
+   "use": "cloth x (0.85, 0.88, 0.98): inset field fill",
+   "source": "bg_stone"
+  },
+  "bg_stone_doll": {
+   "image": "panel_kit.png",
+   "x": 2,
+   "y": 260,
+   "w": 256,
+   "h": 256,
+   "group": "background",
+   "use": "cloth x (0.8, 0.82, 0.9): character doll panel fill",
+   "source": "bg_stone"
+  },
+  "divider_wave_white": {
+   "image": "panel_kit.png",
+   "x": 301,
+   "y": 518,
+   "w": 57,
+   "h": 25,
+   "group": "flourish",
+   "use": "white copy of divider_wave: vertex colour = the tint",
+   "source": "divider_wave"
+  },
+  "divider_knot_white": {
+   "image": "panel_kit.png",
+   "x": 652,
+   "y": 518,
+   "w": 48,
+   "h": 14,
+   "group": "flourish",
+   "use": "white copy of divider_knot: vertex colour = the tint",
+   "source": "divider_knot"
+  },
+  "divider_eye_white": {
+   "image": "panel_kit.png",
+   "x": 515,
+   "y": 518,
+   "w": 51,
+   "h": 17,
+   "group": "flourish",
+   "use": "white copy of divider_eye: vertex colour = the tint",
+   "source": "divider_eye"
+  },
+  "px_black": {
+   "image": "panel_kit.png",
+   "x": 248,
+   "y": 556,
+   "w": 4,
+   "h": 4,
+   "group": "util",
+   "use": "solid black: draw at alpha 1-f for a scalar darken f",
+   "source": null
+  },
+  "px_white": {
+   "image": "panel_kit.png",
+   "x": 254,
+   "y": 556,
+   "w": 4,
+   "h": 4,
+   "group": "util",
+   "use": "solid white: tinted fills once tint exists",
+   "source": null
+  }
+ },
+ "backgrounds": {
+  "stone": {
+   "tile": "bg_stone",
+   "use": "plain stone-cloth"
+  },
+  "stone_cloth": {
+   "tile": "bg_stone_cloth",
+   "use": "classic dialog outer cloth (default)"
+  },
+  "stone_field": {
+   "tile": "bg_stone_field",
+   "use": "inset field fill over stone_cloth"
+  },
+  "stone_doll": {
+   "tile": "bg_stone_doll",
+   "use": "character doll panel fill"
+  },
+  "leather": {
+   "tile": "bg_leather",
+   "use": "brown leather"
+  }
+ },
+ "background_rule": "tile into (1, 1, W-2, H-2) with the tile origin at the panel's (1, 1); inset fills tile with the same origin so they line up with the cloth",
+ "border_styles": {
+  "wood_light": {
+   "top": "wood_light_top_t6",
+   "bottom": "wood_light_bottom_t6",
+   "left": "wood_light_left_t6",
+   "right": "wood_light_right_t6",
+   "thickness": 6,
+   "order": "inner shadow, left, right, top over full width, bottom over full width",
+   "inner_shadow": {
+    "piece": "px_black",
+    "rows": 3,
+    "alpha_top_left": [
+     0.45,
+     0.3,
+     0.15
+    ],
+    "alpha_bottom_right": [
+     0.35,
+     0.2,
+     0.05
+    ],
+    "rule": "row i sits i px inside the rim, between the side bars"
+   }
+  },
+  "wood_dark": {
+   "top": "wood_dark_top_t6",
+   "bottom": "wood_dark_bottom_t6",
+   "left": "wood_dark_left_t6",
+   "right": "wood_dark_right_t6",
+   "thickness": 6,
+   "order": "inner shadow, left, right, top over full width, bottom over full width",
+   "inner_shadow": {
+    "piece": "px_black",
+    "rows": 3,
+    "alpha_top_left": [
+     0.45,
+     0.3,
+     0.15
+    ],
+    "alpha_bottom_right": [
+     0.35,
+     0.2,
+     0.05
+    ],
+    "rule": "row i sits i px inside the rim, between the side bars"
+   }
+  }
+ },
+ "corner_styles": {
+  "stone": {
+   "tl": "corner_stone_tl",
+   "tr": "corner_stone_tr",
+   "bl": "corner_stone_bl",
+   "br": "corner_stone_br"
+  },
+  "rivet": {
+   "tl": "corner_rivet_tl",
+   "tr": "corner_rivet_tr",
+   "bl": "corner_rivet_bl",
+   "br": "corner_rivet_br"
+  },
+  "gold": {
+   "tl": "corner_gold_tl",
+   "tr": "corner_gold_tr",
+   "bl": "corner_gold_bl",
+   "br": "corner_gold_br"
+  }
+ },
+ "nine_slice": {
+  "bevel_box_g3": 3,
+  "bevel_box_g3_raised": 3
+ },
+ "inner": {
+  "inset": {
+   "field": "stone_field",
+   "bevel": "bevel_box_g3",
+   "margin": 3,
+   "rule": "fill (x+1, y+1, w-2, h-2) with the field background (or px_black at 1-f for a scalar darken), then 9-slice the bevel over (x, y, w, h); edges stretch (nearest)"
+  },
+  "raised": {
+   "bevel": "bevel_box_g3_raised",
+   "margin": 3,
+   "rule": "no fill; 9-slice the raised bevel"
+  },
+  "rule": {
+   "dark": "rule_dark",
+   "light": "rule_light",
+   "height": 2,
+   "rule": "top height/2 rows dark, the rest light, each stretched to w"
+  },
+  "vrule": {
+   "dark": "vrule_dark",
+   "light": "vrule_light",
+   "width": 2,
+   "rule": "left width/2 columns dark, the rest light, each stretched to h"
+  },
+  "slot_ring": {
+   "piece": "ring_bevel_26",
+   "size": 26,
+   "anchor": "center",
+   "lift": {
+    "rgb_gain": [
+     1.16,
+     1.12,
+     1.02
+    ],
+    "disc_inset": 2,
+    "note": "optional disc brightening; needs the additive extension or is skipped"
+   }
+  },
+  "scrollbar": {
+   "track_w": 6,
+   "groove": "inset",
+   "groove_darken": 0.8,
+   "thumb": "btn_box_a",
+   "rule": "groove = inset centred in the rect, any length, darkened 0.8 (px_black at 0.2); thumb centred in x at y + (h - thumb_h) * pos, pos 0 top .. 1 bottom"
+  }
+ },
+ "flourishes": {
+  "note": "black alpha masks; colour is a runtime parameter (user: colourable at runtime). tint = colour the mask takes; blend normal = alpha, additive = dst + tint * a * opacity; emboss = the mask drawn first at (+1, +1) in emboss_color",
+  "divider_knot": {
+   "scale": 0.66,
+   "tint": [
+    196,
+    176,
+    126
+   ],
+   "blend": "additive",
+   "opacity": 0.5,
+   "emboss": null
+  },
+  "divider_wave": {
+   "scale": 0.46,
+   "tint": [
+    62,
+    56,
+    56
+   ],
+   "blend": "normal",
+   "opacity": 1.0,
+   "emboss": [
+    200,
+    185,
+    150
+   ],
+   "scale_sys_menu": 0.56
+  },
+  "divider_eye": {
+   "scale": 1.0,
+   "tint": [
+    62,
+    56,
+    56
+   ],
+   "blend": "normal",
+   "opacity": 1.0,
+   "emboss": [
+    200,
+    185,
+    150
+   ],
+   "note": "not tuned against an original yet"
+  },
+  "title_rule": "one each side of the title, gap px from the title ink, right one mirrored; vertical centre on the title line"
+ },
+ "buttons": {
+  "frame": {
+   "tl": "btn_frame_tl",
+   "t": "btn_frame_t",
+   "tr": "btn_frame_tr",
+   "l": "btn_frame_l",
+   "r": "btn_frame_r",
+   "bl": "btn_frame_bl",
+   "b": "btn_frame_b",
+   "br": "btn_frame_br",
+   "rule": "edges tile (not stretch) between the 4x4 corners; corners last"
+  },
+  "face_rule": "face tiles into (x+1, y+1, w-2, h-2) with origin at the button's (x+1, y+1), never stretched",
+  "states": {
+   "normal": {
+    "face": "btn_face_normal",
+    "label": "fill"
+   },
+   "hover": {
+    "face": "btn_face_hover",
+    "label": "fill_hover"
+   }
+  },
+  "caps": {
+   "left": "btn_cap_left",
+   "right": "btn_cap_right",
+   "inset": 2,
+   "rule": "vertically centred"
+  },
+  "label_styles": {
+   "small": "small_button_label",
+   "wide": "wide_button_label"
+  },
+  "sizes": {
+   "small": [
+    74,
+    20
+   ],
+   "wide": [
+    176,
+    24
+   ]
+  }
+ },
+ "text_recipes": {
+  "note": "draw lists, bottom to top; each draw = (dx, dy, color, alpha, blend). Faux bold = the same draw again at dx + bold_dx; the client's int positions round 0.5 up to 1. Anchors: cap = the cap height is centred on y; centre in x on the ink width",
+  "title_red": {
+   "font": "liberation_serif_regular.ttf",
+   "px": 17,
+   "anchor": "centre",
+   "draws": [
+    {
+     "dx": 1,
+     "dy": 1,
+     "color": [
+      36,
+      26,
+      24
+     ],
+     "alpha": 0.75,
+     "blend": "normal"
+    },
+    {
+     "dx": -1,
+     "dy": -1,
+     "color": [
+      120,
+      85,
+      75
+     ],
+     "alpha": 0.35,
+     "blend": "additive",
+     "note": "highlight up-left, outside the glyph (fill covers the overlap)"
+    },
+    {
+     "dx": 0,
+     "dy": 0,
+     "color": "fill",
+     "alpha": 1.0,
+     "blend": "normal"
+    }
+   ],
+   "fills": {
+    "character_info": [
+     140,
+     8,
+     8
+    ],
+    "system_menu": [
+     148,
+     24,
+     16
+    ],
+    "history": [
+     144,
+     16,
+     12
+    ]
+   }
+  },
+  "heading": {
+   "font": "wine_tahoma.ttf",
+   "px": 13,
+   "bold_dx": 0.5,
+   "bold_passes": "all",
+   "draws": [
+    {
+     "dx": 1,
+     "dy": 1,
+     "color": [
+      36,
+      26,
+      24
+     ],
+     "alpha": 0.75,
+     "blend": "normal"
+    },
+    {
+     "dx": -1,
+     "dy": -1,
+     "color": [
+      250,
+      236,
+      200
+     ],
+     "alpha": 0.35,
+     "blend": "normal"
+    },
+    {
+     "dx": 0,
+     "dy": 0,
+     "color": [
+      236,
+      212,
+      164
+     ],
+     "alpha": 1.0,
+     "blend": "normal"
+    }
+   ],
+   "draw_count": 6
+  },
+  "field_label": {
+   "font": "wine_tahoma.ttf",
+   "px": 12,
+   "bold_dx": 0.5,
+   "bold_passes": "all",
+   "align": "right",
+   "gap_to_value_box": 4,
+   "draws": [
+    {
+     "dx": 0,
+     "dy": 0,
+     "color": [
+      28,
+      22,
+      16
+     ],
+     "alpha": 1.0,
+     "blend": "normal"
+    }
+   ],
+   "draw_count": 2
+  },
+  "value": {
+   "font": "default",
+   "px": 0,
+   "note": "as the client draws today: put_aligned_string, UILabel (25, 25, 25), no shadow; the name line UIDarkRed (58, 0, 0)",
+   "draws": [
+    {
+     "dx": 0,
+     "dy": 0,
+     "color": [
+      25,
+      25,
+      25
+     ],
+     "alpha": 1.0,
+     "blend": "normal"
+    }
+   ]
+  },
+  "small_button_label": {
+   "font": "wine_tahoma.ttf",
+   "px": 11,
+   "tracking": 1,
+   "bold_dx": 0.5,
+   "bold_passes": "all",
+   "anchor": "cap",
+   "draws": [
+    {
+     "dx": 0,
+     "dy": 0,
+     "color": "fill",
+     "alpha": 1.0,
+     "blend": "normal"
+    }
+   ],
+   "fill": [
+    239,
+    222,
+    206
+   ],
+   "fill_hover": [
+    247,
+    247,
+    0
+   ],
+   "draw_count": 2
+  },
+  "wide_button_label": {
+   "font": "liberation_serif_regular.ttf",
+   "px": 14,
+   "tracking": 0.5,
+   "word_gap": 8,
+   "anchor": "cap",
+   "per_word": true,
+   "draws": [
+    {
+     "dx": 1,
+     "dy": 1,
+     "color": [
+      24,
+      16,
+      8
+     ],
+     "alpha": 0.8,
+     "blend": "normal",
+     "bold": true
+    },
+    {
+     "dx": 0,
+     "dy": 0,
+     "color": "fill x 0.65",
+     "alpha": 1.0,
+     "blend": "normal",
+     "bold": true
+    },
+    {
+     "dx": 0,
+     "dy": 0,
+     "color": "fill",
+     "alpha": 1.0,
+     "blend": "normal"
+    }
+   ],
+   "bold_dx": 0.5,
+   "fill": [
+    250,
+    240,
+    218
+   ],
+   "fill_hover": [
+    247,
+    247,
+    4
+   ],
+   "draw_count_per_word": 5,
+   "layout": "words laid out left to right with word_gap between ink boxes, the run centred in the button"
+  }
+ }
+}
