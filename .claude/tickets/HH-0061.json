@@ -1,0 +1,29 @@
+{
+  "id": "HH-0061",
+  "summary": "Panel kit 2: panel_kit runtime class (load json + atlas, compose, inner primitives, text recipes)",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    12,
+    3
+  ],
+  "author": "client",
+  "created": "2026-11-24T20:30:13Z",
+  "updated": "2026-11-24T20:30:13Z",
+  "links": {
+    "commits": [],
+    "files": [
+      "sources/client/parchment_kit.h:36",
+      "sources/client/screen_test.cpp"
+    ],
+    "tickets": [
+      "HH-0054"
+    ],
+    "blocks": [
+      "HH-0059"
+    ]
+  },
+  "body": "Spec step 2. client/panel_kit.h/.cpp modelled on parchment_kit: load(<sprite_dir>/panelkit), compose(x,y,w,h,style) in the build order, inset/raised/rule/vrule/slot_ring/scrollbar/flourish/title, text recipes as draw lists; register a Liberation Serif font id.\n\nDone when: screen_test.cpp shows compose at 270x376, 362x164, 331x303 matching tools/panel_kit/compose.py within rounding."
+}

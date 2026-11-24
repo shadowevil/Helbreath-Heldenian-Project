@@ -1,7 +1,7 @@
 {
   "id": "HH-0028",
   "summary": "High-quality cursors (task)",
-  "status": "user_review",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-23T22:12:56Z",
-  "updated": "2026-11-24T05:49:33Z",
+  "updated": "2026-11-24T20:42:31Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "73ce4592"
+    ],
     "files": [],
     "tickets": [],
     "blocked_by": [
@@ -28,6 +30,11 @@
       "author": "pm",
       "at": "2026-11-24T05:49:33Z",
       "body": "Waits on HH-0031 (your in-game check of the cursors)."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-24T20:42:31Z",
+      "body": "**Verified, 2026-11-24:** (confidence ~92%) all sub-tasks done; cursors checked at 800x600, 1440x1080 and fullscreen (see HH-0031)."
     }
   ]
 }

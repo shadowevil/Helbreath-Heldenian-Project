@@ -1,0 +1,29 @@
+{
+  "id": "HH-0060",
+  "summary": "Panel kit 1: renderer nearest sampling, tint and additive blend for draw_texture_region",
+  "status": "in_progress",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    12,
+    3
+  ],
+  "author": "client",
+  "created": "2026-11-24T20:30:13Z",
+  "updated": "2026-11-24T20:40:47Z",
+  "links": {
+    "commits": [],
+    "files": [
+      "sources/dependencies/shared/render/renderer.h:113",
+      "sources/sfml_engine/sfml_renderer.cpp:1101"
+    ],
+    "tickets": [
+      "HH-0054"
+    ],
+    "blocks": [
+      "HH-0059"
+    ]
+  },
+  "body": "Spec step 1. Nearest-sampled texture load (stretched 1 px rows and 9-slice edges must not blur or bleed); draw_texture_region overload with vertex colour + alpha|additive blend (SFML: sf::BlendAdd). Tint the baked `divider_*_white` masks.\n\nDone when: a test screen draws divider_knot_white tinted (196,176,126) additive 0.5 and rule_dark stretched to 200 px without blur; Windows and Linux builds clean."
+}

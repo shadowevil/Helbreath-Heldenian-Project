@@ -1,0 +1,40 @@
+{
+  "id": "HH-0059",
+  "summary": "Panel kit: draw dialogs and buttons from the staged kit in the client (task)",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    12,
+    3
+  ],
+  "author": "client",
+  "created": "2026-11-24T20:30:13Z",
+  "updated": "2026-11-24T20:35:55Z",
+  "links": {
+    "commits": [],
+    "files": [
+      ".claude/design/plans/panel-kit-runtime.md",
+      "staged/client/sprites/panelkit/panel_kit.json",
+      "tools/panel_kit/build_panel_kit.py",
+      "tools/panel_kit/compose.py"
+    ],
+    "tickets": [
+      "HH-0054"
+    ],
+    "blocks": [],
+    "blocked_by": [
+      "HH-0060",
+      "HH-0061",
+      "HH-0062",
+      "HH-0063",
+      "HH-0064",
+      "HH-0065",
+      "HH-0066",
+      "HH-0067",
+      "HH-0068"
+    ]
+  },
+  "body": "Goal (user, 2026-11-24): \"It looks significantly better - ship it\" - draw the HH-0054 panel kit in the client; \"Once everything is rebuilt, drop the old sprites\".\n\nPlan: `.claude/design/plans/panel-kit-runtime.md` (steps 1-8; each sub-task is one step).\nKit: `staged/client/sprites/panelkit/` built by `tools/panel_kit/build_panel_kit.py` (`--check` proves byte-for-byte); reference composer `tools/panel_kit/compose.py` (the client must match it).\n\nDecisions: Character List plates stay as they are; flourish colour is a runtime parameter; buttons tile the 25 px face, never stretch.\n\nDone when every sub-task is done and every converted dialog and button draws and works in game."
+}

@@ -13,7 +13,7 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:47Z",
-  "updated": "2026-11-24T02:19:04Z",
+  "updated": "2026-11-24T20:42:39Z",
   "links": {
     "commits": [],
     "files": [],
@@ -28,6 +28,11 @@
       "author": "pm",
       "at": "2026-11-24T02:19:04Z",
       "body": "Needs your decision (d-028 deferred it): include SDL's server-side debug commands (kill_player, set_status, set_god, bot flag, inject_message, set_time_of_day)? They need new server debug messages and may bump protocol_version. Answer in chat: include (Debug-only, as later phases) or drop."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-24T20:42:39Z",
+      "body": "2026-11-24 triage: stays in user_review. Only the user can decide: include SDL's server-side debug commands (kill_player, set_status, set_god, bot flag, inject_message, set_time_of_day) as Debug-only later phases, or drop them? They need new server debug messages and may bump protocol_version."
     }
   ]
 }

@@ -1,0 +1,48 @@
+{
+  "id": "HH-0068",
+  "summary": "Panel kit HUD: action bar from the new art with the fill-over-trough gauge rule",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    12,
+    3
+  ],
+  "author": "client",
+  "created": "2026-11-24T20:35:55Z",
+  "updated": "2026-11-24T20:42:33Z",
+  "links": {
+    "commits": [],
+    "files": [
+      ".claude/design/plans/hud-kit-runtime.md",
+      "sources/client/dialog_box_hud_panel.cpp:71",
+      "sources/client/dialog_box_hud_panel.h:35"
+    ],
+    "tickets": [
+      "HH-0054",
+      "HH-0059"
+    ],
+    "blocks": [
+      "HH-0059"
+    ]
+  },
+  "body": "User (2026-11-24): \"This is the new action bar ... the fill will hide back\"; confirmed \"60% HP = 60% red, 40% trough\" and \"also do the mockup of the action bar before we approve\".\n\n**Blocked on the user's approval of the mockup** `.claude/scratch/panel_kit/hud/hud_compare.png` (today vs new, gauges 100/60/15% and a mixed HP 80 / MP 35 / SP 55 / hunger 70 / EXP 40 state, 1x and 2x).\n\nPlan: `.claude/design/plans/hud-kit-runtime.md` - 39 parts from working/sprite_work/GameDialog/gamedialog_sprite_6.png; today's rule (empty frame drawn over the missing share, dialog_box_hud_panel.cpp:83-86, 111-114, 127-130, 137-144) becomes trough -> fill clipped to the value -> caps; ship staged/client/sprites/hudkit with a byte-for-byte --check; DialogBox_HudPanel::on_draw draws from the kit.\n\nOpen readings for the user: fill anchoring (mockup keeps today's: drains from the left / top), orb_peace_hover, menu 'pressed' = mouse down or dialog open.\n\nDone when: at 800x600 and 1024x768 the gauges track their values with the fill over the trough, a 100/60/15% screenshot matches the mockup, buttons and tooltips work.",
+  "comments": [
+    {
+      "author": "client",
+      "at": "2026-11-24T20:40:37Z",
+      "body": "Mockup regenerated (`.claude/scratch/panel_kit/hud/hud_compare.png`), in answer to the user's \"Why are the new gauges having art cut off?\" and \"we want it to depleat to the left not the right\".\n\nWhat was wrong:\n- **Oversized row:** the old compare had an unlabelled extra row, the new bar scaled to 2x and cropped to 800 px. That is why the \"new\" row looked too big and lost the orb and menu buttons.\n- **Crops too tight:** the 2x crops started at x 90, cutting the tubes' left caps.\n- **Not a sheet-scale problem:** gamedialog_sprite_6 is 1x; the old and new tube art match in size, and EXP is 800x4 on both sheets.\n- **Slice clipped the trough's right cap:** the search rect stopped at x 121, but the trough is 128x20, with 13 px caps each end and 102 px of glass. The gold outline halo is kept as on the sheet.\n- **Fill fringe row missed:** the red and blue fills lost their faint top fringe row. They are now 106x15, placed at trough +11,+2, so the opaque core fills the glass exactly between the caps.\n- **Other parts:** hunger, SP, SP back and the message frame were rechecked and are unclipped.\n\nNow:\n- Each state shows three rows at true 1x (whole 800x53 bar): today, new A (hard-cut fill), new B (rounded leading edge, the fill's own end drawn at the cut). Each row also has a 2x crop holding both tubes with both caps, hunger, SP and the message box.\n- **Direction:** HP, MP, SP and EXP are anchored left and deplete to the left. Hunger stays bottom-anchored and drains from the top.\n- **Draw counts per tube:** A is 4 draws, B is 5.\n- Spec `.claude/design/plans/hud-kit-runtime.md` updated with the direction and the clip math for A and B.\n\nStill blocked on the user's approval: A or B, plus the orb and menu-state readings."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-24T20:42:16Z",
+      "body": "User decision (2026-11-24): \"A, hard cut\".\n\n- `hud-kit-runtime.md` now specifies only the hard-cut fill: trough, then one clipped fill draw, then the caps (4 draws per HP/MP tube). Variant B (rounded leading edge) is noted as rejected.\n- Still blocked on two open questions:\n  - is `orb_peace_hover` (the light grey orb) the hover state of peace, or a second peace state?\n  - does the dark third menu row mean mouse-down or dialog-open?"
+    },
+    {
+      "author": "client",
+      "at": "2026-11-24T20:42:33Z",
+      "body": "Mockup approved (user, 2026-11-24): \"A, hard cut\" then \"Approved though\". Unblocked and set to open.\n\nThe two open readings are recorded in `hud-kit-runtime.md` as defaults the user can change:\n- light grey sword orb (`orb_peace_hover`) = peace mode, hovered;\n- dark third menu row (`menu_*_pressed`) = mouse button held down.\n\nThe client agent picks this up after the kit buttons (HH-0062)."
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "id": "HH-0062",
+  "summary": "Panel kit 3: kit buttons (small 74x20, wide 176x24) via cc::button render handler and dialog helper",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    12,
+    3
+  ],
+  "author": "client",
+  "created": "2026-11-24T20:30:14Z",
+  "updated": "2026-11-24T20:30:14Z",
+  "links": {
+    "commits": [],
+    "files": [
+      "sources/ccontrols/control.h:68",
+      "sources/client/dialog_box_character.cpp:180"
+    ],
+    "tickets": [
+      "HH-0054"
+    ],
+    "blocks": [
+      "HH-0059"
+    ]
+  },
+  "body": "Spec step 3. panel_kit::button(rect, label, size, hover); plug into cc::control::set_render_handler and replace draw_new_dialog_box(InterfaceNdButton, ...) users.\n\nDone when: Party / Level Set. and the select-character wide buttons draw from the kit with yellow hover; clicks unchanged."
+}

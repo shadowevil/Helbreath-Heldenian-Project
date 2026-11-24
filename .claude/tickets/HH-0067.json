@@ -1,0 +1,29 @@
+{
+  "id": "HH-0067",
+  "summary": "Panel kit 8: drop the old dialog/button sprites the kit replaced",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    2,
+    3
+  ],
+  "author": "client",
+  "created": "2026-11-24T20:30:15Z",
+  "updated": "2026-11-24T20:30:15Z",
+  "links": {
+    "commits": [],
+    "files": [
+      "sources/client/screen_loading.cpp:100",
+      "staged/client/sprites/interface/game_dialogs"
+    ],
+    "tickets": [
+      "HH-0054"
+    ],
+    "blocks": [
+      "HH-0059"
+    ]
+  },
+  "body": "Spec step 8 (user: \"Once everything is rebuilt, drop the old sprites\"). Re-run the census (.claude/scratch/panel_kit/regen_proof/sprite_usage.py); drop only fully unused sprites (expected: InterfaceNdButton, InterfaceNdText, maybe Game1); list partly used ones with their remaining users.\n\nDone when: the census shows 0 references for each dropped sprite, the client loads and every dialog draws."
+}

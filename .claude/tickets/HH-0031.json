@@ -1,7 +1,7 @@
 {
   "id": "HH-0031",
   "summary": "HQ cursors 3: review and in-game check",
-  "status": "user_review",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-23T22:12:57Z",
-  "updated": "2026-11-24T05:29:59Z",
+  "updated": "2026-11-24T20:42:31Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "73ce4592"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
@@ -26,6 +28,11 @@
       "author": "pm",
       "at": "2026-11-24T05:29:59Z",
       "body": "Ready for your eye. Review passed earlier (dark fringe and tip offset fixed). In-game screenshots at 1920x1440 are in build/screenshots/hh0031_cursor_{ground,hud,dialog,minimap}.png. No NPC, creature or ground item was in reach, so the attack, pick-up and target cursors are not captured. Please check every cursor state in game and tell me in chat."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-24T20:42:31Z",
+      "body": "**Verified, 2026-11-24:** (confidence ~92%) Review passed earlier. In game: normal cursor over ground, HUD, dialog and minimap (hh0031_cursor_*.png) and again at 800x600, 1440x1080 and fullscreen. All 13 cursor frames in staged/client/sprites/interface/cursors_hq.json map to correct art (sword, magic circles, five hands, hourglass, target brackets, black square): build/screenshots/vur_hh0031_cursor_frames.jpg. Frame selection (CursorTarget::get_cursor_type) is unchanged original logic and a frame without HQ art falls back to the old sprite. Not seen live: attack, pick-up and target cursors (no NPC or item reachable on the test map; no GM spawn)."
     }
   ]
 }

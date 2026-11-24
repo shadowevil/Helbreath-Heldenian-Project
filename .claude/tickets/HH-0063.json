@@ -1,0 +1,28 @@
+{
+  "id": "HH-0063",
+  "summary": "Panel kit 4: character dialog from the kit",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    12,
+    3
+  ],
+  "author": "client",
+  "created": "2026-11-24T20:30:14Z",
+  "updated": "2026-11-24T20:30:14Z",
+  "links": {
+    "commits": [],
+    "files": [
+      "sources/client/dialog_box_character.cpp:249"
+    ],
+    "tickets": [
+      "HH-0054"
+    ],
+    "blocks": [
+      "HH-0059"
+    ]
+  },
+  "body": "Spec step 4. Replace InterfaceNdText frame 0 with compose + placements (layout: scratch dialogs.py character()); dialogTrans reaches every draw.\n\nDone when: in-game screenshot matches recon/character_1x.png; values update."
+}

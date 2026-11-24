@@ -1,7 +1,7 @@
 {
   "id": "HH-0005",
   "summary": "World/screen space split (task)",
-  "status": "user_review",
+  "status": "done",
   "severity": "high",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:29:34Z",
-  "updated": "2026-11-24T05:49:32Z",
+  "updated": "2026-11-24T20:42:31Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "00857ca1"
+    ],
     "files": [],
     "tickets": [],
     "blocked_by": [
@@ -35,6 +37,11 @@
       "author": "pm",
       "at": "2026-11-24T05:49:32Z",
       "body": "Waits on HH-0014 (your in-game check of the split)."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-24T20:42:31Z",
+      "body": "**Verified, 2026-11-24:** (confidence ~95%) every sub-task is done and the split was checked in game at 800x600, 1440x1080, fullscreen letterbox and stretch (see HH-0014)."
     }
   ]
 }

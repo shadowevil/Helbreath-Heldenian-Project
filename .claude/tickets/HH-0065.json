@@ -1,0 +1,28 @@
+{
+  "id": "HH-0065",
+  "summary": "Panel kit 6: system menu from the kit",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    12,
+    3
+  ],
+  "author": "client",
+  "created": "2026-11-24T20:30:14Z",
+  "updated": "2026-11-24T20:30:14Z",
+  "links": {
+    "commits": [],
+    "files": [
+      "sources/client/dialog_box_sys_menu.cpp:154"
+    ],
+    "tickets": [
+      "HH-0054"
+    ],
+    "blocks": [
+      "HH-0059"
+    ]
+  },
+  "body": "Spec step 6. Replace Game1 frame 0 + Text frame 6; button frames 6-9, 36-37, 70, 78-81, scroll Game1 3-4, slider Button 80 + Game2 8 become kit pieces.\n\nDone when: every tab draws and works."
+}

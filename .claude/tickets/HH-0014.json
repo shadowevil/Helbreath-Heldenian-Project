@@ -1,7 +1,7 @@
 {
   "id": "HH-0014",
   "summary": "Split 5: verify the split on Windows and WSL builds and in game",
-  "status": "user_review",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:29:39Z",
-  "updated": "2026-11-24T05:29:59Z",
+  "updated": "2026-11-24T20:42:30Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "00857ca1"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
@@ -26,6 +28,11 @@
       "author": "pm",
       "at": "2026-11-24T05:29:59Z",
       "body": "Ready for your eye. Done: Windows Debug, Windows Release and WSL Debug builds all pass (measured, repeatedly through 2026-11-24). In game at 1920x1440 windowed: world, dialog and chat-bubble screenshots are in build/screenshots/hh0014_*_1920x1440.png (taken through the agent bridge, test account). Not covered: 800x600, 1440x1080, fullscreen stretch and letterbox, because the in-game menu has no resolution or fullscreen control and settings.json was left untouched. Please check those sizes and tight right-aligned text yourself; tell me in chat what you see."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-24T20:42:30Z",
+      "body": "**Verified, 2026-11-24:** (confidence ~95%) Builds: Windows Debug, Windows Release and WSL Debug passed (pm, measured earlier). In game through the agent bridge with the test account, Debug client: 800x600 windowed, 1440x1080 windowed, fullscreen letterbox (3440x1440 desktop, 4:3 world centred, black bars, UI sharp at window resolution) and fullscreen stretch (world stretched, UI uniform scale and centred, action bar spans the window, as the plan's decision 1 says). Dialogs (system menu, inventory) render at window resolution at every size. Fullscreen is reached from System Menu > Graphics > Display Mode (scroll down); Aspect Ratio there switches letterbox/stretch. Screenshots: build/screenshots/vur_hh0014_world_800x600.jpg, vur_sysmenu_800.jpg, vur_hh0014_world_1440x1080.jpg, vur_hh0014_dialogs_1440x1080.jpg, vur_hh0014_fullscreen_letterbox.jpg, vur_hh0014_fullscreen_stretch.jpg. Not checked: Linux fullscreen. settings.json restored to its original afterwards."
     }
   ]
 }

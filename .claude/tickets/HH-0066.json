@@ -1,0 +1,28 @@
+{
+  "id": "HH-0066",
+  "summary": "Panel kit 7: remaining dialogs with Game1-4 / Text backgrounds",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    12,
+    3
+  ],
+  "author": "client",
+  "created": "2026-11-24T20:30:14Z",
+  "updated": "2026-11-24T20:30:14Z",
+  "links": {
+    "commits": [],
+    "files": [
+      ".claude/design/plans/panel-kit-runtime.md"
+    ],
+    "tickets": [
+      "HH-0054"
+    ],
+    "blocks": [
+      "HH-0059"
+    ]
+  },
+  "body": "Spec step 7. Same pattern, one dialog per cycle; the census in spec step 8 lists the users.\n\nDone when: no dialog draws a Game1-4 or Text frame as its background."
+}

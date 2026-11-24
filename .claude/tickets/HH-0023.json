@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:38:17Z",
-  "updated": "2026-11-24T02:34:50Z",
+  "updated": "2026-11-24T20:42:39Z",
   "links": {
     "commits": [],
     "files": [],
@@ -29,6 +29,11 @@
       "author": "pm",
       "at": "2026-11-24T02:34:49Z",
       "body": "All sub-tasks are done except HH-0027, which waits on your three decisions (flag vs log-only, the 2 KB re-flag, global or project hook)."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-24T20:42:39Z",
+      "body": "2026-11-24 triage: stays in user_review only because HH-0027 waits on the user's three decisions; all other sub-tasks are done."
     }
   ]
 }

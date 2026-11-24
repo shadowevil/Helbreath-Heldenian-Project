@@ -44,7 +44,7 @@ Sidecars are under `.claude/docs/decisions/`. Each line: id, title - scope; side
 - d-022 Commit to Development only; no push until told - read before any push.
 - d-023 Adopt the ticket system - prefix, board, CLI location. Read before touching ticket configuration.
 - d-025 Small tickets as tasks and sub-tasks - in_progress rules, comments, the user views only. Read before filing or moving a ticket.
-- d-030 Finish the tickets; park user needs in `user_review` - read before stopping work to wait on the user.
+- d-030 Finish the tickets; park in `user_review` only what screenshots or agents cannot verify - read before stopping work to wait on the user.
 
 ## World/screen rendering and the client agent MCP (`decisions/world-screen-and-mcp.md`)
 - d-024 World and screen space drawn separately - 800x600 world upscaled; UI native-res and uniform. Read before changing rendering or UI scale.

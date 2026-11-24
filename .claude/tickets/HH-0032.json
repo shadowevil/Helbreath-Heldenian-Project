@@ -12,7 +12,7 @@
   ],
   "author": "pm",
   "created": "2026-11-24T00:45:04Z",
-  "updated": "2026-11-24T05:49:33Z",
+  "updated": "2026-11-24T20:42:39Z",
   "links": {
     "commits": [],
     "files": [],
@@ -36,6 +36,11 @@
       "author": "pm",
       "at": "2026-11-24T05:49:33Z",
       "body": "Every port phase is done (HH-0033 to HH-0042). Waits on HH-0043, your call on the server-side debug commands."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-24T20:42:39Z",
+      "body": "2026-11-24 triage: stays in user_review only because HH-0043 waits on the user's include-or-drop decision; every port phase is done."
     }
   ]
 }
