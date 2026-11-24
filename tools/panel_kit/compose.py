@@ -184,6 +184,12 @@ def _flourish(kit, c, p):
 	if p.get("mirror"):
 		mask = ImageOps.mirror(mask)
 	x, y = p["x"] - mask.width // 2, p["y"] - mask.height // 2
+	# p["style"] = {"tint", "blend", "opacity"} overrides the JSON default (black) for this flourish, as the
+	# client's flourish_style does; an override draws no emboss
+	style = p.get("style")
+	if style:
+		tinted_draw(c, mask, x, y, style["tint"], style.get("blend", "normal"), style.get("opacity", 1.0))
+		return
 	if spec.get("emboss") and spec["blend"] == "normal":
 		tinted_draw(c, mask, x + 1, y + 1, spec["emboss"])
 	tinted_draw(c, mask, x, y, spec["tint"], spec["blend"], spec["opacity"])
@@ -265,8 +271,9 @@ def _heading(kit, c, p):
 	spec = kit.doc["flourishes"][p["flourish"]]
 	fw = round(kit.piece(p["flourish"]).width * spec["scale"])
 	reach = (ink[2] - ink[0]) // 2 + p.get("gap", 6) + fw // 2
-	_flourish(kit, c, {"name": p["flourish"], "x": cx - reach, "y": fy})
-	_flourish(kit, c, {"name": p["flourish"], "x": cx + reach, "y": fy, "mirror": True})
+	style = p.get("flourish_style")
+	_flourish(kit, c, {"name": p["flourish"], "x": cx - reach, "y": fy, "style": style})
+	_flourish(kit, c, {"name": p["flourish"], "x": cx + reach, "y": fy, "mirror": True, "style": style})
 
 
 INNER = {"inset": _inset, "raised": _raised, "rule": _rule, "vrule": _vrule, "slot_ring": _slot_ring,
@@ -275,7 +282,9 @@ INNER = {"inset": _inset, "raised": _raised, "rule": _rule, "vrule": _vrule, "sl
 
 def preview(kit):
 	panel = compose(kit, (270, 376), inner=[
-		{"type": "heading", "text": "Name & Status", "y": 40, "flourish": "divider_knot"},
+		# the character dialog overrides the default black knots with its approved warm additive look
+		{"type": "heading", "text": "Name & Status", "y": 40, "flourish": "divider_knot",
+		 "flourish_style": {"tint": (196, 176, 126), "blend": "additive", "opacity": 0.5}},
 		{"type": "heading", "text": "Equipment & Characteristics", "y": 91},
 		{"type": "inset", "rect": (14, 49, 242, 34)},
 		{"type": "inset", "rect": (14, 100, 242, 178), "field": None},

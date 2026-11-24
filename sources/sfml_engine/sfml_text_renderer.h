@@ -44,6 +44,11 @@ public:
                   int fontSize = 0, bool bold = false) override;
     void draw_text_aligned(int x, int y, int width, int height, const char* text, const hb::shared::render::Color& color,
                          Align alignment = Align::TopLeft, int fontSize = 0, bool bold = false) override;
+    void draw_text_offset(int x, int y, int dx, int dy, const char* text, const hb::shared::render::Color& color,
+                          int fontSize = 0, bool bold = false) override;
+    void draw_text_aligned_offset(int x, int y, int width, int height, int dx, int dy, const char* text,
+                                  const hb::shared::render::Color& color, Align alignment = Align::TopLeft,
+                                  int fontSize = 0, bool bold = false) override;
 
     // Styled runs in extra faces
     int load_face(const char* path, bool smooth = true) override;
@@ -68,6 +73,9 @@ private:
 
     // A run laid out at its logical pixel size, tracking applied
     sf::Text make_run(const sf::Font& font, const char* text, const text_run& run) const;
+
+    // (dx, dy) logical px as a logical shift of whole output pixels, added after the origin is snapped
+    sf::Vector2f output_shift(int dx, int dy) const;
 
     // Load the bundled font (bundled_font_path)
     bool LoadDefaultFont();

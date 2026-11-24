@@ -163,6 +163,12 @@ int SFMLTextRenderer::get_line_height(int fontSize) const
 void SFMLTextRenderer::draw_text(int x, int y, const char* text, const hb::shared::render::Color& color,
                                 int fontSize, bool bold)
 {
+    draw_text_offset(x, y, 0, 0, text, color, fontSize, bold);
+}
+
+void SFMLTextRenderer::draw_text_offset(int x, int y, int dx, int dy, const char* text,
+                                       const hb::shared::render::Color& color, int fontSize, bool bold)
+{
     sf::RenderTarget* target = m_renderer ? m_renderer->get_current_target() : nullptr;
     if (!text || !m_fontLoaded || !target)
         return;
@@ -173,7 +179,21 @@ void SFMLTextRenderer::draw_text(int x, int y, const char* text, const hb::share
     if (bold)
         sfText.setStyle(sf::Text::Bold);
 
-    draw_at_output_resolution(*target, sfText, logical_size, static_cast<float>(x), static_cast<float>(y));
+    draw_at_output_resolution(*target, sfText, logical_size, static_cast<float>(x), static_cast<float>(y),
+                              sf::RenderStates::Default, output_shift(dx, dy));
+}
+
+sf::Vector2f SFMLTextRenderer::output_shift(int dx, int dy) const
+{
+    // At 1:1 (and in the world pass) text is placed in logical px, so the shift is too
+    const sf::Vector2f shift{static_cast<float>(dx), static_cast<float>(dy)};
+    if (std::abs(m_renderer->text_scale() - 1.0f) < 0.001f)
+        return shift;
+    // Per axis, as snap_to_output_pixel: a stretched UI has different x and y scales
+    const sf::Vector2f scale = m_renderer->output_pixels_per_unit();
+    if (scale.x <= 0.0f || scale.y <= 0.0f)
+        return shift;
+    return {std::round(shift.x * scale.x) / scale.x, std::round(shift.y * scale.y) / scale.y};
 }
 
 void SFMLTextRenderer::draw_at_output_resolution(sf::RenderTarget& target, sf::Text& text, unsigned int logical_size,
@@ -273,6 +293,13 @@ void SFMLTextRenderer::draw_run(float x, float y, const char* text, const text_r
 void SFMLTextRenderer::draw_text_aligned(int x, int y, int width, int height, const char* text, const hb::shared::render::Color& color,
                                         Align alignment, int fontSize, bool bold)
 {
+    draw_text_aligned_offset(x, y, width, height, 0, 0, text, color, alignment, fontSize, bold);
+}
+
+void SFMLTextRenderer::draw_text_aligned_offset(int x, int y, int width, int height, int dx, int dy, const char* text,
+                                               const hb::shared::render::Color& color, Align alignment, int fontSize,
+                                               bool bold)
+{
     sf::RenderTarget* target = m_renderer ? m_renderer->get_current_target() : nullptr;
     if (!text || !m_fontLoaded || !target)
         return;
@@ -308,7 +335,8 @@ void SFMLTextRenderer::draw_text_aligned(int x, int y, int width, int height, co
 
     sfText.setFillColor(sf::Color(color.r, color.g, color.b));
 
-    draw_at_output_resolution(*target, sfText, logical_size, static_cast<float>(pixelX), static_cast<float>(pixelY));
+    draw_at_output_resolution(*target, sfText, logical_size, static_cast<float>(pixelX), static_cast<float>(pixelY),
+                              sf::RenderStates::Default, output_shift(dx, dy));
 }
 
 void SFMLTextRenderer::begin_batch()

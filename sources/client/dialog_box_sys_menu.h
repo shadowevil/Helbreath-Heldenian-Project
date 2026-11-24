@@ -1,6 +1,11 @@
 #pragma once
 #include "dialog_box.h"
 
+namespace hb::client
+{
+	class kit_dialog;
+}
+
 // 4:3 resolution options
 struct Resolution {
 	int width;
@@ -56,6 +61,14 @@ private:
 	// Helper to draw On/Off toggle
 	void draw_toggle(int x, int y, bool enabled);
 	bool is_in_toggle_area(int x, int y);
+
+	// Panel kit or sprite parts at the sprite's positions and sizes (screen coordinates)
+	void draw_box(int frame, int x, int y);              // InterfaceNdButton value box 78 / 79 / 81
+	void draw_slider(int x, int y, int value);           // track (Button 80) + knob (Game2 8)
+	void draw_graphics_scrollbar(short sX, short sY, int max_scroll);
+
+	// The kit frame while on_draw runs (it lives on on_draw's stack), else nullptr: the sprites
+	const hb::client::kit_dialog* m_kit = nullptr;
 
 	int m_iActiveTab;
 	int m_graphics_scroll_offset = 0;

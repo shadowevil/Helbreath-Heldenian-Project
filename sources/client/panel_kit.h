@@ -104,6 +104,15 @@ namespace hb::client
 		int auto_pad = 12;
 	};
 
+	// A flourish look that overrides the kit's default (black, from the JSON) for one title or heading:
+	// the mask's colour, additive or normal blend, and opacity. An override draws no emboss.
+	struct flourish_style
+	{
+		hb::shared::render::Color tint;
+		bool additive = false;
+		float opacity = 1.0f;
+	};
+
 	// A kit draw's opacity under the dialog transparency setting (the sprites' 0.25 blend), else opaque
 	constexpr float dialog_alpha(bool transparent)
 	{
@@ -154,8 +163,12 @@ namespace hb::client
 		// The pos that puts the thumb's centre at y (clamped 0..1): the inverse of scrollbar's thumb placement,
 		// so a dragged thumb stays under the cursor
 		float scrollbar_pos_at(const kit_rect& r, int y) const;
-		// A flourish centred on (cx, cy) in its JSON tint and blend; scale <= 0 = the JSON scale
-		void flourish(std::string_view name, int cx, int cy, bool mirror = false, float scale = 0.0f, float alpha = 1.0f) const;
+		// The scrollbar's parts on their own: a groove of any size (a slider track) and the thumb centred on (cx, cy)
+		void groove(const kit_rect& r, float alpha = 1.0f) const;
+		void thumb(int cx, int cy, float alpha = 1.0f) const;
+		// A flourish centred on (cx, cy) in its JSON tint and blend (or style's); scale <= 0 = the JSON scale
+		void flourish(std::string_view name, int cx, int cy, bool mirror = false, float scale = 0.0f, float alpha = 1.0f,
+			const flourish_style* style = nullptr) const;
 		kit_point flourish_size(std::string_view name, float scale = 0.0f) const;
 		void button(const button_style& style, std::string_view text, const kit_rect& r, bool hover, float alpha = 1.0f) const;
 
@@ -224,10 +237,11 @@ namespace hb::client
 		// Red title (title_red recipe), its ink centred on (frame centre, y); flourish "" = none, one each side gap px
 		// from the ink, the right one mirrored
 		void title(std::string_view text, int y, const hb::shared::render::Color& fill,
-			std::string_view flourish = "", int gap = 14) const;
+			std::string_view flourish = "", int gap = 14, const flourish_style* style = nullptr) const;
 		// Section heading (heading recipe), optional flourishes as for title. Flourishes centre on the
 		// text's cap height (cap top to baseline), not its ink box
-		void heading(std::string_view text, int y, std::string_view flourish = "", int gap = 6) const;
+		void heading(std::string_view text, int y, std::string_view flourish = "", int gap = 6,
+			const flourish_style* style = nullptr) const;
 		// Field label (right-aligned, field_label gap left of the box) + value box (inset) + value text
 		// centred in the box in the client's default font and colour
 		void field(std::string_view label, const kit_rect& box, std::string_view value,
@@ -239,7 +253,12 @@ namespace hb::client
 		void slot_ring(int cx, int cy) const;
 		void scrollbar(const kit_rect& r, float pos) const;
 		float scrollbar_pos_at(const kit_rect& r, int screen_y) const;   // r dialog-relative, y on screen
-		void flourish(std::string_view name, int cx, int cy, bool mirror = false, float scale = 0.0f) const;
+		void groove(const kit_rect& r) const;
+		void thumb(int cx, int cy) const;
+		// The y of the cap-height centre of a title drawn at y (for flourishes the dialog places itself)
+		int title_cap_middle(std::string_view text, int y) const;
+		void flourish(std::string_view name, int cx, int cy, bool mirror = false, float scale = 0.0f,
+			const flourish_style* style = nullptr) const;
 		// A text area: a darkened inset; returns the rect inside the bevel (absolute) for the caller's text
 		kit_rect text_area(const kit_rect& r, float darken = 0.8f) const;
 		void button(button_layout::type layout, std::string_view text, kit_point position, bool hover) const;
@@ -249,7 +268,7 @@ namespace hb::client
 		kit_rect offset(const kit_rect& r) const { return {m_origin.x + r.x, m_origin.y + r.y, r.w, r.h}; }
 		kit_point tile_origin() const { return {m_origin.x + 1, m_origin.y + 1}; }   // the frame's cloth grid
 		void side_flourishes(std::string_view recipe, std::string_view text, int cx, int cy,
-			std::string_view flourish, int gap) const;
+			std::string_view flourish, int gap, const flourish_style* style) const;
 
 		const panel_kit& m_kit;
 		kit_point m_size;

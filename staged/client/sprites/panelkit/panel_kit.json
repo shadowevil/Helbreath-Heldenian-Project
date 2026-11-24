@@ -997,47 +997,40 @@
   "divider_knot": {
    "scale": 0.66,
    "tint": [
-    196,
-    176,
-    126
+    40,
+    29,
+    16
    ],
-   "blend": "additive",
-   "opacity": 0.5,
+   "blend": "normal",
+   "opacity": 1.0,
    "emboss": null
   },
   "divider_wave": {
    "scale": 0.46,
    "tint": [
-    62,
-    56,
-    56
+    40,
+    29,
+    16
    ],
    "blend": "normal",
    "opacity": 1.0,
-   "emboss": [
-    200,
-    185,
-    150
-   ],
+   "emboss": null,
    "scale_sys_menu": 0.56
   },
   "divider_eye": {
    "scale": 1.0,
    "tint": [
-    62,
-    56,
-    56
+    40,
+    29,
+    16
    ],
    "blend": "normal",
    "opacity": 1.0,
-   "emboss": [
-    200,
-    185,
-    150
-   ],
+   "emboss": null,
    "note": "not tuned against an original yet"
   },
-  "title_rule": "one each side of the title, gap px from the title ink, right one mirrored; vertical centre on the title line"
+  "style_rule": "tint / blend / opacity / emboss above are the defaults (black, like the originals); a dialog may override them per title or heading at runtime",
+  "title_rule": "one each side of the title, gap px from the title ink, right one mirrored; vertical centre on the title's cap height (cap top to baseline)"
  },
  "buttons": {
   "frame": {

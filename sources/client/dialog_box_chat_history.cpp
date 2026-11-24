@@ -43,7 +43,7 @@ void DialogBox_ChatHistory::on_draw()
 		// Layout from the approved rebuild, dialog coordinates
 		kit.emplace(*panel_kit, hb::client::dialog_size::chat_history, hb::client::kit_point{sX, sY},
 			hb::client::dialog_alpha(dialogTrans));
-		kit->title("History", 15, {144, 16, 12}, "divider_wave", 14);
+		kit->title("History", 19, {144, 16, 12}, "divider_wave", 14);   // y 19: the sprite title's height (measured, HH-0065)
 		kit->inset({13, 28, 327, 121});
 	}
 	else

@@ -574,17 +574,26 @@ sf::Vector2f SFMLRenderer::snap_to_output_pixel(sf::Vector2f logical) const
     // SFML rounds the view's viewport to whole pixels (RenderTarget::getViewport), so map through
     // the rounded rect: pixel = vp.pos + (logical - view.pos) * vp.size / view.size
     const screen_mapping mapping = current_screen_mapping();
-    const sf::FloatRect& rect = mapping.viewport;
     const sf::FloatRect& shown = mapping.view;
-    float vp_x = std::round(rect.position.x);
-    float vp_y = std::round(rect.position.y);
-    float scale_x = std::round(rect.size.x) / shown.size.x;
-    float scale_y = std::round(rect.size.y) / shown.size.y;
+    float vp_x = std::round(mapping.viewport.position.x);
+    float vp_y = std::round(mapping.viewport.position.y);
+    const sf::Vector2f scale = output_pixels_per_unit();
+    const float scale_x = scale.x;
+    const float scale_y = scale.y;
     if (scale_x <= 0.0f || scale_y <= 0.0f)
         return logical;
 
     return {(std::round(vp_x + (logical.x - shown.position.x) * scale_x) - vp_x) / scale_x + shown.position.x,
             (std::round(vp_y + (logical.y - shown.position.y) * scale_y) - vp_y) / scale_y + shown.position.y};
+}
+
+sf::Vector2f SFMLRenderer::output_pixels_per_unit() const
+{
+    const screen_mapping mapping = current_screen_mapping();
+    if (mapping.view.size.x <= 0.0f || mapping.view.size.y <= 0.0f)
+        return {0.0f, 0.0f};
+    return {std::round(mapping.viewport.size.x) / mapping.view.size.x,
+            std::round(mapping.viewport.size.y) / mapping.view.size.y};
 }
 
 float SFMLRenderer::rect_scale(const sf::FloatRect& rect) const

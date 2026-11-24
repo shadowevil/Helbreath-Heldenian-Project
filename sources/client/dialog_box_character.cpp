@@ -189,14 +189,17 @@ void DialogBox_Character::draw_hover_button(const hb::client::kit_dialog* kit, i
 
 namespace
 {
+	// This dialog's knots keep the warm additive look the user approved (2026-11-24: "Default is black.
+	// Some others will override such as the character dialog")
+	constexpr hb::client::flourish_style warm_knots{{196, 176, 126}, true, 0.5f};
+
 	// The dialog's frame and fixed art from the panel kit, at the original sprite's positions (dialog
-	// coordinates; layout from the approved rebuild, .claude/scratch/panel_kit/dialogs.py character()).
-	// Values, the doll and the buttons are drawn by on_draw on top.
+	// coordinates; layout from the approved rebuild). Values, the doll and the buttons are drawn by on_draw on top.
 	void draw_kit_frame(const hb::client::kit_dialog& d)
 	{
 		constexpr hb::shared::render::Color title_fill{140, 8, 8};
-		d.title("Character Info.", 19, title_fill);
-		d.heading("Name & Status", 40, "divider_knot");
+		d.title("Character Info.", 20, title_fill);    // y 20: the sprite title's height (measured, HH-0065)
+		d.heading("Name & Status", 40, "divider_knot", 6, &warm_knots);
 		d.inset({14, 49, 242, 34});                       // name and status lines
 		d.heading("Equipment & Characteristics", 91);
 		d.inset({14, 100, 242, 178}, "");                 // equipment and characteristics group

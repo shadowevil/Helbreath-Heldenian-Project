@@ -14,6 +14,10 @@
 
 namespace hb::shared::text {
 
+// TTF shadow / highlight distance in logical px; each copy moves round(shadow_px * ui scale) whole output px
+// (2 at the 1.6x UI scale, 1 at 1:1)
+static constexpr int shadow_px = 1;
+
 // ============== Static Storage ==============
 
 // TextLib owns the bitmap fonts - no need to store them elsewhere
@@ -175,28 +179,30 @@ void draw_text(int fontId, int x, int y, const char* text, const TextStyle& styl
 		int fs = style.fontSize;
 		bool bl = style.bold;
 
-		// Handle shadow styles
+		// Handle shadow styles. The copies go through draw_text_offset so each sits the same whole number of
+		// output pixels from the text at any UI scale (a separately rounded x + 1 gave 1 px on some lines, 2 on others)
+		const hb::shared::render::Color black = hb::shared::render::Color::Black();
 		switch (style.shadow)
 		{
 			case ShadowStyle::ThreePoint:
 			{
 				// 3-point shadow: +1,+1, 0,+1, +1,0 in black
-				renderer->draw_text(x + 1, y + 1, text, hb::shared::render::Color::Black(), fs, bl);
-				renderer->draw_text(x, y + 1, text, hb::shared::render::Color::Black(), fs, bl);
-				renderer->draw_text(x + 1, y, text, hb::shared::render::Color::Black(), fs, bl);
+				renderer->draw_text_offset(x, y, shadow_px, shadow_px, text, black, fs, bl);
+				renderer->draw_text_offset(x, y, 0, shadow_px, text, black, fs, bl);
+				renderer->draw_text_offset(x, y, shadow_px, 0, text, black, fs, bl);
 				break;
 			}
 			case ShadowStyle::DropShadow:
 			{
 				// Simple drop shadow at +1,+1 in black
-				renderer->draw_text(x + 1, y + 1, text, hb::shared::render::Color::Black(), fs, bl);
+				renderer->draw_text_offset(x, y, shadow_px, shadow_px, text, black, fs, bl);
 				break;
 			}
 			case ShadowStyle::TwoPoint:
 			{
 				// 2-point shadow: 0,+1 and +1,+1 in black
-				renderer->draw_text(x, y + 1, text, hb::shared::render::Color::Black(), fs, bl);
-				renderer->draw_text(x + 1, y + 1, text, hb::shared::render::Color::Black(), fs, bl);
+				renderer->draw_text_offset(x, y, 0, shadow_px, text, black, fs, bl);
+				renderer->draw_text_offset(x, y, shadow_px, shadow_px, text, black, fs, bl);
 				break;
 			}
 			case ShadowStyle::Highlight:
@@ -204,7 +210,7 @@ void draw_text(int fontId, int x, int y, const char* text, const TextStyle& styl
 				// Highlight at +1,0 with brightened color
 				uint8_t hr, hg, hb;
 				GetHighlightColor(style, hr, hg, hb);
-				renderer->draw_text(x + 1, y, text, hb::shared::render::Color(hr, hg, hb), fs, bl);
+				renderer->draw_text_offset(x, y, shadow_px, 0, text, hb::shared::render::Color(hr, hg, hb), fs, bl);
 				break;
 			}
 			default:
@@ -385,21 +391,23 @@ static void DrawTextAlignedSingleLine(int fontId, int rectX, int rectY, int rect
 		int fs = style.fontSize;
 		bool bl = style.bold;
 
+		// Shadow copies in whole output pixels, as in draw_text
+		const hb::shared::render::Color black = hb::shared::render::Color::Black();
 		switch (style.shadow)
 		{
 			case ShadowStyle::ThreePoint:
-				renderer->draw_text_aligned(rectX + 1, rectY + 1, rectWidth, rectHeight, text, hb::shared::render::Color::Black(), alignment, fs, bl);
-				renderer->draw_text_aligned(rectX, rectY + 1, rectWidth, rectHeight, text, hb::shared::render::Color::Black(), alignment, fs, bl);
-				renderer->draw_text_aligned(rectX + 1, rectY, rectWidth, rectHeight, text, hb::shared::render::Color::Black(), alignment, fs, bl);
+				renderer->draw_text_aligned_offset(rectX, rectY, rectWidth, rectHeight, shadow_px, shadow_px, text, black, alignment, fs, bl);
+				renderer->draw_text_aligned_offset(rectX, rectY, rectWidth, rectHeight, 0, shadow_px, text, black, alignment, fs, bl);
+				renderer->draw_text_aligned_offset(rectX, rectY, rectWidth, rectHeight, shadow_px, 0, text, black, alignment, fs, bl);
 				break;
 			case ShadowStyle::DropShadow:
-				renderer->draw_text_aligned(rectX + 1, rectY + 1, rectWidth, rectHeight, text, hb::shared::render::Color::Black(), alignment, fs, bl);
+				renderer->draw_text_aligned_offset(rectX, rectY, rectWidth, rectHeight, shadow_px, shadow_px, text, black, alignment, fs, bl);
 				break;
 			case ShadowStyle::Highlight:
 			{
 				uint8_t hr, hg, hb;
 				GetHighlightColor(style, hr, hg, hb);
-				renderer->draw_text_aligned(rectX + 1, rectY, rectWidth, rectHeight, text, hb::shared::render::Color(hr, hg, hb), alignment, fs, bl);
+				renderer->draw_text_aligned_offset(rectX, rectY, rectWidth, rectHeight, shadow_px, 0, text, hb::shared::render::Color(hr, hg, hb), alignment, fs, bl);
 				break;
 			}
 			default:

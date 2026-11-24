@@ -135,3 +135,8 @@ The game's text buttons now draw from the new dialog and button kit (HH-0060 to 
 The character dialog now draws from the kit (HH-0063). It has the red title, both headings with flourishes centred on the text, the label and value fields, the slot rings and the kit buttons, all at their original positions. Clicks behave as before. Kit headings no longer stack their shadow twice, so they read sharper. The kit text styles accept per-style smoothing settings, though none needed changing. With no kit, the dialog uses the old sprite.
 
 The chat history dialog now draws from the kit (HH-0064). It has the "History" title with flourishes, an inset text area and the kit scrollbar. The scrollbar's click and drag area matches the drawn groove, so the thumb stays under the cursor. Dragging the thumb and both dialogs is checked in game. The dialogs share one transparency helper.
+
+The system menu now draws from the kit (HH-0065). That covers the frame, title, value boxes, slider grooves and thumbs, and the graphics scrollbar, whose click area matches what is drawn.
+- **Titles:** dialog titles sit at the original heights again (History was 4 px high).
+- **Flourishes:** they default to black like the original, and a dialog can override their colour and blend. The character heading keeps its warm look.
+- **Text shadows:** they now land the same distance from the text on every line and every letter. The offset is applied in whole screen pixels after the text position is rounded, separately for each axis. Before, chat history lines got a 1 px or 2 px shadow depending on where they fell at the 1.6x interface scale.

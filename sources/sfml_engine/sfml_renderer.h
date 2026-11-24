@@ -133,6 +133,9 @@ public:
     // Screen space: move a logical (UI-unit) point so it lands on a whole window pixel through the
     // UI view, using the same integer viewport SFML rasterises with. Identity when the UI is 1:1.
     sf::Vector2f snap_to_output_pixel(sf::Vector2f logical) const;
+    // Screen space: window pixels per logical unit on each axis through that same integer viewport
+    // (the axes differ when the UI is stretched); (0, 0) when the viewport is empty
+    sf::Vector2f output_pixels_per_unit() const;
 
     // True when a draw now goes to screen space, the UI is scaled away from 1:1 and
     // upscaleSmoothing is on: sprites should sample bilinear for that draw, like the world composite

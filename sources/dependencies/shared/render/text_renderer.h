@@ -99,6 +99,20 @@ public:
                           int fontSize = 0, bool bold = false) = 0;
     virtual void draw_text_aligned(int x, int y, int width, int height, const char* text, const hb::shared::render::Color& color,
                                  Align alignment = Align::TopLeft, int fontSize = 0, bool bold = false) = 0;
+    // A shadow or highlight copy: the text placed as by draw_text / draw_text_aligned at (x, y), then moved
+    // (dx, dy) logical px as whole output pixels (round(d * ui scale)). At a fractional UI scale, x + 1 and x
+    // round to output pixels separately, so the copy would sit 1 px from its text on some lines and 2 on others.
+    virtual void draw_text_offset(int x, int y, int dx, int dy, const char* text, const hb::shared::render::Color& color,
+                                  int fontSize = 0, bool bold = false)
+    {
+        draw_text(x + dx, y + dy, text, color, fontSize, bold);
+    }
+    virtual void draw_text_aligned_offset(int x, int y, int width, int height, int dx, int dy, const char* text,
+                                          const hb::shared::render::Color& color, Align alignment = Align::TopLeft,
+                                          int fontSize = 0, bool bold = false)
+    {
+        draw_text_aligned(x + dx, y + dy, width, height, text, color, alignment, fontSize, bold);
+    }
 
     // Styled runs. load_face returns a face id >= 1 for a TTF file (the same id again for a path and
     // smooth already loaded), or -1 when it cannot be opened. smooth = the glyph texture samples

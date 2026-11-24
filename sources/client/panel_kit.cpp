@@ -332,12 +332,14 @@ namespace hb::client
 			return {static_cast<int>(std::lround(p->w * sc)), static_cast<int>(std::lround(p->h * sc))};
 		}
 
-		void flourish(std::string_view name, int cx, int cy, bool mirror, float scale, float alpha) const
+		void flourish(std::string_view name, int cx, int cy, bool mirror, float scale, float alpha,
+			const flourish_style* style) const
 		{
 			auto it = flourishes.find(name);
 			if (it == flourishes.end())
 				return;
 			const flourish_spec& spec = it->second;
+			const bool additive = style ? style->additive : spec.additive;
 			const piece* p = spec.mask;
 			const kit_point size = flourish_size(name, scale);
 			const float sx = mirror ? p->x + static_cast<float>(p->w) : p->x;
@@ -350,9 +352,13 @@ namespace hb::client
 					static_cast<float>(x + dx), static_cast<float>(y + dy), static_cast<float>(size.x), static_cast<float>(size.y),
 					opacity * alpha, {tint, additive ? hb::shared::render::BlendMode::Additive : hb::shared::render::BlendMode::Alpha});
 			};
-			if (spec.emboss && !spec.additive)
+			// The JSON's look unless the caller overrides it (tint, blend and opacity; an override has no emboss)
+			if (!style && spec.emboss && !additive)
 				put(1, 1, spec.emboss_color, false, 1.0f);
-			put(0, 0, spec.tint, spec.additive, spec.opacity);
+			if (style)
+				put(0, 0, style->tint, additive, style->opacity);
+			else
+				put(0, 0, spec.tint, additive, spec.opacity);
 		}
 
 		// ---------------------------------------------------------- text recipes
@@ -763,10 +769,24 @@ namespace hb::client
 		if (!m_data)
 			return;
 		const int tw = m_data->scroll_track_w;
-		m_data->inset({r.x + (r.w - tw) / 2, r.y, tw, r.h}, {}, m_data->scroll_darken, alpha);
+		groove({r.x + (r.w - tw) / 2, r.y, tw, r.h}, alpha);
 		const kit_data::piece& thumb = m_data->need(m_data->scroll_thumb);
 		const int ty = r.y + static_cast<int>(std::lround((r.h - thumb.h) * std::clamp(pos, 0.0f, 1.0f)));
 		m_data->draw(m_data->scroll_thumb, r.x + (r.w - thumb.w) / 2, ty, alpha);
+	}
+
+	void panel_kit::groove(const kit_rect& r, float alpha) const
+	{
+		if (m_data)
+			m_data->inset(r, {}, m_data->scroll_darken, alpha);
+	}
+
+	void panel_kit::thumb(int cx, int cy, float alpha) const
+	{
+		if (!m_data)
+			return;
+		const kit_data::piece& t = m_data->need(m_data->scroll_thumb);
+		m_data->draw(m_data->scroll_thumb, cx - t.w / 2, cy - t.h / 2, alpha);
 	}
 
 	float panel_kit::scrollbar_pos_at(const kit_rect& r, int y) const
@@ -779,10 +799,11 @@ namespace hb::client
 		return std::clamp(static_cast<float>(y - r.y - th / 2) / static_cast<float>(r.h - th), 0.0f, 1.0f);
 	}
 
-	void panel_kit::flourish(std::string_view name, int cx, int cy, bool mirror, float scale, float alpha) const
+	void panel_kit::flourish(std::string_view name, int cx, int cy, bool mirror, float scale, float alpha,
+		const flourish_style* style) const
 	{
 		if (m_data)
-			m_data->flourish(name, cx, cy, mirror, scale, alpha);
+			m_data->flourish(name, cx, cy, mirror, scale, alpha, style);
 	}
 
 	kit_point panel_kit::flourish_size(std::string_view name, float scale) const
@@ -929,16 +950,17 @@ namespace hb::client
 		m_kit.compose(position.x, position.y, size.x, size.y, style, alpha);
 	}
 
-	void kit_dialog::title(std::string_view text, int y, const Color& fill, std::string_view flourish, int gap) const
+	void kit_dialog::title(std::string_view text, int y, const Color& fill, std::string_view flourish, int gap,
+		const flourish_style* style) const
 	{
 		const int cx = m_origin.x + m_size.x / 2;
 		const int cy = m_origin.y + y;
 		m_kit.text("title_red", text, cx, cy, text_anchor::middle, fill, m_alpha);
-		side_flourishes("title_red", text, cx, cy, flourish, gap);
+		side_flourishes("title_red", text, cx, cy, flourish, gap, style);
 	}
 
 	void kit_dialog::side_flourishes(std::string_view recipe, std::string_view text, int cx, int cy,
-		std::string_view flourish, int gap) const
+		std::string_view flourish, int gap, const flourish_style* style) const
 	{
 		if (flourish.empty())
 			return;
@@ -946,16 +968,17 @@ namespace hb::client
 		// text as drawn (middle anchor), so descenders do not pull them down
 		const int reach = m_kit.text_width(recipe, text) / 2 + gap + m_kit.flourish_size(flourish).x / 2;
 		const int fy = m_kit.cap_middle(recipe, text, cy, text_anchor::middle);
-		m_kit.flourish(flourish, cx - reach, fy, false, 0.0f, m_alpha);
-		m_kit.flourish(flourish, cx + reach, fy, true, 0.0f, m_alpha);
+		m_kit.flourish(flourish, cx - reach, fy, false, 0.0f, m_alpha, style);
+		m_kit.flourish(flourish, cx + reach, fy, true, 0.0f, m_alpha, style);
 	}
 
-	void kit_dialog::heading(std::string_view text, int y, std::string_view flourish, int gap) const
+	void kit_dialog::heading(std::string_view text, int y, std::string_view flourish, int gap,
+		const flourish_style* style) const
 	{
 		const int cx = m_origin.x + m_size.x / 2;
 		const int cy = m_origin.y + y;
 		m_kit.text("heading", text, cx, cy, text_anchor::middle, {}, m_alpha);
-		side_flourishes("heading", text, cx, cy, flourish, gap);
+		side_flourishes("heading", text, cx, cy, flourish, gap, style);
 	}
 
 	void kit_dialog::field(std::string_view label, const kit_rect& box, std::string_view value, const Color& value_color) const
@@ -1006,9 +1029,25 @@ namespace hb::client
 		return m_kit.scrollbar_pos_at(offset(r), screen_y);
 	}
 
-	void kit_dialog::flourish(std::string_view name, int cx, int cy, bool mirror, float scale) const
+	void kit_dialog::groove(const kit_rect& r) const
 	{
-		m_kit.flourish(name, m_origin.x + cx, m_origin.y + cy, mirror, scale, m_alpha);
+		m_kit.groove(offset(r), m_alpha);
+	}
+
+	void kit_dialog::thumb(int cx, int cy) const
+	{
+		m_kit.thumb(m_origin.x + cx, m_origin.y + cy, m_alpha);
+	}
+
+	int kit_dialog::title_cap_middle(std::string_view text, int y) const
+	{
+		return m_kit.cap_middle("title_red", text, m_origin.y + y, text_anchor::middle) - m_origin.y;
+	}
+
+	void kit_dialog::flourish(std::string_view name, int cx, int cy, bool mirror, float scale,
+		const flourish_style* style) const
+	{
+		m_kit.flourish(name, m_origin.x + cx, m_origin.y + cy, mirror, scale, m_alpha, style);
 	}
 
 	kit_rect kit_dialog::text_area(const kit_rect& r, float darken) const

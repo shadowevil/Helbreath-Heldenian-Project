@@ -122,7 +122,10 @@ CLOTH_GAIN = (1.17, 1.14, 1.0)         # outer cloth is warmer than the plain ti
 FIELD = (0.85, 0.88, 0.98)             # insets darken the cloth back to the plain tile
 DOLL_FIELD = (0.8, 0.82, 0.9)          # character doll panel
 SLOT_RING_SIZE = 26
-ORNAMENT_WARM = [196, 176, 126]
+# Flourish default: black like the originals (user, 2026-11-24: "Default is black"); dark brown, opaque, normal
+# blend, fitted to the sprite History / System Menu waves (ink = bg (1 - a) + tint a -> a 1.0, tint ~(40,29,16)).
+# Dialogs override per title/heading at runtime (the character dialog keeps its approved warm additive look).
+FLOURISH_BLACK = [40, 29, 16]
 
 
 def tight(im, x, y, w, h):
@@ -287,13 +290,15 @@ def recipes():
 			"note": "black alpha masks; colour is a runtime parameter (user: colourable at runtime). tint = colour "
 					"the mask takes; blend normal = alpha, additive = dst + tint * a * opacity; emboss = the mask "
 					"drawn first at (+1, +1) in emboss_color",
-			"divider_knot": {"scale": 0.66, "tint": ORNAMENT_WARM, "blend": "additive", "opacity": 0.5, "emboss": None},
-			"divider_wave": {"scale": 0.46, "tint": [62, 56, 56], "blend": "normal", "opacity": 1.0,
-							 "emboss": [200, 185, 150], "scale_sys_menu": 0.56},
-			"divider_eye": {"scale": 1.0, "tint": [62, 56, 56], "blend": "normal", "opacity": 1.0,
-							"emboss": [200, 185, 150], "note": "not tuned against an original yet"},
+			"divider_knot": {"scale": 0.66, "tint": FLOURISH_BLACK, "blend": "normal", "opacity": 1.0, "emboss": None},
+			"divider_wave": {"scale": 0.46, "tint": FLOURISH_BLACK, "blend": "normal", "opacity": 1.0, "emboss": None,
+							 "scale_sys_menu": 0.56},
+			"divider_eye": {"scale": 1.0, "tint": FLOURISH_BLACK, "blend": "normal", "opacity": 1.0, "emboss": None,
+							"note": "not tuned against an original yet"},
+			"style_rule": "tint / blend / opacity / emboss above are the defaults (black, like the originals); a dialog "
+						  "may override them per title or heading at runtime",
 			"title_rule": "one each side of the title, gap px from the title ink, right one mirrored; vertical centre "
-						  "on the title line",
+						  "on the title's cap height (cap top to baseline)",
 		},
 		"buttons": {
 			"frame": {"tl": "btn_frame_tl", "t": "btn_frame_t", "tr": "btn_frame_tr", "l": "btn_frame_l",
