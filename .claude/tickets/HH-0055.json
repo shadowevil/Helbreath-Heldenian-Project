@@ -1,7 +1,7 @@
 {
   "id": "HH-0055",
   "summary": "Task: replace .pak sprite files with extracted folders and a manifest index",
-  "status": "in_progress",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-24T18:35:53Z",
-  "updated": "2026-11-24T19:06:50Z",
+  "updated": "2026-11-24T20:33:24Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "7d0a05dd"
+    ],
     "files": [],
     "tickets": [],
     "relates_to": [
@@ -26,5 +28,5 @@
       "HH-0058"
     ]
   },
-  "body": "Replace the client's `.pak` sprite files with extracted folders, then remove the paks. User, 2026-11-24: \"Yes we will want to drop all pak files so we can overwrite\". Asked when to drop them, the user answered: \"Fix the client and remove the pak files\". The client must load the assets through a manifest, with no folder scanning: \"we will need to create a manifest.json of all of the assets to make it easier to load without searching\".\n\nResearch (read-only, 2026-11-24). PakLib is the header-only `sources/dependencies/client/includes/PAK.h`. The client uses only `loadpak_metadata_fast`, `get_sprite_metadata_fast`, `get_sprite_fast`, `sprite_rect` and `pak_lock_manager`, called from:\n- `sprite_loader.h:25-71`\n- `sprite_factory.cpp:24-25`\n- `sfml_sprite_factory.cpp:82,91-111`\n- `sfml_sprite.cpp:74,136`\n\nTextures load lazily on first draw. The encryption code is unused. Deploy and the updater walk folders generically. The Python readers are `build_kit.py`, `build_assets.py`, `tools/map_renderer`, the `tools/display_id_manager` GUIs and `pak_generator.py`.\n\nSub-tasks block this task:\n1. In-place extraction plus the global index (HH-0052).\n2. Client folder loader.\n3. Python tools read folders.\n4. Remove the paks (`git rm`) after an in-game check.\n\n**Done when:** the client loads every sprite from the folders through `sprites/index.json` on Windows and Linux, the in-game check passes, and no `.pak` remains under `staged/` or `tools/display_id_manager/sprites/`.\n\nSource: user messages and research report, 2026-11-24.\n"
+  "body": "Replace the client's `.pak` sprite files with extracted folders, then remove the paks. User, 2026-11-24: \"Yes we will want to drop all pak files so we can overwrite\". Asked when to drop them, the user answered: \"Fix the client and remove the pak files\". The client must load the assets through a manifest, with no folder scanning: \"we will need to create a manifest.json of all of the assets to make it easier to load without searching\".\n\nResearch (read-only, 2026-11-24). PakLib is the header-only `sources/dependencies/client/includes/PAK.h`. The client uses only `loadpak_metadata_fast`, `get_sprite_metadata_fast`, `get_sprite_fast`, `sprite_rect` and `pak_lock_manager`, called from:\n- `sprite_loader.h:25-71`\n- `sprite_factory.cpp:24-25`\n- `sfml_sprite_factory.cpp:82,91-111`\n- `sfml_sprite.cpp:74,136`\n\nTextures load lazily on first draw. The encryption code is unused. Deploy and the updater walk folders generically. The Python readers are `build_kit.py`, `build_assets.py`, `tools/map_renderer`, the `tools/display_id_manager` GUIs and `pak_generator.py`.\n\nSub-tasks block this task:\n1. In-place extraction plus the global index (HH-0052).\n2. Client folder loader.\n3. Python tools read folders.\n4. Remove the paks (`git rm`) after an in-game check.\n\n**Done when:** the client loads every sprite from the folders through `sprites/index.json` on Windows and Linux, the in-game check passes, and no `.pak` remains under `staged/` or `tools/display_id_manager/sprites/`.\n\nSource: user messages and research report, 2026-11-24.\n\n**Verified, 2026-11-24:** Opus review passed with fixes, then a re-review of the fixes. Both builds pass. pak_extract --verify gave 361/361 before deletion. After the deploy (264 deployed paks removed, 0 left in game/) the client reached the world with no new warnings, with HUD, minimap, character dialog and clothing drawing (weapons and armour unverified on a starter character). build_kit is 164/164 byte-identical. Committed 7d0a05dd.\n"
 }

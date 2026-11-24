@@ -1,7 +1,7 @@
 {
   "id": "HH-0058",
   "summary": "Remove all .pak files after the folder loader passes",
-  "status": "in_review",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-24T18:36:16Z",
-  "updated": "2026-11-24T20:31:37Z",
+  "updated": "2026-11-24T20:33:23Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "7d0a05dd"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
@@ -24,7 +26,7 @@
       "HH-0057"
     ]
   },
-  "body": "Remove every `.pak` under `staged/` and `tools/display_id_manager/sprites/` with `git rm` (part of HH-0055). Do this only after the folder loader passes the in-game check and the pak_extract `--verify` comes back clean. Then run deploy `--dry-run` to confirm the old paks leave `game/client/sprites`.\n\n**Done when:** no `.pak` is tracked, deploy removes the deployed copies, and the game runs.\n\nSource: user, 2026-11-24: \"Fix the client and remove the pak files\".\n",
+  "body": "Remove every `.pak` under `staged/` and `tools/display_id_manager/sprites/` with `git rm` (part of HH-0055). Do this only after the folder loader passes the in-game check and the pak_extract `--verify` comes back clean. Then run deploy `--dry-run` to confirm the old paks leave `game/client/sprites`.\n\n**Done when:** no `.pak` is tracked, deploy removes the deployed copies, and the game runs.\n\nSource: user, 2026-11-24: \"Fix the client and remove the pak files\".\n\n**Verified, 2026-11-24:** Opus review passed with fixes, then a re-review of the fixes. Both builds pass. pak_extract --verify gave 361/361 before deletion. After the deploy (264 deployed paks removed, 0 left in game/) the client reached the world with no new warnings, with HUD, minimap, character dialog and clothing drawing (weapons and armour unverified on a starter character). build_kit is 164/164 byte-identical. Committed 7d0a05dd.\n",
   "comments": [
     {
       "author": "client",
