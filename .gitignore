@@ -396,6 +396,7 @@ DocProject/Help/html
 # Claude session scratch (global layout) and tool output
 .claude/scratch/
 .claude/hooks/log/
+!/.claude/hooks/RULES.md
 .claude/settings.local.json
 
 # Game logs and runtime data

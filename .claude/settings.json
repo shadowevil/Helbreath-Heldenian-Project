@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -I -S \"C:/Users/ShadowEvil/source/Helbreath-Heldenian-Project/.claude/hooks/doc_size_guard.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 {
   "id": "HH-0026",
   "summary": "Docs 10 KB 3: audit ccontrols-reference/core.md (10.6 KB)",
-  "status": "open",
+  "status": "done",
   "severity": "low",
   "owner_area": "docs",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:38:18Z",
-  "updated": "2026-11-23T21:38:18Z",
+  "updated": "2026-11-24T02:20:19Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "5edc074"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0023"
     ]
   },
-  "body": "The new CControls core sidecar is just over the limit; split further or trim.\n\n**Done when:** core.md is under 10 KB or kept whole with a dated reason.\n\nSource: user request 2026-11-23 (d-026); .claude/docs/documentation.md."
+  "body": "The new CControls core sidecar is just over the limit; split further or trim.\n\n**Done when:** core.md is under 10 KB or kept whole with a dated reason.\n\nSource: user request 2026-11-23 (d-026); .claude/docs/documentation.md.\n\n**Closed, 2026-11-24:** decisions.md went from 15,101 B to a 5,292 B index over six topic sidecars in `.claude/docs/decisions/` (1.7-3.5 KB each). A script check found 30 `## d-` headings before and after with the same ids, and every original line verbatim. `.gitignore` now whitelists the sidecars. ccontrols-reference/core.md (11,042 B) is kept whole with a dated assessment, as allowed by d-026.\n"
 }

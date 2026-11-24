@@ -28,7 +28,7 @@ Contents: The 10 KB goal - When a doc goes over - Exceptions - Checking sizes.
 ## Checking sizes
 
 ```powershell
-Get-ChildItem C:\Users\ShadowEvil\source\Helbreath-Heldenian-Project\.claude\docs -Recurse -Filter *.md | Where-Object Length -gt 10000 | Select-Object FullName, Length
+Get-ChildItem C:\Users\ShadowEvil\source\Helbreath-Heldenian-Project\.claude\docs -Recurse -Filter *.md | Where-Object Length -gt 10240 | Select-Object FullName, Length
 ```
 
 Run it after any doc change; anything listed that is not an exception above gets an audit ticket.

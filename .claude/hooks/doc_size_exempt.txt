@@ -1,0 +1,3 @@
+# D1 exemptions: docs over 10 KB that are documented exceptions. One path per line, relative to the
+# project root, forward slashes. Logged, never flagged. Source: .claude/docs/documentation.md "Exceptions".
+.claude/docs/tickets.md
