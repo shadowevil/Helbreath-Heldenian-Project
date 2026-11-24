@@ -1,7 +1,7 @@
 {
   "id": "HH-0047",
   "summary": "Parchment-map generator and skill: rebuild Map item parchments from .amd",
-  "status": "verified",
+  "status": "done",
   "severity": "low",
   "owner_area": "tooling",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-24T15:16:50Z",
-  "updated": "2026-11-24T15:16:50Z",
+  "updated": "2026-11-24T15:17:00Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "bcdbf0e"
+    ],
     "files": [],
     "tickets": []
   },
