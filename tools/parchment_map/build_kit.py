@@ -15,9 +15,12 @@ Writes into --out (default staged/client/sprites/mapkit/), all names lowercase:
                          icons.json also holds them as creature_<name> frames (image creatures.png): a
                          monster area with creature art draws up to CREATURE_MAX_PER_AREA of them in place
                          of its sword, as placements icons of kind "creature"
-  <map>/ink.png          the map's ink alone (make_parchment.py --ink-layer, --scale 4)
+  <map>/ink.png          the map's ink alone (make_parchment.py --ink-layer, --scale 4); on a map where the
+                         layout moved an icon off its true point, with a leader line (and a dot at the point)
+                         baked in by draw_leaders
   <map>/placements.json  tile_to_px numbers and the icons to draw, already laid out: kit-pixel rects in
-                         draw order (sized, merged, kept off the margin, overlaps dropped)
+                         draw order (sized, merged, kept off the margin, nudged apart so no two rects touch; a creature
+                         cluster's own figures overlap by design)
   index.json             the maps in the kit
 Every map with an .amd in staged/shared/mapdata/ is included unless listed in EXCLUDE.
 
@@ -40,7 +43,7 @@ from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
@@ -61,7 +64,7 @@ EXCLUDE = {}
 BUILDING_FACTOR = 0.7            # one factor for every building, so their relative sizes stay as drawn
 # drawn heights of the non-building icons (sword and portals: the old cut-outs' size x4)
 EXIT_ARROW = "exit_arrow"        # the user's arrow, pointing north; baked as arrow_<deg>
-ICON_HEIGHT = {"sword": 76, "portal_blue": 96, "portal_red": 96, "stairs_down": 64, "stairs_spiral": 84, EXIT_ARROW: 72}
+ICON_HEIGHT = {"sword": 76, "portal_blue": 96, "portal_red": 96, "stairs_down": 42, "stairs_spiral": 56, EXIT_ARROW: 72}
 KIND_ICON = {"entrance": "stairs_down", "stairs": "stairs_spiral"}   # kit art per kind, over the generator's old name
 # creatures on a monster area (replace its sword): one factor on the native sprite size keeps relative
 # sizes; each figure's on-kit height is then clamped, so a bunny stays readable and a wyvern stays
@@ -72,7 +75,18 @@ CREATURE_MAX_H = 112             # largest drawn height
 CREATURE_MAX_PER_AREA = 3        # creatures drawn per monster area, in the listed order
 CREATURE_OVERLAP = 0.12          # neighbours overlap by this share of the narrower figure
 MARGIN = 14 * SCALE              # icons stay this far inside the square (as make_parchment --icons)
-CLASH = 0.5                      # an icon mostly covering one already placed is dropped
+GAP = 4                          # icons keep at least this many kit px between their rects
+MAX_SHIFT = 60                   # an icon that touches a placed one is nudged at most this far (kit px)
+SHIFT_STEP = 4                   # search step of the nudge, kit px
+# an icon nudged off its true point gets a leader line from the point to its box, baked into the map's ink
+LEADER_WIDTH = 2.5               # line width, kit px
+LEADER_DOT_R = 3.5               # radius of the dot at the true point, kit px
+LEADER_MIN = 8                   # no leader when the icon's box is within this of its true point (kit px)
+LEADER_STOP = 3                  # the line stops this far short of the icon's box, kit px
+LEADER_RGB = (20, 14, 8)         # the ink layer's colour (measured on the generated ink)
+LEADER_ALPHA = 0.62              # as opaque as the strongest strokes (the ink layer peaks near 0.65)
+LEADER_CROSS_PENALTY = 40        # placement score added per leader/icon crossing, kit px of shift
+LEADER_SS = 4                    # supersampling of the leader mask (anti-aliasing)
 MERGE_PX = 30 * SCALE            # doors of one building (or stair) closer than this share one icon
 MERGE_KINDS = ("building", "stairs", "entrance", "portal")
 # which icons win a clash: placed first; and draw order: drawn first is underneath
@@ -208,11 +222,86 @@ def creature_cluster(names, cre_entries, cx, cy):
 	return [(n, left0 + lx, top0 + up - b, w, h) for (n, w, h, b), lx in zip(figs, lefts)]
 
 
-def layout(placed, frames, factors, configs=None, creatures=None, cre_entries=None):
-	"""Icon rects in kit pixels, in draw order: sized, kept MARGIN inside the square, clashes dropped.
+SHIFTS = sorted(((ix * SHIFT_STEP, iy * SHIFT_STEP)
+                  for ix in range(-(MAX_SHIFT // SHIFT_STEP), MAX_SHIFT // SHIFT_STEP + 1)
+                  for iy in range(-(MAX_SHIFT // SHIFT_STEP), MAX_SHIFT // SHIFT_STEP + 1)
+                  if np.hypot(ix, iy) * SHIFT_STEP <= MAX_SHIFT), key=lambda s: (s[0] ** 2 + s[1] ** 2, s))
+
+
+def seg_hits_rect(ax, ay, bx, by, l, t, r, b):
+	"""True when the segment (ax, ay)-(bx, by) passes through the rectangle (Liang-Barsky clip)."""
+	t0, t1 = 0.0, 1.0
+	for p, q in ((ax - bx, ax - l), (bx - ax, r - ax), (ay - by, ay - t), (by - ay, b - ay)):
+		if p == 0:
+			if q < 0:
+				return False
+		elif p < 0:
+			t0 = max(t0, q / p)
+		else:
+			t1 = min(t1, q / p)
+		if t0 > t1:
+			return False
+	return True
+
+
+def leader_for(rects, point, dx, dy):
+	"""(px, py, qx, qy): the true point and the nearest point of the unit's box (rects shifted by dx, dy),
+	or None when the box still covers the point."""
+	l = min(r[0] for r in rects) + dx
+	t = min(r[1] for r in rects) + dy
+	rr = max(r[0] + r[2] for r in rects) + dx
+	b = max(r[1] + r[3] for r in rects) + dy
+	px, py = point
+	qx, qy = min(max(px, l), rr), min(max(py, t), b)
+	if np.hypot(qx - px, qy - py) < LEADER_MIN:     # covered, or close enough to read as marking it
+		return None
+	return px, py, qx, qy
+
+
+def free_shift(rects, placed, point, leaders):
+	"""Best (dx, dy, leader) within MAX_SHIFT that moves the rects [(left, top, w, h)] (one unit) clear of
+	every placed rect [(l, t, r, b)] by GAP and keeps their bounding box inside MARGIN. Score = distance
+	moved + LEADER_CROSS_PENALTY per placed rect the leader line to the true point crosses and per placed
+	leader the moved rects cross; None when no spot is free."""
+	l0, t0 = min(r[0] for r in rects), min(r[1] for r in rects)
+	r0, b0 = max(r[0] + r[2] for r in rects), max(r[1] + r[3] for r in rects)
+	best = None
+	# a true point under (or within GAP of) a placed icon gets no leader: the dot would hide under it and
+	# the line would look as if it came out of that icon; the nudged icon beside it already reads as "here"
+	under_icon = any(pl - GAP <= point[0] <= pr + GAP and pt - GAP <= point[1] <= pb + GAP for pl, pt, pr, pb in placed)
+	for dx, dy in SHIFTS:                    # nearest first, so the distance alone bounds the search
+		dist = float(np.hypot(dx, dy))
+		if best and dist >= best[0]:
+			break
+		if l0 + dx < MARGIN - 1e-6 or t0 + dy < MARGIN - 1e-6 or r0 + dx > SIZE - MARGIN + 1e-6 or b0 + dy > SIZE - MARGIN + 1e-6:
+			continue
+		if any(l + dx < pr + GAP and l + dx + w > pl - GAP and t + dy < pb + GAP and t + dy + h > pt - GAP
+		       for l, t, w, h in rects for pl, pt, pr, pb in placed):
+			continue
+		lead = None if under_icon else leader_for(rects, point, dx, dy)
+		score = dist
+		if lead:
+			score += LEADER_CROSS_PENALTY * sum(seg_hits_rect(*lead, *pb) for pb in placed)
+		score += LEADER_CROSS_PENALTY * sum(seg_hits_rect(*seg, l + dx, t + dy, l + dx + w, t + dy + h)
+		                                    for seg in leaders for l, t, w, h in rects)
+		if best is None or score < best[0]:
+			best = (score, dx, dy, lead)
+	return best[1:] if best else None
+
+
+def layout(placed, frames, factors, configs=None, creatures=None, cre_entries=None, stats=None):
+	"""Icon rects in kit pixels, in draw order: sized, kept MARGIN inside the square, nudged (at most
+	MAX_SHIFT) until clear of every icon placed before it by GAP; one with no free spot is dropped, and a
+	creature cluster tries fewer creatures first. An icon moved off its true point gets a leader (a line
+	from the point to its box, drawn into the ink by draw_leaders). stats (a dict) counts nudged, reduced
+	and dropped icons and lists the leaders (px, py, qx, qy).
 	Monster areas also list their generators' npc ids, npc types and creature atlas names; one with
 	creature art shows its creatures (kind "creature", area = its index) instead of the sword."""
-	boxes, kept, area = [], [], 0
+	rects, kept, area = [], [], 0
+	stats = stats if stats is not None else {}
+	for key in ("nudged", "reduced", "dropped"):
+		stats.setdefault(key, 0)
+	stats.setdefault("leaders", [])
 	for p in sorted(merge_doors(placed), key=lambda p: PRIORITY.get(p["kind"], 9)):
 		name = kit_icon(p)
 		if name not in frames:
@@ -226,34 +315,77 @@ def layout(placed, frames, factors, configs=None, creatures=None, cre_entries=No
 			meta = {"npc_ids": ids, "npc_types": types, "creatures": [creatures[t] for t in types if t in creatures]}
 		left = p["x"] - w / 2
 		top = p["y"] - h / 2 if p.get("anchor") == "center" else p["y"] - h
-		figs = []
+		# the unit to place: the icon, or a creature cluster (fewer creatures when it will not fit)
+		options = [(None, [(left, top, w, h)])]
 		if meta.get("creatures"):
-			figs = creature_cluster(meta["creatures"], cre_entries, left + w / 2, top + h / 2)
-			l, t = min(f[1] for f in figs), min(f[2] for f in figs)
-			w, h = max(f[1] + f[3] for f in figs) - l, max(f[2] + f[4] for f in figs) - t
-			left, top = l, t
-		dx = min(max(left, MARGIN), SIZE - MARGIN - w) - left
-		dy = min(max(top, MARGIN), SIZE - MARGIN - h) - top
-		left, top = left + dx, top + dy
-		box = (left, top, left + w, top + h)
-		if any(max(0, min(b[2], box[2]) - max(b[0], box[0])) * max(0, min(b[3], box[3]) - max(b[1], box[1])) > CLASH * w * h for b in boxes):
+			shown = meta["creatures"][:CREATURE_MAX_PER_AREA]
+			options = []
+			for n in range(len(shown), 0, -1):
+				cl = creature_cluster(shown[:n], cre_entries, left + w / 2, top + h / 2)
+				options.append((cl, [(f[1], f[2], f[3], f[4]) for f in cl]))
+		chosen = None
+		for tried, (figs, unit) in enumerate(options):
+			l0, t0 = min(r[0] for r in unit), min(r[1] for r in unit)
+			bw, bh = max(r[0] + r[2] for r in unit) - l0, max(r[1] + r[3] for r in unit) - t0
+			cdx = min(max(l0, MARGIN), SIZE - MARGIN - bw) - l0       # keep inside the margin
+			cdy = min(max(t0, MARGIN), SIZE - MARGIN - bh) - t0
+			unit = [(l + cdx, t + cdy, rw, rh) for l, t, rw, rh in unit]
+			found = free_shift(unit, rects, (p["x"], p["y"]), stats["leaders"])
+			if found:
+				chosen = (figs, unit, cdx, cdy, found, tried)
+				break
+		if not chosen:
+			stats["dropped"] += 1
+			stats.setdefault("dropped_names", []).append(name)
 			continue
-		boxes.append(box)
+		figs, unit, cdx, cdy, (sx, sy, lead), tried = chosen
+		dx, dy = cdx + sx, cdy + sy
+		stats["nudged"] += bool(sx or sy)
+		stats["reduced"] += bool(tried)
+		if lead:
+			stats["leaders"].append(lead)
+		rects.extend((l + sx, t + sy, l + sx + rw, t + sy + rh) for l, t, rw, rh in unit)
 		common = {k: p[k] for k in ("dest", "faction", "direction_deg") if p.get(k) is not None}
 		if figs:
 			area += 1
+			box_bottom = max(r[1] + r[3] for r in unit) + sy
 			for i, (n, fl, ft, fw, fh) in enumerate(figs):
 				entry = {"icon": f"creature_{n}", "x": round(fl + dx, 1), "y": round(ft + dy, 1), "w": round(fw, 1), "h": round(fh, 1),
 				         "kind": "creature", "area": area, "creature": n, "npc_type": cre_entries[n]["npc_type"],
 				         "npc_ids": [i for i in cre_entries[n]["npc_ids"] if i in meta["npc_ids"]]}
 				if i == 0:        # the area's whole spawn list rides on its first creature (drawn ones are a subset)
 					entry["area_npc_ids"], entry["area_npc_types"], entry["area_creatures"] = meta["npc_ids"], meta["npc_types"], meta["creatures"]
-				kept.append((DRAW_ORDER["monster_area"], box[3], i, entry))
+				kept.append((DRAW_ORDER["monster_area"], box_bottom, i, entry))
 			continue
+		left, top = unit[0][0] + sx, unit[0][1] + sy
 		entry = {"icon": name, "x": round(left, 1), "y": round(top, 1), "w": round(w, 1), "h": round(h, 1), "kind": p["kind"], **common, **meta}
 		kept.append((DRAW_ORDER.get(p["kind"], 9), entry["y"] + entry["h"], 0, entry))
 	kept.sort(key=lambda k: k[:3])
 	return [k[3] for k in kept]
+
+
+def draw_leaders(ink_path, out_path, leaders):
+	"""Bake leader lines into the ink layer read from ink_path and save it to out_path: a dot at each true
+	point and a thin anti-aliased line to just short of its icon's box, in the ink colour (the ink layer is
+	non-premultiplied RGBA)."""
+	ink = Image.open(ink_path).convert("RGBA")
+	ss = LEADER_SS
+	mask = Image.new("L", (ink.width * ss, ink.height * ss), 0)
+	d = ImageDraw.Draw(mask)
+	for px, py, qx, qy in leaders:
+		length = float(np.hypot(qx - px, qy - py))
+		r = LEADER_DOT_R * ss
+		d.ellipse((px * ss - r, py * ss - r, px * ss + r, py * ss + r), fill=255)
+		if length > LEADER_STOP + LEADER_DOT_R:
+			k = (length - LEADER_STOP) / length
+			d.line((px * ss, py * ss, (px + (qx - px) * k) * ss, (py + (qy - py) * k) * ss), fill=255, width=round(LEADER_WIDTH * ss))
+	m = np.asarray(mask.resize(ink.size, Image.BOX), np.float32) / 255 * LEADER_ALPHA
+	a = np.asarray(ink, np.float32).copy()
+	old = a[:, :, 3] / 255
+	new = 1 - (1 - old) * (1 - m)
+	a[:, :, :3] = np.where(m[:, :, None] > 0, np.array(LEADER_RGB, np.float32), a[:, :, :3])
+	a[:, :, 3] = new * 255
+	Image.fromarray(np.clip(np.rint(a), 0, 255).astype(np.uint8), "RGBA").save(out_path, optimize=True)
 
 
 # ---------------------------------------------------------------- creatures
@@ -405,11 +537,19 @@ def main(argv=None):
 	for n in maps:
 		raw = json.loads((work / n / "raw.json").read_text(encoding="utf-8"))
 		(out / n).mkdir(exist_ok=True)
-		shutil.copyfile(work / n / "ink.png", out / n / "ink.png")
+		stats = {}
+		icons_laid = layout(raw["placements"], frames, factors, configs, creatures, cre_entries, stats)
+		if stats["leaders"]:        # leaders are drawn onto the kit's ink; the generator's render stays untouched
+			draw_leaders(work / n / "ink.png", out / n / "ink.png", stats["leaders"])
+		else:
+			shutil.copyfile(work / n / "ink.png", out / n / "ink.png")
+		print(f"  {n}: {len(icons_laid)} icons, nudged {stats['nudged']}, reduced {stats['reduced']}, "
+		      f"dropped {stats['dropped']}" + (f" ({', '.join(stats['dropped_names'])})" if stats["dropped"] else "")
+		      + f", leaders {len(stats['leaders'])}")
 		kit = {"map": n, "size": SIZE, "tiles": raw["tiles"], "px_per_tile": raw["px_per_tile"],
 		       "origin_x": raw["origin_x"], "origin_y": raw["origin_y"],
 		       "box": [round((SIZE - mp.BASE_BOX * SCALE) / 2, 1), round((SIZE + mp.BASE_BOX * SCALE) / 2, 1)],
-		       "icons": layout(raw["placements"], frames, factors, configs, creatures, cre_entries)}
+		       "icons": icons_laid}
 		(out / n / "placements.json").write_text(json.dumps(kit, indent=1), encoding="utf-8")
 	listed = maps
 	if args.maps:                 # a subset run keeps the maps already in the kit

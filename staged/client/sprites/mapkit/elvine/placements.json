@@ -16,7 +16,7 @@
   {
    "icon": "creature_slime",
    "x": 510.1,
-   "y": 205.6,
+   "y": 173.6,
    "w": 80.7,
    "h": 44.0,
    "kind": "creature",
@@ -42,7 +42,7 @@
   {
    "icon": "creature_scorpion",
    "x": 585.3,
-   "y": 193.8,
+   "y": 161.8,
    "w": 46.2,
    "h": 45.5,
    "kind": "creature",
@@ -79,7 +79,7 @@
   {
    "icon": "creature_slime",
    "x": 920.7,
-   "y": 680.2,
+   "y": 672.2,
    "w": 80.7,
    "h": 44.0,
    "kind": "creature",
@@ -198,7 +198,7 @@
   {
    "icon": "blacksmith",
    "x": 841.5,
-   "y": 406.1,
+   "y": 410.1,
    "w": 74.2,
    "h": 67.9,
    "kind": "building",
@@ -251,10 +251,10 @@
   },
   {
    "icon": "stairs_down",
-   "x": 913.4,
-   "y": 342.8,
-   "w": 87.2,
-   "h": 64.0,
+   "x": 928.4,
+   "y": 353.8,
+   "w": 57.2,
+   "h": 42.0,
    "kind": "entrance",
    "dest": "elvined1"
   },

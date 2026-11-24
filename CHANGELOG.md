@@ -102,6 +102,7 @@ The Map item now shows a high-quality parchment map, built in the game from a ma
 - **Maps without a kit** still show the old map picture.
 - **New tool:** `tools/parchment_map/build_kit.py` rebuilds the kit.
 - **Creatures:** each monster area shows up to three of the creatures that spawn there, standing and facing south-east, in place of the sword (HH-0050). The kit has 48 creatures; 22 structures, guards and summons were left out at the user's request (HH-0049). Areas with no creature art, such as the barracks training dummies, keep the sword.
+- **Layout:** the stairs icons are a third smaller, and map icons no longer overlap (HH-0051). An icon that would touch another is moved to the nearest free spot instead of being dropped. Across the 79 maps 17 icons moved and none were dropped; the old layout dropped 3.
 
 The corner minimap now has two zoom levels, the whole map and the mid view. The close view was dropped because the parchment map takes its place (d-033).
 

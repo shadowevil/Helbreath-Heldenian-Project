@@ -20,6 +20,52 @@
    "w": 27.3,
    "h": 44.1,
    "kind": "creature",
+   "area": 3,
+   "creature": "orc_mage",
+   "npc_type": 14,
+   "npc_ids": [
+    5
+   ],
+   "area_npc_ids": [
+    5
+   ],
+   "area_npc_types": [
+    14
+   ],
+   "area_creatures": [
+    "orc_mage"
+   ]
+  },
+  {
+   "icon": "creature_orc_mage",
+   "x": 880.6,
+   "y": 331.3,
+   "w": 27.3,
+   "h": 44.1,
+   "kind": "creature",
+   "area": 2,
+   "creature": "orc_mage",
+   "npc_type": 14,
+   "npc_ids": [
+    5
+   ],
+   "area_npc_ids": [
+    5
+   ],
+   "area_npc_types": [
+    14
+   ],
+   "area_creatures": [
+    "orc_mage"
+   ]
+  },
+  {
+   "icon": "creature_orc_mage",
+   "x": 322.8,
+   "y": 483.2,
+   "w": 27.3,
+   "h": 44.1,
+   "kind": "creature",
    "area": 1,
    "creature": "orc_mage",
    "npc_type": 14,
@@ -43,7 +89,7 @@
    "w": 27.3,
    "h": 44.1,
    "kind": "creature",
-   "area": 2,
+   "area": 4,
    "creature": "orc_mage",
    "npc_type": 14,
    "npc_ids": [

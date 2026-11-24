@@ -60,6 +60,29 @@
    ]
   },
   {
+   "icon": "creature_giant_plant",
+   "x": 365.3,
+   "y": 860.2,
+   "w": 44.1,
+   "h": 74.2,
+   "kind": "creature",
+   "area": 3,
+   "creature": "giant_plant",
+   "npc_type": 76,
+   "npc_ids": [
+    27
+   ],
+   "area_npc_ids": [
+    27
+   ],
+   "area_npc_types": [
+    76
+   ],
+   "area_creatures": [
+    "giant_plant"
+   ]
+  },
+  {
    "icon": "arrow_225",
    "x": 273.0,
    "y": 852.4,
