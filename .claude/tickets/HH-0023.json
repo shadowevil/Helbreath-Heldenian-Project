@@ -1,7 +1,7 @@
 {
   "id": "HH-0023",
   "summary": "Keep docs linked from CLAUDE.md under 10 KB (task)",
-  "status": "user_review",
+  "status": "done",
   "severity": "low",
   "owner_area": "docs",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:38:17Z",
-  "updated": "2026-11-24T20:42:39Z",
+  "updated": "2026-11-24T20:44:54Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "724f610a"
+    ],
     "files": [],
     "tickets": [],
     "blocked_by": [
@@ -23,7 +25,7 @@
       "HH-0027"
     ]
   },
-  "body": "Rule d-026: every doc linked from CLAUDE.md stays under 10 KB; over that it is audited for an index split. Over the limit on 2026-11-23 (measured): `decisions.md` 12,641 B, `ccontrols-reference/core.md` 10,645 B; `tickets.md` 37,899 B is the release-text exception. Closes when its sub-tasks are done.\n\n**Done when:** no linked doc or sidecar is over 10 KB except the recorded exceptions.\n\nSource: user request 2026-11-23 (d-026); .claude/docs/documentation.md.",
+  "body": "Rule d-026: every doc linked from CLAUDE.md stays under 10 KB; over that it is audited for an index split. Over the limit on 2026-11-23 (measured): `decisions.md` 12,641 B, `ccontrols-reference/core.md` 10,645 B; `tickets.md` 37,899 B is the release-text exception. Closes when its sub-tasks are done.\n\n**Done when:** no linked doc or sidecar is over 10 KB except the recorded exceptions.\n\nSource: user request 2026-11-23 (d-026); .claude/docs/documentation.md.\n\n**Closed, 2026-11-24:** every sub-task is done (HH-0024 to HH-0027), and the 10 KB rule and D1 log are in place. Confidence 95%.\n",
   "comments": [
     {
       "author": "pm",

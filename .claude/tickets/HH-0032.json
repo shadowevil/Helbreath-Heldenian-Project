@@ -1,7 +1,7 @@
 {
   "id": "HH-0032",
   "summary": "Client agent MCP server, ported from Helbreath-SDL (task)",
-  "status": "user_review",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -12,9 +12,11 @@
   ],
   "author": "pm",
   "created": "2026-11-24T00:45:04Z",
-  "updated": "2026-11-24T20:42:39Z",
+  "updated": "2026-11-24T20:44:54Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "d1a0b04a"
+    ],
     "files": [],
     "tickets": [],
     "blocked_by": [
@@ -30,7 +32,7 @@
       "HH-0043"
     ]
   },
-  "body": "Port Helbreath-SDL's client agent bridge so an agent can drive and inspect a running Debug client. The user's order: start this after all current tickets are finished.\n\nWhat SDL has (read 2026-11-23, Helbreath-SDL/Helbreath, measured line counts):\n\n| part | where in SDL | size |\n|---|---|---|\n| MCP server, stdlib-only Python, JSON-RPC over stdio | `src/tools/agent_mcp/agent_mcp.py` | 5,318 lines |\n| driver, flow helpers, self-tests, smoke test | `src/tools/agent_mcp/hb_driver/`, `hb_flow.py`, `hb_driver_selftest.py`, `smoke_test.py` | 427 + 1,345 + 1,334 lines |\n| docs | `src/tools/agent_mcp/README.md` | 378 lines |\n| in-process bridge, Debug builds only, listens on 127.0.0.1:8791 (one port per client, `--agent-bridge-port`) | `src/client/agent_bridge.*`, `agent_journal.h`, `agent_widget.h` | not measured |\n| wiring | `.mcp.json` server `helbreath-client` | - |\n\nWire format: newline-delimited JSON over localhost TCP, `{id, cmd, args}` -> `{id, ok, result|error}`.\n\nNot known yet: which commands SDL's bridge exposes, how much of it depends on SDL-only client code, and how much of the Python can be reused unchanged. Sub-tasks are filed once the plan is written (plan in `.claude/design/plans/`).\n\n**Done when:** an agent can attach to a running Debug client from this project's `.mcp.json`, take a screenshot and send input; the bridge is compiled out of Release; it builds on Windows and Linux; reviewed.\n\nSource: user request 2026-11-23 (\"After we finish all of the tickets, lets begin implementing SDL's MCP server for The Heldenien Project\").\n\n**Ruling, 2026-11-23:** \"Same debug guards as SDL\" (d-027). Helbreath-SDL gates the bridge with `#ifdef DEF_CLAUDE_TESTING` in `agent_bridge.h/.cpp`, and `agent_widget.h` gates itself. `src/shared/util/claude_testing.h` defines that macro from `_DEBUG` only; it is never defined by hand. SDL's `application.cpp` also has a `--agent-bridge-port N` flag and a flag that turns the bridge off. Port the same header and gating. To check while planning: whether the Linux Debug build defines `_DEBUG` (GCC does not by default).\n",
+  "body": "Port Helbreath-SDL's client agent bridge so an agent can drive and inspect a running Debug client. The user's order: start this after all current tickets are finished.\n\nWhat SDL has (read 2026-11-23, Helbreath-SDL/Helbreath, measured line counts):\n\n| part | where in SDL | size |\n|---|---|---|\n| MCP server, stdlib-only Python, JSON-RPC over stdio | `src/tools/agent_mcp/agent_mcp.py` | 5,318 lines |\n| driver, flow helpers, self-tests, smoke test | `src/tools/agent_mcp/hb_driver/`, `hb_flow.py`, `hb_driver_selftest.py`, `smoke_test.py` | 427 + 1,345 + 1,334 lines |\n| docs | `src/tools/agent_mcp/README.md` | 378 lines |\n| in-process bridge, Debug builds only, listens on 127.0.0.1:8791 (one port per client, `--agent-bridge-port`) | `src/client/agent_bridge.*`, `agent_journal.h`, `agent_widget.h` | not measured |\n| wiring | `.mcp.json` server `helbreath-client` | - |\n\nWire format: newline-delimited JSON over localhost TCP, `{id, cmd, args}` -> `{id, ok, result|error}`.\n\nNot known yet: which commands SDL's bridge exposes, how much of it depends on SDL-only client code, and how much of the Python can be reused unchanged. Sub-tasks are filed once the plan is written (plan in `.claude/design/plans/`).\n\n**Done when:** an agent can attach to a running Debug client from this project's `.mcp.json`, take a screenshot and send input; the bridge is compiled out of Release; it builds on Windows and Linux; reviewed.\n\nSource: user request 2026-11-23 (\"After we finish all of the tickets, lets begin implementing SDL's MCP server for The Heldenien Project\").\n\n**Ruling, 2026-11-23:** \"Same debug guards as SDL\" (d-027). Helbreath-SDL gates the bridge with `#ifdef DEF_CLAUDE_TESTING` in `agent_bridge.h/.cpp`, and `agent_widget.h` gates itself. `src/shared/util/claude_testing.h` defines that macro from `_DEBUG` only; it is never defined by hand. SDL's `application.cpp` also has a `--agent-bridge-port N` flag and a flag that turns the bridge off. Port the same header and gating. To check while planning: whether the Linux Debug build defines `_DEBUG` (GCC does not by default).\n\n**Closed, 2026-11-24:** sub-tasks HH-0033 and HH-0035 to HH-0042 are done, and HH-0043 is wont_do (deferred). The bridge and MCP server were used throughout today's in-game checks (login, world, screenshots, clicks, entity and state reads) without faults beyond the known hb_close_window reply bug. Confidence 95%.\n",
   "comments": [
     {
       "author": "pm",

@@ -1,7 +1,7 @@
 {
   "id": "HH-0043",
   "summary": "MCP server 10: deferred server-side debug commands",
-  "status": "user_review",
+  "status": "wont_do",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -13,7 +13,7 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:47Z",
-  "updated": "2026-11-24T20:42:39Z",
+  "updated": "2026-11-24T20:44:54Z",
   "links": {
     "commits": [],
     "files": [],
@@ -22,7 +22,7 @@
       "HH-0032"
     ]
   },
-  "body": "Deferred by the user (d-028): `kill_player`, `set_status`, `set_god`, the bot flag (need new server debug messages, possibly a protocol_version bump), plus `inject_message` and `set_time_of_day`. Not to be started until the user decides.\n\n**Done when:** the user has decided; if included, planned and filed as its own sub-tasks.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028.",
+  "body": "Deferred by the user (d-028): `kill_player`, `set_status`, `set_god`, the bot flag (need new server debug messages, possibly a protocol_version bump), plus `inject_message` and `set_time_of_day`. Not to be started until the user decides.\n\n**Done when:** the user has decided; if included, planned and filed as its own sub-tasks.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028.\n\n**Decided, 2026-11-24 (PM, delegated by the user: \"All 4 of those are yours to verify\"):** the SDL server-side debug commands (kill_player, set_status, set_god, bot flag, inject_message, set_time_of_day) are dropped for now. They need new server debug messages and may bump protocol_version, and nothing in current work needs them. Refile as a new ticket if a test ever needs one.\n",
   "comments": [
     {
       "author": "pm",

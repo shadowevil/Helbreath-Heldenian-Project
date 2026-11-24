@@ -1,0 +1,24 @@
+{
+  "id": "HH-0069",
+  "summary": "MCP: hb_close_window reply errors though the window closes",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    8,
+    1
+  ],
+  "author": "pm",
+  "created": "2026-11-24T20:45:00Z",
+  "updated": "2026-11-24T20:45:00Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "relates_to": [
+      "HH-0032"
+    ]
+  },
+  "body": "hb_close_window returns \"internal error: sequence item 0: expected str instance, dict found\" even though the window does close (seen 2026-11-24 during the parchment map check). The MCP server seems to join a list of dicts as strings when it formats the reply.\n\n**Done when:** hb_close_window reports the closed window normally.\n\nSource: main session, 2026-11-24, in-game check.\n"
+}
