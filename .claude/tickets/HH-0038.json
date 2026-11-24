@@ -1,7 +1,7 @@
 {
   "id": "HH-0038",
   "summary": "MCP server 5: phase 1a, input queue",
-  "status": "in_review",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -12,9 +12,11 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:44Z",
-  "updated": "2026-11-24T03:48:48Z",
+  "updated": "2026-11-24T04:03:36Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "9e9b201"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
@@ -25,5 +27,5 @@
       "HH-0037"
     ]
   },
-  "body": "`mouse_move`, `click`, `mouse_down/up`, `wheel`, `key`, `text`, `set_text`, `modifiers`, state `wait_for`, `probe_point`; each step waits one presented frame; adds `IWindow::window_to_ui` over `output_rects.h` and a `frame_presented()` hook. About 5 files, ~600 lines (derived).\n\n**Done when:** injected clicks and text work on login and in game, including during and after fades; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028."
+  "body": "`mouse_move`, `click`, `mouse_down/up`, `wheel`, `key`, `text`, `set_text`, `modifiers`, state `wait_for`, `probe_point`; each step waits one presented frame; adds `IWindow::window_to_ui` over `output_rects.h` and a `frame_presented()` hook. About 5 files, ~600 lines (derived).\n\n**Done when:** injected clicks and text work on login and in game, including during and after fades; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028.\n\n**Closed, 2026-11-24:** read-only Opus review passed twice (3 should-fix items fixed). Windows and WSL Debug builds have 0 warnings; live tests passed 34/34 and 8/8; the UI/window round-trip had 0 mismatches at 8 sizes offline and 2,800 live probes (all measured). Not verified: the legacy-dialog on_draw path, the Linux runtime, and a Release rebuild after the fixes.\n"
 }

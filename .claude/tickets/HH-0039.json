@@ -1,7 +1,7 @@
 {
   "id": "HH-0039",
   "summary": "MCP server 6: phase 1b, Python MCP server and .mcp.json",
-  "status": "open",
+  "status": "in_review",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:45Z",
-  "updated": "2026-11-24T01:27:48Z",
+  "updated": "2026-11-24T04:13:43Z",
   "links": {
     "commits": [],
     "files": [],
