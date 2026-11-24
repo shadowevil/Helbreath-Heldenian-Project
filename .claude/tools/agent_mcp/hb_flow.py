@@ -72,16 +72,12 @@ def run_launch(args):
 	process = client_process.client_process(args.port, exe=args.exe, start_screen=args.start_screen,
 	                                        extra_args=args.extra or [], pid_file=args.pid_file)
 	client_json = os.path.join(process.work_dir, common.client_json_name)
-	if args.mute == "config":
-		client_files.premute(client_json)
 	process.launch(detach=True)
 	try:
 		sess = process.wait_bridge()
 		minimized = process.window_minimized()
 		process.restore_window()
-		mute = None
-		if args.mute != "none":
-			mute = flows.prove_launch_mute(sess, args.mute, client_json)
+		mute = None  # the launch mute is not ported: use hb_set_audio
 		ping = sess.ping()
 		sess.close()
 	except Exception:
@@ -165,9 +161,23 @@ def run_create_account(args):
 		return flows.create_account(sess, identity.load_identity(args.identity))
 
 
+def _credentials(args, required=True):
+	"""The account to log in with: --identity (a scratch file), --test-account [NAME] (the gitignored local test
+	accounts) or --env (HB_TEST_ACCOUNT / HB_TEST_PASSWORD). The password is never printed."""
+	if getattr(args, "identity", None):
+		return identity.load_identity(args.identity)
+	if getattr(args, "test_account", None) is not None:
+		return identity.test_account(None if args.test_account == "first" else args.test_account)
+	if getattr(args, "env", False):
+		return identity.from_env()
+	if required:
+		raise common.flow_error("give --identity FILE, --test-account [NAME] or --env")
+	return None
+
+
 def run_login(args):
 	with _session(args) as sess:
-		return flows.log_in(sess, identity.load_identity(args.identity))
+		return flows.log_in(sess, _credentials(args), force=args.force)
 
 
 def run_create_character(args):
@@ -178,12 +188,12 @@ def run_create_character(args):
 
 def run_select(args):
 	with _session(args) as sess:
-		return flows.select_character(sess, args.name)
+		return flows.select_character(sess, args.name, ident=_credentials(args, False), slot=args.slot)
 
 
 def run_enter(args):
 	with _session(args) as sess:
-		return flows.enter_world(sess, args.name)
+		return flows.enter_world(sess, args.name, ident=_credentials(args, False), slot=args.slot)
 
 
 def run_switch(args):
@@ -224,7 +234,7 @@ def run_position_write(args):
 
 def run_player_tile(args):
 	with _session(args) as sess:
-		return {"player_tile": world.player_tile(sess), "view": world.calibrate(sess).as_dict()}
+		return {"player_tile": list(world.player_tile(sess))}
 
 
 def run_step(args):
@@ -299,8 +309,7 @@ def build_parser():
 	                 help="byte copies of client.json etc. (under .claude/scratch/; relative = from the repo root)")
 	sub.add_argument("--exe", help="client exe (default: the deployed game/client exe)")
 	sub.add_argument("--start-screen", default=client_process.default_start_screen)
-	sub.add_argument("--mute", choices=("config", "bridge", "none"), default="config",
-	                 help="config: master_muted written to client.json before launch (default); bridge: clicked")
+	sub.add_argument("--mute", choices=("none",), default="none", help="launch muting is not ported: use hb_set_audio")
 	sub.add_argument("--extra", nargs=argparse.REMAINDER, help="extra client arguments (last)")
 
 	sub = add("stop", run_stop, "stop PIDs this tooling launched (from the pid file) and restore client files",
@@ -349,16 +358,26 @@ def build_parser():
 		sub.add_argument("--client-json", default=os.path.join(common.client_dir, common.client_json_name))
 		sub.add_argument("--leave-session", action="store_true", help="use the Settings screen even when logged in: log out first (default: set_audio, no logout)")
 
-	for name, handler, text in (("create-account", run_create_account, "New Account page"),
-	                            ("login", run_login, "log in (main menu or login screen)")):
-		add(name, handler, text).add_argument("--identity", required=True, type=repo_path)
+	def add_credentials(sub, required):
+		sub.add_argument("--identity", type=repo_path, help="a scratch identity file (under .claude/scratch/)")
+		sub.add_argument("--test-account", nargs="?", const="first", default=None, metavar="NAME",
+		                 help="a local test account from .claude/local/test_accounts.json (default: the first)")
+		sub.add_argument("--env", action="store_true", help="HB_TEST_ACCOUNT / HB_TEST_PASSWORD from the environment")
+		return sub
+
+	add("create-account", run_create_account, "New Account page (not ported)").add_argument("--identity", required=True, type=repo_path)
+	sub = add_credentials(add("login", run_login, "log in (main menu or login screen) -> character select"), True)
+	sub.add_argument("--force", action="store_true", help="take over an account that is logged in elsewhere")
 	sub = add("create-character", run_create_character, "create a character on the logged-in account")
 	sub.add_argument("--identity", required=True, type=repo_path)
 	sub.add_argument("--name")
 	sub.add_argument("--preset", help="archetype label (e.g. Warrior) or index")
 	sub.add_argument("--appearance", help='JSON, e.g. {"gender": 1, "hair_style": 2}')
-	add("select", run_select, "select a character by name").add_argument("--name", required=True)
-	add("enter", run_enter, "enter the world (optionally selecting --name first)").add_argument("--name")
+	for name, handler, text in (("select", run_select, "select a character slot (--slot, or --name with credentials)"),
+	                            ("enter", run_enter, "enter the world (selecting --slot / --name first)")):
+		sub = add_credentials(add(name, handler, text), False)
+		sub.add_argument("--name")
+		sub.add_argument("--slot", type=int, help="character slot 1..4 (default 1)")
 	for name, handler, text in (("switch", run_switch, "in-world -> character select"),
 	                            ("logout", run_logout, "-> main menu (--to login: on to the login screen)"),
 	                            ("quit", run_quit, "main menu > Exit")):

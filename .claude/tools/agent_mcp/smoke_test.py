@@ -193,6 +193,24 @@ PHASE1_COMMANDS = ["ping", "get_state", "probe_point", "screenshot", "mouse_move
                    "wheel", "key", "text", "set_text", "modifiers", "wait_for"]
 
 
+# The argument keys the client accepts per command (agent_bridge.cpp's command table); any other key is refused
+# the way the client refuses it. widget_click also takes the older "id" for the SDL-id tools that are still hidden.
+ACCEPTED_KEYS = {
+    "ping": "", "get_state": "", "screenshot": "name path", "probe_point": "x y space",
+    "mouse_move": "x y space timeout_ms", "click": "x y space button count shift ctrl timeout_ms",
+    "mouse_down": "x y space button timeout_ms", "mouse_up": "x y space button timeout_ms",
+    "wheel": "x y space notches timeout_ms", "key": "name shift ctrl alt repeat timeout_ms",
+    "text": "value timeout_ms", "set_text": "value clear timeout_ms", "modifiers": "shift ctrl alt timeout_ms",
+    "wait_for": "conditions timeout_ms since", "widgets": "",
+    "widget_click": "name id button count shift ctrl timeout_ms",
+    "journal_query": "channels types exclude_types object_id message_contains from_ms to_ms after_seq before_seq max",
+    "journal_drain": "channels types exclude_types object_id message_contains since max",
+    "journal_config": "channels capacity test_log", "entities": "kinds radius max on_screen",
+    "tile_to_screen": "x y", "walk_to": "x y timeout_ms wait", "close_window": "name dialog_id",
+    "set_audio": "master music effects",
+}
+
+
 class fake_bridge(threading.Thread):
     """Accepts one connection and answers commands the way agent_bridge is contracted to."""
 
@@ -204,7 +222,8 @@ class fake_bridge(threading.Thread):
         self.listener.listen(1)
         self.seen = []
         self.commands = list(ALL_COMMANDS)
-        self.protocol = 2
+        self.protocol = 5
+        self.native_widgets = False  # answer widgets in this client's own shape (name, rect, masked, ...)
         self.book_open = False   # the spell book dialog (hb_cast_at opens and closes it)
         self.circle = 0          # its circle page
         self.cast_outcome = "resolved"   # what a cast's aim ends in: resolved | refused | timeout
@@ -231,6 +250,10 @@ class fake_bridge(threading.Thread):
     def answer(self, request):
         cmd = request.get("cmd")
         rid = request.get("id")
+        if cmd in ACCEPTED_KEYS:
+            unknown = sorted(set(request.get("args") or {}) - set(ACCEPTED_KEYS[cmd].split()))
+            if unknown:
+                return {"id": rid, "ok": False, "error": "{}: unknown argument '{}'".format(cmd, unknown[0])}
         if cmd == "ping":
             return {"id": rid, "ok": True, "result": {"build": "0.0.1-alpha:TEST", "bridge_protocol": self.protocol,
                                                       "commands": list(self.commands)}}
@@ -362,9 +385,18 @@ class fake_bridge(threading.Thread):
         if cmd == "set_audio":
             args = request.get("args") or {}
             return {"id": rid, "ok": True, "result": {
-                "master_muted": args.get("master_muted", False), "master": args.get("master", 100),
-                "music": args.get("music", 80), "effects": args.get("effects", 70),
-                "persisted": bool(args.get("persist"))}}
+                "master": args.get("master", 100), "music": args.get("music", 80), "effects": args.get("effects", 70),
+                "persisted": False}}
+        if cmd == "widgets" and self.native_widgets:
+            return {"id": rid, "ok": True, "result": {"surface": "Screen_Login", "overlay": False, "transitioning": False,
+                                                      "widgets": [
+                {"name": "login.name", "kind": "text_input", "owner": "screen:Screen_Login", "enabled": True,
+                 "visible": True, "focused": False, "rect": {"x": 300, "y": 200, "w": 160, "h": 20},
+                 "masked": False, "length": 4},
+                {"name": "login.password", "kind": "text_input", "owner": "screen:Screen_Login", "enabled": True,
+                 "visible": True, "focused": True, "rect": {"x": 300, "y": 230, "w": 160, "h": 20}, "masked": True},
+                {"name": "login.ok", "kind": "button", "owner": "screen:Screen_Login", "enabled": True,
+                 "visible": True, "focused": False, "rect": {"x": 300, "y": 280, "w": 80, "h": 22}}]}}
         if cmd == "widgets" and self.book_open:
             rows = [{"id": "spell_book.title", "kind": "grip", "label": "Spells", "owner": "dialog:spell_book",
                      "x": 315, "y": 72, "w": 222, "h": 34, "enabled": True}]
@@ -393,14 +425,16 @@ class fake_bridge(threading.Thread):
                  "selected": 0}]}}
         if cmd == "widget_click":
             args = request.get("args") or {}
-            if args.get("id") == "inventory.slot30":
+            wanted = args.get("name", args.get("id"))
+            if wanted == "inventory.slot30":
                 return {"id": rid, "ok": False, "error": "widget is scrolled out of view: inventory.slot30"}
-            if args.get("id") == "hud.spellbook":
+            if wanted == "hud.spellbook":
                 self.book_open = not self.book_open
                 self.circle = 0
-            if str(args.get("id", "")).startswith("spell_book.circle"):
-                self.circle = int(args["id"][len("spell_book.circle"):])
-            return {"id": rid, "ok": True, "result": {"id": args.get("id"), "x": 1, "y": 2}}
+            if str(wanted or "").startswith("spell_book.circle"):
+                self.circle = int(wanted[len("spell_book.circle"):])
+            return {"id": rid, "ok": True, "result": {"widget": wanted, "enabled": True, "x": 1, "y": 2,
+                                                      "button": args.get("button", "left")}}
         if cmd == "screenshot":
             args = request.get("args") or {}
             if "path" in args:
@@ -410,18 +444,14 @@ class fake_bridge(threading.Thread):
             return {"id": rid, "ok": True, "result": {"name": args.get("name"), "width": 192, "height": 108}}
         if cmd == "entities":
             return {"id": rid, "ok": True, "result": {
-                "player_tile": [134, 37], "total": 3, "count": 3, "truncated": False, "entities": [
-                    {"object_id": 19, "kind": "npc", "name": "gandalf", "display_id": 7, "tile": [136, 36],
-                     "distance": 2, "alive": True, "dead": False, "attackable": False, "interactable": True,
-                     "on_screen": True, "clickable": True, "click_action": "talk",
-                     "point": {"logical": [470, 220], "window": [1060, 480]}},
-                    {"object_id": 44, "kind": "creature", "name": "slime", "creature_id": 3, "display_id": 9,
-                     "tile": [150, 40], "distance": 16, "hp": 8, "max_hp": 20, "alive": True, "dead": False,
-                     "attackable": True, "interactable": False, "on_screen": False, "clickable": False,
-                     "blocked_by": "off_screen", "point": {"logical": [999, 300], "window": [2100, 700]}},
-                    {"object_id": 7001, "kind": "item", "name": "dagger", "item_id": 115, "quantity": 2, "z": 0,
-                     "tile": [134, 38], "distance": 1, "on_screen": True, "clickable": False, "point_kind": "tile",
-                     "point": {"logical": [426, 265], "window": [960, 590]}},
+                "player_tile": [134, 37], "map": "default", "total": 3, "count": 3, "truncated": False, "entities": [
+                    {"object_id": 19, "kind": "npc", "name": "gandalf", "type": 15, "tile": [136, 36], "distance": 2,
+                     "on_screen": True, "dead": False, "point": {"logical": [470, 220], "window": [1060, 480]},
+                     "npc_config_id": 7},
+                    {"object_id": 44, "kind": "creature", "name": "slime", "type": 10, "tile": [150, 40], "distance": 16,
+                     "on_screen": False, "dead": False, "point": {"logical": [999, 300], "window": [2100, 700]}},
+                    {"kind": "item", "name": "dagger", "item_id": 115, "tile": [134, 38], "distance": 1,
+                     "on_screen": True, "point": {"logical": [426, 265], "window": [960, 590]}},
                 ]}}
         if cmd == "tile_to_screen":
             args = request.get("args") or {}
@@ -431,14 +461,19 @@ class fake_bridge(threading.Thread):
             return {"id": rid, "ok": True, "result": {
                 "tile": [args.get("x"), args.get("y")], "in_bounds": True, "on_screen": True, "logical": [460, 240],
                 "window": [1034, 540], "player_tile": [134, 37], "resolves_to": [args.get("x"), args.get("y")],
-                "round_trip": True, "front": {"kind": "world", "owner": "screen:in_game"}, "on_self": False}}
+                "round_trip": True}}
         if cmd == "walk_to":
             args = request.get("args") or {}
             if args.get("x") == 99:
                 return {"id": rid, "ok": False, "error": "walk_to refused: (99,9) is outside the map"}
-            return {"id": rid, "ok": True, "result": {"goal": [args["x"], args["y"]], "from": [134, 37],
-                                                      "map": "travelerzone", "status": "walking", "path_len": 6,
-                                                      "reachable": True}}
+            status = {77: "blocked", 88: "timeout"}.get(args["x"], "arrived" if args.get("wait") else "walking")
+            reply = {"status": status, "goal": [args["x"], args["y"]], "from": [134, 37]}
+            if args.get("wait"):
+                reply.update({"at": [args["x"] - (1 if status == "blocked" else 0), args["y"]], "map": "default",
+                              "elapsed_ms": 1200})
+                if status == "blocked":
+                    reply["reason"] = "no step led nearer for 2.5 s"
+            return {"id": rid, "ok": True, "result": reply}
         if cmd == "set_time_of_day":
             t01 = (request.get("args") or {}).get("t01")
             return {"id": rid, "ok": True, "result": {
@@ -448,7 +483,8 @@ class fake_bridge(threading.Thread):
             on = bool((request.get("args") or {}).get("on"))
             return {"id": rid, "ok": True, "result": {"god": on, "flags_wanted": 3 if on else 1, "sent": True}}
         if cmd == "close_window":
-            return {"id": rid, "ok": True, "result": {"closed": [(request.get("args") or {}).get("name")]}}
+            name = (request.get("args") or {}).get("name")
+            return {"id": rid, "ok": True, "result": {"closed": [{"name": name, "dialog_id": 2}] if name == "inventory" else []}}
         if cmd == "set_staff_tags":
             return {"id": rid, "ok": True, "result": {"visible": bool((request.get("args") or {}).get("visible"))}}
         if cmd == "fishing_auto_strike":
@@ -503,6 +539,7 @@ bridge.start()
 # ---------------------------------------------------------------- MCP over stdio
 
 print("MCP server over stdio")
+shutil.rmtree(SHOT_DIR, ignore_errors=True)  # a failed earlier run leaves its captures behind
 proc = subprocess.Popen(
     [sys.executable, os.path.join(REPO, ".claude", "tools", "agent_mcp", "agent_mcp.py")],
     stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
@@ -550,7 +587,7 @@ check("hb_ping reaches the fake bridge",
 
 print("tools follow the client's command list")
 check("hb_ping reports the bridge protocol and command count",
-      "bridge_protocol 2" in ping["result"]["content"][0]["text"] and
+      "bridge_protocol 5" in ping["result"]["content"][0]["text"] and
       "{} command(s)".format(len(ALL_COMMANDS)) in ping["result"]["content"][0]["text"], ping["result"]["content"][0]["text"])
 bridge.commands = list(PHASE1_COMMANDS)
 rpc("tools/call", {"name": "hb_ping", "arguments": {}})  # refreshes the cached commands
@@ -568,7 +605,7 @@ rpc("tools/call", {"name": "hb_ping", "arguments": {}})
 check("a client that lists more commands shows more tools",
       "hb_widgets" in {tool["name"] for tool in rpc("tools/list")["result"]["tools"]})
 
-for protocol, warns in ((2, False), (3, False), (4, False), (5, True)):
+for protocol, warns in ((2, False), (3, False), (4, False), (5, False), (6, True)):
     bridge.protocol = protocol
     text = rpc("tools/call", {"name": "hb_ping", "arguments": {}})["result"]["content"][0]["text"]
     check("bridge_protocol {} {}".format(protocol, "is warned about" if warns else "is accepted without a warning"),
@@ -851,69 +888,74 @@ entities = rpc("tools/call", {"name": "hb_entities", "arguments": {"kinds": ["np
 text = entities["result"]["content"][0]["text"]
 check("hb_entities is one compact line per entity, nearest first", not entities["result"].get("isError")
       and text.splitlines()[0].startswith("player (134,37) - 3 of 3 entities") and len(text.splitlines()) == 4, text)
-check("a clickable row names its action and window point",
-      "#19 npc gandalf (136,36) d2 [interactable] -> talk at window (1060,480)" in text, text)
-check("a blocked row names blocked_by", "#44 creature slime (150,40) d16 hp 8/20 [attackable] NOT CLICKABLE: off_screen" in text, text)
-check("an item row says how to pick it up", "#7001 item dagger x2" in text and "stand on the tile" in text, text)
+check("an on-screen row names its tile, distance and window point",
+      "#19 npc gandalf (136,36) d2 at window (1060,480)" in text, text)
+check("an off-screen row says so", "#44 creature slime (150,40) d16 OFF SCREEN" in text, text)
+check("an item row carries its item id", "#item 115 item dagger (134,38) d1" in text, text)
 wire = [r for r in bridge.seen if r["cmd"] == "entities"][-1]["args"]
-check("the harness caps rows by default and passes the filter through",
+check("the harness caps rows by default and passes only the client's keys",
       wire == {"max": agent_mcp.ENTITIES_DEFAULT_MAX, "kinds": ["npc", "creature", "item"]}, wire)
 check("raw:true returns the client's JSON",
       '"entities"' in rpc("tools/call", {"name": "hb_entities", "arguments": {"raw": True}})["result"]["content"][0]["text"])
-badkind = rpc("tools/call", {"name": "hb_entities", "arguments": {"kinds": ["dragon"]}})
-check("an unknown kind is refused", badkind["result"].get("isError") is True, badkind)
-stray_key = rpc("tools/call", {"name": "hb_entities", "arguments": {"radius_tiles": 5}})
-check("an unknown hb_entities key is refused, not dropped", stray_key["result"].get("isError") is True
-      and "radius_tiles" in stray_key["result"]["content"][0]["text"], stray_key)
+for bad in ({"kinds": ["dragon"]}, {"kinds": ["object"]}, {"radius_tiles": 5}):
+    badkind = rpc("tools/call", {"name": "hb_entities", "arguments": bad})
+    check("hb_entities refuses {}".format(bad), badkind["result"].get("isError") is True, badkind)
 
 seen_before = len(bridge.seen)
 clicked = rpc("tools/call", {"name": "hb_click_entity", "arguments": {"object_id": 19}})
 text = clicked["result"]["content"][0]["text"]
 sent_click = [r for r in bridge.seen[seen_before:] if r["cmd"] == "click"]
-check("hb_click_entity clicks the entity's WINDOW point and reports the expected action and consumer",
+check("hb_click_entity clicks the entity's WINDOW point with a button and no SDL-only key",
       not clicked["result"].get("isError") and sent_click and sent_click[0]["args"]["space"] == "window"
       and (sent_click[0]["args"]["x"], sent_click[0]["args"]["y"]) == (1060, 480)
-      and "expected talk" in text and "consumed by window inventory" in text, (text, sent_click))
+      and sent_click[0]["args"]["button"] == "left" and "right" not in sent_click[0]["args"]
+      and "consumed by window inventory" in text, (text, sent_click))
 seen_before = len(bridge.seen)
 blocked = rpc("tools/call", {"name": "hb_click_entity", "arguments": {"object_id": 44}})
 text = blocked["result"]["content"][0]["text"]
-check("hb_click_entity refuses a blocked entity by name and sends no click", blocked["result"].get("isError") is True
-      and "blocked_by off_screen" in text and not [r for r in bridge.seen[seen_before:] if r["cmd"] == "click"], text)
+check("hb_click_entity refuses an off-screen entity and sends no click", blocked["result"].get("isError") is True
+      and "off screen" in text and not [r for r in bridge.seen[seen_before:] if r["cmd"] == "click"], text)
 item = rpc("tools/call", {"name": "hb_click_entity", "arguments": {"object_id": 7001}})
 check("an item is not clicked by entity", item["result"].get("isError") is True
-      and "ground item" in item["result"]["content"][0]["text"], item)
+      and "no entity with object_id 7001" in item["result"]["content"][0]["text"], item)
 missing = rpc("tools/call", {"name": "hb_click_entity", "arguments": {"object_id": 5}})
 check("an unknown object_id is a named error", missing["result"].get("isError") is True
       and "no entity with object_id 5" in missing["result"]["content"][0]["text"], missing)
 
 tts = rpc("tools/call", {"name": "hb_tile_to_screen", "arguments": {"x": 140, "y": 38}})
 text = tts["result"]["content"][0]["text"]
-check("hb_tile_to_screen is one line with the pixel, the round trip and the front",
+check("hb_tile_to_screen is one line with the pixel and the round trip",
       text.startswith("tile (140,38) -> window (1034,540) logical (460,240), on screen, a click there resolves to (140,38)")
-      and "front world screen:in_game" in text and "\n" not in text, text)
+      and "\n" not in text, text)
 off = rpc("tools/call", {"name": "hb_tile_to_screen", "arguments": {"x": 999, "y": 5}})
 check("a tile outside the map says so", "OUTSIDE the map" in off["result"]["content"][0]["text"], off)
 
+seen_before = len(bridge.seen)
 walk = rpc("tools/call", {"name": "hb_walk_to", "arguments": {"x": 140, "y": 38}})
 text = walk["result"]["content"][0]["text"]
-check("hb_walk_to returns at the start by default", "walking, path_len 6" in text and "ARRIVED" not in text, text)
+wire = [r["args"] for r in bridge.seen[seen_before:] if r["cmd"] == "walk_to"][-1]
+check("hb_walk_to returns at the start by default, sending wait false and no timeout",
+      "walk_to (140,38) from (134,37): walking" in text and wire == {"x": 140, "y": 38, "wait": False}, (text, wire))
 walked = rpc("tools/call", {"name": "hb_walk_to", "arguments": {"x": 140, "y": 38, "wait": True, "timeout_ms": 3000}})
 text = walked["result"]["content"][0]["text"]
-wait_wire = [r for r in bridge.seen if r["cmd"] == "wait_for" and r["args"]["conditions"][0].get("type") == "walk_arrived"][-1]["args"]
-check("hb_walk_to wait:true reports the arrival", "ARRIVED at (140,38)" in text, text)
-check("the wait is registered for THIS goal only (so the previous walk's stop is not mistaken for it)",
-      wait_wire["conditions"][0]["match"] == {"goal_x": 140, "goal_y": 38}
-      and wait_wire["conditions"][1]["type"] == "walk_stopped" and wait_wire["timeout_ms"] == 3000, wait_wire)
+wire = [r["args"] for r in bridge.seen if r["cmd"] == "walk_to"][-1]
+check("hb_walk_to wait:true sends wait and timeout_ms and reports the arrival",
+      wire == {"x": 140, "y": 38, "wait": True, "timeout_ms": 3000} and "arrived at (140,38)" in text
+      and "after 1200 ms" in text, (text, wire))
 stopped = rpc("tools/call", {"name": "hb_walk_to", "arguments": {"x": 77, "y": 5, "wait": True}})
-check("a walk_stopped is a result with its reason, not an error", not stopped["result"].get("isError")
-      and "STOPPED at (76,5) (reason blocked)" in stopped["result"]["content"][0]["text"], stopped)
+check("a blocked walk is a result with its reason, not an error", not stopped["result"].get("isError")
+      and "blocked at (76,5)" in stopped["result"]["content"][0]["text"]
+      and "no step led nearer" in stopped["result"]["content"][0]["text"], stopped)
 timed = rpc("tools/call", {"name": "hb_walk_to", "arguments": {"x": 88, "y": 5, "wait": True, "timeout_ms": 500}})
-check("a wait that times out says so", "TIMED OUT" in timed["result"]["content"][0]["text"], timed)
+check("a walk that times out says so", ": timeout" in timed["result"]["content"][0]["text"], timed)
 refused = rpc("tools/call", {"name": "hb_walk_to", "arguments": {"x": 99, "y": 9, "wait": True}})
 check("a refused walk_to is an error carrying the client's reason", refused["result"].get("isError") is True
       and "walk_to refused" in refused["result"]["content"][0]["text"], refused)
 nocoord = rpc("tools/call", {"name": "hb_walk_to", "arguments": {"x": 1}})
 check("hb_walk_to without y is refused", nocoord["result"].get("isError") is True, nocoord)
+sdl_only = rpc("tools/call", {"name": "hb_walk_to", "arguments": {"x": 1, "y": 2, "cancel_on_timeout": False}})
+check("the SDL-only cancel_on_timeout is refused", sdl_only["result"].get("isError") is True
+      and "cancel_on_timeout" in sdl_only["result"]["content"][0]["text"], sdl_only)
 
 day = rpc("tools/call", {"name": "hb_set_time_of_day", "arguments": {"t01": 0.75}})
 check("hb_set_time_of_day sets the override", "override 0.75" in day["result"]["content"][0]["text"], day)
@@ -940,11 +982,16 @@ for bad in ({}, {"visible": "no"}):
     refused_tags = rpc("tools/call", {"name": "hb_set_staff_tags", "arguments": bad})
     check("hb_set_staff_tags refuses {}".format(bad), refused_tags["result"].get("isError") is True, refused_tags)
 
-closed = rpc("tools/call", {"name": "hb_close_window", "arguments": {"name": "minimap"}})
-check("hb_close_window sends the name and reports what closed", [r for r in bridge.seen if r["cmd"] == "close_window"][-1]["args"] == {"name": "minimap"}
-      and "closed: minimap" in closed["result"]["content"][0]["text"], closed)
-refused_close = rpc("tools/call", {"name": "hb_close_window", "arguments": {}})
-check("hb_close_window refuses a missing name", refused_close["result"].get("isError") is True, refused_close)
+closed = rpc("tools/call", {"name": "hb_close_window", "arguments": {"name": "inventory"}})
+check("hb_close_window sends the name and reports what closed", [r for r in bridge.seen if r["cmd"] == "close_window"][-1]["args"] == {"name": "inventory"}
+      and "closed: inventory (#2)" in closed["result"]["content"][0]["text"], closed)
+nothing = rpc("tools/call", {"name": "hb_close_window", "arguments": {"name": "all"}})
+check("nothing closing is a plain result", not nothing["result"].get("isError") and "nothing closed" in nothing["result"]["content"][0]["text"], nothing)
+by_id = rpc("tools/call", {"name": "hb_close_window", "arguments": {"dialog_id": 6}})
+check("hb_close_window takes a dialog_id", [r for r in bridge.seen if r["cmd"] == "close_window"][-1]["args"] == {"dialog_id": 6}, by_id)
+for bad in ({}, {"name": "inventory", "dialog_id": 6}):
+    refused_close = rpc("tools/call", {"name": "hb_close_window", "arguments": bad})
+    check("hb_close_window refuses {}".format(bad), refused_close["result"].get("isError") is True, refused_close)
 
 flat_batch = rpc("tools/call", {"name": "hb_batch", "arguments": {"steps": [{"tool": "hb_click", "x": 5, "y": 6}]}})
 check("hb_batch refuses flat step fields instead of clicking (0,0)", flat_batch["result"].get("isError") is True
@@ -1018,6 +1065,29 @@ wire = [r for r in bridge.seen if r["cmd"] == "journal_query"][-1]["args"]
 check("hb_journal_drain passes object_id and message_contains to the client",
       not filtered["result"].get("isError") and wire.get("object_id") == 19 and wire.get("message_contains") == "hello", wire)
 
+print("widgets and flows in this client's own shape")
+bridge.native_widgets = True
+listing = rpc("tools/call", {"name": "hb_widgets", "arguments": {}})["result"]["content"][0]["text"]
+check("hb_widgets lists this client's widgets by name with their rect, and a masked field only as masked",
+      listing.splitlines()[0].startswith("Screen_Login - 3 widget(s)") and "login.name" in listing and "300,200 160x20" in listing
+      and "login.password" in listing and "= (masked)" in listing and "= 4 chars" in listing, listing)
+filtered = rpc("tools/call", {"name": "hb_widgets", "arguments": {"prefix": "login.o"}})["result"]["content"][0]["text"]
+check("hb_widgets filters by name prefix", "login.ok" in filtered and "login.name" not in filtered, filtered)
+seen_before = len(bridge.seen)
+clicked = rpc("tools/call", {"name": "hb_click_widget", "arguments": {"id": "login.ok"}})
+wire = [r["args"] for r in bridge.seen[seen_before:] if r["cmd"] == "widget_click"][-1]
+check("hb_click_widget sends the widget as 'name', never 'id', and no SDL-only key",
+      wire == {"name": "login.ok", "button": "left", "shift": False, "ctrl": False}
+      and "left-clicked widget 'login.ok'" in clicked["result"]["content"][0]["text"], (wire, clicked))
+for bad in ({"flow": "create_account"}, {"flow": "logout"}, {"flow": "mute"}, {"flow": "login", "password": "x"},
+            {"flow": "login", "identity": "x"}, {"flow": "enter", "slot": 1, "args": {}}):
+    refused_flow = rpc("tools/call", {"name": "hb_flow", "arguments": bad})["result"]
+    check("hb_flow refuses {}".format(bad), refused_flow.get("isError") is True, refused_flow)
+no_credentials = rpc("tools/call", {"name": "hb_flow", "arguments": {"flow": "login"}})["result"]
+check("hb_flow login without credentials says what it needs and never asks for a password argument",
+      no_credentials.get("isError") is True and "test_account" in no_credentials["content"][0]["text"], no_credentials)
+bridge.native_widgets = False
+
 print("journal tools match the client's wire keys (bridge_protocol 4)")
 journal_before = len(bridge.seen)
 rpc("tools/call", {"name": "hb_journal_drain", "arguments": {
@@ -1071,19 +1141,17 @@ audio_read = rpc("tools/call", {"name": "hb_set_audio", "arguments": {}})
 text = audio_read["result"]["content"][0]["text"]
 wire = [r for r in bridge.seen if r["cmd"] == "set_audio"][-1]["args"]
 check("hb_set_audio with no arguments reads back", wire == {} and not audio_read["result"].get("isError")
-      and text.split("audio: ")[1].startswith("master playing"), (wire, text))
-audio_set = rpc("tools/call", {"name": "hb_set_audio", "arguments": {
-    "master_muted": True, "music": 30, "persist": True}})
+      and text.startswith("audio is: master 100, music 80, effects 70"), (wire, text))
+audio_set = rpc("tools/call", {"name": "hb_set_audio", "arguments": {"master": 40, "music": 30}})
 text = audio_set["result"]["content"][0]["text"]
 wire = [r for r in bridge.seen if r["cmd"] == "set_audio"][-1]["args"]
-check("hb_set_audio sends only what was given and reports what is now set",
-      wire == {"master_muted": True, "music": 30, "persist": True} and "audio now: master MUTED" in text
-      and "music 30" in text and "(saved to client.json)" in text, (wire, text))
-for bad in ({"master": 101}, {"music": "loud"}, {"master_muted": "yes"}, {"volume": 5}):
+check("hb_set_audio sends only the volumes given and says the change is live only",
+      wire == {"master": 40, "music": 30} and "audio now: master 40, music 30" in text and "live only" in text, (wire, text))
+for bad in ({"master": 101}, {"music": "loud"}, {"master_muted": True}, {"persist": True}, {"volume": 5}):
     refused_audio = rpc("tools/call", {"name": "hb_set_audio", "arguments": bad})
     check("hb_set_audio refuses {}".format(bad), refused_audio["result"].get("isError") is True, refused_audio)
 batched = rpc("tools/call", {"name": "hb_batch", "arguments": {"steps": [
-    {"tool": "hb_set_audio", "arguments": {"master_muted": True}}, {"tool": "hb_get_state", "arguments": {}}]}})
+    {"tool": "hb_set_audio", "arguments": {"master": 20}}, {"tool": "hb_get_state", "arguments": {}}]}})
 check("hb_set_audio is a batch step", not batched["result"].get("isError")
       and "step 0 [hb_set_audio]: ok" in batched["result"]["content"][0]["text"], batched["result"]["content"][0]["text"])
 
@@ -1228,8 +1296,8 @@ locked = rpc("tools/call", {"name": "hb_cast_at", "arguments": {"object_id": 19,
 check("a disabled (locked) spell row is refused", locked["result"].get("isError") is True
       and "disabled" in locked["result"]["content"][0]["text"], locked)
 blocked_cast = rpc("tools/call", {"name": "hb_cast_at", "arguments": {"object_id": 44, "spell": "heal"}})
-check("an entity that is not clickable is refused naming blocked_by",
-      blocked_cast["result"].get("isError") is True and "blocked_by off_screen" in blocked_cast["result"]["content"][0]["text"],
+check("an off-screen entity is refused naming why",
+      blocked_cast["result"].get("isError") is True and "is off screen" in blocked_cast["result"]["content"][0]["text"],
       blocked_cast)
 nospell = rpc("tools/call", {"name": "hb_cast_at", "arguments": {"object_id": 19}})
 check("without spell on a client that does not report the armed one, it says so",
@@ -1283,9 +1351,6 @@ check("hb_probe sections implies frame_times, keeps only the named sections and 
 none_probe = rpc("tools/call", {"name": "hb_probe", "arguments": {"x": 1, "y": 2, "sections": ["other"]}})
 check("hb_probe sections drops the sections that were not asked for", '"render"' not in none_probe["result"]["content"][0]["text"].split("frame_times_unknown")[0].split('"sections"')[-1],
       none_probe)
-check("a walk wait that times out cancels the walk by default", "walk cancelled at (5,6)" in timed["result"]["content"][0]["text"], timed)
-kept = rpc("tools/call", {"name": "hb_walk_to", "arguments": {"x": 88, "y": 5, "wait": True, "timeout_ms": 500, "cancel_on_timeout": False}})
-check("cancel_on_timeout:false leaves the walk running", "cancelled" not in kept["result"]["content"][0]["text"], kept)
 reuse_dir = os.path.join(SHOT_DIR, "reuse_probe")
 os.makedirs(reuse_dir, exist_ok=True)
 open(os.path.join(reuse_dir, "b_01.png"), "wb").close()
@@ -1420,18 +1485,21 @@ check("a call with no client registered says how to register one", after["result
       and "no client is registered" in after["result"]["content"][0]["text"], after)
 
 print("bridge protocol 2 or 3, discovery safety, tools built on SDL widget ids")
-check("protocol 4 is the current one, 2 and 3 are still accepted",
-      agent_mcp.EXPECTED_BRIDGE_PROTOCOL == 4 and agent_mcp.SUPPORTED_BRIDGE_PROTOCOLS == (2, 3, 4))
+check("protocol 5 is the current one, 2 to 4 are still accepted",
+      agent_mcp.EXPECTED_BRIDGE_PROTOCOL == 5 and agent_mcp.SUPPORTED_BRIDGE_PROTOCOLS == (2, 3, 4, 5))
 
 all_commands = frozenset(ALL_COMMANDS)
-for tool in ("hb_flow", "hb_click_widget", "hb_drag_slot", "hb_cast_at"):
-    check("{} stays unavailable even when the client lists widgets and widget_click".format(tool),
+for tool in ("hb_drag_slot", "hb_cast_at"):
+    check("{} stays unavailable even when the client lists widgets and widget_click (SDL ids)".format(tool),
           "not ported" in (agent_mcp.unavailable_reason(tool, all_commands) or ""), agent_mcp.unavailable_reason(tool, all_commands))
-check("hb_widgets and hb_send_chat are available once their commands are listed",
-      agent_mcp.unavailable_reason("hb_widgets", all_commands) is None and agent_mcp.unavailable_reason("hb_send_chat", all_commands) is None)
+check("the retargeted tools (hb_widgets, hb_click_widget, hb_flow, the world tools) are available once their commands are listed",
+      all(agent_mcp.unavailable_reason(tool, all_commands) is None for tool in
+          ("hb_widgets", "hb_click_widget", "hb_flow", "hb_send_chat", "hb_entities", "hb_walk_to", "hb_tile_to_screen",
+           "hb_close_window", "hb_set_audio", "hb_click_entity")))
+check("hb_flow needs the commands its flows use", "tile_to_screen" in " ".join(agent_mcp.TOOL_COMMANDS["hb_flow"]))
 in_process = {tool["name"] for tool in agent_mcp.TOOLS if agent_mcp.unavailable_reason(tool["name"], all_commands) is None}
 check("tools/list leaves out the SDL-widget-id tools for a full client",
-      not in_process & {"hb_flow", "hb_click_widget", "hb_drag_slot", "hb_cast_at"} and "hb_widgets" in in_process, sorted(in_process))
+      not in_process & {"hb_drag_slot", "hb_cast_at"} and {"hb_widgets", "hb_flow", "hb_click_widget", "hb_entities"} <= in_process, sorted(in_process))
 
 outside = rpc("tools/call", {"name": "hb_clients", "arguments": {"action": "discover", "ports": [PORT + 5]}})["result"]
 check("discover refuses a port outside 8891-8898", outside.get("isError") and "only scans ports 8891-8898" in outside["content"][0]["text"], outside)

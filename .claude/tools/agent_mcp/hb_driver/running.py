@@ -1,6 +1,6 @@
 """launch_client: the guaranteed-cleanup wrapper around one driven client.
 
-	with launch_client(port=8892) as run:        # files saved, muted, launched, bridge up
+	with launch_client(port=8892) as run:        # files saved, launched, bridge up
 		flows.log_in(run.session, ident)
 		...
 	# on ANY exit: session closed, THIS pid stopped, client.json + remembered_account.txt restored
@@ -38,7 +38,7 @@ class running_client:
 
 @contextlib.contextmanager
 def launch_client(port, exe=None, work_dir=None, start_screen=client_process.default_start_screen, extra_args=(),
-                  mute="config", pid_file=None, backup_dir=None, restore_window=True):
+                  mute=None, pid_file=None, backup_dir=None, restore_window=True):
 	"""Launch a debug client on `port` and yield a running_client; always clean up.
 
 	mute: see mute_modes. With "config" the Settings tick is READ back as proof on the main menu; on a

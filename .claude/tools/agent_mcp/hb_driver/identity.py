@@ -113,6 +113,46 @@ class identity:
 		common.write_json_file(self.path, self.data)
 
 
+test_accounts_path = os.path.join(common.repo_root, ".claude", "local", "test_accounts.json")
+
+
+class credentials(identity):
+	"""An account held in memory only (a test account read from the gitignored test_accounts.json, or the
+	environment): nothing is written back, and `public()` still masks the password."""
+
+	def __init__(self, account, password, characters=()):
+		super().__init__(None, {"account": account, "password": password,
+		                        "characters": [{"name": str(name)} for name in characters]})
+
+	def save(self):
+		pass
+
+	def __repr__(self):
+		return "credentials(account={!r}, password=<hidden>)".format(self.account)
+
+
+def test_account(name=None, path=None):
+	"""A throwaway local test account from .claude/local/test_accounts.json (d-031): the one called `name`, else
+	the first. The password never leaves the object: `public()` masks it and nothing prints or logs it."""
+	path = path or test_accounts_path
+	if not os.path.isfile(path):
+		raise common.flow_error("no test accounts file at {} (a gitignored file; see d-031)".format(path))
+	accounts = (common.read_json_file(path) or {}).get("accounts") or []
+	chosen = next((entry for entry in accounts if name is None or entry.get("name") == name), None)
+	if chosen is None or not chosen.get("name") or not chosen.get("password"):
+		raise common.flow_error("no usable test account{} in {}".format(" named '{}'".format(name) if name else "", path))
+	return credentials(chosen["name"], chosen["password"], chosen.get("characters") or [])
+
+
+def from_env(account_var="HB_TEST_ACCOUNT", password_var="HB_TEST_PASSWORD", characters_var="HB_TEST_CHARACTERS"):
+	"""Credentials from the environment (characters comma-separated, in slot order)."""
+	account, password = os.environ.get(account_var), os.environ.get(password_var)
+	if not account or not password:
+		raise common.flow_error("set {} and {} to log in from the environment".format(account_var, password_var))
+	listed = [item.strip() for item in os.environ.get(characters_var, "").split(",") if item.strip()]
+	return credentials(account, password, listed)
+
+
 def new_identity(path, account_prefix=default_account_prefix, character_prefix=default_character_prefix,
                  characters=1, email="", overwrite=False):
 	"""Generate an account, password and `characters` character names; write them to `path`."""

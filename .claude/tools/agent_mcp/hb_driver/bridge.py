@@ -185,8 +185,9 @@ class session:
 		return self.state().get("screen")
 
 	def widgets(self):
-		"""{ui_width, ui_height, widgets:[{id, kind, label, x, y, w, h, enabled, value, owner}]}"""
-		return self.call("widgets")
+		"""{surface, overlay, transitioning, widgets:[{id (the name), kind, x, y, w, h, rect, enabled, visible, focused,
+		owner, value?}]}. A masked field's value is '(masked)', never its text."""
+		return agent_mcp.normalize_widgets(self.call("widgets"))
 
 	def widget_map(self, listing=None):
 		listing = listing if listing is not None else self.widgets()
@@ -199,7 +200,7 @@ class session:
 		"""Click a widget by id; the client refuses an unknown or DISABLED one (no silent no-op).
 		`button` left|right|middle overrides `right`."""
 		try:
-			return self.call("widget_click", {"id": widget_id, "button": button or ("right" if right else "left"),
+			return self.call("widget_click", {"name": widget_id, "button": button or ("right" if right else "left"),
 			                                  "shift": shift, "ctrl": ctrl})
 		except bridge_error as error:
 			hinted = agent_mcp.with_scroll_hint(str(error))
@@ -208,8 +209,8 @@ class session:
 			raise
 
 	def set_audio(self, **args):
-		"""set_audio {master_muted?, master?, music?, effects?, persist?}; no args reads back. Returns
-		{master_muted, master, music, effects, persisted}."""
+		"""set_audio {master?, music?, effects?} (0..100); no args reads back. Returns
+		{master, music, effects, persisted}."""
 		return self.call("set_audio", {key: value for key, value in args.items() if value is not None})
 
 	def path_bench(self, fixture=None, repeats=None):
@@ -239,15 +240,15 @@ class session:
 			args["space"] = space
 		return self.call("click", args)
 
-	def mouse_down(self, x, y, space=None, button="left", shift=False, ctrl=False):
+	def mouse_down(self, x, y, space=None, button="left"):
 		"""Press and hold `button` (left|right|middle); pair with mouse_up."""
-		args = {"x": int(x), "y": int(y), "button": button, "shift": shift, "ctrl": ctrl}
+		args = {"x": int(x), "y": int(y), "button": button}
 		if space:
 			args["space"] = space
 		return self.call("mouse_down", args)
 
-	def mouse_up(self, x, y, space=None, button="left", shift=False, ctrl=False):
-		args = {"x": int(x), "y": int(y), "button": button, "shift": shift, "ctrl": ctrl}
+	def mouse_up(self, x, y, space=None, button="left"):
+		args = {"x": int(x), "y": int(y), "button": button}
 		if space:
 			args["space"] = space
 		return self.call("mouse_up", args)
@@ -260,6 +261,29 @@ class session:
 
 	def key(self, name, shift=False, ctrl=False):
 		return self.call("key", {"name": name, "shift": shift, "ctrl": ctrl})
+
+	def walk_to(self, x, y, wait=True, timeout_ms=15000):
+		"""walk_to {x, y, wait, timeout_ms}: with wait the reply comes when the walk settles (status arrived, blocked,
+		timeout or superseded); without it at once with status walking."""
+		args = {"x": int(x), "y": int(y), "wait": bool(wait)}
+		if wait:
+			args["timeout_ms"] = int(timeout_ms)
+		return self.call("walk_to", args, timeout_s=(timeout_ms / 1000.0 + wait_slack_s) if wait else None)
+
+	def tile_to_screen(self, x, y):
+		"""{tile, in_bounds, on_screen, logical, window, player_tile, resolves_to?, round_trip?}"""
+		return self.call("tile_to_screen", {"x": int(x), "y": int(y)})
+
+	def entities(self, kinds=None, radius=None, max_rows=None, on_screen=None):
+		args = {key: value for key, value in (("kinds", kinds), ("radius", radius), ("max", max_rows),
+		                                      ("on_screen", on_screen)) if value is not None}
+		return self.call("entities", args)
+
+	def close_window(self, name=None, dialog_id=None):
+		if name is None and dialog_id is None:
+			raise bridge_error("close_window needs a window 'name' or a 'dialog_id'")
+		args = {"name": name} if name is not None else {"dialog_id": int(dialog_id)}
+		return self.call("close_window", args)
 
 	def text(self, value):
 		"""APPENDS to the focused field."""

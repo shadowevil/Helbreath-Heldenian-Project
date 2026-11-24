@@ -143,8 +143,9 @@ and `save_timeout` to write the same logout-save proof - the world-log lines pro
 it as `logout_proof` / `logout_proof_file`; a bad path is refused before the logout runs. Over MCP, `hb_flow` takes its arguments
 top-level and refuses a key the flow does not take (an `args:{...}` wrapper, a stray `x` on `step`) with the
 list of keys it does take. Tests:
-- `python .claude/tools/agent_mcp/hb_driver_selftest.py` runs the library against an in-process fake client;
-- `smoke_test.py` covers the MCP server and the `hb_flow` tool against a fake bridge.
+- `python -I .claude/tools/agent_mcp/hb_driver_selftest.py` runs the library against an in-process fake client;
+- `python .claude/tools/agent_mcp/smoke_test.py` covers the MCP server and the `hb_flow` tool against a fake bridge.
+  Run both from the repo root.
 
 How the flows handle the traps that cost earlier runs time:
 - **Modal messages** ("Account created", "name taken") report `overlay.ok`, listed first in `hb_widgets`

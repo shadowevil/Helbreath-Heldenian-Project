@@ -1178,8 +1178,6 @@ TOOLS = [
 				"space": {"type": "string", "enum": ["logical", "window"], "description": "coordinate space (default logical)"},
 				"right": {"type": "boolean", "description": "right button instead of left (default false); same as button:'right'"},
 				"button": {"type": "string", "enum": list(MOUSE_BUTTONS), "description": "left (default), right or middle"},
-				"shift": {"type": "boolean", "description": "hold shift (default false)"},
-				"ctrl": {"type": "boolean", "description": "hold ctrl (default false)"},
 			},
 			"required": ["x", "y"],
 		},
@@ -1197,8 +1195,6 @@ TOOLS = [
 				"space": {"type": "string", "enum": ["logical", "window"], "description": "coordinate space (default logical)"},
 				"right": {"type": "boolean", "description": "right button instead of left (default false); same as button:'right'"},
 				"button": {"type": "string", "enum": list(MOUSE_BUTTONS), "description": "left (default), right or middle"},
-				"shift": {"type": "boolean", "description": "hold shift (default false)"},
-				"ctrl": {"type": "boolean", "description": "hold ctrl (default false)"},
 			},
 			"required": ["x", "y"],
 		},
@@ -1486,29 +1482,17 @@ TOOLS = [
 	},
 	{
 		"name": "hb_entities",
-		"description": "List what is around the player, NEAREST FIRST: players, NPCs, creatures and ground items, "
-		               "each with its object_id, raw name, tile, distance, hp, whether it is attackable / "
-		               "interactable, and the click point (logical + window pixels) that reaches it. A row the "
-		               "client says is clickable carries click_action (attack, talk, use_object, pickup, move); "
-		               "one that is not names blocked_by (off_screen, no_art, missed, self, entity:<id>, a "
-		               "window owner or a front kind). Items are never clickable by entity: stand on the tile "
-		               "(hb_walk_to) and click yourself. One compact line per entity (raw:true for the JSON); "
-		               "max defaults to 25. Pair with hb_click_entity. raw:true also carries usable_objects: the usable "
-		               "map objects (plants, stations) in radius - object_id, gameobject_id, tile, distance, use_range, "
-		               "action, action_kind, on_screen and the art-centre click point (not a proven click) (HB-0820). "
-		               "TO FIND ONE entity by name (there is no hb_find): list with kinds / radius and read the "
-		               "name column; ids go stale, so look up and act in the same hb_batch, or pass the name to "
-		               "hb_cast_at. HP: hp / max_hp appear only for what the server streams (a player's); a creature's hp is never sent, "
-		               "so a creature row has none. Every creature / player row carries facing (0-7, 0 = north, clockwise).",
+		"description": "List what is around the player, NEAREST FIRST: players, NPCs, creatures (dead ones flagged) and "
+		               "ground items, each with its object_id (an item has item_id instead), name, tile, "
+		               "distance, whether it is on screen, and the point (logical + window pixels) where it "
+		               "draws. One compact line per entity (raw:true for the JSON); max defaults to 25. "
+		               "Items are never clicked by entity: stand on the tile (hb_walk_to). Pair with "
+		               "hb_click_entity. The reply also gives player_tile, map, total and truncated.",
 		"inputSchema": {
 			"type": "object",
 			"properties": {
-				"kinds": {"type": "array", "items": {"type": "string", "enum": ["player", "npc", "creature", "item", "object", "fish"]},
-				          "description": "only these kinds (default: players, npcs, creatures and items). 'object' "
-				                         "lists map objects - trees, rocks, gameobjects - with gameobject_id, "
-				                         "display_id, tile, depleted / felled / usable; ask for it by name "
-				                         "(plain objects are numerous) and combine with radius. 'fish' lists the cosmetic ambient "
-				                         "fish in view (size 0-4, glow, a world point to crop at)"},
+				"kinds": {"type": "array", "items": {"type": "string", "enum": ["player", "npc", "creature", "item"]},
+				          "description": "only these kinds (default: all four)"},
 				"radius": {"type": "integer", "description": "only entities within this many tiles (Chebyshev)"},
 				"max": {"type": "integer", "description": "at most this many rows, nearest first (default 25)"},
 				"on_screen": {"type": "boolean", "description": "only entities inside the view"},
@@ -1518,12 +1502,10 @@ TOOLS = [
 	},
 	{
 		"name": "hb_click_entity",
-		"description": "Click an entity BY object_id (from hb_entities) instead of by pixel: its click point is "
-		               "resolved through the client's own pick, then clicked with space:'window'. REFUSED, naming "
-		               "blocked_by, when the client says it cannot be clicked (off screen, covered by a window, "
-		               "behind another entity, ...). The reply names the click_action it expected (attack, talk, "
-		               "use_object, pickup, move) and what consumed the click. Two bridge commands, so a fast "
-		               "mover can step off its point in between - a refusal or a miss says so; re-run it.",
+		"description": "Click an entity BY object_id (from hb_entities) instead of by pixel: the point it draws at "
+		               "is read from hb_entities, then clicked with space:'window'. REFUSED when it is off screen "
+		               "or is a ground item. The reply says what consumed the click. Two bridge commands, so a "
+		               "fast mover can step off its point in between; re-run it.",
 		"inputSchema": {
 			"type": "object",
 			"properties": {
@@ -1554,26 +1536,21 @@ TOOLS = [
 	},
 	{
 		"name": "hb_walk_to",
-		"description": "Walk to a map TILE by the client's own pathing (the same order a ground click gives), "
-		               "with no pixel to aim: it works for a tile off screen or behind the player's own sprite. "
-		               "Returns when the walk STARTS (status walking, path_len, reachable) unless wait:true, "
-		               "which blocks until the client journals walk_arrived or walk_stopped for this goal (or "
-		               "timeout_ms passes) and reports how it ended. Refused with a named reason when the player "
-		               "is dead, teleporting, in a shop or conversation, casting, or the tile is outside the map. A "
-		               "blocked or unreachable tile walks as near as it can, never over a teleport (HB-0765). It "
-		               "is not a click: to test what a real click does, use "
-		               "hb_click / hb_flow click_tile.",
+		"description": "Walk to a map TILE by the client's own pathing (the order a ground click gives), with no "
+		               "pixel to aim: it works for a tile off screen. With wait:true it blocks until the walk "
+		               "settles and reports status arrived, blocked (with a reason), timeout or superseded; "
+		               "otherwise it returns at once with status walking. Refused with a named reason when the "
+		               "player is dead, teleporting, knocked back or busy, or the tile is outside the map. A "
+		               "timeout stops the walk where the player stands. It is not a click: to test what a real "
+		               "click does, use hb_click.",
 		"inputSchema": {
 			"type": "object",
 			"properties": {
 				"x": {"type": "integer", "description": "map tile x"},
 				"y": {"type": "integer", "description": "map tile y"},
-				"wait": {"type": "boolean", "description": "block until walk_arrived / walk_stopped (default false)"},
+				"wait": {"type": "boolean", "description": "block until the walk settles (default false)"},
 				"timeout_ms": {"type": "integer", "description": "with wait: how long to wait (default 15000, "
 				                                                 "max {})".format(WAIT_FOR_MAX_MS)},
-				"cancel_on_timeout": {"type": "boolean", "description": "with wait: when the wait times out, stop the "
-				                                                        "walk where the player stands (default true), so "
-				                                                        "it cannot carry on unattended; false lets it run"},
 			},
 			"required": ["x", "y"],
 		},
@@ -1650,14 +1627,14 @@ TOOLS = [
 	},
 	{
 		"name": "hb_close_window",
-		"description": "Close an open window by its registry name (the names hb_get_state 'windows' lists, e.g. "
-		               "'inventory'), 'minimap' (turns the corner minimap off for this run), or 'all' (every window "
-		               "that can close, the minimap included; a window that refuses to close - a forced modal - "
-		               "stays). Replies the names it closed. Needs the entered world. Debug only (HB-0718).",
+		"description": "Close an open dialog by name (the 'owner' of its rows in hb_widgets, e.g. 'inventory'), by "
+		               "integer dialog_id, or 'all' (every window that can close; the always-on HUD stays). Replies "
+		               "the windows it really closed. A name that is not a dialog is refused. Needs the entered "
+		               "world. Debug only.",
 		"inputSchema": {
 			"type": "object",
-			"properties": {"name": {"type": "string", "description": "window name, 'minimap' or 'all'"}},
-			"required": ["name"],
+			"properties": {"name": {"type": "string", "description": "dialog name, or 'all'"},
+			               "dialog_id": {"type": "integer", "description": "dialog id, instead of a name"}},
 		},
 	},
 	{
@@ -1838,21 +1815,15 @@ TOOLS = [
 	},
 	{
 		"name": "hb_set_audio",
-		"description": "Set the client's audio live, in the world or on any screen: master_muted (bool), master / "
-		               "music / effects (whole numbers 0..100). With NO arguments it reads back. persist:true also "
-		               "writes the change to client.json (default false: the change lasts until the client "
-		               "exits). Replies with what is now set - master PLAYING or MUTED, the three volumes, whether "
-		               "it was persisted. hb_get_state carries the same as 'audio'. This is the in-world mute: "
-		               "the Settings window's Sound rows are `settings.sound_<master|ambiance|effect|music|ui>_"
-		               "volume` (slider) and `..._enabled` (checkbox) widgets for testing the UI itself.",
+		"description": "Set the client's live audio volumes: master / music / effects (whole numbers 0..100). With NO "
+		               "arguments it reads back. Replies with what is now set. It changes the running mixer only; "
+		               "settings.json is not written.",
 		"inputSchema": {
 			"type": "object",
 			"properties": {
-				"master_muted": {"type": "boolean", "description": "true mutes everything, false unmutes"},
 				"master": {"type": "integer", "description": "master volume 0..100"},
 				"music": {"type": "integer", "description": "music volume 0..100"},
 				"effects": {"type": "integer", "description": "effects volume 0..100"},
-				"persist": {"type": "boolean", "description": "also save to client.json (default false)"},
 			},
 		},
 	},
@@ -1896,62 +1867,39 @@ TOOLS = [
 	},
 	{
 		"name": "hb_flow",
-		"description": "Run one whole hb_driver FLOW (.claude/tools/agent_mcp/hb_driver) on this client in ONE call - "
-		               "each walks the UI by widget id, waits on the game (never a blind sleep) and proves where "
-		               "it landed, or fails saying where it stopped. Flows: main_menu, mute / unmute ("
-		               "master volume - on the main menu through the Settings tick, logged in through set_audio with no "
-		               "logout; leave_session logs out and uses Settings), "
-		               "create_account / login / create_character / delete_character (need identity_file: an "
-		               "hb_driver identity JSON under .claude/scratch/, made with `hb_flow.py identity-new`; the password "
-		               "never appears in a reply), select / enter (name), switch, logout (both take proof_file, a path under "
-		               ".claude/scratch/, to also wait for the character's logout save in the world log and write that "
-		               "proof there - the returned logout_proof / logout_proof_file; name defaults to the character "
-		               "being played; logout also takes to:'login' to end on the login screen instead of the main "
-		               "menu), player_tile, step "
-		               "(direction n..nw; a real click - only the tile north of you, under the click-on-self box, falls "
-		               "back to walking, say via walk_to; walk_fallback:true forces the fallback for any failure, "
-		               "false never), click_tile (x, y), time_entry (Start -> first confirmed move, from "
-		               "character select), wait_screen (screen). To walk to a tile use the hb_walk_to TOOL "
-		               "(there is no walk_to flow). Flow names take underscores or hyphens "
-		               "(click_tile / click-tile). Arguments are TOP-LEVEL and checked per flow: a key the flow "
-		               "does not take (an 'args' wrapper, 'object_id') is an error naming the keys it does. "
-		               "click_tile / step follow the walk until it ends and report arrived, ended (arrived / "
-		               "stopped / timeout), player_tile, last_move_to, moves and tiles_short; a no_answer "
-		               "carries a hint. Batchable (inside hb_batch). Launch/stop and the guarded position "
-		               "write are library/CLI only. Blocks until the flow ends; returns its result as JSON.",
+		"description": "Run one whole hb_driver FLOW on this client in ONE call - each drives the UI by widget name, "
+		               "waits on the game (never a blind sleep) and proves where it landed, or fails saying where it "
+		               "stopped. Flows: main_menu (back to the main menu from a menu screen), login (main menu or "
+		               "login screen -> character select; credentials by test_account, env or identity_file - the "
+		               "password never appears in a reply), select / enter (slot or name; enter waits for the world "
+		               "and proves the character), player_tile, step (direction n..nw: a click on the neighbouring "
+		               "tile, walk_fallback:true walks when no click reaches it), click_tile (x, y), wait_screen "
+		               "(screen, e.g. Screen_Login). To walk to a tile use the hb_walk_to TOOL. Not ported yet: "
+		               "account and character creation, delete, logout, mute, quit. Flow names take underscores or "
+		               "hyphens. Arguments are TOP-LEVEL and checked per flow: a key the flow does not take is an "
+		               "error naming the keys it does. Batchable (inside hb_batch). Blocks until the flow ends; "
+		               "returns its result as JSON.",
 		"inputSchema": {
 			"type": "object",
 			"properties": {
-				"flow": {"type": "string", "description": "which flow: main_menu, mute, unmute, create_account, "
-				                                          "login, create_character, select, enter, switch, logout, "
-				                                          "delete_character, player_tile, step, click_tile, "
-				                                          "time_entry, wait_screen (hyphens also accepted)"},
-				"identity_file": {"type": "string", "description": "hb_driver identity JSON under .claude/scratch/ (relative = "
-				                                                   "from the repo root)"},
-				"to": {"type": "string", "enum": ["main_menu", "login"], "description": "logout: where to end - "
-				       "the main menu (default) or the login screen"},
-				"name": {"type": "string", "description": "character name"},
-				"preset": {"type": "string", "description": "create_character: archetype label or index"},
-				"appearance": {"type": "object", "description": "create_character: {gender|skin|hair_style|"
-				                                                "hair_color|underwear: value}"},
+				"flow": {"type": "string", "description": "which flow: main_menu, login, select, enter, player_tile, "
+				                                          "step, click_tile, wait_screen (hyphens also accepted)"},
+				"test_account": {"description": "login / select / enter: a local test account from the gitignored "
+				                                ".claude/local/test_accounts.json - its name, or true for the first"},
+				"env": {"type": "boolean", "description": "login: take the account from HB_TEST_ACCOUNT / "
+				                                          "HB_TEST_PASSWORD (HB_TEST_CHARACTERS lists the slots)"},
+				"identity_file": {"type": "string", "description": "login: an hb_driver identity JSON under "
+				                                                   ".claude/scratch/ (relative = from the repo root)"},
+				"force": {"type": "boolean", "description": "login: take over an account that is logged in elsewhere"},
+				"name": {"type": "string", "description": "select / enter: the character (its position on the account "
+				                                          "is its slot; enter proves the name)"},
+				"slot": {"type": "integer", "description": "select / enter: character slot 1..4 (default 1)"},
 				"direction": {"type": "string", "description": "step: n ne e se s sw w nw"},
-				"walk_fallback": {"type": "boolean", "description": "step: absent = walk instead of click only "
-				                  "for the tile north of you; true = for any no-clickable-point failure; "
-				                  "false = never"},
+				"walk_fallback": {"type": "boolean", "description": "step: walk instead when no click can reach the tile"},
 				"x": {"type": "integer", "description": "click_tile: world tile x"},
 				"y": {"type": "integer", "description": "click_tile: world tile y"},
 				"screen": {"type": "string", "description": "wait_screen: screen id, e.g. Screen_Login"},
-				"client_json": {"type": "string", "description": "mute/unmute: client.json to verify"},
-				"leave_session": {"type": "boolean", "description": "mute/unmute: log out first if logged in"},
-				"capture_logs": {"type": "boolean", "description": "time_entry: read the server/client logs "
-				                                                   "(default true)"},
-				"proof_file": {"type": "string", "description": "switch / logout: write the logout-save proof here "
-				                                                "(under .claude/scratch/; relative = from the repo root)"},
-				"save_timeout": {"type": "number", "description": "switch / logout with proof_file: how long to "
-				                                                  "wait for the save (default 15 s)"},
 				"timeout_s": {"type": "number", "description": "per-step timeout (default 20)"},
-				"recalibrate": {"type": "boolean", "description": "player_tile / step / click_tile: re-measure "
-				                                                  "the view first (after a camera zoom)"},
 			},
 			"required": ["flow"],
 		},
@@ -2025,9 +1973,10 @@ TOOL_NAMES = {tool["name"] for tool in TOOLS}
 # journal yet shows no hb_widgets, hb_flow or hb_journal_drain instead of tools that answer "unknown cmd".
 # A tool missing from this table needs no wire command of its own (hb_batch, hb_parallel, hb_clients, hb_wait).
 # 3 adds widgets, widget_click, consumed_by and the probe's front; 4 adds the journal (journal_query, journal_drain,
-# journal_config and wait_for's event form)
-SUPPORTED_BRIDGE_PROTOCOLS = (2, 3, 4)
-EXPECTED_BRIDGE_PROTOCOL = 4  # the current one
+# journal_config and wait_for's event form); 5 adds the world commands (entities, tile_to_screen, walk_to,
+# close_window, set_audio) and get_state / probe_point's in-world keys
+SUPPORTED_BRIDGE_PROTOCOLS = (2, 3, 4, 5)
+EXPECTED_BRIDGE_PROTOCOL = 5  # the current one
 TOOL_COMMANDS = {
 	"hb_ping": ("ping",),
 	"hb_get_state": ("get_state",),
@@ -2054,12 +2003,12 @@ TOOL_COMMANDS = {
 	"hb_entities": ("entities",),
 	"hb_click_entity": ("entities", "click"),
 	"hb_tile_to_screen": ("tile_to_screen",),
-	"hb_walk_to": ("walk_to", "probe_point"),
+	"hb_walk_to": ("walk_to",),
 	"hb_close_window": ("close_window",),
 	"hb_set_audio": ("set_audio",),
 	"hb_inject": ("inject_message",),
 	"hb_cast_at": ("widgets", "widget_click", "journal_query", "get_state", "click"),
-	"hb_flow": ("widgets", "widget_click", "wait_for", "get_state", "click", "key", "set_text"),
+	"hb_flow": ("widgets", "widget_click", "get_state", "set_text", "click", "tile_to_screen", "walk_to"),
 	"hb_set_time_of_day": ("set_time_of_day",),
 	"hb_kill_player": ("kill_player",),
 	"hb_set_status": ("set_status",),
@@ -2078,10 +2027,11 @@ TOOL_COMMANDS = {
 # What tools/list assumes while no client answers: the commands of bridge_protocol 2's first release.
 FALLBACK_COMMANDS = frozenset(("ping", "get_state", "screenshot", "probe_point", "mouse_move", "click", "mouse_down",
                                "mouse_up", "wheel", "key", "text", "set_text", "modifiers", "wait_for"))
-# Tools built on Helbreath-SDL widget ids (hud.spellbook, login.login, ...) or flows over them. They stay hidden and
-# refused, whatever widgets the client reports, until phase 4 retargets them. HB_ENABLE_SDL_FLOWS=1 re-enables them
+# Tools still built on Helbreath-SDL widget ids (hud.spellbook, inventory slot rows, ...). They stay hidden and
+# refused, whatever widgets the client reports, until they are retargeted. hb_flow and hb_click_widget now use
+# this client's names (login.name, select_character.slot1, ...). HB_ENABLE_SDL_FLOWS=1 re-enables them
 # for the fake-client tests only.
-NOT_PORTED_TOOLS = frozenset(("hb_flow", "hb_click_widget", "hb_drag_slot", "hb_cast_at"))
+NOT_PORTED_TOOLS = frozenset(("hb_drag_slot", "hb_cast_at"))
 SDL_TOOLS_ENABLED = os.environ.get("HB_ENABLE_SDL_FLOWS") == "1"
 COMMANDS_TTL_SECONDS = float(os.environ.get("HB_COMMANDS_TTL_S", "30"))  # the smoke test raises it
 listed_tool_names = None  # what the last tools/list returned; None until the host has asked
@@ -2472,6 +2422,27 @@ def format_wait_for(result, trail=WAIT_FOR_TRAIL_DEFAULT):
 	return "\n".join(lines)
 
 
+def normalize_widgets(result):
+	"""This client's widgets reply in the shape the tools and flows read: each row gains id (its name), x, y, w, h
+	(its rect) and, for a text field, value ('(masked)' or its length - never the text). The native keys stay."""
+	rows = []
+	for row in result.get("widgets") or []:
+		row = dict(row)
+		row["id"] = row.get("name", row.get("id"))
+		rect = row.get("rect") or {}
+		for key in ("x", "y", "w", "h"):
+			if key in rect:
+				row[key] = rect[key]
+		if row.get("masked"):
+			row["value"] = "(masked)"
+		elif row.get("length") is not None:
+			row["value"] = "{} chars".format(row["length"])
+		rows.append(row)
+	normalized = dict(result)
+	normalized["widgets"] = rows
+	return normalized
+
+
 def filter_widgets(result, arguments):
 	"""hb_widgets' optional filters (HB-0693): 'screen' = owner substring, 'prefix' = id prefix,
 	'contains' = substring of the id or label; all case-insensitive. The unfiltered total is kept."""
@@ -2506,8 +2477,8 @@ def format_widgets(result):
 	the client reported, which is the order a click resolves them in.
 	"""
 	widgets = result.get("widgets") or []
-	lines = ["ui {}x{} - {} widget(s), front to back (a click resolves the first match)".format(
-		result.get("ui_width"), result.get("ui_height"), len(widgets))]
+	lines = ["{} - {} widget(s), front to back (a click resolves the first match)".format(
+		result.get("surface") or "no screen", len(widgets))]
 	if result.get("filtered_from") is not None:
 		lines[0] += " [filtered from {}]".format(result["filtered_from"])
 	if not widgets:
@@ -2605,34 +2576,18 @@ def compact_probe(result):
 
 
 def format_entity(entity):
-	"""One entity row on one line: id, kind, raw name, tile, distance, hp, and how a click reaches it."""
+	"""One entity row on one line: id, kind, name, tile, distance, and where it draws."""
 	name = str(entity.get("name") or "?")
-	if entity.get("kind") == "item":
-		name = "{} x{}".format(name, entity.get("quantity", 1))
 	tile = entity.get("tile") or ["?", "?"]
-	row = "#{} {} {} ({},{}) d{}".format(entity.get("fish_index", entity.get("object_id")), entity.get("kind"), name, tile[0], tile[1],
-	                                    entity.get("distance"))
-	if entity.get("hp") is not None:
-		row += " hp {}/{}".format(entity.get("hp"), entity.get("max_hp", "?"))
+	ident = entity.get("object_id") if entity.get("kind") != "item" else "item {}".format(entity.get("item_id"))
+	row = "#{} {} {} ({},{}) d{}".format(ident, entity.get("kind"), name, tile[0], tile[1], entity.get("distance"))
 	if entity.get("dead"):
 		row += " DEAD"
-	flags = [flag for flag in ("attackable", "interactable") if entity.get(flag)]
-	if flags:
-		row += " [{}]".format(",".join(flags))
 	window = (entity.get("point") or {}).get("window")
-	if entity.get("clickable"):
-		row += " -> {} at window ({},{})".format(entity.get("click_action", "click"), window[0], window[1]) \
-			if window else " -> {}".format(entity.get("click_action", "click"))
-	elif entity.get("kind") == "item":
-		row += " item_id {} (pick up: stand on the tile, click yourself)".format(entity.get("item_id"))
-	elif entity.get("kind") == "fish":
-		row += " size {} glow {:.2f} (cosmetic, not clickable; crop at window {})".format(entity.get("size"), entity.get("glow", 0), window)
-	elif entity.get("kind") == "object":
-		row += " gameobject_id {}{}{}{} (art centre at window {})".format(
-			entity.get("gameobject_id"), " usable" if entity.get("usable") else "",
-			" DEPLETED" if entity.get("depleted") else "", " FELLED" if entity.get("felled") else "", window)
-	else:
-		row += " NOT CLICKABLE: {}".format(entity.get("blocked_by", "?"))
+	if not entity.get("on_screen"):
+		row += " OFF SCREEN"
+	elif window:
+		row += " at window ({},{})".format(window[0], window[1])
 	return row
 
 
@@ -2662,7 +2617,8 @@ def format_tile_to_screen(result):
 	front = result.get("front") or {}
 	text += ", on screen, a click there resolves to ({},{}){}".format(
 		resolved[0], resolved[1], "" if result.get("round_trip") else " - NOT this tile")
-	text += ", front {}{}".format(front.get("kind", "?"), " " + str(front["owner"]) if front.get("owner") else "")
+	if front:
+		text += ", front {}{}".format(front.get("kind", "?"), " " + str(front["owner"]) if front.get("owner") else "")
 	if result.get("on_self"):
 		text += ", ON THE PLAYER'S OWN SPRITE (a click picks up, never moves)"
 	if result.get("entity_id") is not None:
@@ -2670,27 +2626,19 @@ def format_tile_to_screen(result):
 	return text
 
 
-def format_walk_to(reply, ended=None, waited_ms=None):
-	"""A walk_to reply, plus how the wait ended when it waited ({event, timed_out})."""
+def format_walk_to(reply):
+	"""A walk_to reply: walking (started), or how a waited walk settled (arrived, blocked, timeout, superseded)."""
 	goal = reply.get("goal") or ["?", "?"]
 	origin = reply.get("from") or ["?", "?"]
-	text = "walk_to ({},{}) from ({},{}) on {}: {}".format(goal[0], goal[1], origin[0], origin[1], reply.get("map", "?"),
-	                                                      reply.get("status", "?"))
-	if reply.get("status") == "walking":
-		text += ", path_len {}{}".format(reply.get("path_len"), "" if reply.get("reachable", True)
-		                                 else ", NOT reachable (walks as near as it can)")
-	if ended is None:
-		return text
-	event = ended.get("event")
-	if event is not None:
-		data = event.get("data") or {}
-		where = "({},{})".format(data.get("tile_x"), data.get("tile_y"))
-		if event.get("type") == "walk_arrived":
-			text += " -> ARRIVED at {} after {} ms".format(where, waited_ms)
-		else:
-			text += " -> STOPPED at {} (reason {}) after {} ms".format(where, data.get("reason", "?"), waited_ms)
-	else:
-		text += " -> TIMED OUT after {} ms with no walk_arrived / walk_stopped for this goal".format(waited_ms)
+	text = "walk_to ({},{}) from ({},{}): {}".format(goal[0], goal[1], origin[0], origin[1], reply.get("status", "?"))
+	if reply.get("at"):
+		text += " at ({},{})".format(reply["at"][0], reply["at"][1])
+	if reply.get("map"):
+		text += " on {}".format(reply["map"])
+	if reply.get("reason"):
+		text += " - {}".format(reply["reason"])
+	if reply.get("elapsed_ms") is not None:
+		text += " after {} ms".format(reply["elapsed_ms"])
 	return text
 
 
@@ -3276,15 +3224,15 @@ WORLD_TOOL_KEYS = {
 	"hb_entities": ("client", "kinds", "radius", "max", "on_screen", "raw"),
 	"hb_click_entity": ("client", "object_id", "right", "shift", "ctrl"),
 	"hb_tile_to_screen": ("client", "x", "y", "raw"),
-	"hb_walk_to": ("client", "x", "y", "wait", "timeout_ms", "cancel_on_timeout"),
+	"hb_walk_to": ("client", "x", "y", "wait", "timeout_ms"),
 	"hb_set_time_of_day": ("client", "t01"),
-	"hb_set_audio": ("client", "master_muted", "master", "music", "effects", "persist"),
+	"hb_set_audio": ("client", "master", "music", "effects"),
 	"hb_light_clock": ("client", "seconds"),
 	"hb_reload_lights": ("client",),
 	"hb_set_god": ("client", "on"),
 	"hb_set_staff_tags": ("client", "visible"),
 	"hb_set_tab_width_cap": ("client", "width"),
-	"hb_close_window": ("client", "name"),
+	"hb_close_window": ("client", "name", "dialog_id"),
 	"hb_fishing_auto_strike": ("client", "on", "delay_ms"),
 	"hb_set_status": ("client", "status", "seconds", "target_id"),
 	"hb_set_item_tint": ("client", "display_id", "rgb", "mode"),
@@ -3295,7 +3243,7 @@ WORLD_TOOL_KEYS = {
 	              "payload"),
 }
 AUDIO_VOLUME_KEYS = ("master", "music", "effects")
-ENTITY_KINDS = ("player", "npc", "creature", "item", "object", "fish")
+ENTITY_KINDS = ("player", "npc", "creature", "item")
 # hb_entities replies at most this many rows unless `max` says otherwise (a busy map lists hundreds).
 ENTITIES_DEFAULT_MAX = 25
 # An unknown-target refusal lists this many of the nearest entities by name.
@@ -3403,9 +3351,6 @@ def world_tool_problem(tool, arguments):
 		for key in AUDIO_VOLUME_KEYS:
 			if key in arguments and (parse_int(arguments[key]) is None or not 0 <= parse_int(arguments[key]) <= 100):
 				return "hb_set_audio {} must be a whole number 0..100 (got {!r})".format(key, arguments[key])
-		for key in ("master_muted", "persist"):
-			if key in arguments and not isinstance(arguments[key], bool):
-				return "hb_set_audio {} must be true or false (got {!r})".format(key, arguments[key])
 	if tool == "hb_light_clock":
 		try:
 			parse_light_clock(arguments.get("seconds", "missing"))
@@ -3413,8 +3358,15 @@ def world_tool_problem(tool, arguments):
 			return str(error)
 	if tool == "hb_set_god" and not isinstance(arguments.get("on"), bool):
 		return "hb_set_god needs 'on': true or false (got {!r})".format(arguments.get("on"))
-	if tool == "hb_close_window" and not str(arguments.get("name") or "").strip():
-		return "hb_close_window needs 'name': a window's registry name from hb_get_state windows, 'minimap', or 'all'"
+	if tool == "hb_close_window":
+		if not str(arguments.get("name") or "").strip() and parse_int(arguments.get("dialog_id")) is None:
+			return "hb_close_window needs 'name' (a dialog name such as inventory, or 'all') or an integer 'dialog_id'"
+		if str(arguments.get("name") or "").strip() and arguments.get("dialog_id") is not None:
+			return "hb_close_window takes 'name' or 'dialog_id', not both"
+	if tool == "hb_walk_to":
+		timeout = parse_int(arguments.get("timeout_ms"))
+		if arguments.get("timeout_ms") is not None and (timeout is None or not 0 < timeout <= WAIT_FOR_MAX_MS):
+			return "hb_walk_to timeout_ms must be 1..{}".format(WAIT_FOR_MAX_MS)
 	if tool == "hb_set_staff_tags" and not isinstance(arguments.get("visible"), bool):
 		return "hb_set_staff_tags needs 'visible': true or false (got {!r})".format(arguments.get("visible"))
 	if tool == "hb_fishing_auto_strike":
@@ -4313,12 +4265,14 @@ def run_world_tool(name, arguments, target):
 		return {"content": text_content(label(target) + text)}
 
 	if name == "hb_close_window":
-		result, error = require_bridge(target, "close_window", {"name": str(arguments["name"]).strip()})
+		args = {"name": str(arguments["name"]).strip()} if str(arguments.get("name") or "").strip() \
+			else {"dialog_id": parse_int(arguments["dialog_id"])}
+		result, error = require_bridge(target, "close_window", args)
 		if error:
 			return tool_error(error)
 		closed = result.get("closed") or []
-		text = "closed: {}".format(", ".join(closed)) if closed else \
-			"nothing closed - no open window of that name can close (hb_get_state lists the open ones)"
+		text = "closed: {}".format(", ".join("{} (#{})".format(row.get("name"), row.get("dialog_id")) for row in closed)) \
+			if closed else "nothing closed - no open window matched (hb_widgets lists the open ones)"
 		return {"content": text_content(label(target) + text)}
 
 	if name == "hb_set_god":
@@ -4347,12 +4301,14 @@ def run_world_tool(name, arguments, target):
 		return {"content": text_content(label(target) + text)}
 
 	if name == "hb_set_audio":
-		args = {key: arguments[key] for key in ("master_muted", "persist") if key in arguments}
-		args.update({key: parse_int(arguments[key]) for key in AUDIO_VOLUME_KEYS if key in arguments})
+		args = {key: parse_int(arguments[key]) for key in AUDIO_VOLUME_KEYS if key in arguments}
 		result, error = require_bridge(target, "set_audio", args)
 		if error:
 			return tool_error(error)
-		return {"content": text_content(label(target) + ("audio now: " if args else "audio: ") + format_audio(result))}
+		text = "audio {}: master {}, music {}, effects {}{}".format(
+			"now" if args else "is", result.get("master"), result.get("music"), result.get("effects"),
+			"" if result.get("persisted") else " (live only: settings.json is not written)")
+		return {"content": text_content(label(target) + text)}
 
 	if name == "hb_set_status":
 		if arguments.get("status") in (None, ""):
@@ -4565,13 +4521,13 @@ def find_clickable_entity(target, object_id, name=None):
 		                              "respawned or left view) - pass 'name' to resolve at call time. Nearest: {}".format(
 			                              label(target), object_id, result.get("total", 0), nearest_entity_names(rows)))
 	described = "#{} ({} {})".format(object_id, entity.get("kind"), entity.get("name"))
-	if not entity.get("clickable"):
-		if entity.get("kind") == "item":
-			return None, None, tool_error("{}entity {} is a ground item: pick it up by standing on its tile {} "
-			                              "(hb_walk_to) and clicking the player's own sprite".format(
-				                              label(target), described, tuple(entity.get("tile") or ())))
-		return None, None, tool_error("{}entity {} is not clickable: blocked_by {} (distance {}, on_screen {})".format(
-			label(target), described, entity.get("blocked_by", "?"), entity.get("distance"), entity.get("on_screen")))
+	if entity.get("kind") == "item":
+		return None, None, tool_error("{}entity {} is a ground item: pick it up by standing on its tile {} "
+		                              "(hb_walk_to) and clicking the player's own sprite".format(
+			                              label(target), described, tuple(entity.get("tile") or ())))
+	if not entity.get("on_screen"):
+		return None, None, tool_error("{}entity {} is off screen (distance {}): walk nearer first".format(
+			label(target), described, entity.get("distance")))
 	if not (entity.get("point") or {}).get("window"):
 		return None, None, tool_error("{}entity {} reported no window point".format(label(target), described))
 	return entity, described, None
@@ -4584,16 +4540,14 @@ def run_click_entity(arguments, target):
 	if refusal:
 		return refusal
 	window = entity["point"]["window"]
-	args = {"x": int(window[0]), "y": int(window[1]), "space": "window",
-	        "right": bool(arguments.get("right", False)), "shift": bool(arguments.get("shift", False)),
-	        "ctrl": bool(arguments.get("ctrl", False))}
+	button = "right" if arguments.get("right") else "left"
+	args = {"x": int(window[0]), "y": int(window[1]), "space": "window", "button": button,
+	        "shift": bool(arguments.get("shift", False)), "ctrl": bool(arguments.get("ctrl", False))}
 	clicked, error = require_bridge(target, "click", args)
 	if error:
 		return tool_error(error)
-	button = "right" if args["right"] else "left"
-	return {"content": text_content("{}{}-clicked entity {} at window ({},{}) - expected {}{}".format(
-		label(target), button, described, args["x"], args["y"], entity.get("click_action", "click"),
-		format_consumed(clicked)))}
+	return {"content": text_content("{}{}-clicked entity {} at window ({},{}){}".format(
+		label(target), button, described, args["x"], args["y"], format_consumed(clicked)))}
 
 
 def normalize_spell(value):
@@ -4651,6 +4605,7 @@ def settle_wait(pending, timeout_ms):
 
 
 def arm_spell(target, spell, lines):
+	# TODO: still speaks SDL's widget "id" key; this client's widget_click takes "name". Gated (hb_cast_at is hidden).
 	"""Arm `spell` through the spell book: open it, find the row (paging the circle tabs), click it, close the
 	book again. Returns (armed confirmed, cast_ms, error text). `lines` collects what was done."""
 	listing, error = require_bridge(target, "widgets")
@@ -4901,59 +4856,23 @@ def run_send_chat(arguments, target):
 		_, error = require_bridge(target, "key", {"name": "enter"})
 		if error:
 			return tool_error(error)
-	return {"content": text_content("{}chat line {!r} {}".format(label(target), value,
-	                                                                 "sent" if submit else "typed (not submitted)"))}
-
-
-def cancel_walk(target):
-	"""Stop a walk that outlived its wait: order a walk to the tile the player stands on. Text to append to the result."""
-	probe, error = require_bridge(target, "probe_point", {"x": 0, "y": 0})
-	tile = ((probe or {}).get("detail") or {}).get("player_tile") if not error else None
-	if not tile:
-		return " (walk NOT cancelled: the player's tile could not be read{})".format(": " + error if error else "")
-	_stopped, error = require_bridge(target, "walk_to", {"x": int(tile[0]), "y": int(tile[1])})
-	if error:
-		return " (walk NOT cancelled: {})".format(error)
-	return " (walk cancelled at ({},{}))".format(tile[0], tile[1])
+	return {"content": text_content("{}chat line of {} chars {}".format(label(target), len(value),
+	                                                                        "sent" if submit else "typed (not submitted)"))}
 
 
 def run_walk_to(arguments, target):
-	"""walk_to, optionally waiting for this goal's walk_arrived / walk_stopped (registered BEFORE the order)."""
+	"""walk_to: the client answers when the walk settles (wait:true) or at once (default)."""
 	x, y = parse_int(arguments["x"]), parse_int(arguments["y"])
 	wait = bool(arguments.get("wait"))
 	timeout_ms = parse_int(arguments.get("timeout_ms")) or WALK_WAIT_DEFAULT_MS
-	if timeout_ms <= 0 or timeout_ms > WAIT_FOR_MAX_MS:
-		return tool_error("hb_walk_to timeout_ms must be 1..{}".format(WAIT_FOR_MAX_MS))
-	pending = None
+	args = {"x": x, "y": y, "wait": wait}
 	if wait:
-		# Matched on this goal, so the previous walk's own end (walk_stopped / new_order, fired by this very
-		# order) is not mistaken for this one's. Registered first: a wait sees only events after it.
-		goal = {"goal_x": x, "goal_y": y}
-		conditions = [{"channel": "state.player", "type": "walk_arrived", "match": dict(goal)},
-		              {"channel": "state.player", "type": "walk_stopped", "match": dict(goal)}]
-		try:
-			pending = target.bridge.submit("wait_for", {"conditions": conditions, "timeout_ms": timeout_ms})
-		except RuntimeError as error:
-			return tool_error("Client '{}' not reachable at {} ({})".format(target.handle, target.address(), error))
-	started = time.monotonic()
-	reply, error = require_bridge(target, "walk_to", {"x": x, "y": y})
+		args["timeout_ms"] = timeout_ms
+	reply, error = require_bridge(target, "walk_to", args, timeout=(timeout_ms / 1000.0) + WAIT_FOR_SLACK_SECONDS if wait else None)
 	if error:
 		return tool_error(error)
-	if not wait:
-		return {"content": text_content(label(target) + format_walk_to(reply))}
-	try:
-		settled = pending.wait(timeout_ms / 1000.0 + WAIT_FOR_SLACK_SECONDS)
-	except RuntimeError as error:
-		return tool_error("walk_to ({},{}) started but the wait failed: {}".format(x, y, error))
-	result = settled.get("result") or {}
-	matched = result.get("matched") or {}
-	ended = {"event": matched.get("event")} if result.get("satisfied") else {}
-	waited_ms = int((time.monotonic() - started) * 1000)
-	text = format_walk_to(reply, ended, waited_ms)
-	if not ended and arguments.get("cancel_on_timeout", True):
-		text += cancel_walk(target)
-	# a stop or a timeout is a RESULT, not an error: the text says which
-	return {"content": text_content(label(target) + text)}
+	# a block or a timeout is a RESULT, not an error: the text says which
+	return {"content": text_content(label(target) + format_walk_to(reply))}
 
 
 def run_flow_tool(arguments, target):
@@ -5191,7 +5110,7 @@ def _dispatch_tool(name, arguments, target=None):
 		result, error = require_bridge(target, "widgets")
 		if error:
 			return tool_error(error)
-		result = filter_widgets(result, arguments)
+		result = filter_widgets(normalize_widgets(result), arguments)
 		return {"content": text_content(headed(target, format_widgets(result)))}
 
 	if name == "hb_click_widget":
@@ -5202,7 +5121,7 @@ def _dispatch_tool(name, arguments, target=None):
 		if error:
 			return tool_error(error)
 		args = {
-			"id": widget_id,
+			"name": widget_id,
 			"button": button,
 			"shift": bool(arguments.get("shift", False)),
 			"ctrl": bool(arguments.get("ctrl", False)),
@@ -5213,7 +5132,7 @@ def _dispatch_tool(name, arguments, target=None):
 		# Echo the resolved point: it is what a screenshot can be checked against, and it is the only
 		# evidence that the id landed where the caller believed it would.
 		return {"content": text_content("{}{}-clicked widget '{}' at ({}, {}) [logical]{}".format(
-			label(target), button, result.get("id", widget_id), result.get("x"), result.get("y"),
+			label(target), button, result.get("widget", widget_id), result.get("x"), result.get("y"),
 			format_consumed(result)))}
 
 	if name == "hb_modifiers":
@@ -5344,6 +5263,10 @@ def _dispatch_tool(name, arguments, target=None):
 			"ctrl": bool(arguments.get("ctrl", False)),
 		})
 		command = "mouse_down" if name == "hb_mouse_down" else "mouse_up"
+		args.pop("shift", None)  # the client's mouse_down / mouse_up take no modifiers: latch them with hb_modifiers
+		args.pop("ctrl", None)
+		if arguments.get("shift") or arguments.get("ctrl"):
+			return tool_error("{} takes no shift / ctrl: hold them with hb_modifiers first".format(name))
 		result, error = require_bridge(target, command, args)
 		if error:
 			return tool_error(error)

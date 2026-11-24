@@ -1,7 +1,7 @@
 {
   "id": "HH-0044",
   "summary": "Create-character name field drops the first typed character",
-  "status": "in_review",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,11 +11,13 @@
   ],
   "author": "pm",
   "created": "2026-11-24T05:29:40Z",
-  "updated": "2026-11-24T05:46:51Z",
+  "updated": "2026-11-24T05:47:36Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "9927421"
+    ],
     "files": [],
     "tickets": []
   },
-  "body": "During the HH-0042 in-world tests, two character names typed into the create-character name field through the agent bridge each lost their first character. `Tst3843` became `st3843`, and `Tq7724` became `q7724`; the field itself already showed `q7724` before Create was pressed.\n\n| check | result |\n|---|---|\n| same text into chat via the bridge (`text`, `set_text`) | intact, capital first letter kept (journal `chat_send`, measured) |\n| bridge waits one presented frame before the first character (fix in b2fa2e1) | still lost (measured) |\n| typed with a real keyboard | unverified |\n\nSo the loss is in the create-character name field or its focus handling, not in the bridge's text path. It is not known whether a real player sees it too, or whether it only drops a leading capital or `T`.\n\n**Done when:** the cause is found; a name typed into the create-character field, by keyboard and through the bridge, keeps every character; reviewed.\n\nSource: tester report 2026-11-24; test account `hhtest8489` (`.claude/local/test_accounts.json`)."
+  "body": "During the HH-0042 in-world tests, two character names typed into the create-character name field through the agent bridge each lost their first character. `Tst3843` became `st3843`, and `Tq7724` became `q7724`; the field itself already showed `q7724` before Create was pressed.\n\n| check | result |\n|---|---|\n| same text into chat via the bridge (`text`, `set_text`) | intact, capital first letter kept (journal `chat_send`, measured) |\n| bridge waits one presented frame before the first character (fix in b2fa2e1) | still lost (measured) |\n| typed with a real keyboard | unverified |\n\nSo the loss is in the create-character name field or its focus handling, not in the bridge's text path. It is not known whether a real player sees it too, or whether it only drops a leading capital or `T`.\n\n**Done when:** the cause is found; a name typed into the create-character field, by keyboard and through the bridge, keeps every character; reviewed.\n\nSource: tester report 2026-11-24; test account `hhtest8489` (`.claude/local/test_accounts.json`).\n\n**Closed, 2026-11-24:** cause: `text_input::select_all()` left anchor 0 on an empty field (text_input.cpp:213). It affected real keyboards too (Ctrl+A in an empty field). Read-only review passed. Windows and WSL Debug builds OK; live: Tz4423 typed with Ctrl+A was kept whole and created (measured).\n"
 }
