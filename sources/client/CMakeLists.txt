@@ -135,6 +135,10 @@ hb_add_versioning(HelbreathClient)
 target_compile_definitions(SFMLEngine PRIVATE SFML_STATIC SFML_ENGINE)
 target_compile_definitions(HelbreathClient PRIVATE SFML_STATIC SFML_ENGINE)
 target_compile_definitions(HelbreathClient PRIVATE TESTER_ONLY)
+# _DEBUG in Debug, as the Windows projects define it (Client.vcxproj, SFMLEngine.vcxproj); GCC does not
+# add it. The debug-only client code and DEF_CLAUDE_TESTING key off it (d-027, HH-0036).
+target_compile_definitions(SFMLEngine PRIVATE $<$<CONFIG:Debug>:_DEBUG>)
+target_compile_definitions(HelbreathClient PRIVATE $<$<CONFIG:Debug>:_DEBUG>)
 
 # ---------------------------------------------------------------------------
 # Find SFML 3 — try system install first, fall back to FetchContent

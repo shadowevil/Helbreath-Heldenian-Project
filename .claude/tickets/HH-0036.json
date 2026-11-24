@@ -1,7 +1,7 @@
 {
   "id": "HH-0036",
   "summary": "MCP server 3: phase 0L, define _DEBUG in Linux Debug builds (needs user go-ahead)",
-  "status": "open",
+  "status": "in_progress",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -12,7 +12,7 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:43Z",
-  "updated": "2026-11-24T01:27:44Z",
+  "updated": "2026-11-24T02:00:57Z",
   "links": {
     "commits": [],
     "files": [],
@@ -21,5 +21,5 @@
       "HH-0032"
     ]
   },
-  "body": "Add `$<$<CONFIG:Debug>:_DEBUG>` on HelbreathClient in the client CMake. This wakes 18 existing `#ifdef _DEBUG` client sites on Linux for the first time (updater skip, DebugConsole, profiling; measured count). Do not start without the user's go-ahead. 1 file, ~3 lines.\n\n**Done when:** the user has approved; a WSL Debug build compiles and runs with the 18 sites active; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028."
+  "body": "Add `$<$<CONFIG:Debug>:_DEBUG>` on HelbreathClient in the client CMake. This wakes 18 existing `#ifdef _DEBUG` client sites on Linux for the first time (updater skip, DebugConsole, profiling; measured count). Do not start without the user's go-ahead. 1 file, ~3 lines.\n\n**Done when:** the user has approved; a WSL Debug build compiles and runs with the 18 sites active; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028.\n\n**User go-ahead, 2026-11-24:** \"Approve HH-0036\".\n"
 }

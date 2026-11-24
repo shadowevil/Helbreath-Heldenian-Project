@@ -1,7 +1,7 @@
 {
   "id": "HH-0034",
   "summary": "Split 4b: full-width dims and bars cover the whole window in stretch",
-  "status": "in_review",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:24:02Z",
-  "updated": "2026-11-24T01:28:04Z",
+  "updated": "2026-11-24T01:29:33Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "1846c25"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0005"
     ]
   },
-  "body": "After Phase 4 (2693736), in stretch mode on a non-4:3 window, UI fills that span the full 800x600 design width cover only the centred 4:3 UI rect. Affected: the dims behind pop-ups (e.g. `overlay_query_delete_character.cpp:98`, `overlay_query_force_login.cpp:104`, as of 2026-11-24, found by the Phase 4 review), the chat background and the top message bar. The user chose \"Whole window\" (d-029).\n\nLetterbox and 4:3 windows are unaffected: the UI and world rects are equal there.\n\n**Done when:** in 1920x1080 stretch, those fills reach both window edges, and letterbox and 4:3 output are unchanged; built and reviewed.\n\nSource: Phase 4 editor and review reports 2026-11-24; user answer 2026-11-24."
+  "body": "After Phase 4 (2693736), in stretch mode on a non-4:3 window, UI fills that span the full 800x600 design width cover only the centred 4:3 UI rect. Affected: the dims behind pop-ups (e.g. `overlay_query_delete_character.cpp:98`, `overlay_query_force_login.cpp:104`, as of 2026-11-24, found by the Phase 4 review), the chat background and the top message bar. The user chose \"Whole window\" (d-029).\n\nLetterbox and 4:3 windows are unaffected: the UI and world rects are equal there.\n\n**Done when:** in 1920x1080 stretch, those fills reach both window edges, and letterbox and 4:3 output are unchanged; built and reviewed.\n\nSource: Phase 4 editor and review reports 2026-11-24; user answer 2026-11-24.\n\n**Closed, 2026-11-24:** read-only review passed (one alignment nit fixed). Debug build 0 errors, no compiler warnings (measured). Not run in game; covered by HH-0014.\n"
 }
