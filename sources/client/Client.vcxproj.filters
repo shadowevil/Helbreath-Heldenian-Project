@@ -503,6 +503,12 @@
     <ClInclude Include="..\dependencies\shared\util\sha256.h">
       <Filter>Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\dependencies\shared\util\claude_testing.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="agent_bridge_config.h">
+      <Filter>Core</Filter>
+    </ClInclude>
     <ClInclude Include="..\dependencies\shared\vendor\picosha2.h">
       <Filter>Shared</Filter>
     </ClInclude>

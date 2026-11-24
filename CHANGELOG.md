@@ -50,3 +50,5 @@ In stretch mode on a window that is not 4:3, the world and the HUD action bar no
 In that same widescreen stretch mode, the dimmed backgrounds behind pop-ups, the chat background, the top message bar and the performance monitor bar now reach both edges of the window instead of stopping at the centred 4:3 area.
 
 Linux Debug builds of the client now behave like Windows Debug builds: they connect to a local server (127.0.0.1) instead of the public test server, skip the auto-update check, and enable the debug-only tools (tile grid, spell target overlay, frame profiling). Release builds are unchanged.
+
+Groundwork for an agent bridge in Debug builds (HH-0035). Debug clients accept `--agent-bridge-port=N` (8891-8898, default 8891) and `--no-agent-bridge`. Linux now passes the whole command line to the game. None of this is compiled into Release.

@@ -1,7 +1,7 @@
 {
   "id": "HH-0035",
   "summary": "MCP server 2: phase 0, guard header and bridge flags",
-  "status": "open",
+  "status": "in_review",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -12,7 +12,7 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:37Z",
-  "updated": "2026-11-24T01:27:47Z",
+  "updated": "2026-11-24T02:36:53Z",
   "links": {
     "commits": [],
     "files": [],

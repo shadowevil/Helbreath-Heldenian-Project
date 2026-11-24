@@ -230,7 +230,9 @@
     <ClInclude Include="..\dependencies\shared\platform_headers.h" />
     <ClInclude Include="..\dependencies\shared\version.h" />
     <ClInclude Include="..\dependencies\shared\util\hmac.h" />
+    <ClInclude Include="..\dependencies\shared\util\claude_testing.h" />
     <ClInclude Include="action_id_client.h" />
+    <ClInclude Include="agent_bridge_config.h" />
     <ClInclude Include="benchmark.h" />
     <ClInclude Include="performance_monitor.h" />
     <ClInclude Include="build_item.h" />

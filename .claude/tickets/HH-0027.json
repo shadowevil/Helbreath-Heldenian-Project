@@ -1,7 +1,7 @@
 {
   "id": "HH-0027",
   "summary": "Docs 10 KB 4: log-only hook warning on oversize linked docs",
-  "status": "open",
+  "status": "user_review",
   "severity": "low",
   "owner_area": "docs",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:38:19Z",
-  "updated": "2026-11-23T21:38:19Z",
+  "updated": "2026-11-24T02:34:43Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "c4abd83"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0023"
     ]
   },
-  "body": "Candidate project hook (log-only): after a write to `.claude/docs/**.md`, log when the file is over 10 KB. Needs the hook framework and the review phase (global rules).\n\n**Done when:** hook built log-only, reviewed and installed, or ruled not worth it.\n\nSource: user request 2026-11-23 (d-026); .claude/docs/documentation.md."
+  "body": "Candidate project hook (log-only): after a write to `.claude/docs/**.md`, log when the file is over 10 KB. Needs the hook framework and the review phase (global rules).\n\n**Done when:** hook built log-only, reviewed and installed, or ruled not worth it.\n\nSource: user request 2026-11-23 (d-026); .claude/docs/documentation.md.\n\n**Installed, 2026-11-24:** rule D1 is installed in `.claude/hooks/` and wired in the new `.claude/settings.json` as PostToolUse on Write|Edit|MultiEdit. It is log-only, logging to `.claude/hooks/log/doc_size_hits.jsonl` (gitignored). The read-only review passed twice (fixes in between). The live self-test passes 35/35 (measured). A live smoke test with an 11,229 B throwaway doc in `.claude/docs/` logged one row (`would_flag: true`); the doc was then deleted. The replay found 11 hits and 0 false positives. d-030 was classified not hookable (judgment). `documentation.md`'s size check is aligned to 10,240 B.\n\n**Needs the user (user_review):** (1) should D1 show its message to the agent (`--flag`) instead of only logging? (2) Should an assessed (kept-whole) doc re-flag each time it grows past another 2 KB? (3) Should the hook become global (it is generalized; global hooks need the user's approval)?\n"
 }

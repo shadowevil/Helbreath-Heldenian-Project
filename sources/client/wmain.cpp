@@ -7,11 +7,14 @@
 #include <memory>
 #include <cstdlib>
 #include <ctime>
+#include <string>
+#include <string_view>
 #include "benchmark.h"
 
 // --------------------------------------------------------------
 // Platform-independent core
-int GameMain(hb::shared::types::NativeInstance native_instance, int icon_resource_id, const char* cmdLine)
+// cmd_line holds every argument after the program name, space-separated (WinMain's lpCmdLine form)
+int GameMain(hb::shared::types::NativeInstance native_instance, int icon_resource_id, [[maybe_unused]] std::string_view cmd_line)
 {
 #ifdef _DEBUG
 	DebugConsole::allocate();
@@ -45,12 +48,33 @@ int GameMain(hb::shared::types::NativeInstance native_instance, int icon_resourc
         return 1;
     }
 
+#ifdef DEF_CLAUDE_TESTING
+    // Parsed after initialize() so a bad value reaches the log; the bridge starts inside run()
+    game->m_agent_bridge_config = hb::client::parse_agent_bridge_flags(cmd_line);
+#endif
+
     // Run the main loop (realizes window, creates renderer, loops, shuts down)
     return game->run();
 }
 
 // --------------------------------------------------------------
 // Platform-specific entry points
+
+// Joins argv[1..argc) with single spaces, the form WinMain's lpCmdLine already has
+// Argument boundaries are lost here, so a later flag must not take a value that contains spaces
+static std::string join_arguments(int argc, char* argv[])
+{
+	std::string joined;
+	for (int i = 1; i < argc; ++i)
+	{
+		if (i > 1)
+		{
+			joined += ' ';
+		}
+		joined += argv[i];
+	}
+	return joined;
+}
 
 #ifdef _WIN32
 #include "platform_headers.h" // included here for WinMain types; unconditional include is in native_types.h
@@ -72,17 +96,17 @@ static void InitDpiAwareness()
 int APIENTRY WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
     //InitDpiAwareness();
-    return GameMain(hInstance, IDI_ICON1, lpCmdLine);
+    return GameMain(hInstance, IDI_ICON1, lpCmdLine ? lpCmdLine : "");
 }
 
 int main(int argc, char* argv[])
 {
     //InitDpiAwareness();
-    return GameMain(GetModuleHandle(nullptr), IDI_ICON1, argc > 1 ? argv[1] : "");
+    return GameMain(GetModuleHandle(nullptr), IDI_ICON1, join_arguments(argc, argv));
 }
 #else
 int main(int argc, char* argv[])
 {
-    return GameMain(nullptr, 0, argc > 1 ? argv[1] : "");
+    return GameMain(nullptr, 0, join_arguments(argc, argv));
 }
 #endif

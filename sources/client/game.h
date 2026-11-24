@@ -64,6 +64,7 @@
 #include "application.h"
 #include "game_events.h"
 #include "formula_engine.h"
+#include "agent_bridge_config.h"
 
 // Overlay types for popup screens that render over base screens
 enum class OverlayType {
@@ -132,6 +133,11 @@ public:
 
 	// Camera for viewport management
 	CCamera m_Camera;
+
+#ifdef DEF_CLAUDE_TESTING
+	// Launch flags for the agent bridge; GameMain fills them after initialize(), before run()
+	hb::client::agent_bridge_config m_agent_bridge_config;
+#endif
 
 	void read_settings();
 	void write_settings();
