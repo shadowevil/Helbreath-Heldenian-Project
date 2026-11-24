@@ -14,36 +14,48 @@
  ],
  "icons": [
   {
-   "icon": "sword",
-   "x": 558.6,
-   "y": 388.9,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_bunny",
+   "x": 581.4,
+   "y": 404.9,
+   "w": 32.3,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 1,
+   "creature": "bunny",
+   "npc_type": 55,
    "npc_ids": [
     1
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    1
+   ],
+   "area_npc_types": [
     55
    ],
-   "creatures": [
+   "area_creatures": [
     "bunny"
    ]
   },
   {
-   "icon": "sword",
-   "x": 575.8,
-   "y": 621.7,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_giant_crayfish",
+   "x": 575.5,
+   "y": 628.6,
+   "w": 78.4,
+   "h": 62.3,
+   "kind": "creature",
+   "area": 2,
+   "creature": "giant_crayfish",
+   "npc_type": 74,
    "npc_ids": [
     26
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    26
+   ],
+   "area_npc_types": [
     74
    ],
-   "creatures": [
+   "area_creatures": [
     "giant_crayfish"
    ]
   },

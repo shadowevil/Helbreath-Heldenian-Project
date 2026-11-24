@@ -14,53 +14,71 @@
  ],
  "icons": [
   {
-   "icon": "sword",
-   "x": 632.3,
-   "y": 577.9,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_slime",
+   "x": 630.9,
+   "y": 593.9,
+   "w": 80.7,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 2,
+   "creature": "slime",
+   "npc_type": 10,
    "npc_ids": [
     0
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    0
+   ],
+   "area_npc_types": [
     10
    ],
-   "creatures": [
+   "area_creatures": [
     "slime"
    ]
   },
   {
-   "icon": "sword",
-   "x": 468.1,
-   "y": 607.3,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_slime",
+   "x": 466.7,
+   "y": 623.3,
+   "w": 80.7,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 3,
+   "creature": "slime",
+   "npc_type": 10,
    "npc_ids": [
     0
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    0
+   ],
+   "area_npc_types": [
     10
    ],
-   "creatures": [
+   "area_creatures": [
     "slime"
    ]
   },
   {
-   "icon": "sword",
-   "x": 757.0,
-   "y": 768.7,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_slime",
+   "x": 755.6,
+   "y": 784.7,
+   "w": 80.7,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 1,
+   "creature": "slime",
+   "npc_type": 10,
    "npc_ids": [
     0
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    0
+   ],
+   "area_npc_types": [
     10
    ],
-   "creatures": [
+   "area_creatures": [
     "slime"
    ]
   },

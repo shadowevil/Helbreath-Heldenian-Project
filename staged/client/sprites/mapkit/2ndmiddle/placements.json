@@ -14,107 +14,157 @@
  ],
  "icons": [
   {
-   "icon": "sword",
-   "x": 561.1,
-   "y": 354.2,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_zombie",
+   "x": 590.0,
+   "y": 370.2,
+   "w": 20.0,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 2,
+   "creature": "zombie",
+   "npc_type": 18,
    "npc_ids": [
     8
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    8
+   ],
+   "area_npc_types": [
     18
    ],
-   "creatures": [
+   "area_creatures": [
     "zombie"
    ]
   },
   {
-   "icon": "sword",
-   "x": 563.1,
-   "y": 552.1,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_cyclops",
+   "x": 565.2,
+   "y": 554.4,
+   "w": 44.1,
+   "h": 70.0,
+   "kind": "creature",
+   "area": 1,
+   "creature": "cyclops",
+   "npc_type": 13,
    "npc_ids": [
+    18
+   ],
+   "area_npc_ids": [
     17,
     18
    ],
-   "npc_types": [
+   "area_npc_types": [
     13,
     28
    ],
-   "creatures": [
+   "area_creatures": [
     "cyclops",
     "troll"
    ]
   },
   {
-   "icon": "sword",
-   "x": 874.7,
-   "y": 667.8,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_troll",
+   "x": 605.2,
+   "y": 568.4,
+   "w": 33.6,
+   "h": 57.4,
+   "kind": "creature",
+   "area": 1,
+   "creature": "troll",
+   "npc_type": 28,
+   "npc_ids": [
+    17
+   ]
+  },
+  {
+   "icon": "creature_stone_golem",
+   "x": 896.5,
+   "y": 677.8,
+   "w": 34.3,
+   "h": 56.0,
+   "kind": "creature",
+   "area": 4,
+   "creature": "stone_golem",
+   "npc_type": 12,
    "npc_ids": [
     13
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    13
+   ],
+   "area_npc_types": [
     12
    ],
-   "creatures": [
+   "area_creatures": [
     "stone_golem"
    ]
   },
   {
-   "icon": "sword",
-   "x": 288.7,
-   "y": 714.8,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_scorpion",
+   "x": 304.5,
+   "y": 730.0,
+   "w": 46.2,
+   "h": 45.5,
+   "kind": "creature",
+   "area": 3,
+   "creature": "scorpion",
+   "npc_type": 17,
    "npc_ids": [
     9
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    9
+   ],
+   "area_npc_types": [
     17
    ],
-   "creatures": [
+   "area_creatures": [
     "scorpion"
    ]
   },
   {
-   "icon": "sword",
-   "x": 761.0,
-   "y": 810.8,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_orc_mage",
+   "x": 786.2,
+   "y": 826.8,
+   "w": 27.3,
+   "h": 44.1,
+   "kind": "creature",
+   "area": 6,
+   "creature": "orc_mage",
+   "npc_type": 14,
    "npc_ids": [
     5
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    5
+   ],
+   "area_npc_types": [
     14
    ],
-   "creatures": [
+   "area_creatures": [
     "orc_mage"
    ]
   },
   {
-   "icon": "sword",
-   "x": 612.1,
-   "y": 857.9,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_zombie",
+   "x": 641.0,
+   "y": 873.9,
+   "w": 20.0,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 5,
+   "creature": "zombie",
+   "npc_type": 18,
    "npc_ids": [
     8
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    8
+   ],
+   "area_npc_types": [
     18
    ],
-   "creatures": [
+   "area_creatures": [
     "zombie"
    ]
   },

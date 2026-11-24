@@ -14,117 +14,209 @@
  ],
  "icons": [
   {
-   "icon": "sword",
-   "x": 740.8,
-   "y": 246.0,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_beholder",
+   "x": 760.1,
+   "y": 249.0,
+   "w": 39.2,
+   "h": 70.0,
+   "kind": "creature",
+   "area": 5,
+   "creature": "beholder",
+   "npc_type": 53,
    "npc_ids": [
     20
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    20
+   ],
+   "area_npc_types": [
     53
    ],
-   "creatures": [
+   "area_creatures": [
     "beholder"
    ]
   },
   {
-   "icon": "sword",
-   "x": 472.9,
-   "y": 316.3,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_stone_golem",
+   "x": 494.7,
+   "y": 326.3,
+   "w": 34.3,
+   "h": 56.0,
+   "kind": "creature",
+   "area": 6,
+   "creature": "stone_golem",
+   "npc_type": 12,
    "npc_ids": [
     13
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    13
+   ],
+   "area_npc_types": [
     12
    ],
-   "creatures": [
+   "area_creatures": [
     "stone_golem"
    ]
   },
   {
-   "icon": "sword",
-   "x": 310.9,
-   "y": 420.0,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_stone_golem",
+   "x": 316.2,
+   "y": 425.8,
+   "w": 34.3,
+   "h": 56.0,
+   "kind": "creature",
+   "area": 2,
+   "creature": "stone_golem",
+   "npc_type": 12,
    "npc_ids": [
+    13
+   ],
+   "area_npc_ids": [
     13,
     28
    ],
-   "npc_types": [
+   "area_npc_types": [
     12,
     30
    ],
-   "creatures": [
+   "area_creatures": [
     "stone_golem",
     "liche"
    ]
   },
   {
-   "icon": "sword",
-   "x": 636.4,
-   "y": 497.1,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_liche",
+   "x": 346.3,
+   "y": 423.0,
+   "w": 37.1,
+   "h": 70.0,
+   "kind": "creature",
+   "area": 2,
+   "creature": "liche",
+   "npc_type": 30,
    "npc_ids": [
+    28
+   ]
+  },
+  {
+   "icon": "creature_liche",
+   "x": 643.5,
+   "y": 500.1,
+   "w": 37.1,
+   "h": 70.0,
+   "kind": "creature",
+   "area": 1,
+   "creature": "liche",
+   "npc_type": 30,
+   "npc_ids": [
+    28
+   ],
+   "area_npc_ids": [
     28,
     31
    ],
-   "npc_types": [
+   "area_npc_types": [
     30,
     54
    ],
-   "creatures": [
+   "area_creatures": [
     "liche",
     "dark_elf"
    ]
   },
   {
-   "icon": "sword",
-   "x": 255.8,
-   "y": 738.6,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_dark_elf",
+   "x": 677.0,
+   "y": 505.7,
+   "w": 30.1,
+   "h": 51.8,
+   "kind": "creature",
+   "area": 1,
+   "creature": "dark_elf",
+   "npc_type": 54,
    "npc_ids": [
+    31
+   ]
+  },
+  {
+   "icon": "creature_skeleton",
+   "x": 269.2,
+   "y": 747.9,
+   "w": 23.8,
+   "h": 57.4,
+   "kind": "creature",
+   "area": 4,
+   "creature": "skeleton",
+   "npc_type": 11,
+   "npc_ids": [
+    10
+   ],
+   "area_npc_ids": [
     10,
     31
    ],
-   "npc_types": [
+   "area_npc_types": [
     11,
     54
    ],
-   "creatures": [
+   "area_creatures": [
     "skeleton",
     "dark_elf"
    ]
   },
   {
-   "icon": "sword",
-   "x": 508.4,
-   "y": 880.2,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_dark_elf",
+   "x": 290.1,
+   "y": 752.1,
+   "w": 30.1,
+   "h": 51.8,
+   "kind": "creature",
+   "area": 4,
+   "creature": "dark_elf",
+   "npc_type": 54,
    "npc_ids": [
+    31
+   ]
+  },
+  {
+   "icon": "creature_skeleton",
+   "x": 517.2,
+   "y": 897.9,
+   "w": 23.8,
+   "h": 57.4,
+   "kind": "creature",
+   "area": 3,
+   "creature": "skeleton",
+   "npc_type": 11,
+   "npc_ids": [
+    10
+   ],
+   "area_npc_ids": [
     10,
     20
    ],
-   "npc_types": [
+   "area_npc_types": [
     11,
     53
    ],
-   "creatures": [
+   "area_creatures": [
     "skeleton",
     "beholder"
+   ]
+  },
+  {
+   "icon": "creature_beholder",
+   "x": 538.2,
+   "y": 881.1,
+   "w": 39.2,
+   "h": 70.0,
+   "kind": "creature",
+   "area": 3,
+   "creature": "beholder",
+   "npc_type": 53,
+   "npc_ids": [
+    20
    ]
   },
   {

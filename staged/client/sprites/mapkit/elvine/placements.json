@@ -14,107 +14,157 @@
  ],
  "icons": [
   {
-   "icon": "sword",
-   "x": 531.9,
-   "y": 183.7,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_slime",
+   "x": 510.1,
+   "y": 205.6,
+   "w": 80.7,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 2,
+   "creature": "slime",
+   "npc_type": 10,
    "npc_ids": [
+    0
+   ],
+   "area_npc_ids": [
     0,
     9
    ],
-   "npc_types": [
+   "area_npc_types": [
     10,
     17
    ],
-   "creatures": [
+   "area_creatures": [
     "slime",
     "scorpion"
    ]
   },
   {
-   "icon": "sword",
-   "x": 226.3,
-   "y": 275.4,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_scorpion",
+   "x": 585.3,
+   "y": 193.8,
+   "w": 46.2,
+   "h": 45.5,
+   "kind": "creature",
+   "area": 2,
+   "creature": "scorpion",
+   "npc_type": 17,
+   "npc_ids": [
+    9
+   ]
+  },
+  {
+   "icon": "creature_slime",
+   "x": 224.9,
+   "y": 291.4,
+   "w": 80.7,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 5,
+   "creature": "slime",
+   "npc_type": 10,
    "npc_ids": [
     0
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    0
+   ],
+   "area_npc_types": [
     10
    ],
-   "creatures": [
+   "area_creatures": [
     "slime"
    ]
   },
   {
-   "icon": "sword",
-   "x": 922.1,
-   "y": 664.2,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_slime",
+   "x": 920.7,
+   "y": 680.2,
+   "w": 80.7,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 6,
+   "creature": "slime",
+   "npc_type": 10,
    "npc_ids": [
     0
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    0
+   ],
+   "area_npc_types": [
     10
    ],
-   "creatures": [
+   "area_creatures": [
     "slime"
    ]
   },
   {
-   "icon": "sword",
-   "x": 236.0,
-   "y": 718.2,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_amphis",
+   "x": 239.0,
+   "y": 734.2,
+   "w": 71.8,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 1,
+   "creature": "amphis",
+   "npc_type": 22,
    "npc_ids": [
     4
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    4
+   ],
+   "area_npc_types": [
     22
    ],
-   "creatures": [
+   "area_creatures": [
     "amphis"
    ]
   },
   {
-   "icon": "sword",
-   "x": 861.6,
-   "y": 775.2,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_slime",
+   "x": 860.2,
+   "y": 791.2,
+   "w": 80.7,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 3,
+   "creature": "slime",
+   "npc_type": 10,
    "npc_ids": [
     0
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    0
+   ],
+   "area_npc_types": [
     10
    ],
-   "creatures": [
+   "area_creatures": [
     "slime"
    ]
   },
   {
-   "icon": "sword",
-   "x": 508.8,
-   "y": 876.5,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_slime",
+   "x": 507.4,
+   "y": 892.5,
+   "w": 80.7,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 4,
+   "creature": "slime",
+   "npc_type": 10,
    "npc_ids": [
     0
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    0
+   ],
+   "area_npc_types": [
     10
    ],
-   "creatures": [
+   "area_creatures": [
     "slime"
    ]
   },

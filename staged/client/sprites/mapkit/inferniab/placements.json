@@ -14,108 +14,158 @@
  ],
  "icons": [
   {
-   "icon": "sword",
-   "x": 619.9,
-   "y": 283.6,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_fire_wyvern",
+   "x": 615.5,
+   "y": 265.6,
+   "w": 86.7,
+   "h": 112.0,
+   "kind": "creature",
+   "area": 3,
+   "creature": "fire_wyvern",
+   "npc_type": 73,
    "npc_ids": [
     47
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    47
+   ],
+   "area_npc_types": [
     73
    ],
-   "creatures": [
+   "area_creatures": [
     "fire_wyvern"
    ]
   },
   {
-   "icon": "sword",
-   "x": 303.0,
-   "y": 329.3,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_zombie",
+   "x": 331.9,
+   "y": 345.3,
+   "w": 20.0,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 6,
+   "creature": "zombie",
+   "npc_type": 18,
    "npc_ids": [
     8
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    8
+   ],
+   "area_npc_types": [
     18
    ],
-   "creatures": [
+   "area_creatures": [
     "zombie"
    ]
   },
   {
-   "icon": "sword",
-   "x": 672.2,
-   "y": 430.6,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_cyclops",
+   "x": 689.1,
+   "y": 433.6,
+   "w": 44.1,
+   "h": 70.0,
+   "kind": "creature",
+   "area": 5,
+   "creature": "cyclops",
+   "npc_type": 13,
    "npc_ids": [
     18
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    18
+   ],
+   "area_npc_types": [
     13
    ],
-   "creatures": [
+   "area_creatures": [
     "cyclops"
    ]
   },
   {
-   "icon": "sword",
-   "x": 417.4,
-   "y": 512.3,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_claw_turtle",
+   "x": 430.1,
+   "y": 512.5,
+   "w": 52.5,
+   "h": 75.6,
+   "kind": "creature",
+   "area": 2,
+   "creature": "claw_turtle",
+   "npc_type": 72,
    "npc_ids": [
     33
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    33
+   ],
+   "area_npc_types": [
     72
    ],
-   "creatures": [
+   "area_creatures": [
     "claw_turtle"
    ]
   },
   {
-   "icon": "sword",
-   "x": 760.4,
-   "y": 577.6,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_demon",
+   "x": 769.5,
+   "y": 571.1,
+   "w": 59.5,
+   "h": 88.9,
+   "kind": "creature",
+   "area": 4,
+   "creature": "demon",
+   "npc_type": 31,
    "npc_ids": [
     36
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    36
+   ],
+   "area_npc_types": [
     31
    ],
-   "creatures": [
+   "area_creatures": [
     "demon"
    ]
   },
   {
-   "icon": "sword",
-   "x": 430.4,
-   "y": 781.7,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_liche",
+   "x": 427.4,
+   "y": 794.5,
+   "w": 37.1,
+   "h": 70.0,
+   "kind": "creature",
+   "area": 1,
+   "creature": "liche",
+   "npc_type": 30,
    "npc_ids": [
+    28
+   ],
+   "area_npc_ids": [
     28,
     39
    ],
-   "npc_types": [
+   "area_npc_types": [
     30,
     71
    ],
-   "creatures": [
+   "area_creatures": [
     "liche",
     "centaur"
+   ]
+  },
+  {
+   "icon": "creature_centaur",
+   "x": 460.1,
+   "y": 774.9,
+   "w": 51.1,
+   "h": 79.8,
+   "kind": "creature",
+   "area": 1,
+   "creature": "centaur",
+   "npc_type": 71,
+   "npc_ids": [
+    39
    ]
   },
   {

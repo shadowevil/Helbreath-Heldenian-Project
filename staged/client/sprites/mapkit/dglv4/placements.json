@@ -14,23 +14,43 @@
  ],
  "icons": [
   {
-   "icon": "sword",
-   "x": 561.1,
-   "y": 558.0,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_skeleton",
+   "x": 559.8,
+   "y": 581.6,
+   "w": 23.8,
+   "h": 57.4,
+   "kind": "creature",
+   "area": 1,
+   "creature": "skeleton",
+   "npc_type": 11,
    "npc_ids": [
+    10
+   ],
+   "area_npc_ids": [
     10,
     36
    ],
-   "npc_types": [
+   "area_npc_types": [
     11,
     31
    ],
-   "creatures": [
+   "area_creatures": [
     "skeleton",
     "demon"
+   ]
+  },
+  {
+   "icon": "creature_demon",
+   "x": 580.7,
+   "y": 551.5,
+   "w": 59.5,
+   "h": 88.9,
+   "kind": "creature",
+   "area": 1,
+   "creature": "demon",
+   "npc_type": 31,
+   "npc_ids": [
+    36
    ]
   },
   {

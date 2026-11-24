@@ -14,63 +14,123 @@
  ],
  "icons": [
   {
-   "icon": "sword",
-   "x": 358.6,
-   "y": 721.3,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_dark_elf",
+   "x": 368.1,
+   "y": 731.1,
+   "w": 30.1,
+   "h": 51.8,
+   "kind": "creature",
+   "area": 1,
+   "creature": "dark_elf",
+   "npc_type": 54,
    "npc_ids": [
+    31
+   ],
+   "area_npc_ids": [
     1,
     31
    ],
-   "npc_types": [
+   "area_npc_types": [
     54,
     55
    ],
-   "creatures": [
+   "area_creatures": [
     "dark_elf",
     "bunny"
    ]
   },
   {
-   "icon": "sword",
-   "x": 822.4,
-   "y": 892.8,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_bunny",
+   "x": 394.6,
+   "y": 743.5,
+   "w": 32.3,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 1,
+   "creature": "bunny",
+   "npc_type": 55,
    "npc_ids": [
+    1
+   ]
+  },
+  {
+   "icon": "creature_beholder",
+   "x": 827.5,
+   "y": 892.1,
+   "w": 39.2,
+   "h": 70.0,
+   "kind": "creature",
+   "area": 3,
+   "creature": "beholder",
+   "npc_type": 53,
+   "npc_ids": [
+    20
+   ],
+   "area_npc_ids": [
     1,
     20
    ],
-   "npc_types": [
+   "area_npc_types": [
     53,
     55
    ],
-   "creatures": [
+   "area_creatures": [
     "beholder",
     "bunny"
    ]
   },
   {
-   "icon": "sword",
-   "x": 201.8,
-   "y": 950.0,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_bunny",
+   "x": 862.8,
+   "y": 925.5,
+   "w": 32.3,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 3,
+   "creature": "bunny",
+   "npc_type": 55,
    "npc_ids": [
+    1
+   ]
+  },
+  {
+   "icon": "creature_beholder",
+   "x": 206.9,
+   "y": 949.3,
+   "w": 39.2,
+   "h": 70.0,
+   "kind": "creature",
+   "area": 2,
+   "creature": "beholder",
+   "npc_type": 53,
+   "npc_ids": [
+    20
+   ],
+   "area_npc_ids": [
     1,
     20
    ],
-   "npc_types": [
+   "area_npc_types": [
     53,
     55
    ],
-   "creatures": [
+   "area_creatures": [
     "beholder",
     "bunny"
+   ]
+  },
+  {
+   "icon": "creature_bunny",
+   "x": 242.2,
+   "y": 982.7,
+   "w": 32.3,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 2,
+   "creature": "bunny",
+   "npc_type": 55,
+   "npc_ids": [
+    1
    ]
   },
   {

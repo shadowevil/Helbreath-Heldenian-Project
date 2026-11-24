@@ -12,8 +12,9 @@ Writes into --out (default staged/client/sprites/mapkit/), all names lowercase:
   creatures.png / .json  every killable creature (an NPC pak in the client's loading stage with the full
                          40-sprite action set, plus KILLABLE_SHORT_PAKS) standing, facing south-east, frame 0,
                          at native scale: {npc_type, npc_ids, npc_names, x, y, w, h, pivot_x, pivot_y}.
-                         Monster areas in placements.json carry npc_ids, npc_types and creatures; nothing
-                         draws them yet
+                         icons.json also holds them as creature_<name> frames (image creatures.png): a
+                         monster area with creature art draws up to CREATURE_MAX_PER_AREA of them in place
+                         of its sword, as placements icons of kind "creature"
   <map>/ink.png          the map's ink alone (make_parchment.py --ink-layer, --scale 4)
   <map>/placements.json  tile_to_px numbers and the icons to draw, already laid out: kit-pixel rects in
                          draw order (sized, merged, kept off the margin, overlaps dropped)
@@ -62,6 +63,14 @@ BUILDING_FACTOR = 0.7            # one factor for every building, so their relat
 EXIT_ARROW = "exit_arrow"        # the user's arrow, pointing north; baked as arrow_<deg>
 ICON_HEIGHT = {"sword": 76, "portal_blue": 96, "portal_red": 96, "stairs_down": 64, "stairs_spiral": 84, EXIT_ARROW: 72}
 KIND_ICON = {"entrance": "stairs_down", "stairs": "stairs_spiral"}   # kit art per kind, over the generator's old name
+# creatures on a monster area (replace its sword): one factor on the native sprite size keeps relative
+# sizes; each figure's on-kit height is then clamped, so a bunny stays readable and a wyvern stays
+# well under the cathedral icon (about 142 px tall)
+CREATURE_FACTOR = 0.7            # kit px per native sprite px (an ogre, 111 px, comes out about 78)
+CREATURE_MIN_H = 44              # smallest drawn height
+CREATURE_MAX_H = 112             # largest drawn height
+CREATURE_MAX_PER_AREA = 3        # creatures drawn per monster area, in the listed order
+CREATURE_OVERLAP = 0.12          # neighbours overlap by this share of the narrower figure
 MARGIN = 14 * SCALE              # icons stay this far inside the square (as make_parchment --icons)
 CLASH = 0.5                      # an icon mostly covering one already placed is dropped
 MERGE_PX = 30 * SCALE            # doors of one building (or stair) closer than this share one icon
@@ -179,37 +188,72 @@ def merge_doors(placed):
 	return out
 
 
-def layout(placed, frames, factors, configs=None, creatures=None):
+def creature_cluster(names, cre_entries, cx, cy):
+	"""Rects [(name, left, top, w, h)] for up to CREATURE_MAX_PER_AREA creatures side by side, feet (the
+	frame's pivot) on one baseline, the cluster's bounding box centred on (cx, cy)."""
+	figs = []
+	for n in names[:CREATURE_MAX_PER_AREA]:
+		e = cre_entries[n]
+		s = min(max(e["h"] * CREATURE_FACTOR, CREATURE_MIN_H), CREATURE_MAX_H) / e["h"]
+		figs.append((n, e["w"] * s, e["h"] * s, -e["pivot_y"] * s))   # name, w, h, baseline below the frame top
+	lefts, x = [], 0.0
+	for i, (_, w, _, _) in enumerate(figs):
+		if i:
+			x -= CREATURE_OVERLAP * min(w, figs[i - 1][1])
+		lefts.append(x)
+		x += w
+	up = max(b for _, _, _, b in figs)            # cluster extent above and below the baseline
+	down = max(h - b for _, _, h, b in figs)
+	left0, top0 = cx - x / 2, cy - (up + down) / 2
+	return [(n, left0 + lx, top0 + up - b, w, h) for (n, w, h, b), lx in zip(figs, lefts)]
+
+
+def layout(placed, frames, factors, configs=None, creatures=None, cre_entries=None):
 	"""Icon rects in kit pixels, in draw order: sized, kept MARGIN inside the square, clashes dropped.
-	Monster areas also list their generators' npc ids, npc types and creature atlas names."""
-	boxes, kept = [], []
+	Monster areas also list their generators' npc ids, npc types and creature atlas names; one with
+	creature art shows its creatures (kind "creature", area = its index) instead of the sword."""
+	boxes, kept, area = [], [], 0
 	for p in sorted(merge_doors(placed), key=lambda p: PRIORITY.get(p["kind"], 9)):
 		name = kit_icon(p)
 		if name not in frames:
 			continue
 		w, h = draw_size(name, frames[name], factors)
+		meta = {}
+		if p["kind"] == "monster_area" and creatures is not None:
+			# what spawns there, so a kit can show the right creature
+			ids = sorted({g["npc_config_id"] for g in p.get("generators", []) if g.get("npc_config_id") is not None})
+			types = sorted({configs[i][1] for i in ids if i in configs})
+			meta = {"npc_ids": ids, "npc_types": types, "creatures": [creatures[t] for t in types if t in creatures]}
 		left = p["x"] - w / 2
 		top = p["y"] - h / 2 if p.get("anchor") == "center" else p["y"] - h
-		left = min(max(left, MARGIN), SIZE - MARGIN - w)
-		top = min(max(top, MARGIN), SIZE - MARGIN - h)
+		figs = []
+		if meta.get("creatures"):
+			figs = creature_cluster(meta["creatures"], cre_entries, left + w / 2, top + h / 2)
+			l, t = min(f[1] for f in figs), min(f[2] for f in figs)
+			w, h = max(f[1] + f[3] for f in figs) - l, max(f[2] + f[4] for f in figs) - t
+			left, top = l, t
+		dx = min(max(left, MARGIN), SIZE - MARGIN - w) - left
+		dy = min(max(top, MARGIN), SIZE - MARGIN - h) - top
+		left, top = left + dx, top + dy
 		box = (left, top, left + w, top + h)
 		if any(max(0, min(b[2], box[2]) - max(b[0], box[0])) * max(0, min(b[3], box[3]) - max(b[1], box[1])) > CLASH * w * h for b in boxes):
 			continue
 		boxes.append(box)
-		entry = {"icon": name, "x": round(left, 1), "y": round(top, 1), "w": round(w, 1), "h": round(h, 1), "kind": p["kind"]}
-		for k in ("dest", "faction", "direction_deg"):
-			if p.get(k) is not None:
-				entry[k] = p[k]
-		if p["kind"] == "monster_area" and creatures is not None:
-			# what spawns there, so a kit can show the right creature (not drawn by default)
-			ids = sorted({g["npc_config_id"] for g in p.get("generators", []) if g.get("npc_config_id") is not None})
-			types = sorted({configs[i][1] for i in ids if i in configs})
-			entry["npc_ids"] = ids
-			entry["npc_types"] = types
-			entry["creatures"] = [creatures[t] for t in types if t in creatures]
-		kept.append(entry)
-	kept.sort(key=lambda e: (DRAW_ORDER.get(e["kind"], 9), e["y"] + e["h"]))
-	return kept
+		common = {k: p[k] for k in ("dest", "faction", "direction_deg") if p.get(k) is not None}
+		if figs:
+			area += 1
+			for i, (n, fl, ft, fw, fh) in enumerate(figs):
+				entry = {"icon": f"creature_{n}", "x": round(fl + dx, 1), "y": round(ft + dy, 1), "w": round(fw, 1), "h": round(fh, 1),
+				         "kind": "creature", "area": area, "creature": n, "npc_type": cre_entries[n]["npc_type"],
+				         "npc_ids": [i for i in cre_entries[n]["npc_ids"] if i in meta["npc_ids"]]}
+				if i == 0:        # the area's whole spawn list rides on its first creature (drawn ones are a subset)
+					entry["area_npc_ids"], entry["area_npc_types"], entry["area_creatures"] = meta["npc_ids"], meta["npc_types"], meta["creatures"]
+				kept.append((DRAW_ORDER["monster_area"], box[3], i, entry))
+			continue
+		entry = {"icon": name, "x": round(left, 1), "y": round(top, 1), "w": round(w, 1), "h": round(h, 1), "kind": p["kind"], **common, **meta}
+		kept.append((DRAW_ORDER.get(p["kind"], 9), entry["y"] + entry["h"], 0, entry))
+	kept.sort(key=lambda k: k[:3])
+	return [k[3] for k in kept]
 
 
 # ---------------------------------------------------------------- creatures
@@ -345,11 +389,14 @@ def main(argv=None):
 	paper.save(out / "paper.png", optimize=True)
 	icons, frames, buildings, factors = icon_sheets()
 	icons.save(out / "icons.png", optimize=True)
-	(out / "icons.json").write_text(json.dumps({"frames": frames, "buildings": buildings,
-	                                            "building_factor": BUILDING_FACTOR}, indent=1), encoding="utf-8")
 	configs = npc_configs()
 	cre_sheet, cre_entries, cre_excluded = creature_atlas(work, configs)
 	cre_sheet.save(out / "creatures.png", optimize=True)
+	# creature frames join the icon frames (the client loads whichever sheet a frame names)
+	frames.update({f"creature_{n}": {"image": "creatures.png", "x": e["x"], "y": e["y"], "w": e["w"], "h": e["h"]}
+	               for n, e in cre_entries.items()})
+	(out / "icons.json").write_text(json.dumps({"frames": frames, "buildings": buildings,
+	                                            "building_factor": BUILDING_FACTOR}, indent=1), encoding="utf-8")
 	(out / "creatures.json").write_text(json.dumps({
 		"image": "creatures.png", "frame": "stop pose, facing south-east, frame 0, native scale",
 		"pivot_note": "draw the frame's top-left at (anchor + pivot_x, anchor + pivot_y), as the client draws sprites",
@@ -362,7 +409,7 @@ def main(argv=None):
 		kit = {"map": n, "size": SIZE, "tiles": raw["tiles"], "px_per_tile": raw["px_per_tile"],
 		       "origin_x": raw["origin_x"], "origin_y": raw["origin_y"],
 		       "box": [round((SIZE - mp.BASE_BOX * SCALE) / 2, 1), round((SIZE + mp.BASE_BOX * SCALE) / 2, 1)],
-		       "icons": layout(raw["placements"], frames, factors, configs, creatures)}
+		       "icons": layout(raw["placements"], frames, factors, configs, creatures, cre_entries)}
 		(out / n / "placements.json").write_text(json.dumps(kit, indent=1), encoding="utf-8")
 	listed = maps
 	if args.maps:                 # a subset run keeps the maps already in the kit

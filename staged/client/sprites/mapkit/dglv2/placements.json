@@ -14,110 +14,174 @@
  ],
  "icons": [
   {
-   "icon": "sword",
-   "x": 256.3,
-   "y": 252.2,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_orc_mage",
+   "x": 281.6,
+   "y": 268.1,
+   "w": 27.3,
+   "h": 44.1,
+   "kind": "creature",
+   "area": 3,
+   "creature": "orc_mage",
+   "npc_type": 14,
    "npc_ids": [
     5
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    5
+   ],
+   "area_npc_types": [
     14
    ],
-   "creatures": [
+   "area_creatures": [
     "orc_mage"
    ]
   },
   {
-   "icon": "sword",
-   "x": 820.4,
-   "y": 357.9,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_orc_mage",
+   "x": 845.6,
+   "y": 373.8,
+   "w": 27.3,
+   "h": 44.1,
+   "kind": "creature",
+   "area": 1,
+   "creature": "orc_mage",
+   "npc_type": 14,
    "npc_ids": [
     5
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    5
+   ],
+   "area_npc_types": [
     14
    ],
-   "creatures": [
+   "area_creatures": [
     "orc_mage"
    ]
   },
   {
-   "icon": "sword",
-   "x": 633.8,
-   "y": 703.3,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_orc_mage",
+   "x": 659.1,
+   "y": 719.2,
+   "w": 27.3,
+   "h": 44.1,
+   "kind": "creature",
+   "area": 4,
+   "creature": "orc_mage",
+   "npc_type": 14,
    "npc_ids": [
     5
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    5
+   ],
+   "area_npc_types": [
     14
    ],
-   "creatures": [
+   "area_creatures": [
     "orc_mage"
    ]
   },
   {
-   "icon": "sword",
-   "x": 219.5,
-   "y": 801.7,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_cyclops",
+   "x": 224.3,
+   "y": 804.0,
+   "w": 44.1,
+   "h": 70.0,
+   "kind": "creature",
+   "area": 2,
+   "creature": "cyclops",
+   "npc_type": 13,
    "npc_ids": [
+    18
+   ],
+   "area_npc_ids": [
     5,
     18
    ],
-   "npc_types": [
+   "area_npc_types": [
     13,
     14
    ],
-   "creatures": [
+   "area_creatures": [
     "cyclops",
     "orc_mage"
    ]
   },
   {
-   "icon": "sword",
-   "x": 893.7,
-   "y": 837.8,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_orc_mage",
+   "x": 265.2,
+   "y": 831.3,
+   "w": 27.3,
+   "h": 44.1,
+   "kind": "creature",
+   "area": 2,
+   "creature": "orc_mage",
+   "npc_type": 14,
    "npc_ids": [
+    5
+   ]
+  },
+  {
+   "icon": "creature_skeleton",
+   "x": 908.5,
+   "y": 844.6,
+   "w": 23.8,
+   "h": 57.4,
+   "kind": "creature",
+   "area": 5,
+   "creature": "skeleton",
+   "npc_type": 11,
+   "npc_ids": [
+    10
+   ],
+   "area_npc_ids": [
     5,
     10
    ],
-   "npc_types": [
+   "area_npc_types": [
     11,
     14
    ],
-   "creatures": [
+   "area_creatures": [
     "skeleton",
     "orc_mage"
    ]
   },
   {
-   "icon": "sword",
-   "x": 254.6,
-   "y": 946.8,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_orc_mage",
+   "x": 929.4,
+   "y": 862.8,
+   "w": 27.3,
+   "h": 44.1,
+   "kind": "creature",
+   "area": 5,
+   "creature": "orc_mage",
+   "npc_type": 14,
+   "npc_ids": [
+    5
+   ]
+  },
+  {
+   "icon": "creature_orc_mage",
+   "x": 279.9,
+   "y": 962.8,
+   "w": 27.3,
+   "h": 44.1,
+   "kind": "creature",
+   "area": 6,
+   "creature": "orc_mage",
+   "npc_type": 14,
    "npc_ids": [
     5
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    5
+   ],
+   "area_npc_types": [
     14
    ],
-   "creatures": [
+   "area_creatures": [
     "orc_mage"
    ]
   },

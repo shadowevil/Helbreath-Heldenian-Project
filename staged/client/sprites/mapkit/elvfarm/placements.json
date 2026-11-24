@@ -14,104 +14,140 @@
  ],
  "icons": [
   {
-   "icon": "sword",
-   "x": 400.4,
-   "y": 238.5,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_amphis",
+   "x": 403.4,
+   "y": 254.5,
+   "w": 71.8,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 5,
+   "creature": "amphis",
+   "npc_type": 22,
    "npc_ids": [
     4
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    4
+   ],
+   "area_npc_types": [
     22
    ],
-   "creatures": [
+   "area_creatures": [
     "amphis"
    ]
   },
   {
-   "icon": "sword",
-   "x": 757.1,
-   "y": 301.2,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_giant_ant",
+   "x": 769.4,
+   "y": 317.2,
+   "w": 53.3,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 2,
+   "creature": "giant_ant",
+   "npc_type": 16,
    "npc_ids": [
     3
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    3
+   ],
+   "area_npc_types": [
     16
    ],
-   "creatures": [
+   "area_creatures": [
     "giant_ant"
    ]
   },
   {
-   "icon": "sword",
-   "x": 631.7,
-   "y": 350.2,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_slime",
+   "x": 630.3,
+   "y": 366.2,
+   "w": 80.7,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 1,
+   "creature": "slime",
+   "npc_type": 10,
    "npc_ids": [
     0
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    0
+   ],
+   "area_npc_types": [
     10
    ],
-   "creatures": [
+   "area_creatures": [
     "slime"
    ]
   },
   {
-   "icon": "sword",
-   "x": 612.1,
-   "y": 577.6,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_slime",
+   "x": 610.7,
+   "y": 593.6,
+   "w": 80.7,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 6,
+   "creature": "slime",
+   "npc_type": 10,
    "npc_ids": [
     0
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    0
+   ],
+   "area_npc_types": [
     10
    ],
-   "creatures": [
+   "area_creatures": [
     "slime"
    ]
   },
   {
-   "icon": "sword",
-   "x": 290.6,
-   "y": 726.6,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_giant_ant",
+   "x": 302.9,
+   "y": 742.6,
+   "w": 53.3,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 4,
+   "creature": "giant_ant",
+   "npc_type": 16,
    "npc_ids": [
     3
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    3
+   ],
+   "area_npc_types": [
     16
    ],
-   "creatures": [
+   "area_creatures": [
     "giant_ant"
    ]
   },
   {
-   "icon": "sword",
-   "x": 929.6,
-   "y": 893.2,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_amphis",
+   "x": 932.6,
+   "y": 909.2,
+   "w": 71.8,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 3,
+   "creature": "amphis",
+   "npc_type": 22,
    "npc_ids": [
     4
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    4
+   ],
+   "area_npc_types": [
     22
    ],
-   "creatures": [
+   "area_creatures": [
     "amphis"
    ]
   },

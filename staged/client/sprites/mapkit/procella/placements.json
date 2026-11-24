@@ -14,112 +14,176 @@
  ],
  "icons": [
   {
-   "icon": "sword",
-   "x": 551.3,
-   "y": 201.3,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_stalker",
+   "x": 562.6,
+   "y": 209.6,
+   "w": 55.3,
+   "h": 59.5,
+   "kind": "creature",
+   "area": 3,
+   "creature": "stalker",
+   "npc_type": 48,
    "npc_ids": [
     29
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    29
+   ],
+   "area_npc_types": [
     48
    ],
-   "creatures": [
+   "area_creatures": [
     "stalker"
    ]
   },
   {
-   "icon": "sword",
-   "x": 837.5,
-   "y": 338.5,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_tentacle",
+   "x": 845.5,
+   "y": 354.5,
+   "w": 61.8,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 6,
+   "creature": "tentacle",
+   "npc_type": 80,
    "npc_ids": [
     25
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    25
+   ],
+   "area_npc_types": [
     80
    ],
-   "creatures": [
+   "area_creatures": [
     "tentacle"
    ]
   },
   {
-   "icon": "sword",
-   "x": 368.7,
-   "y": 530.8,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_giant_crayfish",
+   "x": 368.4,
+   "y": 537.6,
+   "w": 78.4,
+   "h": 62.3,
+   "kind": "creature",
+   "area": 1,
+   "creature": "giant_crayfish",
+   "npc_type": 74,
    "npc_ids": [
+    26
+   ],
+   "area_npc_ids": [
     26,
     48
    ],
-   "npc_types": [
+   "area_npc_types": [
     74,
     81
    ],
-   "creatures": [
+   "area_creatures": [
     "giant_crayfish"
    ]
   },
   {
-   "icon": "sword",
-   "x": 767.3,
-   "y": 549.9,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_cannibal_plant",
+   "x": 738.8,
+   "y": 578.5,
+   "w": 39.9,
+   "h": 49.0,
+   "kind": "creature",
+   "area": 2,
+   "creature": "cannibal_plant",
+   "npc_type": 60,
    "npc_ids": [
+    21
+   ],
+   "area_npc_ids": [
     21,
     27,
     40
    ],
-   "npc_types": [
+   "area_npc_types": [
     60,
     75,
     76
    ],
-   "creatures": [
+   "area_creatures": [
     "cannibal_plant",
     "giant_lizard",
     "giant_plant"
    ]
   },
   {
-   "icon": "sword",
-   "x": 349.4,
-   "y": 724.6,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_giant_lizard",
+   "x": 773.9,
+   "y": 557.5,
+   "w": 60.9,
+   "h": 67.2,
+   "kind": "creature",
+   "area": 2,
+   "creature": "giant_lizard",
+   "npc_type": 75,
+   "npc_ids": [
+    40
+   ]
+  },
+  {
+   "icon": "creature_giant_plant",
+   "x": 829.5,
+   "y": 548.4,
+   "w": 44.1,
+   "h": 74.2,
+   "kind": "creature",
+   "area": 2,
+   "creature": "giant_plant",
+   "npc_type": 76,
+   "npc_ids": [
+    27
+   ]
+  },
+  {
+   "icon": "creature_tentacle",
+   "x": 357.4,
+   "y": 740.6,
+   "w": 61.8,
+   "h": 44.0,
+   "kind": "creature",
+   "area": 5,
+   "creature": "tentacle",
+   "npc_type": 80,
    "npc_ids": [
     25
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    25
+   ],
+   "area_npc_types": [
     80
    ],
-   "creatures": [
+   "area_creatures": [
     "tentacle"
    ]
   },
   {
-   "icon": "sword",
-   "x": 576.8,
-   "y": 906.9,
-   "w": 77.8,
-   "h": 76.0,
-   "kind": "monster_area",
+   "icon": "creature_stalker",
+   "x": 588.1,
+   "y": 915.1,
+   "w": 55.3,
+   "h": 59.5,
+   "kind": "creature",
+   "area": 4,
+   "creature": "stalker",
+   "npc_type": 48,
    "npc_ids": [
     29
    ],
-   "npc_types": [
+   "area_npc_ids": [
+    29
+   ],
+   "area_npc_types": [
     48
    ],
-   "creatures": [
+   "area_creatures": [
     "stalker"
    ]
   }
