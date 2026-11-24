@@ -68,3 +68,12 @@ The Debug agent bridge keeps an event journal (HH-0041) covering:
 - chat lines, and client warnings and errors.
 
 An agent can read it, follow it, or wait for a specific event. The MCP server's journal tools follow it.
+
+The Debug agent bridge can act in the game world (HH-0042):
+- list nearby entities;
+- map a tile to the screen;
+- walk to a tile (it refuses when a real click would, and stops on timeout);
+- close windows (the HUD is protected);
+- change the volume for the session without saving it.
+
+In-world `get_state` and `probe_point` report HP, MP, level, target, tile and object. Every bridge command now rejects unknown arguments.

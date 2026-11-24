@@ -15,9 +15,16 @@
 #include "window.h"
 #include "ccontrols.h"
 #include "dialog_box_manager.h"
+#include "audio_manager.h"
+#include "teleport_manager.h"
+#include "cursor_target.h"
+#include "action_id.h"
+#include "owner_type.h"
+#include "map_data.h"
 #include <algorithm>
 #include <array>
 #include <charconv>
+#include <cstdlib>
 #include <exception>
 #include <optional>
 #include <format>
@@ -25,6 +32,7 @@
 #include <iterator>
 #include <limits>
 #include <span>
+#include <vector>
 
 namespace hb::client
 {
@@ -160,6 +168,12 @@ namespace hb::client
 			return std::string("screen:") + (screen != nullptr && screen->get_type_id() != nullptr ? screen->get_type_id() : "none");
 		}
 
+		// the world screen is up with a player and a loaded map
+		bool in_world(CGame& game)
+		{
+			return game.on_game() != nullptr && game.m_player != nullptr && game.m_map_data != nullptr;
+		}
+
 		// characters, not bytes: count the UTF-8 lead bytes
 		std::size_t utf8_length(const std::string& text)
 		{
@@ -170,25 +184,30 @@ namespace hb::client
 
 	// The one dispatch table; ping's commands[] is built from it, so the list never drifts from the code
 	const agent_bridge::command_entry agent_bridge::commands[] = {
-		{"ping", &agent_bridge::run_ping},
-		{"get_state", &agent_bridge::run_get_state},
-		{"screenshot", &agent_bridge::run_screenshot},
-		{"probe_point", &agent_bridge::run_probe_point},
-		{"mouse_move", &agent_bridge::run_mouse_move},
-		{"click", &agent_bridge::run_click},
-		{"mouse_down", &agent_bridge::run_mouse_down},
-		{"mouse_up", &agent_bridge::run_mouse_up},
-		{"wheel", &agent_bridge::run_wheel},
-		{"key", &agent_bridge::run_key},
-		{"text", &agent_bridge::run_text},
-		{"set_text", &agent_bridge::run_set_text},
-		{"modifiers", &agent_bridge::run_modifiers},
-		{"wait_for", &agent_bridge::run_wait_for},
-		{"widgets", &agent_bridge::run_widgets},
-		{"widget_click", &agent_bridge::run_widget_click},
-		{"journal_query", &agent_bridge::run_journal_query},
-		{"journal_drain", &agent_bridge::run_journal_drain},
-		{"journal_config", &agent_bridge::run_journal_config},
+		{"ping", &agent_bridge::run_ping, ""},
+		{"get_state", &agent_bridge::run_get_state, ""},
+		{"screenshot", &agent_bridge::run_screenshot, "name path"},
+		{"probe_point", &agent_bridge::run_probe_point, "x y space"},
+		{"mouse_move", &agent_bridge::run_mouse_move, "x y space timeout_ms"},
+		{"click", &agent_bridge::run_click, "x y space button count shift ctrl timeout_ms"},
+		{"mouse_down", &agent_bridge::run_mouse_down, "x y space button timeout_ms"},
+		{"mouse_up", &agent_bridge::run_mouse_up, "x y space button timeout_ms"},
+		{"wheel", &agent_bridge::run_wheel, "x y space notches timeout_ms"},
+		{"key", &agent_bridge::run_key, "name shift ctrl alt repeat timeout_ms"},
+		{"text", &agent_bridge::run_text, "value timeout_ms"},
+		{"set_text", &agent_bridge::run_set_text, "value clear timeout_ms"},
+		{"modifiers", &agent_bridge::run_modifiers, "shift ctrl alt timeout_ms"},
+		{"wait_for", &agent_bridge::run_wait_for, "conditions timeout_ms since"},
+		{"widgets", &agent_bridge::run_widgets, ""},
+		{"widget_click", &agent_bridge::run_widget_click, "name button count shift ctrl timeout_ms"},
+		{"journal_query", &agent_bridge::run_journal_query, "channels types exclude_types object_id message_contains from_ms to_ms after_seq before_seq max"},
+		{"journal_drain", &agent_bridge::run_journal_drain, "channels types exclude_types object_id message_contains since max"},
+		{"journal_config", &agent_bridge::run_journal_config, "channels capacity test_log"},
+		{"entities", &agent_bridge::run_entities, "kinds radius max on_screen"},
+		{"tile_to_screen", &agent_bridge::run_tile_to_screen, "x y"},
+		{"walk_to", &agent_bridge::run_walk_to, "x y timeout_ms wait"},
+		{"close_window", &agent_bridge::run_close_window, "name dialog_id"},
+		{"set_audio", &agent_bridge::run_set_audio, "master music effects"},
 	};
 
 	agent_bridge::agent_bridge()
@@ -397,6 +416,7 @@ namespace hb::client
 
 		advance_input(active_game);
 		settle_waits(active_game);
+		settle_walk(active_game);
 		expire_deferred();
 		flush_outbound();
 	}
@@ -546,6 +566,23 @@ namespace hb::client
 			return;
 		}
 
+		// a misspelt key (channel for channels) must not be ignored: the command would run unfiltered
+		for (const auto& [key, value] : args.items())
+		{
+			bool known = false;
+			for (std::size_t at = 0; at < entry->arg_keys.size() && !known;)
+			{
+				const std::size_t end = std::min(entry->arg_keys.find(' ', at), entry->arg_keys.size());
+				known = entry->arg_keys.substr(at, end - at) == key;
+				at = end + 1;
+			}
+			if (!known)
+			{
+				queue_reply(id, {}, std::format("unknown argument '{}' for {}", key.substr(0, 64), entry->name));
+				return;
+			}
+		}
+
 		json result = json::object();
 		std::string error;
 		try
@@ -622,6 +659,7 @@ namespace hb::client
 		m_deferred.clear();
 		// and nothing the bridge pressed stays down for the next one
 		m_jobs.clear();
+		m_walk.reset();
 		release_held();
 	}
 
@@ -699,6 +737,20 @@ namespace hb::client
 			result["player_x"] = active_game.m_player->m_player_x;
 			result["player_y"] = active_game.m_player->m_player_y;
 			result["map"] = active_game.m_map_name;
+			result["hp"] = active_game.m_player->m_hp;
+			result["mp"] = active_game.m_player->m_mp;
+			result["sp"] = active_game.m_player->m_sp;
+			result["level"] = active_game.m_player->m_level;
+			// the object under the pointer (CursorTarget's focus), as the cursor and the HUD see it
+			if (CursorTarget::has_focused_object())
+			{
+				result["target"] = {{"name", std::string(CursorTarget::get_focused_name())},
+					{"x", CursorTarget::get_focused_map_x()}, {"y", CursorTarget::get_focused_map_y()}};
+			}
+			else
+			{
+				result["target"] = nullptr;
+			}
 			const int top = on_game->get_dialog_box_manager().get_top_id();
 			result["top_dialog"] = top != 0 ? json(top) : json(nullptr);
 		}
@@ -1282,6 +1334,8 @@ namespace hb::client
 				m_handler->on_text_input(m_window->get_handle(), text_char_message, cp, 0);
 			}
 			break;
+		case step_kind::settle:
+			break;
 		}
 	}
 
@@ -1341,6 +1395,29 @@ namespace hb::client
 			result["world"] = {world.x, world.y};
 		}
 		result["front"] = front_at(active_game, ui_x, ui_y);
+		int tile_x = 0;
+		int tile_y = 0;
+		if (in_world(active_game) && tile_at_ui(active_game, ui_x, ui_y, tile_x, tile_y))
+		{
+			result["tile"] = {tile_x, tile_y};
+			result["object"] = nullptr;
+			result["item"] = nullptr;
+			const int cell_x = tile_x - active_game.m_map_data->m_pivot_x;
+			const int cell_y = tile_y - active_game.m_map_data->m_pivot_y;
+			if (cell_x >= 0 && cell_y >= 0 && cell_x < hb::client::config::MapDataSizeX && cell_y < hb::client::config::MapDataSizeY)
+			{
+				std::vector<std::pair<std::pair<int, int>, json>> rows;
+				cell_rows(active_game, cell_x, cell_y, rows);
+				for (auto& entry : rows)
+				{
+					json& slot = entry.second["kind"] == "item" ? result["item"] : result["object"];
+					if (slot.is_null())
+					{
+						slot = std::move(entry.second);
+					}
+				}
+			}
+		}
 		return true;
 	}
 
@@ -1773,6 +1850,10 @@ namespace hb::client
 		{
 			return true;
 		}
+		// Characters go only to a field that is focused when the frame's input is read, and the game drops them
+		// otherwise. One presented frame first lets a focus change from the step before (a click, ctrl+a and
+		// backspace) land, so the first character is never the one lost.
+		job.steps.push_back(input_step{.kind = step_kind::settle});
 		for (std::size_t at = 0; at < chars.size(); at += chars_per_step)
 		{
 			const std::size_t end = std::min(chars.size(), at + chars_per_step);
@@ -2343,6 +2424,512 @@ namespace hb::client
 		return true;
 	}
 
+
+	//-------------------------------------------------------------------------
+	// world commands (HH-0042): entities, tile_to_screen, walk_to, close_window, set_audio
+	//-------------------------------------------------------------------------
+
+	namespace
+	{
+		constexpr int world_tile_size = 32;  // world units per tile (the draw loop's TILE_SIZE)
+		// The cursor picks tile floor((camera + pointer + 15) / 32) (CGame's m_mcx rule, screen_on_game.cpp), so a
+		// tile's centre is its draw origin, tile * 32 - camera
+		constexpr int world_pick_bias = 15;
+		constexpr int default_walk_timeout_ms = 15000;
+		constexpr int walk_stall_ms = 2500;  // no tile change for this long while not at the goal = blocked
+		constexpr int default_entity_max = 100;
+		constexpr int max_dialog_id = 256; // above every registered dialog id
+
+		// the HUD pieces that stay up: closing one has no way back short of a restart
+		bool is_permanent_dialog(DialogBoxId::Type id)
+		{
+			return id == DialogBoxId::HudPanel || id == DialogBoxId::StatusOverlay;
+		}
+
+		int floor_div(int value, int divisor)
+		{
+			int quotient = value / divisor;
+			if ((value % divisor != 0) && ((value < 0) != (divisor < 0)))
+			{
+				--quotient;
+			}
+			return quotient;
+		}
+
+		int chebyshev(int ax, int ay, int bx, int by)
+		{
+			return std::max(std::abs(ax - bx), std::abs(ay - by));
+		}
+
+		// the friendly characters a player talks to or is guarded by; every other creature is a "creature"
+		bool is_friendly_npc(short type)
+		{
+			namespace owner = hb::shared::owner;
+			switch (type)
+			{
+			case owner::ShopKeeper: case owner::Gandalf: case owner::Howard: case owner::Guard: case owner::Tom:
+			case owner::William: case owner::Kennedy: case owner::McGaffin: case owner::Perry: case owner::Devlin:
+				return true;
+			default:
+				return false;
+			}
+		}
+	}
+
+	// A tile's centre as UI units and window pixels, through the camera and the world rect
+	bool agent_bridge::tile_point(CGame& active_game, int tile_x, int tile_y, json& point, bool& on_screen) const
+	{
+		if (active_game.m_Renderer == nullptr)
+		{
+			return false;
+		}
+		const int world_x = tile_x * world_tile_size - active_game.m_Camera.get_x();
+		const int world_y = tile_y * world_tile_size - active_game.m_Camera.get_y();
+		const hb::shared::geometry::GamePoint ui = active_game.m_Renderer->world_to_ui({world_x, world_y});
+		int window_x = ui.x;
+		int window_y = ui.y;
+		if (m_window != nullptr)
+		{
+			m_window->ui_to_window(ui.x, ui.y, window_x, window_y);
+		}
+		point = {{"logical", {ui.x, ui.y}}, {"window", {window_x, window_y}}};
+		// the world target is logical-sized (the world rect in world units), so these bounds are the world rect
+		on_screen = world_x >= 0 && world_x <= LOGICAL_MAX_X() && world_y >= 0 && world_y <= LOGICAL_MAX_Y();
+		return true;
+	}
+
+	// The map tile under a UI point (the rule the cursor picks by); false outside the loaded map
+	bool agent_bridge::tile_at_ui(CGame& active_game, int ui_x, int ui_y, int& tile_x, int& tile_y) const
+	{
+		if (active_game.m_Renderer == nullptr || active_game.m_map_data == nullptr)
+		{
+			return false;
+		}
+		const hb::shared::geometry::GamePoint world = active_game.m_Renderer->ui_to_world({ui_x, ui_y});
+		tile_x = floor_div(active_game.m_Camera.get_x() + world.x + world_pick_bias, world_tile_size);
+		tile_y = floor_div(active_game.m_Camera.get_y() + world.y + world_pick_bias, world_tile_size);
+		return true;
+	}
+
+	// The entities and the ground item on one loaded map cell, as rows ordered by (distance, id)
+	void agent_bridge::cell_rows(CGame& active_game, int cell_x, int cell_y, std::vector<std::pair<std::pair<int, int>, json>>& out) const
+	{
+		namespace owner = hb::shared::owner;
+		const CTile& cell = active_game.m_map_data->m_data[cell_x][cell_y];
+		const int tile_x = active_game.m_map_data->m_pivot_x + cell_x;
+		const int tile_y = active_game.m_map_data->m_pivot_y + cell_y;
+		const bool has_object = cell.m_object_id != 0 && cell.m_object_id != active_game.m_player->m_player_object_id;
+		const bool has_dead = cell.m_dead_object_id != 0;
+		const bool has_item = cell.m_item_id > 0 && cell.m_item_id < static_cast<short>(active_game.m_item_config_list.size());
+		if (!has_object && !has_dead && !has_item)
+		{
+			return;
+		}
+		const int distance = chebyshev(active_game.m_player->m_player_x, active_game.m_player->m_player_y, tile_x, tile_y);
+		json point;
+		bool on_screen = false;
+		tile_point(active_game, tile_x, tile_y, point, on_screen);
+		const auto base_row = [&](int object_id, short type, const std::string& listed_name, short config_id, bool dead)
+		{
+			std::string name = listed_name;
+			if (owner::is_npc(type))
+			{
+				name = active_game.get_npc_config_name_by_id(config_id);
+			}
+			json row = {{"object_id", object_id},
+				{"kind", owner::is_player(type) ? "player" : (is_friendly_npc(type) ? "npc" : "creature")},
+				{"name", name}, {"type", type}, {"tile", {tile_x, tile_y}}, {"distance", distance},
+				{"on_screen", on_screen}, {"point", point}, {"dead", dead}};
+			if (owner::is_npc(type))
+			{
+				row["npc_config_id"] = config_id;
+			}
+			return row;
+		};
+		if (has_object)
+		{
+			out.emplace_back(std::pair{distance, static_cast<int>(cell.m_object_id)},
+				base_row(cell.m_object_id, cell.m_owner_type, cell.m_owner_name, cell.m_npc_config_id, false));
+		}
+		if (has_dead)
+		{
+			out.emplace_back(std::pair{distance, static_cast<int>(cell.m_dead_object_id)},
+				base_row(cell.m_dead_object_id, cell.m_dead_owner_type, cell.m_dead_owner_name, cell.m_dead_npc_config_id, true));
+		}
+		if (has_item)
+		{
+			const auto& config = active_game.m_item_config_list[cell.m_item_id];
+			out.emplace_back(std::pair{distance, 100000 + cell.m_item_id},
+				json{{"kind", "item"}, {"name", config != nullptr ? std::string(config->m_name) : std::string{}},
+					{"item_id", cell.m_item_id}, {"tile", {tile_x, tile_y}}, {"distance", distance},
+					{"on_screen", on_screen}, {"point", point}});
+		}
+	}
+
+	bool agent_bridge::run_entities(const json&, const json& args, CGame& active_game, json& result, std::string& error)
+	{
+		if (!in_world(active_game))
+		{
+			error = "entities needs the world (not logged in)";
+			return true;
+		}
+		std::vector<std::string> kinds;
+		if (!read_string_list(args, "kinds", kinds, error))
+		{
+			return true;
+		}
+		for (const std::string& kind : kinds)
+		{
+			if (kind != "player" && kind != "npc" && kind != "creature" && kind != "item")
+			{
+				error = "unknown kind '" + kind + "' (player, npc, creature, item)";
+				return true;
+			}
+		}
+		int radius = 0;
+		int max_count = default_entity_max;
+		bool on_screen_only = false;
+		if (!read_int(args, "radius", false, 0, 200, radius, error) || !read_int(args, "max", false, 1, 1000, max_count, error)
+			|| !read_bool(args, "on_screen", on_screen_only, error))
+		{
+			return true;
+		}
+		std::vector<std::pair<std::pair<int, int>, json>> rows;
+		for (int cell_x = 0; cell_x < hb::client::config::MapDataSizeX; ++cell_x)
+		{
+			for (int cell_y = 0; cell_y < hb::client::config::MapDataSizeY; ++cell_y)
+			{
+				cell_rows(active_game, cell_x, cell_y, rows);
+			}
+		}
+		std::erase_if(rows, [&](const auto& entry)
+		{
+			const json& row = entry.second;
+			return (!kinds.empty() && std::find(kinds.begin(), kinds.end(), row["kind"].get<std::string>()) == kinds.end())
+				|| (radius > 0 && row["distance"].get<int>() > radius) || (on_screen_only && !row["on_screen"].get<bool>());
+		});
+		std::sort(rows.begin(), rows.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+		const std::size_t total = rows.size();
+		const std::size_t kept = std::min<std::size_t>(total, static_cast<std::size_t>(max_count));
+		json list = json::array();
+		for (std::size_t i = 0; i < kept; ++i)
+		{
+			list.push_back(std::move(rows[i].second));
+		}
+		result["player_tile"] = {active_game.m_player->m_player_x, active_game.m_player->m_player_y};
+		result["map"] = active_game.m_map_name;
+		result["total"] = total;
+		result["count"] = kept;
+		result["truncated"] = kept < total;
+		result["entities"] = std::move(list);
+		return true;
+	}
+
+	bool agent_bridge::run_tile_to_screen(const json&, const json& args, CGame& active_game, json& result, std::string& error)
+	{
+		int tile_x = 0;
+		int tile_y = 0;
+		if (!in_world(active_game))
+		{
+			error = "tile_to_screen needs the world (not logged in)";
+			return true;
+		}
+		if (!read_int(args, "x", true, -100000, 100000, tile_x, error) || !read_int(args, "y", true, -100000, 100000, tile_y, error))
+		{
+			return true;
+		}
+		json point;
+		bool on_screen = false;
+		if (!tile_point(active_game, tile_x, tile_y, point, on_screen))
+		{
+			error = "no renderer";
+			return true;
+		}
+		result["tile"] = {tile_x, tile_y};
+		result["in_bounds"] = tile_x >= 0 && tile_y >= 0 && tile_x < active_game.m_map_data->m_map_size_x
+			&& tile_y < active_game.m_map_data->m_map_size_y;
+		result["on_screen"] = on_screen;
+		result["logical"] = point["logical"];
+		result["window"] = point["window"];
+		result["player_tile"] = {active_game.m_player->m_player_x, active_game.m_player->m_player_y};
+		int back_x = 0;
+		int back_y = 0;
+		if (tile_at_ui(active_game, point["logical"][0].get<int>(), point["logical"][1].get<int>(), back_x, back_y))
+		{
+			result["resolves_to"] = {back_x, back_y};
+			result["round_trip"] = back_x == tile_x && back_y == tile_y;
+		}
+		return true;
+	}
+
+	bool agent_bridge::run_walk_to(const json& id, const json& args, CGame& active_game, json& result, std::string& error)
+	{
+		int goal_x = 0;
+		int goal_y = 0;
+		int timeout_ms = default_walk_timeout_ms;
+		bool wait = true;
+		if (!in_world(active_game))
+		{
+			error = "walk_to needs the world (not logged in)";
+			return true;
+		}
+		if (!read_int(args, "x", true, 0, 100000, goal_x, error) || !read_int(args, "y", true, 0, 100000, goal_y, error)
+			|| !read_int(args, "timeout_ms", false, 1, max_timeout_ms, timeout_ms, error) || !read_bool(args, "wait", wait, error))
+		{
+			return true;
+		}
+		CPlayer& player = *active_game.m_player;
+		if (goal_x >= active_game.m_map_data->m_map_size_x || goal_y >= active_game.m_map_data->m_map_size_y)
+		{
+			error = std::format("walk_to refused: ({},{}) is outside the map", goal_x, goal_y);
+			return true;
+		}
+		// what a real ground click refuses (CGame's click handling): a dead player, a teleport, a damage move
+		if (player.m_hp <= 0)
+		{
+			error = "walk_to refused: the player is dead";
+			return true;
+		}
+		if (teleport_manager::get().is_active())
+		{
+			error = "walk_to refused: a teleport is in progress";
+			return true;
+		}
+		if (player.m_damage_move != 0)
+		{
+			error = "walk_to refused: the player is being knocked back";
+			return true;
+		}
+		// a real ground click's own move: a free controller takes the command, destination and turn choice; one
+		// already moving only gets the new destination (the quick-action path)
+		const char command = player.m_Controller.get_command();
+		if (player.m_Controller.is_command_available())
+		{
+			player.m_Controller.set_command(hb::shared::action::Type::Move);
+			player.m_Controller.set_destination(static_cast<short>(goal_x), static_cast<short>(goal_y));
+			player.m_Controller.calculate_player_turn(player.m_player_x, player.m_player_y, active_game.m_map_data.get());
+		}
+		else if (command == hb::shared::action::Type::Move || command == hb::shared::action::Type::Run)
+		{
+			player.m_Controller.set_destination(static_cast<short>(goal_x), static_cast<short>(goal_y));
+		}
+		else
+		{
+			error = "walk_to refused: the player is busy with another command";
+			return true;
+		}
+		if (m_walk)
+		{
+			finish_walk("superseded");
+		}
+		walk_job job;
+		job.id = id;
+		job.goal_x = goal_x;
+		job.goal_y = goal_y;
+		job.from_x = player.m_player_x;
+		job.from_y = player.m_player_y;
+		job.last_x = job.from_x;
+		job.last_y = job.from_y;
+		job.map = active_game.m_map_name;
+		job.started = clock::now();
+		job.last_progress = job.started;
+		job.deadline = job.started + std::chrono::milliseconds(timeout_ms);
+		if (!wait)
+		{
+			result = {{"status", "walking"}, {"goal", {goal_x, goal_y}}, {"from", {job.from_x, job.from_y}}};
+			return true;
+		}
+		m_walk = std::move(job);
+		return false; // settle_walk answers when the player arrives, is blocked or the time is up
+	}
+
+	void agent_bridge::finish_walk(std::string_view status, const char* reason)
+	{
+		if (!m_walk)
+		{
+			return;
+		}
+		const walk_job job = *m_walk;
+		m_walk.reset();
+		json result = {{"status", std::string(status)}, {"goal", {job.goal_x, job.goal_y}}, {"from", {job.from_x, job.from_y}},
+			{"at", {job.last_x, job.last_y}}, {"map", job.map},
+			{"elapsed_ms", std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - job.started).count()}};
+		if (reason != nullptr)
+		{
+			result["reason"] = reason;
+		}
+		queue_reply(job.id, result, {});
+	}
+
+	void agent_bridge::settle_walk(CGame& active_game)
+	{
+		if (!m_walk)
+		{
+			return;
+		}
+		walk_job& job = *m_walk;
+		if (!in_world(active_game))
+		{
+			finish_walk("blocked", "left the world");
+			return;
+		}
+		const CPlayer& player = *active_game.m_player;
+		const clock::time_point now = clock::now();
+		if (active_game.m_map_name != job.map)
+		{
+			job.last_x = player.m_player_x;
+			job.last_y = player.m_player_y;
+			finish_walk("blocked", "the map changed");
+			return;
+		}
+		if (player.m_player_x != job.last_x || player.m_player_y != job.last_y)
+		{
+			job.last_x = player.m_player_x;
+			job.last_y = player.m_player_y;
+			job.last_progress = now;
+		}
+		CPlayerController& controller = active_game.m_player->m_Controller;
+		const char command = controller.get_command();
+		// the way a right click stops a moving player: the destination becomes the player's own tile
+		const auto stop_walking = [&]() { controller.set_destination(player.m_player_x, player.m_player_y); };
+		if (player.m_player_x == job.goal_x && player.m_player_y == job.goal_y && controller.is_command_available())
+		{
+			finish_walk("arrived");
+		}
+		else if (now >= job.deadline)
+		{
+			stop_walking();
+			finish_walk("timeout");
+		}
+		else if (now - job.last_progress > std::chrono::milliseconds(walk_stall_ms) && controller.is_command_available())
+		{
+			stop_walking();
+			finish_walk("blocked", "no step led nearer for 2.5 s");
+		}
+		else if ((command != hb::shared::action::Type::Move && command != hb::shared::action::Type::Run
+				&& command != hb::shared::action::Type::stop)
+			|| controller.get_destination_x() != job.goal_x || controller.get_destination_y() != job.goal_y)
+		{
+			// someone else (the player, a click) took the controller or moved the destination
+			finish_walk("superseded", "another command took the controller");
+		}
+	}
+
+	bool agent_bridge::run_close_window(const json&, const json& args, CGame& active_game, json& result, std::string& error)
+	{
+		Screen_OnGame* on_game = active_game.on_game();
+		if (on_game == nullptr || active_game.m_player == nullptr)
+		{
+			error = "close_window needs the world (not logged in)";
+			return true;
+		}
+		DialogBoxManager& dialogs = on_game->get_dialog_box_manager();
+		const auto name = args.find("name");
+		const auto dialog_id = args.find("dialog_id");
+		json closed = json::array();
+		const auto close_one = [&](const IDialogBox* dialog)
+		{
+			const int box_id = static_cast<int>(dialog->get_id());
+			const bool was_enabled = dialogs.is_enabled(box_id);
+			dialogs.disable_dialog_box(box_id);
+			// a dialog's on_disable can cancel the close: list only the ones that really closed
+			if (was_enabled && !dialogs.is_enabled(box_id))
+			{
+				closed.push_back({{"name", DialogBoxManager::agent_dialog_name(dialog->get_id())}, {"dialog_id", box_id}});
+			}
+		};
+		if (name != args.end() && name->is_string())
+		{
+			const std::string& wanted = name->get_ref<const std::string&>();
+			if (wanted != "all")
+			{
+				const IDialogBox* known = nullptr;
+				for (int box_id = 0; box_id < max_dialog_id && known == nullptr; ++box_id)
+				{
+					const IDialogBox* candidate = dialogs.get_dialog_box(box_id);
+					if (candidate != nullptr && DialogBoxManager::agent_dialog_name(candidate->get_id()) == wanted)
+					{
+						known = candidate;
+					}
+				}
+				if (known == nullptr)
+				{
+					error = "close_window: unknown window name '" + wanted.substr(0, 64) + "' (see widgets for the open ones)";
+					return true;
+				}
+				if (is_permanent_dialog(known->get_id()))
+				{
+					error = "close_window refuses '" + wanted + "': it is part of the always-on HUD";
+					return true;
+				}
+			}
+			for (const IDialogBox* dialog : dialogs.agent_dialogs_top_to_bottom())
+			{
+				if ((wanted == "all" && !is_permanent_dialog(dialog->get_id()))
+					|| DialogBoxManager::agent_dialog_name(dialog->get_id()) == wanted)
+				{
+					close_one(dialog);
+				}
+			}
+		}
+		else if (dialog_id != args.end() && dialog_id->is_number_integer())
+		{
+			if (is_permanent_dialog(static_cast<DialogBoxId::Type>(dialog_id->get<int>())))
+			{
+				error = "close_window refuses dialog_id " + std::to_string(dialog_id->get<int>()) + ": it is part of the always-on HUD";
+				return true;
+			}
+			for (const IDialogBox* dialog : dialogs.agent_dialogs_top_to_bottom())
+			{
+				if (static_cast<int>(dialog->get_id()) == dialog_id->get<int>())
+				{
+					close_one(dialog);
+				}
+			}
+		}
+		else
+		{
+			error = "close_window requires 'name' (a dialog name or \"all\") or an integer 'dialog_id'";
+			return true;
+		}
+		result["closed"] = std::move(closed);
+		return true;
+	}
+
+	bool agent_bridge::run_set_audio(const json&, const json& args, CGame&, json& result, std::string& error)
+	{
+		// audio_manager's setters change the live mixer only: nothing here writes settings.json (config_manager
+		// holds the saved values and is not touched)
+		audio_manager& audio = audio_manager::get();
+		int master = audio.get_master_volume();
+		int music = audio.get_music_volume();
+		int effects = audio.get_sound_volume();
+		const bool set_master = args.contains("master") && !args["master"].is_null();
+		const bool set_music = args.contains("music") && !args["music"].is_null();
+		const bool set_effects = args.contains("effects") && !args["effects"].is_null();
+		if (!read_int(args, "master", false, 0, 100, master, error) || !read_int(args, "music", false, 0, 100, music, error)
+			|| !read_int(args, "effects", false, 0, 100, effects, error))
+		{
+			return true;
+		}
+		if (set_master)
+		{
+			audio.set_master_volume(master);
+		}
+		if (set_music)
+		{
+			audio.set_music_volume(music);
+		}
+		if (set_effects)
+		{
+			audio.set_sound_volume(effects);
+		}
+		result["master"] = audio.get_master_volume();
+		result["music"] = audio.get_music_volume();
+		result["effects"] = audio.get_sound_volume();
+		result["persisted"] = false;
+		return true;
+	}
 }
 
 #endif

@@ -35,6 +35,7 @@
 #include <cstdint>
 #include <deque>
 #include <filesystem>
+#include <optional>
 #include <set>
 #include <string>
 #include <string_view>
@@ -52,7 +53,7 @@ namespace hb::client
 		using json = nlohmann::json;
 
 		// Bumped when a command's arguments or result keys change incompatibly
-		static constexpr int bridge_protocol = 4;
+		static constexpr int bridge_protocol = 5;
 
 		agent_bridge();
 		~agent_bridge();
@@ -85,6 +86,7 @@ namespace hb::client
 		{
 			std::string_view name;
 			handler run;
+			std::string_view arg_keys; // the argument keys the command reads, space separated; any other key is an error
 		};
 
 		enum class deferred_kind { screenshot, wait };
@@ -116,7 +118,8 @@ namespace hb::client
 			std::uint64_t trail_since = 0; // wait: where the reply's event trail starts
 		};
 
-		enum class step_kind { move, button_down, button_up, wheel, key_down, key_up, chars };
+		// settle: does nothing, but takes a presented frame (text waits one so a focus change has landed)
+		enum class step_kind { move, button_down, button_up, wheel, key_down, key_up, chars, settle };
 
 		struct input_step
 		{
@@ -174,6 +177,22 @@ namespace hb::client
 			}
 		};
 
+		// the one walk_to in flight: answered when the player arrives, is blocked or time runs out
+		struct walk_job
+		{
+			json id;
+			int goal_x = 0;
+			int goal_y = 0;
+			int from_x = 0;
+			int from_y = 0;
+			int last_x = 0;
+			int last_y = 0;
+			std::string map;
+			clock::time_point started{};
+			clock::time_point last_progress{};
+			clock::time_point deadline{};
+		};
+
 		static const command_entry commands[];
 
 		bool run_ping(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
@@ -195,6 +214,18 @@ namespace hb::client
 		bool run_journal_query(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
 		bool run_journal_drain(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
 		bool run_journal_config(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
+		bool run_entities(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
+		bool run_tile_to_screen(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
+		bool run_walk_to(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
+		bool run_close_window(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
+		bool run_set_audio(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
+
+		// world: a tile's centre, the tile under a point, the entities on a loaded map cell
+		bool tile_point(CGame& active_game, int tile_x, int tile_y, json& point, bool& on_screen) const;
+		bool tile_at_ui(CGame& active_game, int ui_x, int ui_y, int& tile_x, int& tile_y) const;
+		void cell_rows(CGame& active_game, int cell_x, int cell_y, std::vector<std::pair<std::pair<int, int>, json>>& out) const;
+		void settle_walk(CGame& active_game);
+		void finish_walk(std::string_view status, const char* reason = nullptr);
 
 		// journal commands: argument readers (false sets `error`) and reply builders
 		static bool read_selector(const json& args, journal_selector& out, std::string& error);
@@ -262,6 +293,7 @@ namespace hb::client
 		hb::shared::render::IWindow* m_window = nullptr;
 		hb::shared::render::IWindowEventHandler* m_handler = nullptr;
 		std::deque<input_job> m_jobs;
+		std::optional<walk_job> m_walk;
 		bool m_frame_since_step = true; // a frame was presented since the last step ran
 		std::set<int> m_held_buttons;
 		std::set<KeyCode> m_held_keys;

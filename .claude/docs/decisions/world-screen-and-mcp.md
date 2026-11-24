@@ -29,3 +29,10 @@
 - Quote (answer chosen by the user): "Whole window" for the dimmed backgrounds behind pop-ups and the chat and message bars on a widescreen window in stretch mode.
 - Decided: UI fills that span the full 800x600 design width cover the whole window, matching the stretched world; other UI keeps the uniform 4:3 scale.
 - Recorded in: HH-0034.
+
+## d-031 Test accounts and characters without asking
+
+- Date: 2026-11-24.
+- Quote: "You may create test accounts and characters as needed. No need to ask. Just keep track of them and reuse as needed".
+- Decided: agents create throwaway test accounts and characters on the local game server without asking. Each one is recorded in `.claude/local/test_accounts.json` (gitignored), and existing entries are reused before a new one is made. The given context was the running local Debug server in `game/server`.
+- Recorded in: `.claude/local/test_accounts.json`; memory `test-accounts`.

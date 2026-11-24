@@ -51,3 +51,4 @@ Sidecars are under `.claude/docs/decisions/`. Each line: id, title - scope; side
 - d-027 MCP bridge uses SDL's debug guards - `DEF_CLAUDE_TESTING` derived from `_DEBUG`. Read before touching the bridge build guard.
 - d-028 MCP ports, location, server commands - 8891-8898, `.claude/tools/agent_mcp/`, server commands deferred. Read before changing the bridge.
 - d-029 Full-width dims and bars cover the whole window in stretch - read before changing stretch-mode UI fills.
+- d-031 Test accounts and characters without asking - create as needed on the local server, track and reuse them. Read before an in-game test.

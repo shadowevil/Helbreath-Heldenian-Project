@@ -1,7 +1,7 @@
 {
   "id": "HH-0042",
   "summary": "MCP server 9: phase 4, world commands and flows",
-  "status": "open",
+  "status": "in_progress",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -12,7 +12,7 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:46Z",
-  "updated": "2026-11-24T01:27:48Z",
+  "updated": "2026-11-24T04:45:53Z",
   "links": {
     "commits": [],
     "files": [],
