@@ -101,6 +101,6 @@ The Map item now shows a high-quality parchment map, built in the game from a ma
 - **Where it works:** it also opens on maps the server has no map for.
 - **Maps without a kit** still show the old map picture.
 - **New tool:** `tools/parchment_map/build_kit.py` rebuilds the kit.
-- **For later use:** the kit also holds a standing, south-east-facing picture of each of the 70 killable creatures. These are not drawn yet.
+- **For later use:** the kit also holds a standing, south-east-facing picture of each of 48 killable creatures. These are not drawn yet. 22 structures, guards and summons were left out at the user's request (HH-0049).
 
 The corner minimap now has two zoom levels, the whole map and the mid view. The close view was dropped because the parchment map takes its place (d-033).

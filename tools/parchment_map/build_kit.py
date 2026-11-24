@@ -222,6 +222,13 @@ FULL_ACTION_SET = 40          # 5 poses x 8 directions: stop, move, attack, dama
 # paks with fewer sprites whose NPCs are still fought and killed (npc_configs action_limit 0, or a
 # destroyable crusade structure, 5); the rest of the short paks are townsfolk, quest givers and the gate
 KILLABLE_SHORT_PAKS = {"wyvern", "fire-wyvern", "abaddon", "helbreath-tank", "crusade-barricade-turret", "apocalypse-cannon"}
+# atlas names the user ruled out of the kit (2026-11-24, HH-0049): "Those are not needed in the minimap kit"
+NOT_IN_KIT = {
+	"dummy", "arrow_guard_tower", "cannon_guard_tower", "mana_collector", "detector", "energy_shield",
+	"grand_magic_generator", "mana_stone", "light_war_beetle", "gods_hand_knight", "gods_hand_knight_ck",
+	"temple_knight", "battle_golem", "catapult", "abaddon", "sorceress", "temple_knight_atk", "master_elf",
+	"dark_knight", "helbreath_tank", "crusade_barricade_turret", "apocalypse_cannon",
+}
 STAND_SE_SPRITE = 0 * 8 + (4 - 1)   # pose 0 (stop, npc_renderer.cpp draw_stop) * 8 + direction 4 (SE) - 1
 CREATURE_PAD = 4
 
@@ -245,11 +252,17 @@ def creature_atlas(work, configs):
 	for nid, (_, t) in configs.items():
 		by_type.setdefault(t, []).append(nid)
 	chosen, excluded = [], []
+	found = set()
 	for pak, t, count in npc_paks():
-		if count >= FULL_ACTION_SET or pak in KILLABLE_SHORT_PAKS:
+		if pak.replace("-", "_") in NOT_IN_KIT:
+			found.add(pak.replace("-", "_"))
+			excluded.append((pak, "not needed in the kit (user, HH-0049)"))
+		elif count >= FULL_ACTION_SET or pak in KILLABLE_SHORT_PAKS:
 			chosen.append((pak, t))
 		else:
 			excluded.append((pak, f"{count} sprites, not a killable creature"))
+	if NOT_IN_KIT - found:
+		raise SystemExit(f"error: NOT_IN_KIT names no loaded pak: {sorted(NOT_IN_KIT - found)}")
 	out = Path(work) / "npcs"
 	missing = [p for p, _ in chosen if not (out / p / "frames.json").exists()]
 	if missing:

@@ -27,9 +27,7 @@
    "npc_types": [
     34
    ],
-   "creatures": [
-    "dummy"
-   ]
+   "creatures": []
   },
   {
    "icon": "stairs_spiral",
