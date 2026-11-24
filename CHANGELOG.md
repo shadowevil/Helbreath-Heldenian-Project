@@ -86,3 +86,10 @@ The corner minimap now uses Helbreath-SDL's detailed minimap art for the 47 outd
 - Building names on hover, double-click to walk, the monster alert and the transparency option all still work.
 - Maps without art, such as building interiors, show no minimap, and clicks in that corner reach the world.
 - The images ship as high-quality JPGs (29 MB), and the old telescope minimap art is no longer loaded.
+
+Fixed: using the Map item crashed the game server (HH-0046). The Map now works as in the original game:
+- double-clicking it opens the map at once, with no need for free hands or a target click;
+- elsewhere it says there is no map for the area;
+- it can be used again straight away.
+
+A tool without a linked skill can no longer reach the skill code on the server.

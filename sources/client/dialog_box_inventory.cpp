@@ -274,9 +274,12 @@ bool DialogBox_Inventory::on_double_click()
 		return true;
 	}
 
-	// Handle consumable/depletable items (excludes target sub-type which uses pointing mode instead)
+	// Handle consumable/depletable items and the map (the original DEF_ITEMTYPE_USE_PERM: sent at once like a scroll,
+	// never locked); excludes the target sub-type, which uses pointing mode instead
+	const bool is_map = cfg->get_item_type() == hb::shared::item::item_type::tool &&
+		cfg->get_item_sub_type() == hb::shared::item::item_sub_type::map;
 	if ((cfg->get_item_type() == hb::shared::item::item_type::consumable ||
-		cfg->get_item_sub_type() == hb::shared::item::item_sub_type::ammo) &&
+		cfg->get_item_sub_type() == hb::shared::item::item_sub_type::ammo || is_map) &&
 		cfg->get_item_sub_type() != hb::shared::item::item_sub_type::target)
 	{
 		if (!inventory_manager::get().check_item_operation_enabled(item_id)) return true;
@@ -307,7 +310,7 @@ bool DialogBox_Inventory::on_double_click()
 	}
 
 	// Handle skill items (pointing mode)
-	if (cfg->get_item_type() == hb::shared::item::item_type::tool && cfg->get_item_sub_type() != hb::shared::item::item_sub_type::target && cfg->get_item_sub_type() != hb::shared::item::item_sub_type::crafting)
+	if (cfg->get_item_type() == hb::shared::item::item_type::tool && !is_map && cfg->get_item_sub_type() != hb::shared::item::item_sub_type::target && cfg->get_item_sub_type() != hb::shared::item::item_sub_type::crafting)
 	{
 		if (m_game->is_item_on_hand())
 		{

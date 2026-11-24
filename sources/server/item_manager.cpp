@@ -2381,8 +2381,8 @@ void ItemManager::use_item_handler(int client_h, short item_index, short dX, sho
 	else if (ist == item_sub_type::ammo) {
 		m_game->m_client_list[client_h]->m_arrow_index = get_arrow_item_index(client_h);
 	}
-	else if (it == item_type::tool && m_game->m_client_list[client_h]->m_item_list[item_index]->m_durability == 0) {
-		// .     . (ex: )
+	else if (it == item_type::tool && ist == item_sub_type::map) {
+		// Permanent-use item (the original DEF_ITEMTYPE_USE_PERM): using it never wears it down
 		switch (m_game->m_client_list[client_h]->m_item_list[item_index]->get_item_effect_type()) {
 		case ItemEffectType::ShowLocation:
 			v1 = m_game->m_client_list[client_h]->m_item_list[item_index]->m_item_effect_value1;
@@ -2415,6 +2415,12 @@ void ItemManager::use_item_handler(int client_h, short item_index, short dX, sho
 		}
 	}
 	else if (it == item_type::tool && m_game->m_client_list[client_h]->m_item_list[item_index]->m_durability > 0) {
+		// A skill tool needs a valid related skill; a tool without one (-1) has nothing to run here
+		const int related_skill = m_game->m_client_list[client_h]->m_item_list[item_index]->m_related_skill;
+		if (related_skill < 0 || related_skill >= hb::shared::limits::MaxSkillType ||
+			m_game->m_skill_config_list[related_skill] == nullptr) {
+			return;
+		}
 
 		if ((m_game->m_client_list[client_h]->m_item_list[item_index] == 0) ||
 			(m_game->m_client_list[client_h]->m_item_list[item_index]->m_instance.cur_durability <= 0) ||
