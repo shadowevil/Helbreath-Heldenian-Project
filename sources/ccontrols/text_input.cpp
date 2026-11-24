@@ -67,8 +67,7 @@ void text_input::handle_char(uint32_t codepoint)
 	}
 
 	// Delete selection first if active
-	if (has_selection())
-		delete_selection();
+	delete_selection();
 
 	// Encode codepoint to UTF-8
 	std::string encoded;
@@ -249,7 +248,13 @@ void text_input::clear_selection()
 
 void text_input::delete_selection()
 {
-	if (!has_selection()) return;
+	// An anchor equal to the cursor (select all on an empty field) is no selection, but must not linger:
+	// the next typed character would move the cursor off it and turn that character into a selection
+	if (!has_selection())
+	{
+		clear_selection();
+		return;
+	}
 
 	int start = selection_start();
 	int end = selection_end();
@@ -275,8 +280,7 @@ std::string text_input::cut()
 
 void text_input::paste(const std::string& pasted)
 {
-	if (has_selection())
-		delete_selection();
+	delete_selection();
 
 	// Check length limit
 	if (m_max_length > 0)

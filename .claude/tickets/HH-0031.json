@@ -1,7 +1,7 @@
 {
   "id": "HH-0031",
   "summary": "HQ cursors 3: review and in-game check",
-  "status": "open",
+  "status": "user_review",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-23T22:12:57Z",
-  "updated": "2026-11-23T22:12:57Z",
+  "updated": "2026-11-24T05:29:59Z",
   "links": {
     "commits": [],
     "files": [],
@@ -20,5 +20,12 @@
       "HH-0028"
     ]
   },
-  "body": "Read-only review of the change, then a manual check of every cursor state (normal, attack, magic, pick-up, wait, target brackets).\n\n**Done when:** review passes and the in-game check is recorded.\n\nSource: user request 2026-11-23, art working\\sprite_work\\cursors.png (1406x124 RGBA, measured)."
+  "body": "Read-only review of the change, then a manual check of every cursor state (normal, attack, magic, pick-up, wait, target brackets).\n\n**Done when:** review passes and the in-game check is recorded.\n\nSource: user request 2026-11-23, art working\\sprite_work\\cursors.png (1406x124 RGBA, measured).",
+  "comments": [
+    {
+      "author": "pm",
+      "at": "2026-11-24T05:29:59Z",
+      "body": "Ready for your eye. Review passed earlier (dark fringe and tip offset fixed). In-game screenshots at 1920x1440 are in build/screenshots/hh0031_cursor_{ground,hud,dialog,minimap}.png. No NPC, creature or ground item was in reach, so the attack, pick-up and target cursors are not captured. Please check every cursor state in game and tell me in chat."
+    }
+  ]
 }

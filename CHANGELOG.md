@@ -77,3 +77,5 @@ The Debug agent bridge can act in the game world (HH-0042):
 - change the volume for the session without saving it.
 
 In-world `get_state` and `probe_point` report HP, MP, level, target, tile and object. Every bridge command now rejects unknown arguments.
+
+Fixed: in any text field, pressing Ctrl+A on an empty field and then typing no longer loses the first character (HH-0044). Character and account names typed that way used to lose their first letter.
