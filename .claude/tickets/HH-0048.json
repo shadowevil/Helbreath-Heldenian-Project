@@ -1,7 +1,7 @@
 {
   "id": "HH-0048",
   "summary": "Runtime parchment map kit: paper + ink layer + icon atlas composed in DialogBox_Map",
-  "status": "in_progress",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,11 +11,13 @@
   ],
   "author": "pm",
   "created": "2026-11-24T16:13:16Z",
-  "updated": "2026-11-24T16:13:16Z",
+  "updated": "2026-11-24T16:56:04Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "babe5aa"
+    ],
     "files": [],
     "tickets": []
   },
-  "body": "The user wants the Map item's parchment built at runtime in the client from a kit, in their words: \"add the building objects to this at the same relative scale and overwrite this. Then build a kit that can be constructed via runtime in the game\".\n\nIcon sheet, done 2026-11-24 (measured):\n- `working/sprite_work/map_icons.png` now holds the user's sword and blue/red portals on top, and below them nine buildings from Helbreath-SDL `working/objects`. The buildings share one scale (0.1835) with their bottoms aligned.\n- An atlas of frame rects is at `working/sprite_work/map_icons.json`. The user's original sheet is backed up at `.claude/scratch/pm/mapkit/map_icons.before.png`.\n- Each building was identified by the door teleport it stands over:\n\n| building | SDL id | door |\n|---|---|---|\n| city hall | 1025 | cityhall |\n| cathedral | 1028 | cath |\n| command hall | 1014 | cmdhall |\n| guild hall | 1026 | gldhall |\n| wizard tower | 1023 | wzdtwr |\n| shop | 1021 | gshop |\n| warehouse | 1022 | wrhus |\n| blacksmith | 1030 | bsmith |\n| barrack | 1027 | arebrk/elvbrk |\n\nIcons still missing from the user's sheet: an exit arrow (46 exits on the maps) and a dungeon-entrance marker (43).\n\nThe kit:\n- the high-quality paper;\n- a per-map ink layer made by `tools/parchment_map`;\n- per-map icon placements (`--icons-json`);\n- the icon atlas.\n\nThe client composes these in `DialogBox_Map` instead of reading `interface/newmaps.pak`.\n\n**Done when:** using the Map shows the runtime-composed parchment, with icons and the player marker; Windows and Linux builds pass; reviewed; checked in game.\n\nSource: user request 2026-11-24.\n"
+  "body": "The user wants the Map item's parchment built at runtime in the client from a kit, in their words: \"add the building objects to this at the same relative scale and overwrite this. Then build a kit that can be constructed via runtime in the game\".\n\nIcon sheet, done 2026-11-24 (measured):\n- `working/sprite_work/map_icons.png` now holds the user's sword and blue/red portals on top, and below them nine buildings from Helbreath-SDL `working/objects`. The buildings share one scale (0.1835) with their bottoms aligned.\n- An atlas of frame rects is at `working/sprite_work/map_icons.json`. The user's original sheet is backed up at `.claude/scratch/pm/mapkit/map_icons.before.png`.\n- Each building was identified by the door teleport it stands over:\n\n| building | SDL id | door |\n|---|---|---|\n| city hall | 1025 | cityhall |\n| cathedral | 1028 | cath |\n| command hall | 1014 | cmdhall |\n| guild hall | 1026 | gldhall |\n| wizard tower | 1023 | wzdtwr |\n| shop | 1021 | gshop |\n| warehouse | 1022 | wrhus |\n| blacksmith | 1030 | bsmith |\n| barrack | 1027 | arebrk/elvbrk |\n\nIcons still missing from the user's sheet: an exit arrow (46 exits on the maps) and a dungeon-entrance marker (43).\n\nThe kit:\n- the high-quality paper;\n- a per-map ink layer made by `tools/parchment_map`;\n- per-map icon placements (`--icons-json`);\n- the icon atlas.\n\nThe client composes these in `DialogBox_Map` instead of reading `interface/newmaps.pak`.\n\n**Done when:** using the Map shows the runtime-composed parchment, with icons and the player marker; Windows and Linux builds pass; reviewed; checked in game.\n\nSource: user request 2026-11-24.\n\n**Verified, 2026-11-24:** Windows and Linux client builds passed. A read-only review passed after two fixes: the map name is checked, and the no-map message now shows. In game on `default`, the Map item opened the kit parchment with icons and the player marker. The minimap steps between its two tiers and clamps at mid. Committed as babe5aa.\n"
 }
