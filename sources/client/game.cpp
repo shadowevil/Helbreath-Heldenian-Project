@@ -106,6 +106,7 @@
 #include "dialog_box_slates.h"
 #include "dialog_box_npc_action_query.h"
 #include "dialog_box_manufacture.h"
+#include "agent_bridge.h"
 
 
 using namespace hb::shared::net;
@@ -359,6 +360,18 @@ bool CGame::on_start()
 	FrameTiming::set_profiling_enabled(true);
 #endif
 
+#ifdef DEF_CLAUDE_TESTING
+	// on_start runs inside run(), after GameMain filled m_agent_bridge_config; a failed bind runs without it
+	if (m_agent_bridge_config.enabled)
+	{
+		m_agent_bridge = std::make_unique<hb::client::agent_bridge>();
+		if (!m_agent_bridge->start(m_agent_bridge_config.port))
+		{
+			m_agent_bridge.reset();
+		}
+	}
+#endif
+
 	return true;
 }
 
@@ -375,6 +388,9 @@ void CGame::on_run()
 
 void CGame::on_uninitialize()
 {
+#ifdef DEF_CLAUDE_TESTING
+	m_agent_bridge.reset(); // closes the listener before the game it reads is torn down
+#endif
 	write_settings();
 	change_game_mode(GameMode::Null);
 
@@ -627,6 +643,14 @@ void CGame::draw_cursor()
 // Handles: audio, timers, network, game state transitions
 void CGame::on_update()
 {
+#ifdef DEF_CLAUDE_TESTING
+	// first, so a command sees (and later injects into) this iteration's state
+	if (m_agent_bridge)
+	{
+		m_agent_bridge->poll(*this);
+	}
+#endif
+
 	audio_manager::get().update();
 
 	// Process timer and network events (must happen before any update logic)
@@ -717,6 +741,13 @@ void CGame::on_render()
 		m_screenshot_pending = false;
 		save_screen_shot();
 	}
+#ifdef DEF_CLAUDE_TESTING
+	// agent screenshots read back the same finished frame, at the same point
+	if (m_agent_bridge)
+	{
+		m_agent_bridge->on_pre_present(*m_Renderer);
+	}
+#endif
 
 	// Flip to show the drawn content
 	FrameTiming::begin_profile(ProfileStage::Flip);

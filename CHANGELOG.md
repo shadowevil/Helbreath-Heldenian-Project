@@ -52,3 +52,5 @@ In that same widescreen stretch mode, the dimmed backgrounds behind pop-ups, the
 Linux Debug builds of the client now behave like Windows Debug builds: they connect to a local server (127.0.0.1) instead of the public test server, skip the auto-update check, and enable the debug-only tools (tile grid, spell target overlay, frame profiling). Release builds are unchanged.
 
 Groundwork for an agent bridge in Debug builds (HH-0035). Debug clients accept `--agent-bridge-port=N` (8891-8898, default 8891) and `--no-agent-bridge`. Linux now passes the whole command line to the game. None of this is compiled into Release.
+
+The Debug client now runs the agent bridge (HH-0037). It listens on 127.0.0.1 only and answers `ping`, `get_state` and `screenshot`, which saves a PNG of the window into `build/screenshots/` under a 20 MB folder cap. Malformed or hostile input is refused without stalling the game.

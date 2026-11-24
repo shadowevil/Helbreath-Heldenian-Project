@@ -1,7 +1,7 @@
 {
   "id": "HH-0037",
   "summary": "MCP server 4: phase 1a-pre, bridge core with ping, get_state, screenshot",
-  "status": "open",
+  "status": "in_review",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -12,7 +12,7 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:44Z",
-  "updated": "2026-11-24T01:27:47Z",
+  "updated": "2026-11-24T03:10:50Z",
   "links": {
     "commits": [],
     "files": [],

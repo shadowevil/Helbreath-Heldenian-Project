@@ -82,7 +82,7 @@ set(SHARED_SOURCES
 # ---------------------------------------------------------------------------
 # Client sources (all .cpp in sources/client/)
 # ---------------------------------------------------------------------------
-file(GLOB CLIENT_SOURCES "*.cpp")
+file(GLOB CLIENT_SOURCES CONFIGURE_DEPENDS "*.cpp") # re-globbed each build, so a new .cpp is picked up
 
 # ---------------------------------------------------------------------------
 # Executable

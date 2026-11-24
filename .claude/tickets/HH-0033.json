@@ -1,7 +1,7 @@
 {
   "id": "HH-0033",
   "summary": "MCP server 1: research SDL's agent bridge and plan the port",
-  "status": "in_review",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -12,14 +12,16 @@
   ],
   "author": "pm",
   "created": "2026-11-24T00:46:24Z",
-  "updated": "2026-11-24T01:18:59Z",
+  "updated": "2026-11-24T01:27:56Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "9775274"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0032"
     ]
   },
-  "body": "Read-only research for HH-0032. Map Helbreath-SDL's client agent bridge against this client and write the port plan. Nothing is edited in either repo; SDL is read-only.\n\nWhat to find out:\n\n- **Commands:** every command the bridge exposes (`src/client/agent_bridge.h/.cpp`, about 2,500 lines in the .cpp, measured), and which MCP tools `src/tools/agent_mcp/agent_mcp.py` maps onto them.\n- **Dependencies:** for each command, which SDL client systems it touches (screens, dialogs, `agent_widget.h`, `agent_journal.h`, game state, input, screenshot) and the matching system here, or `none`.\n- **Guard and wiring:** `claude_testing.h` and the `DEF_CLAUDE_TESTING` gating (d-027); the `application.cpp` flags (`--agent-bridge-port`, the off flag); the threading model and how commands reach the main loop; the socket code and whether it is cross-platform.\n- **Linux:** does our Linux Debug build (`sources/build_client_linux.sh`, CMake) define `_DEBUG`? (unverified; GCC does not by default)\n- **Python:** how much of `agent_mcp.py`, `hb_driver/`, `hb_flow.py`, the self-test and the smoke test can be reused unchanged, and what is SDL-specific.\n- **Phasing:** a first minimal slice (connect, screenshot, mouse and keys, current screen), then the rest in priority order. Each phase is a candidate sub-task.\n\n**Done when:** a plan at `.claude/design/plans/client-agent-mcp.md` holds the command table with its dependency mapping and the phases, every claim tagged measured or unverified; it is reviewed; the sub-tasks for the port are filed under HH-0032.\n\nSource: user request 2026-11-23 (\"make a sub ticket of the MCP server to do the research needed\"); HH-0032."
+  "body": "Read-only research for HH-0032. Map Helbreath-SDL's client agent bridge against this client and write the port plan. Nothing is edited in either repo; SDL is read-only.\n\nWhat to find out:\n\n- **Commands:** every command the bridge exposes (`src/client/agent_bridge.h/.cpp`, about 2,500 lines in the .cpp, measured), and which MCP tools `src/tools/agent_mcp/agent_mcp.py` maps onto them.\n- **Dependencies:** for each command, which SDL client systems it touches (screens, dialogs, `agent_widget.h`, `agent_journal.h`, game state, input, screenshot) and the matching system here, or `none`.\n- **Guard and wiring:** `claude_testing.h` and the `DEF_CLAUDE_TESTING` gating (d-027); the `application.cpp` flags (`--agent-bridge-port`, the off flag); the threading model and how commands reach the main loop; the socket code and whether it is cross-platform.\n- **Linux:** does our Linux Debug build (`sources/build_client_linux.sh`, CMake) define `_DEBUG`? (unverified; GCC does not by default)\n- **Python:** how much of `agent_mcp.py`, `hb_driver/`, `hb_flow.py`, the self-test and the smoke test can be reused unchanged, and what is SDL-specific.\n- **Phasing:** a first minimal slice (connect, screenshot, mouse and keys, current screen), then the rest in priority order. Each phase is a candidate sub-task.\n\n**Done when:** a plan at `.claude/design/plans/client-agent-mcp.md` holds the command table with its dependency mapping and the phases, every claim tagged measured or unverified; it is reviewed; the sub-tasks for the port are filed under HH-0032.\n\nSource: user request 2026-11-23 (\"make a sub ticket of the MCP server to do the research needed\"); HH-0032.\n\n**Closed, 2026-11-24:** plan `.claude/design/plans/client-agent-mcp.md` plus sidecars (all under 10 KB, measured); read-only review passed after fixes, all fixes applied; d-028 recorded; port sub-tasks HH-0035..HH-0043 filed under HH-0032. The plan is gitignored (`.claude/design/`); the linked commit holds the tickets and decisions.\n"
 }

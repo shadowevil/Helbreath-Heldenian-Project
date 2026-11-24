@@ -509,6 +509,9 @@
     <ClInclude Include="agent_bridge_config.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="agent_bridge.h">
+      <Filter>Core</Filter>
+    </ClInclude>
     <ClInclude Include="..\dependencies\shared\vendor\picosha2.h">
       <Filter>Shared</Filter>
     </ClInclude>
@@ -923,6 +926,9 @@
       <Filter>Screens</Filter>
     </ClCompile>
     <ClCompile Include="game.cpp" />
+    <ClCompile Include="agent_bridge.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
     <ClCompile Include="game_mode_manager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>

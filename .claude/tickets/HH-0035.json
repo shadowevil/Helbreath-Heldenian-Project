@@ -1,7 +1,7 @@
 {
   "id": "HH-0035",
   "summary": "MCP server 2: phase 0, guard header and bridge flags",
-  "status": "in_review",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -12,9 +12,11 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:37Z",
-  "updated": "2026-11-24T02:36:53Z",
+  "updated": "2026-11-24T02:48:25Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "ef4cd72"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
@@ -22,5 +24,5 @@
       "HH-0037"
     ]
   },
-  "body": "Add `claude_testing.h` (DEF_CLAUDE_TESTING from _DEBUG, d-027) and parse `--agent-bridge-port=N` / `--no-agent-bridge` inside the guard; Linux passes full argv to GameMain (`wmain.cpp:84-86`). Default port 8891 (d-028). About 3 files, ~50 lines (derived). Detail: plan phase 0, `design.md`.\n\n**Done when:** a Debug build parses the flags; a Release build launched with `--agent-bridge-port=8891` logs nothing, listens on nothing and has no `agent bridge` string; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028."
+  "body": "Add `claude_testing.h` (DEF_CLAUDE_TESTING from _DEBUG, d-027) and parse `--agent-bridge-port=N` / `--no-agent-bridge` inside the guard; Linux passes full argv to GameMain (`wmain.cpp:84-86`). Default port 8891 (d-028). About 3 files, ~50 lines (derived). Detail: plan phase 0, `design.md`.\n\n**Done when:** a Debug build parses the flags; a Release build launched with `--agent-bridge-port=8891` logs nothing, listens on nothing and has no `agent bridge` string; reviewed.\n\nSource: plan `.claude/design/plans/client-agent-mcp.md` (HH-0033, reviewed 2026-11-24); decisions d-027, d-028.\n\n**Closed, 2026-11-24:** read-only Opus review passed, with fixes applied (port range 8891-8898, #error on a hand define, malformed-flag warnings). Windows Debug, Windows Release and WSL Debug builds pass (measured). The Release exe has no bridge strings (measured, before the fixes; the fixes only add code under the Debug-only branch). A g++ parser test passed 10/10. The runtime half of the Release check (nothing listening) moves to HH-0037.\n"
 }

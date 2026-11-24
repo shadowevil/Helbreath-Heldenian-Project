@@ -65,6 +65,9 @@
 #include "game_events.h"
 #include "formula_engine.h"
 #include "agent_bridge_config.h"
+#ifdef DEF_CLAUDE_TESTING
+namespace hb::client { class agent_bridge; }
+#endif
 
 // Overlay types for popup screens that render over base screens
 enum class OverlayType {
@@ -137,6 +140,8 @@ public:
 #ifdef DEF_CLAUDE_TESTING
 	// Launch flags for the agent bridge; GameMain fills them after initialize(), before run()
 	hb::client::agent_bridge_config m_agent_bridge_config;
+	// Started at the end of on_start (inside run()), polled at the top of on_update
+	std::unique_ptr<hb::client::agent_bridge> m_agent_bridge;
 #endif
 
 	void read_settings();

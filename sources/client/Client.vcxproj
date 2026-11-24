@@ -232,6 +232,7 @@
     <ClInclude Include="..\dependencies\shared\util\hmac.h" />
     <ClInclude Include="..\dependencies\shared\util\claude_testing.h" />
     <ClInclude Include="action_id_client.h" />
+    <ClInclude Include="agent_bridge.h" />
     <ClInclude Include="agent_bridge_config.h" />
     <ClInclude Include="benchmark.h" />
     <ClInclude Include="performance_monitor.h" />
@@ -497,6 +498,7 @@
     <ClCompile Include="render_helpers.cpp" />
     <ClCompile Include="player_renderer.cpp" />
     <ClCompile Include="npc_renderer.cpp" />
+    <ClCompile Include="agent_bridge.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="game_mode_manager.cpp" />
     <ClCompile Include="game_screen.cpp" />
