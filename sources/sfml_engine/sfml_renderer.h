@@ -8,6 +8,7 @@
 
 #include "renderer.h"
 #include "sfml_texture.h"
+#include "output_rects.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Shader.hpp>
@@ -51,6 +52,8 @@ public:
     float ui_scale() const override;
     void push_world_rect_view() override;
     void pop_world_rect_view() override;
+    hb::shared::geometry::GamePoint ui_to_world(hb::shared::geometry::GamePoint ui) const override;
+    hb::shared::geometry::GamePoint world_to_ui(hb::shared::geometry::GamePoint world) const override;
 
     // Frame Metrics
     uint32_t get_fps() const override;
@@ -119,8 +122,9 @@ public:
     // through the UI view. Sprites, text and primitives must draw here, never to a fixed target.
     sf::RenderTarget* get_current_target() { return m_target; }
 
-    // Window pixels per UI unit for text drawn now: ui_scale() in screen space, 1 in the world pass
-    float text_scale() const { return m_in_world ? 1.0f : ui_scale(); }
+    // Window pixels per logical unit for text drawn now: the screen-space rect in force (the UI rect,
+    // or the world rect inside push/pop_world_rect_view), 1 in the world pass
+    float text_scale() const { return m_in_world ? 1.0f : rect_scale(screen_rect()); }
 
     // Screen space: move a logical (UI-unit) point so it lands on a whole window pixel through the
     // UI view, using the same integer viewport SFML rasterises with. Identity when the UI is 1:1.
@@ -154,6 +158,19 @@ private:
     sf::Vector2f get_output_size() const;
     // Recompute the output size, world rect and UI rect for this frame
     void update_output_rects();
+    // Screen space: the logical region the view shows (0..logical, or wider when the UI rect is
+    // narrower than the world rect) and the window rect it lands in
+    struct screen_mapping
+    {
+        sf::FloatRect view;
+        sf::FloatRect viewport;
+    };
+    screen_mapping current_screen_mapping() const;
+    // Logical units of one rect -> logical units of another, through window pixels; identity when equal
+    hb::shared::geometry::GamePoint map_between(const sf::FloatRect& from, const sf::FloatRect& to,
+        hb::shared::geometry::GamePoint point) const;
+    // Window pixels per logical unit of rect, on the smaller axis
+    float rect_scale(const sf::FloatRect& rect) const;
     // 1:1 view over the window in output pixels, no scissor
     sf::View output_view() const;
     // Make the window the current target, drawing through the UI view

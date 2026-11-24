@@ -33,6 +33,7 @@
 #include "dialog_box_exchange.h"
 #include "dialog_box_npc_action_query.h"
 #include "log.h"
+#include "input_state_helper.h"
 #ifdef TESTER_ONLY
 #include "dialog_box_item_creator.h"
 #endif // TESTER_ONLY
@@ -265,6 +266,9 @@ void Screen_OnGame::on_update()
 
     m_sMsX = static_cast<short>(hb::shared::input::get_mouse_x());
     m_sMsY = static_cast<short>(hb::shared::input::get_mouse_y());
+    const hb::shared::geometry::GamePoint world_mouse = hb::client::world_mouse();
+    m_world_mouse_x = static_cast<short>(world_mouse.x);
+    m_world_mouse_y = static_cast<short>(world_mouse.y);
     m_sMsZ = static_cast<short>(hb::shared::input::get_mouse_wheel_delta());
     m_cLB = (hb::shared::input::is_mouse_button_pressed(MouseButton::Left) || hb::shared::input::is_mouse_button_down(MouseButton::Left)) ? 1 : 0;
     m_cRB = (hb::shared::input::is_mouse_button_pressed(MouseButton::Right) || hb::shared::input::is_mouse_button_down(MouseButton::Right)) ? 1 : 0;
@@ -632,8 +636,8 @@ void Screen_OnGame::on_update()
     weather_manager::get().update(m_game->m_cur_time);
 
     m_game->command_processor(m_sMsX, m_sMsY,
-        ((m_sDivX + m_pivot_x) * 32 + m_sModX + m_sMsX - 17) / 32 + 1,
-        ((m_sDivY + m_pivot_y) * 32 + m_sModY + m_sMsY - 17) / 32 + 1,
+        ((m_sDivX + m_pivot_x) * 32 + m_sModX + m_world_mouse_x - 17) / 32 + 1,
+        ((m_sDivY + m_pivot_y) * 32 + m_sModY + m_world_mouse_y - 17) / 32 + 1,
         m_cLB, m_cRB);
 
     m_game->m_Camera.update(m_time);
@@ -733,7 +737,7 @@ void Screen_OnGame::on_render()
     draw_tile_grid();
 
     FrameTiming::begin_profile(ProfileStage::draw_objects);
-    draw_objects(m_pivot_x, m_pivot_y, m_sDivX, m_sDivY, m_sModX, m_sModY, m_sMsX, m_sMsY);
+    draw_objects(m_pivot_x, m_pivot_y, m_sDivX, m_sDivY, m_sModX, m_sModY, m_world_mouse_x, m_world_mouse_y);
     FrameTiming::end_profile(ProfileStage::draw_objects);
 
     FrameTiming::begin_profile(ProfileStage::draw_effects);
@@ -1118,8 +1122,8 @@ void Screen_OnGame::draw_spell_target_overlay()
     int casterY = m_game->m_player->m_player_y;
 
     // Mouse world tile (same formula as command_processor call on line 383)
-    int targetX = ((m_sDivX + m_pivot_x) * 32 + m_sModX + m_sMsX - 17) / 32 + 1;
-    int targetY = ((m_sDivY + m_pivot_y) * 32 + m_sModY + m_sMsY - 17) / 32 + 1;
+    int targetX = ((m_sDivX + m_pivot_x) * 32 + m_sModX + m_world_mouse_x - 17) / 32 + 1;
+    int targetY = ((m_sDivY + m_pivot_y) * 32 + m_sModY + m_world_mouse_y - 17) / 32 + 1;
 
     spell_aoe_params params;
     params.m_magic_type = magic->m_type;

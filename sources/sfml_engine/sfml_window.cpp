@@ -9,8 +9,11 @@
 #include "sfml_renderer.h"
 #include "renderer_factory.h"
 #include "render_constants.h"
+#include "output_rects.h"
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics/Image.hpp>
+#include <algorithm>
+#include <cmath>
 
 #include "platform_headers.h"
 
@@ -843,50 +846,42 @@ void SFMLWindow::TransformMouseCoords(int windowX, int windowY, int& logicalX, i
     float windowWidth, windowHeight;
 
     int client_w = 0, client_h = 0;
-    if (m_handle && hb::platform::get_client_size(m_handle, client_w, client_h))
+    if (m_handle && hb::platform::get_client_size(m_handle, client_w, client_h) && client_w > 0 && client_h > 0)
     {
         windowWidth = static_cast<float>(client_w);
         windowHeight = static_cast<float>(client_h);
     }
-    else
+    else if (m_width > 0 && m_height > 0)
     {
         windowWidth = static_cast<float>(m_width);
         windowHeight = static_cast<float>(m_height);
     }
-
-    float mouseX = static_cast<float>(windowX);
-    float mouseY = static_cast<float>(windowY);
-
-    if (m_fullscreen && !m_fullscreen_stretch)
-    {
-        // Fullscreen letterbox - account for uniform scale and offset
-        float scaleX = windowWidth / static_cast<float>(RENDER_LOGICAL_WIDTH());
-        float scaleY = windowHeight / static_cast<float>(RENDER_LOGICAL_HEIGHT());
-        float scale = (scaleY < scaleX) ? scaleY : scaleX;
-
-        float destWidth = static_cast<float>(RENDER_LOGICAL_WIDTH()) * scale;
-        float destHeight = static_cast<float>(RENDER_LOGICAL_HEIGHT()) * scale;
-        float offsetX = (windowWidth - destWidth) / 2.0f;
-        float offsetY = (windowHeight - destHeight) / 2.0f;
-
-        logicalX = static_cast<int>((mouseX - offsetX) / scale);
-        logicalY = static_cast<int>((mouseY - offsetY) / scale);
-    }
     else
     {
-        // Windowed or fullscreen stretch - independent axis scaling
-        float scaleX = windowWidth / static_cast<float>(RENDER_LOGICAL_WIDTH());
-        float scaleY = windowHeight / static_cast<float>(RENDER_LOGICAL_HEIGHT());
-
-        logicalX = static_cast<int>(mouseX / scaleX);
-        logicalY = static_cast<int>(mouseY / scaleY);
+        // Minimised or not sized yet: a 1:1 logical window keeps the mapping finite (as the renderer does)
+        windowWidth = static_cast<float>(RENDER_LOGICAL_WIDTH());
+        windowHeight = static_cast<float>(RENDER_LOGICAL_HEIGHT());
     }
 
-    // Clamp to valid range
-    if (logicalX < 0) logicalX = 0;
-    if (logicalX > LOGICAL_MAX_X()) logicalX = LOGICAL_MAX_X();
-    if (logicalY < 0) logicalY = 0;
-    if (logicalY > LOGICAL_MAX_Y()) logicalY = LOGICAL_MAX_Y();
+    // The game reads the mouse in UI units: window pixels -> the UI rect (same rects as the renderer)
+    const output_rects rects = compute_output_rects({windowWidth, windowHeight},
+        {static_cast<float>(RENDER_LOGICAL_WIDTH()), static_cast<float>(RENDER_LOGICAL_HEIGHT())},
+        m_fullscreen && !m_fullscreen_stretch);
+    const sf::Vector2f ui = rects.ui.from_output({static_cast<float>(windowX), static_cast<float>(windowY)});
+    logicalX = static_cast<int>(std::floor(ui.x));
+    logicalY = static_cast<int>(std::floor(ui.y));
+
+    // Clamp to the UI area, widened to the world rect's extent in UI units: in stretch the world fills
+    // the window, so the mouse reaches past 0..LOGICAL_MAX there (negative, or above the maximum)
+    const sf::Vector2f world_min = rects.ui.from_output(rects.world.rect.position);
+    const sf::Vector2f world_max = rects.ui.from_output({rects.world.rect.position.x + rects.world.rect.size.x - 1.0f,
+                                                         rects.world.rect.position.y + rects.world.rect.size.y - 1.0f});
+    const int min_x = (std::min)(0, static_cast<int>(std::floor(world_min.x)));
+    const int min_y = (std::min)(0, static_cast<int>(std::floor(world_min.y)));
+    const int max_x = (std::max)(LOGICAL_MAX_X(), static_cast<int>(std::floor(world_max.x)));
+    const int max_y = (std::max)(LOGICAL_MAX_Y(), static_cast<int>(std::floor(world_max.y)));
+    logicalX = std::clamp(logicalX, min_x, max_x);
+    logicalY = std::clamp(logicalY, min_y, max_y);
 }
 
 void SFMLWindow::apply_cursor_grab()
@@ -977,12 +972,13 @@ void SFMLWindow::update_cursor_clip()
         if (!hb::platform::get_client_size(m_handle, client_w, client_h))
             return;
 
-        float scaleX = static_cast<float>(client_w) / static_cast<float>(RENDER_LOGICAL_WIDTH());
-        float scaleY = static_cast<float>(client_h) / static_cast<float>(RENDER_LOGICAL_HEIGHT());
-        float scale = (scaleY < scaleX) ? scaleY : scaleX;
+        // The world rect, from the same helper the renderer and the mouse transform use
+        const output_rects rects = compute_output_rects(
+            {static_cast<float>(client_w), static_cast<float>(client_h)},
+            {static_cast<float>(RENDER_LOGICAL_WIDTH()), static_cast<float>(RENDER_LOGICAL_HEIGHT())}, true);
 
-        int destW = static_cast<int>(RENDER_LOGICAL_WIDTH() * scale);
-        int destH = static_cast<int>(RENDER_LOGICAL_HEIGHT() * scale);
+        int destW = static_cast<int>(rects.world.rect.size.x);
+        int destH = static_cast<int>(rects.world.rect.size.y);
         int offsetX = (client_w - destW) / 2;
         int offsetY = (client_h - destH) / 2;
 
@@ -998,7 +994,7 @@ void SFMLWindow::update_cursor_clip()
     }
     else
     {
-        // Windowed or fullscreen-stretch — no clipping needed
+        // Windowed or fullscreen-stretch: the world fills the window, so all of it is live; no clip
         ClipCursor(nullptr);
     }
 #endif

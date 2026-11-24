@@ -479,14 +479,30 @@ void DialogBoxManager::set_enabled(int box_id, bool enabled)
 // Input handlers (no mouse params — read from hb::shared::input)
 // ============================================================
 
+namespace {
+
+// Is the mouse over dlg, in the units dlg is drawn in: the HUD panel draws in the world rect, every
+// other dialog in the UI rect. inclusive: edges count (mouse down), else strictly inside.
+bool mouse_over_dialog(const IDialogBox* dlg, bool inclusive)
+{
+	const hb::shared::geometry::GamePoint mouse = (dlg->get_id() == DialogBoxId::HudPanel)
+		? DialogBox_HudPanel::hud_mouse()
+		: hb::shared::geometry::GamePoint(hb::shared::input::get_mouse_x(), hb::shared::input::get_mouse_y());
+	const short mouse_x = static_cast<short>(mouse.x);
+	const short mouse_y = static_cast<short>(mouse.y);
+	if (inclusive)
+		return mouse_x >= dlg->m_x && mouse_x <= dlg->m_x + dlg->m_size_x &&
+			mouse_y >= dlg->m_y && mouse_y <= dlg->m_y + dlg->m_size_y;
+	return mouse_x > dlg->m_x && mouse_x < dlg->m_x + dlg->m_size_x &&
+		mouse_y > dlg->m_y && mouse_y < dlg->m_y + dlg->m_size_y;
+}
+
+} // namespace
+
 bool DialogBoxManager::handle_click()
 {
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-
 	return for_each_top_to_bottom([&](IDialogBox* dlg) -> bool {
-		if (mouse_x > dlg->m_x && mouse_x < dlg->m_x + dlg->m_size_x &&
-			mouse_y > dlg->m_y && mouse_y < dlg->m_y + dlg->m_size_y)
+		if (mouse_over_dialog(dlg, false))
 		{
 			dlg->on_click();
 			return true;
@@ -497,13 +513,9 @@ bool DialogBoxManager::handle_click()
 
 bool DialogBoxManager::handle_double_click()
 {
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-
 	bool consumed = false;
 	for_each_top_to_bottom([&](IDialogBox* dlg) -> bool {
-		if (mouse_x > dlg->m_x && mouse_x < dlg->m_x + dlg->m_size_x &&
-			mouse_y > dlg->m_y && mouse_y < dlg->m_y + dlg->m_size_y)
+		if (mouse_over_dialog(dlg, false))
 		{
 			consumed = dlg->on_double_click();
 			return true;
@@ -531,12 +543,8 @@ bool DialogBoxManager::handle_item_drop(int dlg_id)
 
 bool DialogBoxManager::handle_dragging_item_release()
 {
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-
 	return for_each_top_to_bottom([&](IDialogBox* dlg) -> bool {
-		if (mouse_x > dlg->m_x && mouse_x < dlg->m_x + dlg->m_size_x &&
-			mouse_y > dlg->m_y && mouse_y < dlg->m_y + dlg->m_size_y)
+		if (mouse_over_dialog(dlg, false))
 		{
 			int id = static_cast<int>(dlg->get_id());
 			enable_dialog_box(id, 0, 0, 0);
@@ -555,8 +563,7 @@ int DialogBoxManager::handle_mouse_down()
 	int result = 0;
 
 	for_each_top_to_bottom([&](IDialogBox* dlg) -> bool {
-		if (mouse_x >= dlg->m_x && mouse_x <= dlg->m_x + dlg->m_size_x &&
-			mouse_y >= dlg->m_y && mouse_y <= dlg->m_y + dlg->m_size_y)
+		if (mouse_over_dialog(dlg, true))
 		{
 			int id = static_cast<int>(dlg->get_id());
 
@@ -596,13 +603,9 @@ bool DialogBoxManager::handle_right_click(uint32_t time)
 {
 	if ((time - m_close_debounce_time) < 300) return true;
 
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-
 	bool hit = false;
 	for_each_top_to_bottom([&](IDialogBox* dlg) -> bool {
-		if (mouse_x > dlg->m_x && mouse_x < dlg->m_x + dlg->m_size_x &&
-			mouse_y > dlg->m_y && mouse_y < dlg->m_y + dlg->m_size_y)
+		if (mouse_over_dialog(dlg, false))
 		{
 			bool can_close = dlg->m_can_close_on_right_click;
 			int id = static_cast<int>(dlg->get_id());

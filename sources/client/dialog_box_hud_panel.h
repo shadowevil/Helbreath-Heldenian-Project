@@ -17,6 +17,11 @@ public:
 	bool is_draggable() const override { return false; }
 	bool cancels_text_input_on_enable() const override { return false; }
 
+	// Mouse in HUD units: every HUD hit test reads this, and so does the dialog manager for this
+	// dialog. The HUD draws in the world rect, not the UI rect, so this is the UI mouse mapped
+	// through both rects; it equals the UI mouse when the rects coincide.
+	static hb::shared::geometry::GamePoint hud_mouse();
+
 private:
 	// Y offset for resolution - shifts all Y positions when running at higher resolutions
 	// At 640x480: offset = 0, At 800x600: offset = 120
@@ -114,8 +119,7 @@ private:
 	// Tester menu text position (above Level Up text)
 	static constexpr int BASE_TESTER_TEXT_Y = 433;
 
-	// Mouse in HUD units: every HUD hit test reads these. The HUD draws in the world rect, not the
-	// UI rect; while the two rects are equal this is the UI mouse. Phase 4 maps it through both rects.
+	// hud_mouse() split per axis, for the HUD's own hit tests and tooltips
 	static short hud_mouse_x();
 	static short hud_mouse_y();
 

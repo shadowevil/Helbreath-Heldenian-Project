@@ -65,6 +65,7 @@
 
 // Cursor targeting
 #include "cursor_target.h"
+#include "input_state_helper.h"
 
 // Screen system
 #include "game_screen.h"
@@ -4614,21 +4615,25 @@ void CGame::command_processor(short mouse_x, short mouse_y, short tile_x, short 
 	// Fixed by Snoopy
 	if ((on_game()->m_is_observer_commanded == false) && (on_game()->m_is_observer_mode == true))
 	{
-		if ((mouse_x == 0) && (mouse_y == 0) && (m_Camera.get_destination_x() > 32 * VIEW_TILE_WIDTH()) && (m_Camera.get_destination_y() > 32 * VIEW_TILE_HEIGHT()))
+		// Edge panning reads the world mouse: in stretch the world's edges are the window's, past the UI rect
+		const hb::shared::geometry::GamePoint world_mouse = hb::client::world_mouse();
+		const short edge_x = static_cast<short>(world_mouse.x);
+		const short edge_y = static_cast<short>(world_mouse.y);
+		if ((edge_x == 0) && (edge_y == 0) && (m_Camera.get_destination_x() > 32 * VIEW_TILE_WIDTH()) && (m_Camera.get_destination_y() > 32 * VIEW_TILE_HEIGHT()))
 			send_game_packet(hb::net::make_panning_request(8));
-		else if ((mouse_x == LOGICAL_MAX_X()) && (mouse_y == 0) && (m_Camera.get_destination_x() < 32 * m_map_data->m_map_size_x - 32 * VIEW_TILE_WIDTH()) && (m_Camera.get_destination_y() > 32 * VIEW_TILE_HEIGHT()))
+		else if ((edge_x == LOGICAL_MAX_X()) && (edge_y == 0) && (m_Camera.get_destination_x() < 32 * m_map_data->m_map_size_x - 32 * VIEW_TILE_WIDTH()) && (m_Camera.get_destination_y() > 32 * VIEW_TILE_HEIGHT()))
 			send_game_packet(hb::net::make_panning_request(2));
-		else if ((mouse_x == LOGICAL_MAX_X()) && (mouse_y == LOGICAL_MAX_Y()) && (m_Camera.get_destination_x() < 32 * m_map_data->m_map_size_x - 32 * VIEW_TILE_WIDTH()) && (m_Camera.get_destination_y() < 32 * m_map_data->m_map_size_y - 32 * VIEW_TILE_HEIGHT()))
+		else if ((edge_x == LOGICAL_MAX_X()) && (edge_y == LOGICAL_MAX_Y()) && (m_Camera.get_destination_x() < 32 * m_map_data->m_map_size_x - 32 * VIEW_TILE_WIDTH()) && (m_Camera.get_destination_y() < 32 * m_map_data->m_map_size_y - 32 * VIEW_TILE_HEIGHT()))
 			send_game_packet(hb::net::make_panning_request(4));
-		else if ((mouse_x == 0) && (mouse_y == LOGICAL_MAX_Y()))
+		else if ((edge_x == 0) && (edge_y == LOGICAL_MAX_Y()))
 			send_game_packet(hb::net::make_panning_request(6));
-		else if ((mouse_x == 0) && (m_Camera.get_destination_x() > 32 * VIEW_TILE_WIDTH()))
+		else if ((edge_x == 0) && (m_Camera.get_destination_x() > 32 * VIEW_TILE_WIDTH()))
 			send_game_packet(hb::net::make_panning_request(7));
-		else if ((mouse_x == LOGICAL_MAX_X()) && (m_Camera.get_destination_x() < 32 * m_map_data->m_map_size_x - 32 * VIEW_TILE_WIDTH()))
+		else if ((edge_x == LOGICAL_MAX_X()) && (m_Camera.get_destination_x() < 32 * m_map_data->m_map_size_x - 32 * VIEW_TILE_WIDTH()))
 			send_game_packet(hb::net::make_panning_request(3));
-		else if ((mouse_y == 0) && (m_Camera.get_destination_y() > 32 * VIEW_TILE_HEIGHT()))
+		else if ((edge_y == 0) && (m_Camera.get_destination_y() > 32 * VIEW_TILE_HEIGHT()))
 			send_game_packet(hb::net::make_panning_request(1));
-		else if ((mouse_y == LOGICAL_MAX_Y()) && (m_Camera.get_destination_y() < 32 * m_map_data->m_map_size_y - 32 * VIEW_TILE_HEIGHT()))
+		else if ((edge_y == LOGICAL_MAX_Y()) && (m_Camera.get_destination_y() < 32 * m_map_data->m_map_size_y - 32 * VIEW_TILE_HEIGHT()))
 			send_game_packet(hb::net::make_panning_request(5));
 		else return;
 

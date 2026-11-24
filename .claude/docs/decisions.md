@@ -192,3 +192,10 @@ Contents: d-001 SDL versioning - d-002 clock-skew exchange - d-003 sources/bin/b
 - Decided: a linked doc over 10 KB gets an audit ticket and is split into an index plus sidecars, or kept whole with a dated reason.
 - Recorded in: `.claude/docs/documentation.md`; CLAUDE.md "Docs (index)".
 - Recorded in: CLAUDE.md "Workflow"; `.claude/docs/ticket-workflow.md`; `.claude/docs/workflow.md`; `.claude/docs/agents.md`.
+
+## d-027 Client agent MCP bridge uses SDL's debug guards
+
+- Date: 2026-11-23.
+- Quote: "After we finish all of the tickets, lets begin implementing SDL's MCP server for The Heldenien Project"; "Same debug guards as SDL".
+- Decided: the bridge compiles only under `DEF_CLAUDE_TESTING`, as in Helbreath-SDL. A shared header derives that macro from `_DEBUG` (SDL's is `src/shared/util/claude_testing.h`), and nothing defines it by hand. Work starts after the current tickets.
+- Recorded in: HH-0032.

@@ -380,25 +380,52 @@ void SFMLRenderer::update_output_rects()
 {
     m_output_size = get_output_size();
 
+    // Letterbox: both rects are the uniform centred rect. Stretch: the world fills the window, the UI
+    // stays uniform and centred (the same rects the window maps the mouse through)
+    const output_rects rects = compute_output_rects(m_output_size,
+        {static_cast<float>(m_width), static_cast<float>(m_height)}, m_fullscreen && !m_fullscreen_stretch);
+    m_world_rect = rects.world.rect;
+    m_ui_rect = rects.ui.rect;
+}
+
+SFMLRenderer::screen_mapping SFMLRenderer::current_screen_mapping() const
+{
     const sf::Vector2f logical(static_cast<float>(m_width), static_cast<float>(m_height));
-    float scale_x = m_output_size.x / logical.x;
-    float scale_y = m_output_size.y / logical.y;
+    const sf::FloatRect& rect = screen_rect();
+    if (rect == m_world_rect)
+        return {sf::FloatRect({0.0f, 0.0f}, logical), rect};
 
-    if (m_fullscreen && !m_fullscreen_stretch)
-    {
-        // Fullscreen letterbox: uniform scale to maintain aspect ratio, centred
-        float scale = (scale_y < scale_x) ? scale_y : scale_x;
-        sf::Vector2f dest(logical.x * scale, logical.y * scale);
-        m_world_rect = sf::FloatRect({(m_output_size.x - dest.x) / 2.0f, (m_output_size.y - dest.y) / 2.0f}, dest);
-    }
-    else
-    {
-        // Windowed or fullscreen stretch: fill entire window
-        m_world_rect = sf::FloatRect({0.0f, 0.0f}, m_output_size);
-    }
+    // The UI rect is narrower than the world: widen the view to the whole world rect at UI scale,
+    // so UI-unit draws outside 0..logical (cursor, names at the world's edges) still reach the window
+    const sf::Vector2f scale(rect.size.x / logical.x, rect.size.y / logical.y);
+    return {sf::FloatRect({(m_world_rect.position.x - rect.position.x) / scale.x,
+                           (m_world_rect.position.y - rect.position.y) / scale.y},
+                          {m_world_rect.size.x / scale.x, m_world_rect.size.y / scale.y}),
+            m_world_rect};
+}
 
-    // Phase 1: the UI rect equals the world rect in every mode (uniform UI in stretch is Phase 4)
-    m_ui_rect = m_world_rect;
+hb::shared::geometry::GamePoint SFMLRenderer::map_between(const sf::FloatRect& from, const sf::FloatRect& to,
+    hb::shared::geometry::GamePoint point) const
+{
+    if (from == to || from.size.x <= 0.0f || from.size.y <= 0.0f || to.size.x <= 0.0f || to.size.y <= 0.0f)
+        return point;
+
+    // Map the centre of the unit, so a whole unit lands on the unit it covers most
+    const sf::Vector2f logical(static_cast<float>(m_width), static_cast<float>(m_height));
+    float pixel_x = from.position.x + (static_cast<float>(point.x) + 0.5f) * from.size.x / logical.x;
+    float pixel_y = from.position.y + (static_cast<float>(point.y) + 0.5f) * from.size.y / logical.y;
+    return {static_cast<int>(std::floor((pixel_x - to.position.x) * logical.x / to.size.x)),
+            static_cast<int>(std::floor((pixel_y - to.position.y) * logical.y / to.size.y))};
+}
+
+hb::shared::geometry::GamePoint SFMLRenderer::ui_to_world(hb::shared::geometry::GamePoint ui) const
+{
+    return map_between(m_ui_rect, m_world_rect, ui);
+}
+
+hb::shared::geometry::GamePoint SFMLRenderer::world_to_ui(hb::shared::geometry::GamePoint world) const
+{
+    return map_between(m_world_rect, m_ui_rect, world);
 }
 
 sf::View SFMLRenderer::output_view() const
@@ -431,28 +458,38 @@ void SFMLRenderer::apply_target_view()
         update_output_rects();
 
     const sf::Vector2f logical(static_cast<float>(m_width), static_cast<float>(m_height));
-    sf::View view(sf::FloatRect({0.f, 0.f}, logical));
 
-    // Where the logical space lands on the current target, in target pixels
-    sf::FloatRect area({0.f, 0.f}, logical);
-    sf::Vector2f target_size = logical;
+    // The logical region the view shows and where it lands on the current target, in target pixels
+    const screen_mapping mapping = m_in_world
+        ? screen_mapping{sf::FloatRect({0.f, 0.f}, logical), sf::FloatRect({0.f, 0.f}, logical)}
+        : current_screen_mapping();
+    const sf::Vector2f target_size = m_in_world ? logical : m_output_size;
+    const sf::FloatRect& area = mapping.viewport;
+    sf::View view(mapping.view);
     if (!m_in_world)
     {
-        area = screen_rect();
-        target_size = m_output_size;
         view.setViewport(sf::FloatRect(
             {area.position.x / target_size.x, area.position.y / target_size.y},
             {area.size.x / target_size.x, area.size.y / target_size.y}));
     }
 
-    // Clip (logical units, clamped to the logical area) -> target pixels, rounded outward
+    // Clip (logical units, clamped to the viewed region) -> target pixels, rounded outward. A clip
+    // edge exactly on the logical area's edge opens to the viewed region's edge (the same edge unless
+    // widened); any other edge, inside or outside the logical area, is only clamped into the view.
     const hb::shared::geometry::GameRectangle& clip = active_clip();
-    float scale_x = area.size.x / logical.x;
-    float scale_y = area.size.y / logical.y;
-    float left = std::floor(area.position.x + static_cast<float>((std::max)(clip.Left(), 0)) * scale_x);
-    float top = std::floor(area.position.y + static_cast<float>((std::max)(clip.Top(), 0)) * scale_y);
-    float right = std::ceil(area.position.x + static_cast<float>((std::min)(clip.Right(), m_width)) * scale_x);
-    float bottom = std::ceil(area.position.y + static_cast<float>((std::min)(clip.Bottom(), m_height)) * scale_y);
+    const sf::FloatRect& shown = mapping.view;
+    const float shown_right = shown.position.x + shown.size.x;
+    const float shown_bottom = shown.position.y + shown.size.y;
+    float scale_x = area.size.x / shown.size.x;
+    float scale_y = area.size.y / shown.size.y;
+    float clip_left = (clip.Left() == 0) ? shown.position.x : (std::max)(static_cast<float>(clip.Left()), shown.position.x);
+    float clip_top = (clip.Top() == 0) ? shown.position.y : (std::max)(static_cast<float>(clip.Top()), shown.position.y);
+    float clip_right = (clip.Right() == m_width) ? shown_right : (std::min)(static_cast<float>(clip.Right()), shown_right);
+    float clip_bottom = (clip.Bottom() == m_height) ? shown_bottom : (std::min)(static_cast<float>(clip.Bottom()), shown_bottom);
+    float left = std::floor(area.position.x + (clip_left - shown.position.x) * scale_x);
+    float top = std::floor(area.position.y + (clip_top - shown.position.y) * scale_y);
+    float right = std::ceil(area.position.x + (clip_right - shown.position.x) * scale_x);
+    float bottom = std::ceil(area.position.y + (clip_bottom - shown.position.y) * scale_y);
     left = std::clamp(left, 0.0f, target_size.x);
     top = std::clamp(top, 0.0f, target_size.y);
     right = std::clamp(right, left, target_size.x);
@@ -535,27 +572,33 @@ void SFMLRenderer::fill_output(const hb::shared::render::Color& color)
 sf::Vector2f SFMLRenderer::snap_to_output_pixel(sf::Vector2f logical) const
 {
     // SFML rounds the view's viewport to whole pixels (RenderTarget::getViewport), so map through
-    // the rounded rect: pixel = vp.pos + logical * vp.size / logical_size
-    const sf::FloatRect& rect = screen_rect();
+    // the rounded rect: pixel = vp.pos + (logical - view.pos) * vp.size / view.size
+    const screen_mapping mapping = current_screen_mapping();
+    const sf::FloatRect& rect = mapping.viewport;
+    const sf::FloatRect& shown = mapping.view;
     float vp_x = std::round(rect.position.x);
     float vp_y = std::round(rect.position.y);
-    float scale_x = std::round(rect.size.x) / static_cast<float>(m_width);
-    float scale_y = std::round(rect.size.y) / static_cast<float>(m_height);
+    float scale_x = std::round(rect.size.x) / shown.size.x;
+    float scale_y = std::round(rect.size.y) / shown.size.y;
     if (scale_x <= 0.0f || scale_y <= 0.0f)
         return logical;
 
-    return {(std::round(vp_x + logical.x * scale_x) - vp_x) / scale_x,
-            (std::round(vp_y + logical.y * scale_y) - vp_y) / scale_y};
+    return {(std::round(vp_x + (logical.x - shown.position.x) * scale_x) - vp_x) / scale_x + shown.position.x,
+            (std::round(vp_y + (logical.y - shown.position.y) * scale_y) - vp_y) / scale_y + shown.position.y};
 }
 
-float SFMLRenderer::ui_scale() const
+float SFMLRenderer::rect_scale(const sf::FloatRect& rect) const
 {
-    // Phase 1: the UI rect is the world rect, which stretches per axis; report the smaller axis
-    const sf::FloatRect& rect = screen_rect();
+    // Window pixels per logical unit on the smaller axis (the rect stretches per axis in the world view)
     float scale_x = rect.size.x / static_cast<float>(m_width);
     float scale_y = rect.size.y / static_cast<float>(m_height);
     float scale = (std::min)(scale_x, scale_y);
     return (scale > 0.0f) ? scale : 1.0f;
+}
+
+float SFMLRenderer::ui_scale() const
+{
+    return rect_scale(m_ui_rect);
 }
 
 void SFMLRenderer::push_world_rect_view()

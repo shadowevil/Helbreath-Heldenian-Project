@@ -10,6 +10,8 @@
 
 #include "text_lib.h"
 #include "floating_text_manager.h"
+#include "global_def.h"  // before renderer.h: it owns the LOGICAL_* functions render_constants.h would redefine
+#include "renderer.h"
 #include <cstdint>
 #include <string>
 #include <type_traits>
@@ -28,9 +30,15 @@ public:
 		int y = 0;
 	};
 
-	// World-target pixels -> UI units. Every replayed anchor goes through here.
-	// Identity while the world rect equals the UI rect; Phase 4 maps it through both rects.
-	static point world_to_ui(point world) { return world; }
+	// World-target pixels -> UI units through the world rect and the UI rect. Every replayed anchor
+	// goes through here. Identity when the rects coincide (letterbox, or a window with the logical aspect).
+	static point world_to_ui(point world, const hb::shared::render::IRenderer* renderer)
+	{
+		if (!renderer)
+			return world;
+		hb::shared::geometry::GamePoint ui = renderer->world_to_ui({world.x, world.y});
+		return {ui.x, ui.y};
+	}
 
 	// A text line anchored at world-target pixels, shifted by offset in UI units
 	void add_text(int font_id, point anchor, point offset, std::string text, const hb::shared::text::TextStyle& style)
@@ -51,7 +59,7 @@ public:
 		{
 			std::visit([&](const auto& entry)
 			{
-				point at = world_to_ui(entry.anchor);
+				point at = world_to_ui(entry.anchor, renderer);
 				if constexpr (std::is_same_v<std::decay_t<decltype(entry)>, text_item>)
 					hb::shared::text::draw_text(entry.font_id, at.x + entry.offset.x, at.y + entry.offset.y, entry.text.c_str(), entry.style);
 				else

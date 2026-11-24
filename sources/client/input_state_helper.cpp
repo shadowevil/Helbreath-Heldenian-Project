@@ -1,9 +1,28 @@
 #include "input_state_helper.h"
 #include "input.h"
+#include "renderer_factory.h"
+#include "render_constants.h"
+#include <algorithm>
 
 namespace MouseButton = hb::shared::input::MouseButton;
 
 namespace hb::client {
+
+hb::shared::geometry::GamePoint mouse_in_world_units()
+{
+	hb::shared::geometry::GamePoint mouse(hb::shared::input::get_mouse_x(), hb::shared::input::get_mouse_y());
+	if (auto* renderer = hb::shared::render::Renderer::get())
+		mouse = renderer->ui_to_world(mouse);
+	return mouse;
+}
+
+hb::shared::geometry::GamePoint world_mouse()
+{
+	hb::shared::geometry::GamePoint mouse = mouse_in_world_units();
+	mouse.x = std::clamp(mouse.x, 0, LOGICAL_MAX_X());
+	mouse.y = std::clamp(mouse.y, 0, LOGICAL_MAX_Y());
+	return mouse;
+}
 
 void fill_input_state(cc::input_state& input)
 {

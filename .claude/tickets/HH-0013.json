@@ -1,7 +1,7 @@
 {
   "id": "HH-0013",
   "summary": "Split 4a: uniform UI rect in stretch mode and mouse mapping",
-  "status": "open",
+  "status": "in_review",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-23T21:29:38Z",
-  "updated": "2026-11-23T21:29:38Z",
+  "updated": "2026-11-24T01:08:29Z",
   "links": {
     "commits": [],
     "files": [],

@@ -7,6 +7,7 @@
 #include "game_fonts.h"
 #include "text_lib_ext.h"
 #include "input.h"
+#include "input_state_helper.h"
 #include "combat_system.h"
 #include <algorithm>
 #include <cstdlib>
@@ -34,14 +35,21 @@ DialogBox_HudPanel::DialogBox_HudPanel(CGame* game)
 	m_can_close_on_right_click = false;
 }
 
+hb::shared::geometry::GamePoint DialogBox_HudPanel::hud_mouse()
+{
+	// The HUD draws with 800x600 mapped onto the world rect, so its units are world-target units.
+	// Not clamped: a mouse outside the world rect simply misses every HUD rect.
+	return hb::client::mouse_in_world_units();
+}
+
 short DialogBox_HudPanel::hud_mouse_x()
 {
-	return static_cast<short>(hb::shared::input::get_mouse_x());
+	return static_cast<short>(hud_mouse().x);
 }
 
 short DialogBox_HudPanel::hud_mouse_y()
 {
-	return static_cast<short>(hb::shared::input::get_mouse_y());
+	return static_cast<short>(hud_mouse().y);
 }
 
 bool DialogBox_HudPanel::is_in_button(int x1, int x2) const

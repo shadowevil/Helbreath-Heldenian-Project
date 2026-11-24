@@ -44,3 +44,5 @@ Interface text is now drawn at the window's real resolution, so menus, dialogs a
 New high-quality cursors: every cursor (pointer, sword, magic circles, gauntlets, hourglass, target brackets) is redrawn from new artwork stored at four times its in-game size, so it stays sharp up to 4K while keeping its old size and click point. If the new art is missing, the old cursor is used.
 
 Names, chat bubbles and damage numbers over characters are now drawn after the world in screen space: they are sharp at any window size and always appear above spell effects and weather. The ground-item name stays under dialogs and the HUD. The HUD action bar is prepared to span the full world area when the world and interface areas differ.
+
+In stretch mode on a window that is not 4:3, the world and the HUD action bar now fill the window while menus and dialogs keep a uniform, centred 4:3 scale. Mouse clicks are mapped separately for the interface, the world and the action bar, so clicks land where they point in each. Names and chat bubbles follow the stretched world. Letterbox mode and 4:3 windows (800x600, 1440x1080) behave exactly as before.

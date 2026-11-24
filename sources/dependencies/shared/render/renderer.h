@@ -48,7 +48,9 @@ public:
 
     // ============== World / Screen Space ==============
     // Draws go to one "current target". After begin_frame they go to the window through the UI view,
-    // which maps the logical 800x600 UI space onto the UI rect (screen space).
+    // which maps the logical 800x600 UI space onto the UI rect (screen space). Letterbox: the world rect
+    // and the UI rect are the same uniform centred rect. Stretch: the world rect is the whole window and
+    // the UI rect stays uniform and centred; UI-unit draws outside 0..800x600 still reach the window.
     // begin_world() routes draws to the logical-size world target until end_world(), which composites
     // that target onto the window in the world rect and routes back to screen space.
     // Screens with no world (menus, login, loading) never call begin_world.
@@ -57,8 +59,13 @@ public:
     virtual void end_world() = 0;
     // Fill the whole window in output pixels (fades, dims), ignoring the UI view and clip.
     virtual void fill_output(const Color& color) = 0;
-    // Window pixels per UI unit.
+    // Window pixels per UI unit (the UI rect's uniform scale).
     virtual float ui_scale() const = 0;
+    // UI units <-> world-target units through the UI rect and the world rect (the window between them).
+    // Identity when the two rects coincide (letterbox, or a window with the logical aspect). Results are
+    // not clamped: in stretch the world spans the whole window, beyond the UI rect.
+    virtual hb::shared::geometry::GamePoint ui_to_world(hb::shared::geometry::GamePoint ui) const = 0;
+    virtual hb::shared::geometry::GamePoint world_to_ui(hb::shared::geometry::GamePoint world) const = 0;
     // Screen space: draws between push and pop map the 800x600 UI space onto the world rect instead of
     // the UI rect, so that block (the HUD action bar) takes the same share of the window as at 800x600.
     // Calls nest; begin_frame resets the depth. No effect on draws inside a world pass.

@@ -162,8 +162,10 @@ public:
 
 private:
     // Screen-specific state (previously file-scope static variables)
-    short m_sMsX = 0;
+    short m_sMsX = 0;   // Mouse in UI units: dialogs, tooltips, dragged item
     short m_sMsY = 0;
+    short m_world_mouse_x = 0;  // Mouse in world-target units: tile and object picking
+    short m_world_mouse_y = 0;
     short m_sMsZ = 0;
     char m_cLB = 0;
     char m_cRB = 0;

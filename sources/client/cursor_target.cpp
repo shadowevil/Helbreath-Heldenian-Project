@@ -4,6 +4,7 @@
 
 #include "cursor_target.h"
 #include "input.h"
+#include "input_state_helper.h"
 #include <cstring>
 #include <chrono>
 
@@ -60,9 +61,10 @@ namespace {
 
 void CursorTarget::begin_frame()
 {
-    // Cache mouse position
-    s_mouseX = hb::shared::input::get_mouse_x();
-    s_mouseY = hb::shared::input::get_mouse_y();
+    // Cache mouse position in world-target units: every hit test here is against world draws
+    const hb::shared::geometry::GamePoint mouse = hb::client::world_mouse();
+    s_mouseX = mouse.x;
+    s_mouseY = mouse.y;
 
     // reset focus state
     s_focusedObject = FocusedObject{};
