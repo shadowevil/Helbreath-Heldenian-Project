@@ -107,3 +107,5 @@ The Map item now shows a high-quality parchment map, built in the game from a ma
 The corner minimap now has two zoom levels, the whole map and the mid view. The close view was dropped because the parchment map takes its place (d-033).
 
 The client now ships Liberation Serif (regular, bold, italic, bold italic) in `fonts/`, the open-licence counterpart to Times New Roman with identical letter widths, beside Wine Tahoma (HH-0053). No screen uses it yet.
+
+Every sprite `.pak` (361 files) is now also extracted beside itself into a folder of the same name, holding `manifest.json` (every header field, sprite, frame and pivot) and the sprite images exactly as stored (HH-0052). `sprites/index.json` lists every asset by the name the client loads. New tool `.claude/tools/scripts/pak_extract.py` rebuilds each pak from its folder and byte-compares it (361 of 361 identical); it never overwrites an existing folder. The client still loads the paks until the folder loader lands (HH-0056).

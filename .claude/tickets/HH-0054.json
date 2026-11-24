@@ -1,0 +1,53 @@
+{
+  "id": "HH-0054",
+  "summary": "Rebuild game dialogs from the panel_building kit (prototype)",
+  "status": "user_review",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "client",
+  "created": "2026-11-24T18:27:53Z",
+  "updated": "2026-11-24T18:51:59Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": []
+  },
+  "body": "Goal (user, 2026-11-24): \"Using this set of sheets, can you reconstruct some of the dialogs in the game such as the character dialog, chat history etc...\"\n\nPrototype only, in `.claude/scratch/panel_kit/`. Kit sheet: `working/sprite_work/panel_building.png` (read only).\n\nSteps:\n1. Slice the kit into named parts by alpha bounding boxes -> `panel_kit.json` + `parts/<name>.png` + labelled contact sheet.\n2. Composer `compose.py`: panel of any size from (style, width, height, background, parts placed): background tile, border and corners per style, optional title divider, inner frames, buttons.\n3. Reconstruct the character dialog and chat history dialog at in-game size and layout (plus one more if quick).\n4. `<dialog>_compare.png` (original left, reconstruction right, same scale) plus each reconstruction at 1x and 2x, reviewed by eye.\n\nDone when: the slice JSON, the composer and the compare images for the character dialog and chat history exist, and they have been reviewed by eye. No game code or staged art changes.\n",
+  "comments": [
+    {
+      "author": "client",
+      "at": "2026-11-24T18:36:24Z",
+      "body": "Prototype built in `.claude/scratch/panel_kit/` (scratch only; no game code or staged art touched).\n\n- `panel_kit.json` + `parts/` (47 parts) + `contact_sheet.png`, sliced by `slice.py`.\n- `compose.py`: `compose(size, background, border_style, corner_style, inner)` in the user's order (size -> background inset 1 px -> border -> corners -> inner placements); `recon/character_steps.png` shows each step.\n- Edges: the kit's small wood bars (21 px) mirror-tiled along each edge and resampled to 6 px thick, with a 3 px inner shadow; the stone-arm option is compared in `recon/border_styles.png`.\n- Reconstructions with compares (original left, kit right, 2x): `recon/character_compare.png` (270x376), `recon/chat_history_compare.png` (362x164), `recon/sys_menu_compare.png` (331x303), plus `_1x`/`_2x` each. The background figures are left out, per the user.\n\nOver to the user to judge the look by eye: frames and layout are close. The gaps are the warm title wash, the bevelled slot rings, the 74x20 text-button art and fainter flourishes."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-24T18:41:20Z",
+      "body": "Follow-up: the user's bevel circle added to the kit.\n\n- New part `ring_bevel`: 32x32 at (441,45) on the sheet. It is one piece, not a light/dark pair: a translucent overlay, dark top-left and light (204) bottom-right, alpha at most 59.\n- The character dialog's three equipment slots now use it (`slot_ring` placement in `compose.py`). It is scaled to the original's 26 px at (37,123), (101,183) and (34,195), the disc inside is lifted a little warmer, and its alpha is boosted 3x.\n- The sheet also changed elsewhere: it is now 619x368, and `bevel_box` is the same kind of translucent overlay (alpha at most 59), so the inset outlines went faint. All bevel uses now share a 3x alpha gain (`BEVEL_GAIN`), which brings the inset outlines back to how they read before.\n- Regenerated `recon/character_compare.png`, `character_1x.png` and `character_2x.png` (and the other dialogs) and reviewed them. The slots now read as sunken, in the right places. The original's rim is slightly thicker (2-3 px against about 1-2 px after scaling 32 -> 26)."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-24T18:43:45Z",
+      "body": "Follow-up (user: \"The bottom bar of this, is it not possible to make it 2px in height?\"):\n\n- The character dialog's bottom bar is now a 2 px rule at x 14, y 322, w 242: 1 px dark over 1 px light, from the bevel colours at the same 3x opacity as the other bevels. This is where the original's groove is (dark at y 322). It replaces the 10 px inset bar.\n- `compose.py`: `rule` takes a generic `height` (top half dark, bottom half light; default 2) and `vrule` a `width`, so any dialog can use a thin groove.\n- The system menu and chat history originals have no such bar, so neither reconstruction has one.\n- `build/pak_extracted/` has been removed since the first run (not by this agent). `originals.py` now falls back to the cached renders in `originals/` when it is missing. Re-extract to rebuild those from the pak."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-24T18:46:29Z",
+      "body": "Follow-up (user: \"I updated panel building again\"):\n\n- Diffed by component against the snapshot of the last slice (`snapshot_v2/`, `diff_kit.py`). Exactly one part changed: `divider_knot`, from 57x22 at (446,4) to 48x14 at (446,8). It is the same knot design redrawn smaller and flatter, still solid black. The other 47 parts are pixel-identical, with nothing new or removed. The sheet is still 619x368.\n- Re-sliced (48 parts) and changed the \"Name & Status\" ornament scale from 0.56 to 0.66, giving 32x9 like the original's ornaments (the old knot gave 32x12). They now sit at about x 54-85 and 184-216, against the original's 48-85 and 182-216.\n- Regenerated and reviewed all three compares. Only the character dialog changes visibly (the knot flourishes); chat history and the system menu do not use the knot and are unchanged."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-24T18:49:29Z",
+      "body": "Follow-up (user: \"This bitmap glyph decor needs to be semi-transparent, maybe additive blended?\"):\n\n- `compose.py`: decor parts take `blend` = `normal` (alpha * `opacity`) or `additive` (dst + src * alpha * opacity, clamped), through `blend_onto()`. Titles pass `ornament_blend`.\n- Measured with `ornament_blend.py` against the original \"Name & Status\" knots (cached `originals/character.png`). Over two boxes round the flourishes it compares peak = mean of the brightest 15% of pixels, lift = peak minus the box median, and MAE:\n  - original: peak (223,199,155), lift (91,84,65)\n  - old opaque cream: peak (217,204,173), lift (78,86,81), MAE 26.4, score 36.9\n  - additive cream 0.5: lift (101,96,81), score 40.0 (0.6 and 0.7 overshoot further)\n  - alpha cream 0.6: lift (45,50,47), score 56.4 (too faint)\n  - **additive warm (196,176,126) 0.5: peak (228,198,149), lift (87,78,55), MAE 25.1, score 31.7, the best**\n- The default for flourishes is now additive 0.5 with the warm tint (`ORNAMENT_BLEND`, `ORNAMENT_WARM`). The dark wave flourishes (chat history, system menu) stay normal alpha, because additive can only brighten.\n- `probe/ornament_strip_4x.png` shows original / old / additive warm 0.5 / alpha 0.6. `recon/character_compare.png` is regenerated and reviewed."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-24T18:51:59Z",
+      "body": "Follow-up on the user's gap answers (2026-11-24):\n\n1. Edge strip (\"Can you show me what you mean?\"): `recon/rim_compare.png` is a 6x zoom of the left edge with three panels:\n   - original: 5 px rim + 3 px shadow;\n   - now: the 9 px wood bar squeezed to 6 px, + 3 px shadow;\n   - the raw 9 px kit bar.\n   The gap: the kit has no thin rim strip, so a 5 px bronze strip (horizontal and vertical) would replace the squeeze.\n2. Scrollbar (\"Can use the square 2px bevel grove\"): `scrollbar` is now a reusable placement. It is a sunken groove 9-sliced from the bevel square (any length; params `track_w`, `groove_darken`, `thumb`, `pos`). Chat history uses it at rect (340,28,15,121), track 6 px, thumb at the bottom (y 134 against the original's 133). The original's groove is narrower (about 3 px) and sits at the thumb's left edge; `track_w` can match that.\n3. Flourish colour (\"I want them to be able to be colored during runtime\"): the flourishes stay black masks in the kit (verified: `divider_knot` holds only (0,0,0)). Tint, opacity, blend, emboss, mirror and scale are placement parameters, documented in `_part`. In the client, `DrawParams` tint is an additive offset (-255..+255), and black + offset = the tint colour:\n   - normal = `tinted_alpha(r, g, b, opacity)`;\n   - additive = `BlendMode::AdditiveOffset` (`additive_tinted`) with the offset pre-scaled by opacity. How that path weights alpha is unverified.\n   - `additive_colored` multiplies, so it would keep black glyphs black; do not use it.\n4. Ring size: left as is, per the user.\n5. Text buttons: improvised ones kept until the user's 74x20 art arrives.\n\nRegenerated all compares and reviewed them."
+    }
+  ]
+}

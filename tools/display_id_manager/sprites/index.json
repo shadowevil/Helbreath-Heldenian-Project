@@ -1,0 +1,491 @@
+{
+ "assets": {
+  "item_atlas": {
+   "dir": "item_atlas",
+   "manifest": "item_atlas/manifest.json",
+   "sprite_count": 3
+  },
+  "items/aresden_hero_armor": {
+   "dir": "items/aresden_hero_armor",
+   "manifest": "items/aresden_hero_armor/manifest.json",
+   "sprite_count": 24
+  },
+  "items/aresden_hero_cap": {
+   "dir": "items/aresden_hero_cap",
+   "manifest": "items/aresden_hero_cap/manifest.json",
+   "sprite_count": 24
+  },
+  "items/aresden_hero_hauberk": {
+   "dir": "items/aresden_hero_hauberk",
+   "manifest": "items/aresden_hero_hauberk/manifest.json",
+   "sprite_count": 24
+  },
+  "items/aresden_hero_helm": {
+   "dir": "items/aresden_hero_helm",
+   "manifest": "items/aresden_hero_helm/manifest.json",
+   "sprite_count": 24
+  },
+  "items/aresden_hero_leggings": {
+   "dir": "items/aresden_hero_leggings",
+   "manifest": "items/aresden_hero_leggings/manifest.json",
+   "sprite_count": 24
+  },
+  "items/aresden_hero_robe": {
+   "dir": "items/aresden_hero_robe",
+   "manifest": "items/aresden_hero_robe/manifest.json",
+   "sprite_count": 24
+  },
+  "items/aresden_heros_cape": {
+   "dir": "items/aresden_heros_cape",
+   "manifest": "items/aresden_heros_cape/manifest.json",
+   "sprite_count": 24
+  },
+  "items/aresden_heros_cape_+1": {
+   "dir": "items/aresden_heros_cape_+1",
+   "manifest": "items/aresden_heros_cape_+1/manifest.json",
+   "sprite_count": 24
+  },
+  "items/barbarian_hammer": {
+   "dir": "items/barbarian_hammer",
+   "manifest": "items/barbarian_hammer/manifest.json",
+   "sprite_count": 24
+  },
+  "items/bastad_sword": {
+   "dir": "items/bastad_sword",
+   "manifest": "items/bastad_sword/manifest.json",
+   "sprite_count": 24
+  },
+  "items/battle_axe": {
+   "dir": "items/battle_axe",
+   "manifest": "items/battle_axe/manifest.json",
+   "sprite_count": 24
+  },
+  "items/battle_hammer": {
+   "dir": "items/battle_hammer",
+   "manifest": "items/battle_hammer/manifest.json",
+   "sprite_count": 24
+  },
+  "items/berserk_magic_wand_ms.20": {
+   "dir": "items/berserk_magic_wand_ms.20",
+   "manifest": "items/berserk_magic_wand_ms.20/manifest.json",
+   "sprite_count": 24
+  },
+  "items/black_shadow_sword": {
+   "dir": "items/black_shadow_sword",
+   "manifest": "items/black_shadow_sword/manifest.json",
+   "sprite_count": 24
+  },
+  "items/blonde_shield": {
+   "dir": "items/blonde_shield",
+   "manifest": "items/blonde_shield/manifest.json",
+   "sprite_count": 24
+  },
+  "items/bodice1": {
+   "dir": "items/bodice1",
+   "manifest": "items/bodice1/manifest.json",
+   "sprite_count": 24
+  },
+  "items/bodice2": {
+   "dir": "items/bodice2",
+   "manifest": "items/bodice2/manifest.json",
+   "sprite_count": 24
+  },
+  "items/broad_sword": {
+   "dir": "items/broad_sword",
+   "manifest": "items/broad_sword/manifest.json",
+   "sprite_count": 24
+  },
+  "items/cape": {
+   "dir": "items/cape",
+   "manifest": "items/cape/manifest.json",
+   "sprite_count": 24
+  },
+  "items/chain_hose": {
+   "dir": "items/chain_hose",
+   "manifest": "items/chain_hose/manifest.json",
+   "sprite_count": 24
+  },
+  "items/chain_mail": {
+   "dir": "items/chain_mail",
+   "manifest": "items/chain_mail/manifest.json",
+   "sprite_count": 24
+  },
+  "items/claymore": {
+   "dir": "items/claymore",
+   "manifest": "items/claymore/manifest.json",
+   "sprite_count": 24
+  },
+  "items/combatant_cape": {
+   "dir": "items/combatant_cape",
+   "manifest": "items/combatant_cape/manifest.json",
+   "sprite_count": 24
+  },
+  "items/dagger": {
+   "dir": "items/dagger",
+   "manifest": "items/dagger/manifest.json",
+   "sprite_count": 24
+  },
+  "items/dark_executor": {
+   "dir": "items/dark_executor",
+   "manifest": "items/dark_executor/manifest.json",
+   "sprite_count": 24
+  },
+  "items/dark_knight_templar": {
+   "dir": "items/dark_knight_templar",
+   "manifest": "items/dark_knight_templar/manifest.json",
+   "sprite_count": 24
+  },
+  "items/dark_mage_templar": {
+   "dir": "items/dark_mage_templar",
+   "manifest": "items/dark_mage_templar/manifest.json",
+   "sprite_count": 24
+  },
+  "items/direction_bow": {
+   "dir": "items/direction_bow",
+   "manifest": "items/direction_bow/manifest.json",
+   "sprite_count": 24
+  },
+  "items/double_axe": {
+   "dir": "items/double_axe",
+   "manifest": "items/double_axe/manifest.json",
+   "sprite_count": 24
+  },
+  "items/dress": {
+   "dir": "items/dress",
+   "manifest": "items/dress/manifest.json",
+   "sprite_count": 24
+  },
+  "items/elvine_hero_armor": {
+   "dir": "items/elvine_hero_armor",
+   "manifest": "items/elvine_hero_armor/manifest.json",
+   "sprite_count": 24
+  },
+  "items/elvine_hero_cap": {
+   "dir": "items/elvine_hero_cap",
+   "manifest": "items/elvine_hero_cap/manifest.json",
+   "sprite_count": 24
+  },
+  "items/elvine_hero_hauberk": {
+   "dir": "items/elvine_hero_hauberk",
+   "manifest": "items/elvine_hero_hauberk/manifest.json",
+   "sprite_count": 24
+  },
+  "items/elvine_hero_helm": {
+   "dir": "items/elvine_hero_helm",
+   "manifest": "items/elvine_hero_helm/manifest.json",
+   "sprite_count": 24
+  },
+  "items/elvine_hero_leggings": {
+   "dir": "items/elvine_hero_leggings",
+   "manifest": "items/elvine_hero_leggings/manifest.json",
+   "sprite_count": 24
+  },
+  "items/elvine_hero_robe": {
+   "dir": "items/elvine_hero_robe",
+   "manifest": "items/elvine_hero_robe/manifest.json",
+   "sprite_count": 24
+  },
+  "items/elvine_heros_cape": {
+   "dir": "items/elvine_heros_cape",
+   "manifest": "items/elvine_heros_cape/manifest.json",
+   "sprite_count": 24
+  },
+  "items/elvine_heros_cape_+1": {
+   "dir": "items/elvine_heros_cape_+1",
+   "manifest": "items/elvine_heros_cape_+1/manifest.json",
+   "sprite_count": 24
+  },
+  "items/esterk": {
+   "dir": "items/esterk",
+   "manifest": "items/esterk/manifest.json",
+   "sprite_count": 24
+  },
+  "items/excalibur": {
+   "dir": "items/excalibur",
+   "manifest": "items/excalibur/manifest.json",
+   "sprite_count": 24
+  },
+  "items/falchion": {
+   "dir": "items/falchion",
+   "manifest": "items/falchion/manifest.json",
+   "sprite_count": 24
+  },
+  "items/fire_bow": {
+   "dir": "items/fire_bow",
+   "manifest": "items/fire_bow/manifest.json",
+   "sprite_count": 24
+  },
+  "items/flameberge": {
+   "dir": "items/flameberge",
+   "manifest": "items/flameberge/manifest.json",
+   "sprite_count": 24
+  },
+  "items/full_helm": {
+   "dir": "items/full_helm",
+   "manifest": "items/full_helm/manifest.json",
+   "sprite_count": 24
+  },
+  "items/giant_sword": {
+   "dir": "items/giant_sword",
+   "manifest": "items/giant_sword/manifest.json",
+   "sprite_count": 24
+  },
+  "items/golden_axe": {
+   "dir": "items/golden_axe",
+   "manifest": "items/golden_axe/manifest.json",
+   "sprite_count": 24
+  },
+  "items/great_sword": {
+   "dir": "items/great_sword",
+   "manifest": "items/great_sword/manifest.json",
+   "sprite_count": 24
+  },
+  "items/hammer": {
+   "dir": "items/hammer",
+   "manifest": "items/hammer/manifest.json",
+   "sprite_count": 24
+  },
+  "items/hauberk": {
+   "dir": "items/hauberk",
+   "manifest": "items/hauberk/manifest.json",
+   "sprite_count": 24
+  },
+  "items/helm": {
+   "dir": "items/helm",
+   "manifest": "items/helm/manifest.json",
+   "sprite_count": 24
+  },
+  "items/hoe": {
+   "dir": "items/hoe",
+   "manifest": "items/hoe/manifest.json",
+   "sprite_count": 24
+  },
+  "items/horned_helm": {
+   "dir": "items/horned_helm",
+   "manifest": "items/horned_helm/manifest.json",
+   "sprite_count": 24
+  },
+  "items/iron_shield": {
+   "dir": "items/iron_shield",
+   "manifest": "items/iron_shield/manifest.json",
+   "sprite_count": 24
+  },
+  "items/kite_shield": {
+   "dir": "items/kite_shield",
+   "manifest": "items/kite_shield/manifest.json",
+   "sprite_count": 24
+  },
+  "items/kloness_axe": {
+   "dir": "items/kloness_axe",
+   "manifest": "items/kloness_axe/manifest.json",
+   "sprite_count": 24
+  },
+  "items/kloness_blade": {
+   "dir": "items/kloness_blade",
+   "manifest": "items/kloness_blade/manifest.json",
+   "sprite_count": 24
+  },
+  "items/kloness_esterk": {
+   "dir": "items/kloness_esterk",
+   "manifest": "items/kloness_esterk/manifest.json",
+   "sprite_count": 24
+  },
+  "items/kloness_magic_wand_ms.20": {
+   "dir": "items/kloness_magic_wand_ms.20",
+   "manifest": "items/kloness_magic_wand_ms.20/manifest.json",
+   "sprite_count": 24
+  },
+  "items/knee_trousers": {
+   "dir": "items/knee_trousers",
+   "manifest": "items/knee_trousers/manifest.json",
+   "sprite_count": 24
+  },
+  "items/lagi_shield": {
+   "dir": "items/lagi_shield",
+   "manifest": "items/lagi_shield/manifest.json",
+   "sprite_count": 24
+  },
+  "items/leather": {
+   "dir": "items/leather",
+   "manifest": "items/leather/manifest.json",
+   "sprite_count": 24
+  },
+  "items/leather_shield": {
+   "dir": "items/leather_shield",
+   "manifest": "items/leather_shield/manifest.json",
+   "sprite_count": 24
+  },
+  "items/light_axe": {
+   "dir": "items/light_axe",
+   "manifest": "items/light_axe/manifest.json",
+   "sprite_count": 24
+  },
+  "items/lighting_blade": {
+   "dir": "items/lighting_blade",
+   "manifest": "items/lighting_blade/manifest.json",
+   "sprite_count": 24
+  },
+  "items/long_boots": {
+   "dir": "items/long_boots",
+   "manifest": "items/long_boots/manifest.json",
+   "sprite_count": 24
+  },
+  "items/long_bow": {
+   "dir": "items/long_bow",
+   "manifest": "items/long_bow/manifest.json",
+   "sprite_count": 24
+  },
+  "items/long_sword": {
+   "dir": "items/long_sword",
+   "manifest": "items/long_sword/manifest.json",
+   "sprite_count": 24
+  },
+  "items/magic_wand_ms20": {
+   "dir": "items/magic_wand_ms20",
+   "manifest": "items/magic_wand_ms20/manifest.json",
+   "sprite_count": 24
+  },
+  "items/magic_wand_ms30_llf": {
+   "dir": "items/magic_wand_ms30_llf",
+   "manifest": "items/magic_wand_ms30_llf/manifest.json",
+   "sprite_count": 24
+  },
+  "items/pick_axe": {
+   "dir": "items/pick_axe",
+   "manifest": "items/pick_axe/manifest.json",
+   "sprite_count": 24
+  },
+  "items/plate_leggings": {
+   "dir": "items/plate_leggings",
+   "manifest": "items/plate_leggings/manifest.json",
+   "sprite_count": 24
+  },
+  "items/plate_mail": {
+   "dir": "items/plate_mail",
+   "manifest": "items/plate_mail/manifest.json",
+   "sprite_count": 24
+  },
+  "items/resurrection_magic_wand_ms.20": {
+   "dir": "items/resurrection_magic_wand_ms.20",
+   "manifest": "items/resurrection_magic_wand_ms.20/manifest.json",
+   "sprite_count": 24
+  },
+  "items/robe": {
+   "dir": "items/robe",
+   "manifest": "items/robe/manifest.json",
+   "sprite_count": 24
+  },
+  "items/sabre": {
+   "dir": "items/sabre",
+   "manifest": "items/sabre/manifest.json",
+   "sprite_count": 24
+  },
+  "items/santa_costume": {
+   "dir": "items/santa_costume",
+   "manifest": "items/santa_costume/manifest.json",
+   "sprite_count": 24
+  },
+  "items/saxon_axe": {
+   "dir": "items/saxon_axe",
+   "manifest": "items/saxon_axe/manifest.json",
+   "sprite_count": 24
+  },
+  "items/scale_mail": {
+   "dir": "items/scale_mail",
+   "manifest": "items/scale_mail/manifest.json",
+   "sprite_count": 24
+  },
+  "items/scimitar": {
+   "dir": "items/scimitar",
+   "manifest": "items/scimitar/manifest.json",
+   "sprite_count": 24
+  },
+  "items/scrutum_shield": {
+   "dir": "items/scrutum_shield",
+   "manifest": "items/scrutum_shield/manifest.json",
+   "sprite_count": 24
+  },
+  "items/shirt": {
+   "dir": "items/shirt",
+   "manifest": "items/shirt/manifest.json",
+   "sprite_count": 24
+  },
+  "items/shoes": {
+   "dir": "items/shoes",
+   "manifest": "items/shoes/manifest.json",
+   "sprite_count": 24
+  },
+  "items/short_bow": {
+   "dir": "items/short_bow",
+   "manifest": "items/short_bow/manifest.json",
+   "sprite_count": 24
+  },
+  "items/short_sword": {
+   "dir": "items/short_sword",
+   "manifest": "items/short_sword/manifest.json",
+   "sprite_count": 24
+  },
+  "items/skirt": {
+   "dir": "items/skirt",
+   "manifest": "items/skirt/manifest.json",
+   "sprite_count": 24
+  },
+  "items/storm_bringer": {
+   "dir": "items/storm_bringer",
+   "manifest": "items/storm_bringer/manifest.json",
+   "sprite_count": 24
+  },
+  "items/targe_shield": {
+   "dir": "items/targe_shield",
+   "manifest": "items/targe_shield/manifest.json",
+   "sprite_count": 24
+  },
+  "items/the_devastator": {
+   "dir": "items/the_devastator",
+   "manifest": "items/the_devastator/manifest.json",
+   "sprite_count": 24
+  },
+  "items/tower_shield": {
+   "dir": "items/tower_shield",
+   "manifest": "items/tower_shield/manifest.json",
+   "sprite_count": 24
+  },
+  "items/trousers": {
+   "dir": "items/trousers",
+   "manifest": "items/trousers/manifest.json",
+   "sprite_count": 24
+  },
+  "items/tunic": {
+   "dir": "items/tunic",
+   "manifest": "items/tunic/manifest.json",
+   "sprite_count": 24
+  },
+  "items/war_axe": {
+   "dir": "items/war_axe",
+   "manifest": "items/war_axe/manifest.json",
+   "sprite_count": 24
+  },
+  "items/wings_helm": {
+   "dir": "items/wings_helm",
+   "manifest": "items/wings_helm/manifest.json",
+   "sprite_count": 24
+  },
+  "items/wizard_cap": {
+   "dir": "items/wizard_cap",
+   "manifest": "items/wizard_cap/manifest.json",
+   "sprite_count": 24
+  },
+  "items/wizard_hat": {
+   "dir": "items/wizard_hat",
+   "manifest": "items/wizard_hat/manifest.json",
+   "sprite_count": 24
+  },
+  "items/wood_shield": {
+   "dir": "items/wood_shield",
+   "manifest": "items/wood_shield/manifest.json",
+   "sprite_count": 24
+  }
+ },
+ "format_version": 1,
+ "tool": "pak_extract"
+}

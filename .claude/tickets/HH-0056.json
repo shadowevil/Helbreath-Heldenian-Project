@@ -1,0 +1,28 @@
+{
+  "id": "HH-0056",
+  "summary": "Client loads sprites from folders via sprites/index.json",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-24T18:36:11Z",
+  "updated": "2026-11-24T18:36:16Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0055",
+      "HH-0058"
+    ],
+    "blocked_by": [
+      "HH-0052"
+    ]
+  },
+  "body": "The client loads sprites from the extracted folders through `sprites/index.json` and each folder's `manifest.json`, instead of `.pak` files (part of HH-0055).\n\nToday's call sites, from research on 2026-11-24:\n- `sprite_loader.h:25-71`\n- `sprite_factory.cpp:24-25`\n- `sfml_sprite_factory.cpp:82,91-111`\n- `sfml_sprite.cpp:74,136`\n- `pak_lock_manager`\n\nThe change:\n- Keep texture creation lazy.\n- Keep the literal per-call sprite counts in `screen_loading.cpp`.\n- Keep empty sprites at their index.\n- Remove the unused encryption and non-fast paths from PAK.h.\n\n**Done when:** both builds pass, and in game the sprites, tiles, effects, items and equipment look the same as with paks.\n\nSource: research report, 2026-11-24.\n"
+}

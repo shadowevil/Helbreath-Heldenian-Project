@@ -1,0 +1,287 @@
+{
+ "tool": "pak_extract",
+ "format_version": 1,
+ "source": "staged/client/sprites/objects/objects4.pak",
+ "source_size": 239028,
+ "source_sha256": "23baf9ee02e9fd96fb3d81ce11d80009c7aac55009808e0c0982e342a90eafa1",
+ "file_header": {
+  "signature": "<Pak file header>",
+  "padding_hex": "000000"
+ },
+ "sprite_count": 2,
+ "frame_fields": [
+  "x",
+  "y",
+  "w",
+  "h",
+  "pivot_x",
+  "pivot_y"
+ ],
+ "color_key_note": "color_key_u32 is the 4 bytes after the frame table; file order is 00 R G B (color_key_rgb = R=(k>>8)&255, G=(k>>16)&255, B=(k>>24)&255, derived)",
+ "sprites": [
+  {
+   "index": 0,
+   "offset": 40,
+   "size": 88076,
+   "rect_count": 13,
+   "frames": [
+    [
+     3,
+     2,
+     156,
+     131,
+     -83,
+     -70
+    ],
+    [
+     164,
+     5,
+     95,
+     128,
+     -65,
+     -101
+    ],
+    [
+     270,
+     5,
+     73,
+     128,
+     1,
+     -101
+    ],
+    [
+     349,
+     6,
+     83,
+     128,
+     -3,
+     -96
+    ],
+    [
+     440,
+     5,
+     89,
+     139,
+     -3,
+     -108
+    ],
+    [
+     164,
+     152,
+     97,
+     130,
+     -67,
+     -98
+    ],
+    [
+     271,
+     151,
+     75,
+     130,
+     -5,
+     -98
+    ],
+    [
+     351,
+     152,
+     82,
+     129,
+     -4,
+     -96
+    ],
+    [
+     443,
+     152,
+     88,
+     137,
+     0,
+     -106
+    ],
+    [
+     539,
+     7,
+     46,
+     50,
+     1,
+     -19
+    ],
+    [
+     535,
+     65,
+     39,
+     65,
+     -9,
+     -35
+    ],
+    [
+     541,
+     153,
+     46,
+     51,
+     1,
+     -19
+    ],
+    [
+     537,
+     212,
+     39,
+     64,
+     -10,
+     -32
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 87812,
+    "format": "png",
+    "width": 640,
+    "height": 480,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "000.png"
+   }
+  },
+  {
+   "index": 1,
+   "offset": 88116,
+   "size": 150912,
+   "rect_count": 13,
+   "frames": [
+    [
+     3,
+     1,
+     130,
+     168,
+     -12,
+     -135
+    ],
+    [
+     135,
+     2,
+     131,
+     200,
+     -12,
+     -170
+    ],
+    [
+     268,
+     2,
+     132,
+     201,
+     -85,
+     -170
+    ],
+    [
+     405,
+     9,
+     128,
+     167,
+     -85,
+     -135
+    ],
+    [
+     4,
+     204,
+     74,
+     93,
+     0,
+     -62
+    ],
+    [
+     78,
+     205,
+     91,
+     97,
+     -5,
+     -66
+    ],
+    [
+     172,
+     205,
+     75,
+     112,
+     0,
+     -82
+    ],
+    [
+     253,
+     204,
+     50,
+     109,
+     -19,
+     -79
+    ],
+    [
+     5,
+     303,
+     75,
+     113,
+     -45,
+     -83
+    ],
+    [
+     80,
+     312,
+     92,
+     97,
+     -60,
+     -66
+    ],
+    [
+     179,
+     322,
+     74,
+     94,
+     -42,
+     -62
+    ],
+    [
+     416,
+     298,
+     224,
+     182,
+     0,
+     0
+    ],
+    [
+     446,
+     191,
+     191,
+     97,
+     17,
+     -2
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 150648,
+    "format": "png",
+    "width": 640,
+    "height": 480,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "001.png"
+   }
+  }
+ ],
+ "unknown_gaps": [],
+ "unknown_count": 0
+}

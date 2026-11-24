@@ -1,0 +1,28 @@
+{
+  "id": "HH-0057",
+  "summary": "Python tools read the extracted sprite folders instead of .pak",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-24T18:36:11Z",
+  "updated": "2026-11-24T18:36:16Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0055",
+      "HH-0058"
+    ],
+    "blocked_by": [
+      "HH-0052"
+    ]
+  },
+  "body": "The Python tools that read `.pak` must read the extracted folders instead (part of HH-0055):\n- `tools/parchment_map/build_kit.py`: it calls `pak_to_png` and regex-parses `screen_loading.cpp`.\n- `tools/parchment_map/build_assets.py`\n- `tools/map_renderer/map_renderer.py` and its `paklib.py`\n- `tools/display_id_manager` (the item_db_viewer, item_frame_mapper and sprite_verifier GUIs, `pak_generator.py`, `extract_all_paks.py`)\n\nDecide what to do with `pak_to_png.py` and `fix_weapon_pak_poses.py`.\n\n**Done when:** each tool runs against the folders with no `.pak` present. `build_kit.py` must reproduce the current kit byte-for-byte.\n\nSource: research report, 2026-11-24.\n"
+}

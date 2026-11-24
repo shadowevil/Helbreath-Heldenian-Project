@@ -1,0 +1,2001 @@
+{
+ "tool": "pak_extract",
+ "format_version": 1,
+ "source": "staged/client/sprites/npcs/mana-collector.pak",
+ "source_size": 276120,
+ "source_sha256": "e1929c4fe30b17f56a0c465add60eca16b35a8e38b11c54b5430631d22070a4e",
+ "file_header": {
+  "signature": "<Pak file header>",
+  "padding_hex": "000000"
+ },
+ "sprite_count": 40,
+ "frame_fields": [
+  "x",
+  "y",
+  "w",
+  "h",
+  "pivot_x",
+  "pivot_y"
+ ],
+ "color_key_note": "color_key_u32 is the 4 bytes after the frame table; file order is 00 R G B (color_key_rgb = R=(k>>8)&255, G=(k>>16)&255, B=(k>>24)&255, derived)",
+ "sprites": [
+  {
+   "index": 0,
+   "offset": 344,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "000.png"
+   }
+  },
+  {
+   "index": 1,
+   "offset": 5019,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "001.png"
+   }
+  },
+  {
+   "index": 2,
+   "offset": 9694,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "002.png"
+   }
+  },
+  {
+   "index": 3,
+   "offset": 14369,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "003.png"
+   }
+  },
+  {
+   "index": 4,
+   "offset": 19044,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "004.png"
+   }
+  },
+  {
+   "index": 5,
+   "offset": 23719,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "005.png"
+   }
+  },
+  {
+   "index": 6,
+   "offset": 28394,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "006.png"
+   }
+  },
+  {
+   "index": 7,
+   "offset": 33069,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "007.png"
+   }
+  },
+  {
+   "index": 8,
+   "offset": 37744,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "008.png"
+   }
+  },
+  {
+   "index": 9,
+   "offset": 42419,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "009.png"
+   }
+  },
+  {
+   "index": 10,
+   "offset": 47094,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "010.png"
+   }
+  },
+  {
+   "index": 11,
+   "offset": 51769,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "011.png"
+   }
+  },
+  {
+   "index": 12,
+   "offset": 56444,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "012.png"
+   }
+  },
+  {
+   "index": 13,
+   "offset": 61119,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "013.png"
+   }
+  },
+  {
+   "index": 14,
+   "offset": 65794,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "014.png"
+   }
+  },
+  {
+   "index": 15,
+   "offset": 70469,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "015.png"
+   }
+  },
+  {
+   "index": 16,
+   "offset": 75144,
+   "size": 14244,
+   "rect_count": 8,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     88,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     132,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     176,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     220,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     264,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     308,
+     1,
+     43,
+     113,
+     -22,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 14040,
+    "format": "png",
+    "width": 352,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "016.png"
+   }
+  },
+  {
+   "index": 17,
+   "offset": 89388,
+   "size": 14244,
+   "rect_count": 8,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     88,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     132,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     176,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     220,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     264,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     308,
+     1,
+     43,
+     113,
+     -22,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 14040,
+    "format": "png",
+    "width": 352,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "017.png"
+   }
+  },
+  {
+   "index": 18,
+   "offset": 103632,
+   "size": 14244,
+   "rect_count": 8,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     88,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     132,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     176,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     220,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     264,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     308,
+     1,
+     43,
+     113,
+     -22,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 14040,
+    "format": "png",
+    "width": 352,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "018.png"
+   }
+  },
+  {
+   "index": 19,
+   "offset": 117876,
+   "size": 14244,
+   "rect_count": 8,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     88,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     132,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     176,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     220,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     264,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     308,
+     1,
+     43,
+     113,
+     -22,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 14040,
+    "format": "png",
+    "width": 352,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "019.png"
+   }
+  },
+  {
+   "index": 20,
+   "offset": 132120,
+   "size": 14244,
+   "rect_count": 8,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     88,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     132,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     176,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     220,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     264,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     308,
+     1,
+     43,
+     113,
+     -22,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 14040,
+    "format": "png",
+    "width": 352,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "020.png"
+   }
+  },
+  {
+   "index": 21,
+   "offset": 146364,
+   "size": 14244,
+   "rect_count": 8,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     88,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     132,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     176,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     220,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     264,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     308,
+     1,
+     43,
+     113,
+     -22,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 14040,
+    "format": "png",
+    "width": 352,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "021.png"
+   }
+  },
+  {
+   "index": 22,
+   "offset": 160608,
+   "size": 14244,
+   "rect_count": 8,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     88,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     132,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     176,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     220,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     264,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     308,
+     1,
+     43,
+     113,
+     -22,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 14040,
+    "format": "png",
+    "width": 352,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "022.png"
+   }
+  },
+  {
+   "index": 23,
+   "offset": 174852,
+   "size": 14244,
+   "rect_count": 8,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     88,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     132,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     176,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     220,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     264,
+     1,
+     45,
+     113,
+     -22,
+     -103
+    ],
+    [
+     308,
+     1,
+     43,
+     113,
+     -22,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 14040,
+    "format": "png",
+    "width": 352,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "023.png"
+   }
+  },
+  {
+   "index": 24,
+   "offset": 189096,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "024.png"
+   }
+  },
+  {
+   "index": 25,
+   "offset": 193771,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "025.png"
+   }
+  },
+  {
+   "index": 26,
+   "offset": 198446,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "026.png"
+   }
+  },
+  {
+   "index": 27,
+   "offset": 203121,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "027.png"
+   }
+  },
+  {
+   "index": 28,
+   "offset": 207796,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "028.png"
+   }
+  },
+  {
+   "index": 29,
+   "offset": 212471,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "029.png"
+   }
+  },
+  {
+   "index": 30,
+   "offset": 217146,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "030.png"
+   }
+  },
+  {
+   "index": 31,
+   "offset": 221821,
+   "size": 4675,
+   "rect_count": 1,
+   "frames": [
+    [
+     1,
+     1,
+     42,
+     113,
+     -21,
+     -103
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 4555,
+    "format": "png",
+    "width": 44,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "031.png"
+   }
+  },
+  {
+   "index": 32,
+   "offset": 226496,
+   "size": 6203,
+   "rect_count": 3,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     32,
+     74,
+     -16,
+     -62
+    ],
+    [
+     75,
+     1,
+     30,
+     26,
+     -16,
+     -14
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 6059,
+    "format": "png",
+    "width": 106,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "032.png"
+   }
+  },
+  {
+   "index": 33,
+   "offset": 232699,
+   "size": 6203,
+   "rect_count": 3,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     32,
+     74,
+     -16,
+     -62
+    ],
+    [
+     75,
+     1,
+     30,
+     26,
+     -16,
+     -14
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 6059,
+    "format": "png",
+    "width": 106,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "033.png"
+   }
+  },
+  {
+   "index": 34,
+   "offset": 238902,
+   "size": 6203,
+   "rect_count": 3,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     32,
+     74,
+     -16,
+     -62
+    ],
+    [
+     75,
+     1,
+     30,
+     26,
+     -16,
+     -14
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 6059,
+    "format": "png",
+    "width": 106,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "034.png"
+   }
+  },
+  {
+   "index": 35,
+   "offset": 245105,
+   "size": 6203,
+   "rect_count": 3,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     32,
+     74,
+     -16,
+     -62
+    ],
+    [
+     75,
+     1,
+     30,
+     26,
+     -16,
+     -14
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 6059,
+    "format": "png",
+    "width": 106,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "035.png"
+   }
+  },
+  {
+   "index": 36,
+   "offset": 251308,
+   "size": 6203,
+   "rect_count": 3,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     32,
+     74,
+     -16,
+     -62
+    ],
+    [
+     75,
+     1,
+     30,
+     26,
+     -16,
+     -14
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 6059,
+    "format": "png",
+    "width": 106,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "036.png"
+   }
+  },
+  {
+   "index": 37,
+   "offset": 257511,
+   "size": 6203,
+   "rect_count": 3,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     32,
+     74,
+     -16,
+     -62
+    ],
+    [
+     75,
+     1,
+     30,
+     26,
+     -16,
+     -14
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 6059,
+    "format": "png",
+    "width": 106,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "037.png"
+   }
+  },
+  {
+   "index": 38,
+   "offset": 263714,
+   "size": 6203,
+   "rect_count": 3,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     32,
+     74,
+     -16,
+     -62
+    ],
+    [
+     75,
+     1,
+     30,
+     26,
+     -16,
+     -14
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 6059,
+    "format": "png",
+    "width": 106,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "038.png"
+   }
+  },
+  {
+   "index": 39,
+   "offset": 269917,
+   "size": 6203,
+   "rect_count": 3,
+   "frames": [
+    [
+     1,
+     1,
+     44,
+     113,
+     -21,
+     -103
+    ],
+    [
+     44,
+     1,
+     32,
+     74,
+     -16,
+     -62
+    ],
+    [
+     75,
+     1,
+     30,
+     26,
+     -16,
+     -14
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 6059,
+    "format": "png",
+    "width": 106,
+    "height": 115,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "039.png"
+   }
+  }
+ ],
+ "unknown_gaps": [],
+ "unknown_count": 0
+}

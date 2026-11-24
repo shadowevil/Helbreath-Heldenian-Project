@@ -1,0 +1,239 @@
+{
+ "tool": "pak_extract",
+ "format_version": 1,
+ "source": "staged/client/sprites/effects/effect13.pak",
+ "source_size": 524790,
+ "source_sha256": "3b1ea3aa9ef1ee76d293b564230a7917a34ebd4b82eb3f07c91c1c6cd286b75e",
+ "file_header": {
+  "signature": "<Pak file header>",
+  "padding_hex": "000000"
+ },
+ "sprite_count": 2,
+ "frame_fields": [
+  "x",
+  "y",
+  "w",
+  "h",
+  "pivot_x",
+  "pivot_y"
+ ],
+ "color_key_note": "color_key_u32 is the 4 bytes after the frame table; file order is 00 R G B (color_key_rgb = R=(k>>8)&255, G=(k>>16)&255, B=(k>>24)&255, derived)",
+ "sprites": [
+  {
+   "index": 0,
+   "offset": 40,
+   "size": 249474,
+   "rect_count": 10,
+   "frames": [
+    [
+     0,
+     0,
+     149,
+     208,
+     -182,
+     -217
+    ],
+    [
+     149,
+     0,
+     149,
+     198,
+     -170,
+     -207
+    ],
+    [
+     298,
+     0,
+     181,
+     166,
+     -169,
+     -170
+    ],
+    [
+     479,
+     0,
+     220,
+     121,
+     -169,
+     -114
+    ],
+    [
+     699,
+     0,
+     243,
+     144,
+     -169,
+     -96
+    ],
+    [
+     0,
+     208,
+     249,
+     173,
+     -169,
+     -91
+    ],
+    [
+     249,
+     208,
+     249,
+     136,
+     -169,
+     -84
+    ],
+    [
+     498,
+     208,
+     250,
+     85,
+     -169,
+     -75
+    ],
+    [
+     748,
+     208,
+     250,
+     131,
+     -169,
+     -84
+    ],
+    [
+     998,
+     208,
+     249,
+     173,
+     -169,
+     -91
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 249246,
+    "format": "png",
+    "width": 1247,
+    "height": 381,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "000.png"
+   }
+  },
+  {
+   "index": 1,
+   "offset": 249514,
+   "size": 275276,
+   "rect_count": 10,
+   "frames": [
+    [
+     0,
+     0,
+     149,
+     210,
+     34,
+     -215
+    ],
+    [
+     149,
+     0,
+     152,
+     198,
+     22,
+     -204
+    ],
+    [
+     301,
+     0,
+     185,
+     168,
+     -11,
+     -169
+    ],
+    [
+     486,
+     0,
+     223,
+     120,
+     -50,
+     -113
+    ],
+    [
+     709,
+     0,
+     246,
+     131,
+     -73,
+     -89
+    ],
+    [
+     0,
+     210,
+     250,
+     173,
+     -77,
+     -87
+    ],
+    [
+     250,
+     210,
+     253,
+     204,
+     -77,
+     -97
+    ],
+    [
+     503,
+     210,
+     255,
+     216,
+     -77,
+     -104
+    ],
+    [
+     758,
+     210,
+     253,
+     196,
+     -77,
+     -96
+    ],
+    [
+     1011,
+     210,
+     250,
+     173,
+     -77,
+     -87
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 275048,
+    "format": "png",
+    "width": 1261,
+    "height": 426,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "001.png"
+   }
+  }
+ ],
+ "unknown_gaps": [],
+ "unknown_count": 0
+}

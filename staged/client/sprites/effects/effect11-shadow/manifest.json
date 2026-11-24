@@ -1,0 +1,196 @@
+{
+ "tool": "pak_extract",
+ "format_version": 1,
+ "source": "staged/client/sprites/effects/effect11-shadow.pak",
+ "source_size": 388658,
+ "source_sha256": "dd466c679392fab990a9fe6b7bac5fcd16a9f9128da48847e37001cbf0b2fb64",
+ "file_header": {
+  "signature": "<Pak file header>",
+  "padding_hex": "000000"
+ },
+ "sprite_count": 1,
+ "frame_fields": [
+  "x",
+  "y",
+  "w",
+  "h",
+  "pivot_x",
+  "pivot_y"
+ ],
+ "color_key_note": "color_key_u32 is the 4 bytes after the frame table; file order is 00 R G B (color_key_rgb = R=(k>>8)&255, G=(k>>16)&255, B=(k>>24)&255, derived)",
+ "sprites": [
+  {
+   "index": 0,
+   "offset": 32,
+   "size": 388626,
+   "rect_count": 18,
+   "frames": [
+    [
+     0,
+     0,
+     35,
+     40,
+     -18,
+     -57
+    ],
+    [
+     35,
+     0,
+     67,
+     68,
+     -32,
+     -73
+    ],
+    [
+     102,
+     0,
+     79,
+     86,
+     -41,
+     -83
+    ],
+    [
+     181,
+     0,
+     101,
+     107,
+     -50,
+     -100
+    ],
+    [
+     282,
+     0,
+     113,
+     125,
+     -52,
+     -109
+    ],
+    [
+     395,
+     0,
+     122,
+     143,
+     -60,
+     -111
+    ],
+    [
+     517,
+     0,
+     131,
+     150,
+     -69,
+     -113
+    ],
+    [
+     648,
+     0,
+     136,
+     152,
+     -74,
+     -114
+    ],
+    [
+     784,
+     0,
+     140,
+     157,
+     -77,
+     -116
+    ],
+    [
+     0,
+     157,
+     144,
+     162,
+     -79,
+     -118
+    ],
+    [
+     144,
+     157,
+     147,
+     165,
+     -81,
+     -120
+    ],
+    [
+     291,
+     157,
+     149,
+     167,
+     -83,
+     -119
+    ],
+    [
+     440,
+     157,
+     151,
+     168,
+     -84,
+     -119
+    ],
+    [
+     591,
+     157,
+     153,
+     172,
+     -86,
+     -122
+    ],
+    [
+     744,
+     157,
+     153,
+     174,
+     -86,
+     -124
+    ],
+    [
+     897,
+     157,
+     152,
+     175,
+     -86,
+     -125
+    ],
+    [
+     1049,
+     157,
+     152,
+     175,
+     -86,
+     -125
+    ],
+    [
+     1201,
+     157,
+     150,
+     174,
+     -85,
+     -125
+    ]
+   ],
+   "color_key_u32": 0,
+   "color_key_hex": "00000000",
+   "color_key_rgb": [
+    0,
+    0,
+    0
+   ],
+   "image": {
+    "size": 388302,
+    "format": "png",
+    "width": 1351,
+    "height": 332,
+    "bit_depth": 8,
+    "png_color_type": 6,
+    "png_interlace": 0,
+    "has_plte": false,
+    "has_trns": false,
+    "file": "000.png"
+   }
+  }
+ ],
+ "unknown_gaps": [],
+ "unknown_count": 0
+}
