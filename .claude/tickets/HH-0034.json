@@ -1,7 +1,7 @@
 {
   "id": "HH-0034",
   "summary": "Split 4b: full-width dims and bars cover the whole window in stretch",
-  "status": "in_progress",
+  "status": "in_review",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:24:02Z",
-  "updated": "2026-11-24T01:24:05Z",
+  "updated": "2026-11-24T01:28:04Z",
   "links": {
     "commits": [],
     "files": [],

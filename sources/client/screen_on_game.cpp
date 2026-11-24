@@ -799,7 +799,7 @@ void Screen_OnGame::on_render()
     FrameTiming::begin_profile(ProfileStage::DrawMisc);
     if (text_input_manager::get().is_active()) {
         if (text_input_manager::get().shows_chat_background())
-            m_game->m_Renderer->draw_rect_filled(0, LOGICAL_HEIGHT() - 69, LOGICAL_MAX_X(), 18, hb::shared::render::Color::Black(128));
+            m_game->m_Renderer->draw_rect_filled_to_edges(0, LOGICAL_HEIGHT() - 69, LOGICAL_MAX_X(), 18, hb::shared::render::Color::Black(128));
         text_input_manager::get().show_input();
     }
 

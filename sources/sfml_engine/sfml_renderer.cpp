@@ -741,6 +741,30 @@ void SFMLRenderer::draw_rect_filled(int x, int y, int w, int h, const hb::shared
     m_target->draw(rect);
 }
 
+void SFMLRenderer::draw_rect_filled_to_edges(int x, int y, int w, int h, const hb::shared::render::Color& color)
+{
+    // The UI area is all of the visible game here (letterbox, logical-aspect window, world pass)
+    if (m_in_world || screen_rect() == m_world_rect)
+    {
+        draw_rect_filled(x, y, w, h, color);
+        return;
+    }
+    if (color.a == 0 || w <= 0 || h <= 0) return;
+
+    // Edges on the UI area's edge reach the widened view's edge (the window); callers pass either the
+    // logical size or LOGICAL_MAX (one less) as the far edge, so both count
+    const sf::FloatRect shown = current_screen_mapping().view;
+    float left = (x <= 0) ? shown.position.x : static_cast<float>(x);
+    float top = (y <= 0) ? shown.position.y : static_cast<float>(y);
+    float right = (x + w >= m_width - 1) ? shown.position.x + shown.size.x : static_cast<float>(x + w);
+    float bottom = (y + h >= m_height - 1) ? shown.position.y + shown.size.y : static_cast<float>(y + h);
+
+    sf::RectangleShape rect({right - left, bottom - top});
+    rect.setPosition({left, top});
+    rect.setFillColor(sf::Color(color.r, color.g, color.b, color.a));
+    m_target->draw(rect);
+}
+
 void SFMLRenderer::draw_rect_outline(int x, int y, int w, int h, const hb::shared::render::Color& color, int thickness)
 {
     if (color.a == 0 || w <= 0 || h <= 0 || thickness <= 0) return;

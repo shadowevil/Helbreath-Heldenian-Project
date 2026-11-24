@@ -864,7 +864,7 @@ void Screen_OnGame::draw_background(short div_x, short mod_x, short div_y, short
 void Screen_OnGame::draw_top_msg()
 {
 	if (m_top_msg.size() == 0) return;
-	m_game->m_Renderer->draw_rect_filled(0, 0, LOGICAL_MAX_X(), 30, hb::shared::render::Color::Black(128));
+	m_game->m_Renderer->draw_rect_filled_to_edges(0, 0, LOGICAL_MAX_X(), 30, hb::shared::render::Color::Black(128));
 
 	if ((((GameClock::get_time_ms() - m_top_msg_time) / 250) % 2) == 0)
 		hb::shared::text::draw_text_aligned(GameFont::Default, 0, 10, LOGICAL_MAX_X(), 15, m_top_msg.c_str(), hb::shared::text::TextStyle::from_color(GameColors::UITopMsgYellow), hb::shared::text::Align::TopCenter);

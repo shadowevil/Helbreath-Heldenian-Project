@@ -315,12 +315,10 @@ void performance_monitor::render(hb::shared::render::IRenderer* renderer, int la
 	// ====================================================================
 
 	int vw = RENDER_LOGICAL_WIDTH();
-	renderer->draw_rect_filled(0, 0, vw, bar_height,
-	                           hb::shared::render::Color(0, 0, 0, 160));
+	renderer->draw_rect_filled_to_edges(0, 0, vw, bar_height, hb::shared::render::Color(0, 0, 0, 160));
 
 	// Subtle bottom edge for definition
-	renderer->draw_rect_filled(0, bar_height - 1, vw, 1,
-	                           hb::shared::render::Color(255, 255, 255, 20));
+	renderer->draw_rect_filled_to_edges(0, bar_height - 1, vw, 1, hb::shared::render::Color(255, 255, 255, 20));
 
 	// ====================================================================
 	// Hover detection (frame time item + its panel)

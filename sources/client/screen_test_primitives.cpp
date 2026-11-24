@@ -38,7 +38,7 @@ void Screen_TestPrimitives::on_render()
 	int H = res.logical_height();
 
 	// Dark background
-	m_game->m_Renderer->draw_rect_filled(0, 0, W, H, hb::shared::render::Color(20, 20, 30));
+	m_game->m_Renderer->draw_rect_filled_to_edges(0, 0, W, H, hb::shared::render::Color(20, 20, 30));
 
 	hb::shared::text::begin_batch();
 

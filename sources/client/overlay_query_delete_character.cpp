@@ -95,7 +95,7 @@ void Overlay_QueryDeleteCharacter::on_render()
     // Double shadow effect after initial animation period (600ms)
     if (elapsed >= 600)
     {
-        m_game->m_Renderer->draw_rect_filled(0, 0, LOGICAL_MAX_X(), LOGICAL_MAX_Y(), hb::shared::render::Color::Black(128));
+        m_game->m_Renderer->draw_rect_filled_to_edges(0, 0, LOGICAL_MAX_X(), LOGICAL_MAX_Y(), hb::shared::render::Color::Black(128));
     }
 
     int dlgX, dlgY;

@@ -86,6 +86,10 @@ public:
     virtual void draw_line(int x0, int y0, int x1, int y1, const Color& color,
                           BlendMode blend = BlendMode::Alpha) = 0;
     virtual void draw_rect_filled(int x, int y, int w, int h, const Color& color) = 0;
+    // draw_rect_filled for full-width UI fills (dims, bars): each edge on the UI area's edge (x or y <= 0,
+    // right or bottom >= the logical maximum) extends to the window's edge when the UI rect is narrower
+    // than the world rect (stretch). Identical to draw_rect_filled when the rects coincide or in a world pass.
+    virtual void draw_rect_filled_to_edges(int x, int y, int w, int h, const Color& color) = 0;
     virtual void draw_rect_outline(int x, int y, int w, int h, const Color& color,
                                  int thickness = 1) = 0;
     virtual void draw_rounded_rect_filled(int x, int y, int w, int h, int radius,
