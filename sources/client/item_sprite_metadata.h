@@ -1,7 +1,7 @@
 // item_sprite_metadata.h: Atlas-based item sprite metadata manager
 //
 // Loads ItemSpriteMetadata.json and provides display_id → frame index lookups
-// for the unified item_atlas.pak sprite sheets.
+// for the unified items/item_atlas sprite sheets.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -42,14 +42,14 @@ struct item_sprite_gender_data
 	int16_t equip_frame = -1;
 	int16_t ground_frame = -1;
 	int16_t pack_frame = -1;
-	int16_t pak_start = 0;
-	int16_t pak_end = 0;
+	int16_t sprite_start = 0;
+	int16_t sprite_end = 0;
 };
 
 struct item_sprite_entry
 {
 	int16_t id;
-	std::string pak_file;
+	std::string sprite_folder;	// asset folder stem under sprites/items/; empty when not equippable
 	item_sprite_gender_data male;
 	item_sprite_gender_data female;
 	int16_t inventory_frame = -1;	// non-equippable items only

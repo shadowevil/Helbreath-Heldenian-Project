@@ -470,7 +470,7 @@ void draw_afk_effect(CGame& game, const CEntityRenderState& state, int sX, int s
 	if (!state.is_player()) return;
 	if (!state.m_status.afk) return;
 
-	// effect9.pak sprite 19 = m_effect_sprites[66 + 19 = 85], 17 frames (0-16)
+	// effects/effect9 sprite 19 = m_effect_sprites[66 + 19 = 85], 17 frames (0-16)
 	constexpr int AFK_SPRITE_INDEX = 85;
 	constexpr int AFK_MAX_FRAMES = 17;
 

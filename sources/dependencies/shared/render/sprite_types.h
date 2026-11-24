@@ -9,7 +9,7 @@
 
 namespace hb::shared::sprite {
 
-// Frame rectangle - matches PAKLib::sprite_rect binary layout exactly
+// Frame rectangle of a sprite sheet, read from the asset's manifest.json
 struct SpriteRect {
     uint16_t x;
     uint16_t y;

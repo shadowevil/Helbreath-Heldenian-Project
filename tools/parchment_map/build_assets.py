@@ -1,12 +1,12 @@
 """Build the data files make_parchment.py ships with (run once; outputs are committed with the tool).
 
 Usage:
-  python tools/parchment_map/build_assets.py palette             tile colour palette from the tile/object paks
-  python tools/parchment_map/build_assets.py paper <newmaps_dir>  paper patches, edge alphas, rim profile
-  python tools/parchment_map/build_assets.py icons <newmaps_dir>  icon cut-outs (rects listed in ICONS below)
+  python tools/parchment_map/build_assets.py palette             tile colour palette from the tile/object sprite folders
+  python tools/parchment_map/build_assets.py paper [newmaps]      paper patches, edge alphas, rim profile
+  python tools/parchment_map/build_assets.py icons [newmaps]      icon cut-outs (rects listed in ICONS below)
 
-<newmaps_dir> holds the extracted interface/newmaps.pak sheets (000.png..004.png + frames.json),
-as written by .claude/tools/scripts/pak_to_png.py.
+[newmaps] is the interface/newmaps sprite folder: a folder path holding manifest.json, or an asset name
+in staged/client/sprites (default interface/newmaps); read through tools/sprite_folder/sprite_folder.py.
 
 Outputs go to tools/parchment_map/data/. ASCII console output only.
 """
@@ -19,6 +19,10 @@ from PIL import Image, ImageFilter
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
+sys.path.insert(0, str(REPO / "tools" / "sprite_folder"))
+import sprite_folder  # noqa: E402
+
+NEWMAPS_ASSET = "interface/newmaps"
 DATA = HERE / "data"
 PATCH = 24
 
@@ -51,13 +55,22 @@ def build_palette():
 	print(f"palette: {len(ids)} sprites, {len(rows)} frames -> data/tile_palette.npz")
 
 
+def open_newmaps(arg=None):
+	"""The newmaps sprite folder: arg is a folder path, an asset name, or None for interface/newmaps."""
+	if arg and (Path(arg) / "manifest.json").is_file():
+		return sprite_folder.open_folder(Path(arg))
+	return sprite_folder.open_asset(arg or NEWMAPS_ASSET)
+
+
 def frames(newmaps):
-	meta = json.loads((newmaps / "frames.json").read_text())
+	"""Every frame of every newmaps sheet (colour key transparent), in sprite then frame order."""
+	if not isinstance(newmaps, sprite_folder.SpriteFolder):
+		newmaps = open_newmaps(newmaps)
 	out = []
-	for sprite in meta["sprites"]:
-		sheet = Image.open(newmaps / sprite["file"]).convert("RGBA")
-		for fr in sprite["frames"]:
-			out.append(sheet.crop((fr["x"], fr["y"], fr["x"] + fr["w"], fr["y"] + fr["h"])))
+	for sprite in newmaps.sprites:
+		sheet = sprite.rgba()
+		for r in sprite.rectangles:
+			out.append(sheet.crop((r.x, r.y, r.x + r.width, r.y + r.height)))
 	return out
 
 
@@ -266,9 +279,9 @@ if __name__ == "__main__":
 	if cmd == "palette":
 		build_palette()
 	elif cmd == "paper":
-		build_paper(Path(sys.argv[2]))
+		build_paper(sys.argv[2] if len(sys.argv) > 2 else None)
 	elif cmd == "icons":
-		build_icons(Path(sys.argv[2]))
+		build_icons(sys.argv[2] if len(sys.argv) > 2 else None)
 	else:
 		print(__doc__)
 		sys.exit(1)

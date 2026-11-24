@@ -39,7 +39,7 @@ Type-safe screen management with fade transitions. Screens: Splash, MainMenu, Lo
 Polling mode, two sockets (game `m_pGSock`, login `m_pLSock`). Handlers split across ~20 `network_messages_*.cpp` files.
 
 ### Rendering (SFMLEngine)
-Abstract interfaces (`IRenderer`, `IWindow`, `ISprite`, `IBitmapFont`) with SFML implementations. Render order: clear → tiles → lighting → entities (z-ordered) → dialogs → particles → present. Sprites from PAK files via `SFMLSpriteFactory`.
+Abstract interfaces (`IRenderer`, `IWindow`, `ISprite`, `IBitmapFont`) with SFML implementations. Render order: clear → tiles → lighting → entities (z-ordered) → dialogs → particles → present. Sprites load from per-asset folders (`sprites/index.json`, each folder's `manifest.json` and images) via `SFMLSpriteFactory` and `sprite_folder.h`; textures load lazily on first draw.
 
 ### Entity System
 - `CPlayer` — Full player state. `CPlayerRenderer`/`CNpcRenderer` — separated rendering.

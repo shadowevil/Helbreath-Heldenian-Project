@@ -22,11 +22,11 @@ from pathlib import Path
 from PIL import Image, ImageTk, ImageDraw, ImageFont
 import io
 
-# paklib.py lives alongside this script
+# the shared sprite-folder reader lives in tools/sprite_folder
 _SCRIPT_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(_SCRIPT_DIR))
-from paklib import PAKFile
-DEFAULT_ATLAS = _SCRIPT_DIR / 'sprites' / 'item_atlas.pak'
+sys.path.insert(0, str(_SCRIPT_DIR.parent / 'sprite_folder'))
+import sprite_folder
+DEFAULT_ATLAS = _SCRIPT_DIR / 'sprites' / 'item_atlas'
 DEFAULT_ITEMS_DIR = _SCRIPT_DIR / 'sprites' / 'items'
 DEFAULT_METADATA = _SCRIPT_DIR / 'contents' / 'item_sprite_metadata.json'
 DEFAULT_DISPLAY_NAMES = _SCRIPT_DIR / 'item_display_names.json'
@@ -319,8 +319,8 @@ class ItemFrameMapperApp:
         self.assigning_field = None   # e.g. 'male.equip_frame_index' or 'inventory_frame_index'
         self.auto_assign = False      # auto-advance through fields on click
         self.atlas_data = []          # [(Image, [rects])]
-        self.pak_cache = {}
-        self._pak_overrides = {}  # {item_id: new_pak_value_or_None} — applied at save time
+        self.folder_cache = {}
+        self._folder_overrides = {}  # {item_id: new_folder_or_None} — applied at save time
         self.unsaved = False
         self.listbox_map = []         # listbox row index -> items[] index
         self._preview_dir = 0         # current direction index (0-7)
@@ -368,8 +368,8 @@ class ItemFrameMapperApp:
         else:
             self.display_names = {}
 
-        atlas_pak = PAKFile.read(self.atlas_path)
-        for sprite in atlas_pak.sprites:
+        atlas = sprite_folder.open_folder(self.atlas_path)
+        for sprite in atlas.sprites:
             img = sprite.get_image().convert('RGBA')
             bg = make_checker_bg(img.width, img.height)
             bg.paste(img, (0, 0), img)
@@ -379,8 +379,8 @@ class ItemFrameMapperApp:
 
     @staticmethod
     def _is_equippable(item):
-        """Equippable if it has a pak file (equipped animation sprites)."""
-        return bool(item.get('pak_file'))
+        """Equippable if it has a sprite folder (equipped animation sprites)."""
+        return bool(item.get('sprite_folder'))
 
     def _rebuild_maps(self):
         """Build atlas assignment lookup: {atlas_idx: {rect_idx: (item_id, field)}}."""
@@ -537,20 +537,20 @@ class ItemFrameMapperApp:
                                      bg=BG_DARK, fg=FG_DIM, anchor=tk.W)
         self.info['Type'].grid(row=2, column=1, sticky=tk.W, padx=(8, 0))
 
-        # Row 3: PAK file (editable combobox)
-        tk.Label(info_grid, text='PAK:', font=('Consolas', 9, 'bold'),
+        # Row 3: sprite folder (editable combobox)
+        tk.Label(info_grid, text='Sprites:', font=('Consolas', 9, 'bold'),
                  bg=BG_DARK, fg=FG_TEXT, anchor=tk.W).grid(row=3, column=0, sticky=tk.W)
-        pak_row = tk.Frame(info_grid, bg=BG_DARK)
-        pak_row.grid(row=3, column=1, sticky=tk.EW, padx=(8, 0))
-        self._pak_var = tk.StringVar()
-        self._pak_combo = ttk.Combobox(pak_row, textvariable=self._pak_var,
-                                       values=self._available_paks(),
+        folder_row = tk.Frame(info_grid, bg=BG_DARK)
+        folder_row.grid(row=3, column=1, sticky=tk.EW, padx=(8, 0))
+        self._folder_var = tk.StringVar()
+        self._folder_combo = ttk.Combobox(folder_row, textvariable=self._folder_var,
+                                       values=self._available_folders(),
                                        font=('Consolas', 9), width=28)
-        self._pak_combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        tk.Button(pak_row, text='Set', font=('Consolas', 8), padx=4,
-                  command=self._on_set_pak_file).pack(side=tk.LEFT, padx=2)
-        tk.Button(pak_row, text='Clear', font=('Consolas', 8), fg=RED, padx=4,
-                  command=self._on_clear_pak_file).pack(side=tk.LEFT, padx=2)
+        self._folder_combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        tk.Button(folder_row, text='Set', font=('Consolas', 8), padx=4,
+                  command=self._on_set_sprite_folder).pack(side=tk.LEFT, padx=2)
+        tk.Button(folder_row, text='Clear', font=('Consolas', 8), fg=RED, padx=4,
+                  command=self._on_clear_sprite_folder).pack(side=tk.LEFT, padx=2)
 
         ttk.Separator(det, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=4)
 
@@ -601,7 +601,7 @@ class ItemFrameMapperApp:
         iid = str(item.get('id', idx))
         name = (self.display_names.get(iid)
                 or item.get('name')
-                or ((item.get('pak_file') or '').replace('.pak', '').replace('_', ' ').title())
+                or ((item.get('sprite_folder') or '').replace('_', ' ').title())
                 or f'Item #{iid}')
         return name
 
@@ -710,8 +710,8 @@ class ItemFrameMapperApp:
         self._name_var.set(name)
         self.info['ID'].config(text=str(item.get('id', '?')), fg=FG_TEXT)
         self.info['Type'].config(text=item.get('equip_type', 'none'), fg=FG_TEXT)
-        effective_pak = self._get_effective_pak(item)
-        self._pak_var.set(effective_pak or '')
+        effective_folder = self._get_effective_folder(item)
+        self._folder_var.set(effective_folder or '')
 
         self.instr_lbl.config(text='')
 
@@ -721,7 +721,7 @@ class ItemFrameMapperApp:
         self._assign_widgets = {}
 
         row = 0
-        if not bool(effective_pak):
+        if not bool(effective_folder):
             for field, atlas_idx, label in [
                 ('ground_frame_index', 1, 'Ground'),
                 ('inventory_frame_index', 2, 'Inventory'),
@@ -885,7 +885,7 @@ class ItemFrameMapperApp:
         self._refresh_status()
         self._refresh_listbox_row()
 
-    # --- Display name & PAK file editing ---
+    # --- Display name & sprite folder editing ---
 
     def _on_set_display_name(self):
         """Set the tool-only display name for the current item."""
@@ -906,39 +906,39 @@ class ItemFrameMapperApp:
         with open(self.display_names_path, 'w', encoding='utf-8') as f:
             json.dump(self.display_names, f, indent=2, sort_keys=True)
 
-    def _get_effective_pak(self, item):
-        """Get pak_file for an item, considering pending overrides not yet saved."""
+    def _get_effective_folder(self, item):
+        """Get sprite_folder for an item, considering pending overrides not yet saved."""
         iid = item.get('id')
-        if iid is not None and iid in self._pak_overrides:
-            return self._pak_overrides[iid]
-        return item.get('pak_file')
+        if iid is not None and iid in self._folder_overrides:
+            return self._folder_overrides[iid]
+        return item.get('sprite_folder')
 
-    def _on_set_pak_file(self):
-        """Stage a pak_file change (applied at save time)."""
+    def _on_set_sprite_folder(self):
+        """Stage a sprite_folder change (applied at save time)."""
         if self.current_idx < 0:
             return
-        pak = self._pak_var.get().strip()
-        if not pak:
+        folder = self._folder_var.get().strip()
+        if not folder:
             return
         item = self.items[self.current_idx]
         iid = item.get('id')
         if iid is None:
             return
-        self._pak_overrides[iid] = pak
+        self._folder_overrides[iid] = folder
         self.unsaved = True
-        self.pak_cache.pop(pak, None)
+        self.folder_cache.pop(folder, None)
         self._show_details()
         self._refresh_listbox_row()
 
-    def _on_clear_pak_file(self):
-        """Stage a pak_file clear (applied at save time)."""
+    def _on_clear_sprite_folder(self):
+        """Stage a sprite_folder clear (applied at save time)."""
         if self.current_idx < 0:
             return
         item = self.items[self.current_idx]
         iid = item.get('id')
         if iid is None:
             return
-        self._pak_overrides[iid] = None
+        self._folder_overrides[iid] = None
         self.unsaved = True
         self._show_details()
         self._refresh_listbox_row()
@@ -1044,11 +1044,11 @@ class ItemFrameMapperApp:
 
     DIR_NAMES = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
 
-    def _extract_frame(self, pak, sprite_idx, rect_idx=0):
-        """Extract a specific frame from a PAK sprite. Returns RGBA Image or None."""
-        if sprite_idx >= len(pak.sprites):
+    def _extract_frame(self, folder, sprite_idx, rect_idx=0):
+        """Extract a specific frame from a sprite of the folder. Returns RGBA Image or None."""
+        if sprite_idx >= len(folder.sprites):
             return None
-        sprite = pak.sprites[sprite_idx]
+        sprite = folder.sprites[sprite_idx]
         if not sprite.rectangles:
             return None
         # Clamp to valid range
@@ -1058,12 +1058,12 @@ class ItemFrameMapperApp:
         r = sprite.rectangles[rect_idx]
         return img.crop((r.x, r.y, r.x + r.width, r.y + r.height))
 
-    def _get_dir_rect_idx(self, pak, sprite_idx, direction):
+    def _get_dir_rect_idx(self, folder, sprite_idx, direction):
         """Get the rectangle index for the first frame of a direction (0-7).
         Layout: 8 directions × N frames, direction d starts at d * frames_per_dir."""
-        if sprite_idx >= len(pak.sprites):
+        if sprite_idx >= len(folder.sprites):
             return 0
-        sprite = pak.sprites[sprite_idx]
+        sprite = folder.sprites[sprite_idx]
         n = len(sprite.rectangles)
         if n == 0:
             return 0
@@ -1081,8 +1081,8 @@ class ItemFrameMapperApp:
         self._preview_item = item
 
         # Equip preview (animated direction cycling, equippable items only)
-        effective_pak = self._get_effective_pak(item)
-        if effective_pak:
+        effective_folder = self._get_effective_folder(item)
+        if effective_folder:
             self._render_equip_frame()
             self._schedule_next_dir()
         else:
@@ -1166,7 +1166,7 @@ class ItemFrameMapperApp:
         ground_frames, ground_labels = [], []
         pack_frames, pack_labels = [], []
 
-        if bool(self._get_effective_pak(item)):
+        if bool(self._get_effective_folder(item)):
             for gender, label in [('male', 'M'), ('female', 'F')]:
                 if gender not in item:
                     continue
@@ -1205,38 +1205,38 @@ class ItemFrameMapperApp:
         cw = max(self.equip_canvas.winfo_width(), 50)
         ch = max(self.equip_canvas.winfo_height(), 50)
 
-        pak_file = self._get_effective_pak(item)
-        if not pak_file:
-            self.equip_canvas.create_text(cw // 2, ch // 2, text='No PAK',
+        stem = self._get_effective_folder(item)
+        if not stem:
+            self.equip_canvas.create_text(cw // 2, ch // 2, text='No sprites',
                                           fill=FG_DIM, font=('Consolas', 10))
             return
 
-        pak_path = self.items_dir / pak_file
-        if not pak_path.exists():
-            self.equip_canvas.create_text(cw // 2, ch // 2, text='PAK missing',
+        folder_path = self.items_dir / stem
+        if not (folder_path / 'manifest.json').is_file():
+            self.equip_canvas.create_text(cw // 2, ch // 2, text='Sprite folder missing',
                                           fill=RED, font=('Consolas', 9))
             return
 
         try:
-            if pak_file not in self.pak_cache:
-                self.pak_cache[pak_file] = PAKFile.read(pak_path)
-            pak = self.pak_cache[pak_file]
+            if stem not in self.folder_cache:
+                self.folder_cache[stem] = sprite_folder.open_folder(folder_path)
+            folder = self.folder_cache[stem]
 
             d = self._preview_dir
             frames = []
             labels = []
 
             if 'male' in item:
-                idx = item['male'].get('pak_index_start', 0)
-                rect = self._get_dir_rect_idx(pak, idx, d)
-                f = self._extract_frame(pak, idx, rect_idx=rect)
+                idx = item['male'].get('sprite_index_start', 0)
+                rect = self._get_dir_rect_idx(folder, idx, d)
+                f = self._extract_frame(folder, idx, rect_idx=rect)
                 if f:
                     frames.append(f)
                     labels.append('M')
             if 'female' in item:
-                idx = item['female'].get('pak_index_start', 12)
-                rect = self._get_dir_rect_idx(pak, idx, d)
-                f = self._extract_frame(pak, idx, rect_idx=rect)
+                idx = item['female'].get('sprite_index_start', 12)
+                rect = self._get_dir_rect_idx(folder, idx, d)
+                f = self._extract_frame(folder, idx, rect_idx=rect)
                 if f:
                     frames.append(f)
                     labels.append('F')
@@ -1338,31 +1338,31 @@ class ItemFrameMapperApp:
 
     # --- Save / Close ---
 
-    def _apply_pak_overrides(self):
-        """Apply pending pak_file changes to items (called at save time)."""
-        if not self._pak_overrides:
+    def _apply_folder_overrides(self):
+        """Apply pending sprite_folder changes to items (called at save time)."""
+        if not self._folder_overrides:
             return
         id_to_item = {item.get('id'): item for item in self.items}
-        for iid, pak in self._pak_overrides.items():
+        for iid, folder in self._folder_overrides.items():
             item = id_to_item.get(iid)
             if item is None:
                 continue
-            item['pak_file'] = pak
+            item['sprite_folder'] = folder
             # If transitioning to equippable, initialize gender data
-            if pak and 'male' not in item and 'female' not in item:
+            if folder and 'male' not in item and 'female' not in item:
                 item['male'] = {
-                    'pak_index_start': 0, 'pak_index_end': 11,
+                    'sprite_index_start': 0, 'sprite_index_end': 11,
                     'equip_frame_index': -1, 'ground_frame_index': -1, 'pack_frame_index': -1,
                 }
                 item['female'] = {
-                    'pak_index_start': 12, 'pak_index_end': 23,
+                    'sprite_index_start': 12, 'sprite_index_end': 23,
                     'equip_frame_index': -1, 'ground_frame_index': -1, 'pack_frame_index': -1,
                 }
-        self._pak_overrides.clear()
+        self._folder_overrides.clear()
         self._rebuild_maps()
 
     def _save(self):
-        self._apply_pak_overrides()
+        self._apply_folder_overrides()
         with open(self.metadata_path, 'w', encoding='utf-8') as f:
             json.dump(self.items, f, indent=2)
         self.unsaved = False
@@ -1375,7 +1375,7 @@ class ItemFrameMapperApp:
             filetypes=[('JSON', '*.json')],
             initialfile='ItemSpriteMetadata.json')
         if path:
-            self._apply_pak_overrides()
+            self._apply_folder_overrides()
             with open(path, 'w', encoding='utf-8') as f:
                 json.dump(self.items, f, indent=2)
             self.unsaved = False
@@ -1396,14 +1396,14 @@ class ItemFrameMapperApp:
             return 1
         return max(e.get('id', 0) for e in self.items) + 1
 
-    def _available_paks(self):
-        """List PAK files in the items directory."""
-        paks = []
+    def _available_folders(self):
+        """List the sprite folders in the items directory."""
+        folders = []
         if self.items_dir.exists():
             for p in sorted(self.items_dir.iterdir()):
-                if p.suffix == '.pak':
-                    paks.append(p.name)
-        return paks
+                if (p / 'manifest.json').is_file():
+                    folders.append(p.name)
+        return folders
 
     def _new_entry_menu(self):
         """Show a popup menu for choosing entry type."""
@@ -1416,29 +1416,29 @@ class ItemFrameMapperApp:
 
     def _new_equip_entry(self):
         """Create a new equippable metadata entry via dialog."""
-        dlg = NewEquipDialog(self.root, self._available_paks())
+        dlg = NewEquipDialog(self.root, self._available_folders())
         if dlg.result is None:
             return
 
-        name, equip_type, pak_file, has_male, has_female = dlg.result
+        name, equip_type, stem, has_male, has_female = dlg.result
         entry = {
             'id': self._next_id(),
             'name': name,
             'equip_type': equip_type,
-            'pak_file': pak_file,
+            'sprite_folder': stem,
         }
         if has_male:
             entry['male'] = {
-                'pak_index_start': 0,
-                'pak_index_end': 11,
+                'sprite_index_start': 0,
+                'sprite_index_end': 11,
                 'equip_frame_index': -1,
                 'ground_frame_index': -1,
                 'pack_frame_index': -1,
             }
         if has_female:
             entry['female'] = {
-                'pak_index_start': 12,
-                'pak_index_end': 23,
+                'sprite_index_start': 12,
+                'sprite_index_end': 23,
                 'equip_frame_index': -1,
                 'ground_frame_index': -1,
                 'pack_frame_index': -1,
@@ -1466,7 +1466,7 @@ class ItemFrameMapperApp:
             'id': self._next_id(),
             'name': name,
             'equip_type': 'none',
-            'pak_file': None,
+            'sprite_folder': None,
             'inventory_frame_index': -1,
             'ground_frame_index': -1,
         }
@@ -1507,7 +1507,7 @@ class NewEquipDialog(tk.Toplevel):
 
     EQUIP_TYPES = ['weapon', 'shield', 'armor', 'helm', 'pants', 'boots', 'mantle', 'arm_armor']
 
-    def __init__(self, parent, pak_files):
+    def __init__(self, parent, folders):
         super().__init__(parent)
         self.title('New Equippable Entry')
         self.configure(bg=BG_DARK)
@@ -1536,13 +1536,13 @@ class NewEquipDialog(tk.Toplevel):
             row=row, column=1, sticky=tk.EW, **pad)
         row += 1
 
-        # PAK file
-        tk.Label(self, text='PAK File:', bg=BG_DARK, fg=FG_TEXT,
+        # Sprite folder
+        tk.Label(self, text='Sprite Folder:', bg=BG_DARK, fg=FG_TEXT,
                  font=('Consolas', 10)).grid(row=row, column=0, sticky=tk.W, **pad)
-        self._pak_var = tk.StringVar()
-        pak_combo = ttk.Combobox(self, textvariable=self._pak_var, values=pak_files,
+        self._folder_var = tk.StringVar()
+        folder_combo = ttk.Combobox(self, textvariable=self._folder_var, values=folders,
                                  font=('Consolas', 10), width=28)
-        pak_combo.grid(row=row, column=1, sticky=tk.EW, **pad)
+        folder_combo.grid(row=row, column=1, sticky=tk.EW, **pad)
         row += 1
 
         # Gender checkboxes
@@ -1577,9 +1577,9 @@ class NewEquipDialog(tk.Toplevel):
         if not name:
             messagebox.showwarning('Missing Name', 'Enter a name.', parent=self)
             return
-        pak = self._pak_var.get().strip()
-        if not pak:
-            messagebox.showwarning('Missing PAK', 'Select a PAK file.', parent=self)
+        folder = self._folder_var.get().strip()
+        if not folder:
+            messagebox.showwarning('Missing Sprite Folder', 'Select a sprite folder.', parent=self)
             return
         has_m = self._male_var.get()
         has_f = self._female_var.get()
@@ -1587,7 +1587,7 @@ class NewEquipDialog(tk.Toplevel):
             messagebox.showwarning('No Gender', 'Select at least one gender.',
                                    parent=self)
             return
-        self.result = (name, self._type_var.get(), pak, has_m, has_f)
+        self.result = (name, self._type_var.get(), folder, has_m, has_f)
         self.destroy()
 
 
@@ -1636,8 +1636,8 @@ class NewNonEquipDialog(tk.Toplevel):
 def main():
     parser = argparse.ArgumentParser(description='Item Frame Mapper GUI')
     parser.add_argument('--metadata', default=str(DEFAULT_METADATA), help='ItemSpriteMetadata.json path')
-    parser.add_argument('--atlas', default=str(DEFAULT_ATLAS), help='item_atlas.pak path')
-    parser.add_argument('--items-dir', default=str(DEFAULT_ITEMS_DIR), help='Per-item PAK directory')
+    parser.add_argument('--atlas', default=str(DEFAULT_ATLAS), help='item_atlas sprite folder path')
+    parser.add_argument('--items-dir', default=str(DEFAULT_ITEMS_DIR), help='Per-item sprite folders directory')
     parser.add_argument('--select-id', type=int, default=None, help='Auto-select item by metadata ID')
     parser.add_argument('--atlas-tab', type=int, default=None, choices=[0, 1, 2],
                         help='Switch to atlas tab (0=equip, 1=ground, 2=pack)')

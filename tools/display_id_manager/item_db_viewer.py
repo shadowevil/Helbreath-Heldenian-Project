@@ -3,8 +3,8 @@
 Item Database Viewer — visualizes how each DB item renders using its display_id mapping.
 
 Shows all items from gameconfigs.db with:
-  - Equipped animation preview (direction cycling from per-item PAK)
-  - Equip icon, Ground icon, Inventory icon (from item_atlas.pak)
+  - Equipped animation preview (direction cycling from the per-item sprite folder)
+  - Equip icon, Ground icon, Inventory icon (from the item_atlas sprite folder)
   - Display ID assignment for unmapped items
   - Click icon sections to open Frame Mapper GUI for remapping
 
@@ -24,15 +24,15 @@ import sqlite3
 from pathlib import Path
 from PIL import Image, ImageTk, ImageDraw
 
-# paklib.py lives alongside this script
+# the shared sprite-folder reader lives in tools/sprite_folder
 _SCRIPT_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(_SCRIPT_DIR))
-from paklib import PAKFile
+sys.path.insert(0, str(_SCRIPT_DIR.parent / 'sprite_folder'))
+import sprite_folder
 
 DEFAULT_DB = _SCRIPT_DIR.parent.parent / 'Binaries' / 'Server' / 'gamedata.db'
 DEFAULT_METADATA = _SCRIPT_DIR / 'contents' / 'item_sprite_metadata.json'
 DEFAULT_ITEMS_DIR = _SCRIPT_DIR / 'sprites' / 'items'
-DEFAULT_ATLAS = _SCRIPT_DIR / 'sprites' / 'item_atlas.pak'
+DEFAULT_ATLAS = _SCRIPT_DIR / 'sprites' / 'item_atlas'
 
 # Colors
 BG_DARK = '#1e1e1e'
@@ -71,11 +71,11 @@ EQUIP_POS_NAMES = {
 }
 
 
-def extract_atlas_frame(atlas_pak, atlas_idx, rect_idx):
-	"""Extract a single frame from the atlas PAK by sprite index and rectangle index."""
-	if atlas_idx >= len(atlas_pak.sprites):
+def extract_atlas_frame(atlas, atlas_idx, rect_idx):
+	"""Extract a single frame from the atlas sprite folder by sprite index and rectangle index."""
+	if atlas_idx >= len(atlas.sprites):
 		return None
-	sprite = atlas_pak.sprites[atlas_idx]
+	sprite = atlas.sprites[atlas_idx]
 	if rect_idx < 0 or rect_idx >= len(sprite.rectangles):
 		return None
 	img = sprite.get_image().convert('RGBA')
@@ -93,7 +93,7 @@ class ItemDBViewer:
 		self.db_path = Path(db_path)
 		self.metadata_path = Path(metadata_path)
 		self.items_dir = Path(items_dir)
-		self.pak_cache = {}
+		self.folder_cache = {}
 		self._preview_timer = None
 		self._preview_dir = 0
 		self._preview_tk = None    # prevent GC
@@ -143,19 +143,19 @@ class ItemDBViewer:
 			self.meta_by_id[entry['id']] = entry
 
 	def _load_atlas(self, atlas_path):
-		"""Load the item atlas PAK (equip/ground/pack sprite sheets)."""
+		"""Load the item atlas sprite folder (equip/ground/pack sprite sheets)."""
 		self.atlas = None
 		path = Path(atlas_path)
-		if path.exists():
-			self.atlas = PAKFile.read(path)
+		if (path / 'manifest.json').is_file():
+			self.atlas = sprite_folder.open_folder(path)
 
 	def _build_meta_choices(self):
 		"""Build the list of metadata choices for the display_id combobox."""
 		self.meta_choices = []
 		self.meta_choice_ids = []
 		for entry in sorted(self.meta_list, key=lambda e: e['id']):
-			pak = entry.get('pak_file') or ''
-			name = entry.get('name') or pak.replace('.pak', '') or f"Item #{entry['id']}"
+			stem = entry.get('sprite_folder') or ''
+			name = entry.get('name') or stem or f"Item #{entry['id']}"
 			etype = entry.get('equip_type', '?')
 			label = f"{entry['id']:>3d} | {etype:6s} | {name}"
 			self.meta_choices.append(label)
@@ -436,10 +436,10 @@ class ItemDBViewer:
 
 		if did is not None and did in self.meta_by_id:
 			meta = self.meta_by_id[did]
-			pak = meta.get('pak_file', 'None')
+			stem = meta.get('sprite_folder', 'None')
 			etype = meta.get('equip_type', '?')
 			self._info_mapping.config(
-				text=f"Display ID: {did}  |  PAK: {pak}  |  Type: {etype}",
+				text=f"Display ID: {did}  |  Sprites: {stem}  |  Type: {etype}",
 				fg=GREEN
 			)
 			# Pre-fill combo with current mapping
@@ -449,8 +449,8 @@ class ItemDBViewer:
 			except ValueError:
 				self._did_var.set(str(did))
 			self._show_icons(meta, item['equip_pos'])
-			has_pak = bool(meta.get('pak_file'))
-			if has_pak and ('male' in meta or 'female' in meta):
+			has_sprites = bool(meta.get('sprite_folder'))
+			if has_sprites and ('male' in meta or 'female' in meta):
 				self._start_preview(meta)
 			else:
 				self._stop_preview()
@@ -716,31 +716,31 @@ class ItemDBViewer:
 		self._render_preview()
 		self._schedule_next_dir()
 
-	def _get_pak(self, pak_file):
-		"""Load and cache a PAK file."""
-		if pak_file not in self.pak_cache:
-			pak_path = self.items_dir / pak_file
-			if not pak_path.exists():
+	def _get_folder(self, stem):
+		"""Load and cache a per-item sprite folder."""
+		if stem not in self.folder_cache:
+			path = self.items_dir / stem
+			if not (path / 'manifest.json').is_file():
 				return None
-			self.pak_cache[pak_file] = PAKFile.read(pak_path)
-		return self.pak_cache[pak_file]
+			self.folder_cache[stem] = sprite_folder.open_folder(path)
+		return self.folder_cache[stem]
 
-	def _get_dir_rect_idx(self, pak, sprite_idx, direction):
+	def _get_dir_rect_idx(self, folder, sprite_idx, direction):
 		"""Get rectangle index for first frame of a direction (0-7)."""
-		if sprite_idx >= len(pak.sprites):
+		if sprite_idx >= len(folder.sprites):
 			return 0
-		sprite = pak.sprites[sprite_idx]
+		sprite = folder.sprites[sprite_idx]
 		n = len(sprite.rectangles)
 		if n == 0:
 			return 0
 		frames_per_dir = n // 8 if n >= 8 else 1
 		return min(direction * frames_per_dir, n - 1)
 
-	def _extract_frame(self, pak, sprite_idx, rect_idx=0):
-		"""Extract a single frame (cropped rectangle) from a PAK sprite."""
-		if sprite_idx >= len(pak.sprites):
+	def _extract_frame(self, folder, sprite_idx, rect_idx=0):
+		"""Extract a single frame (cropped rectangle) from a sprite of the folder."""
+		if sprite_idx >= len(folder.sprites):
 			return None
-		sprite = pak.sprites[sprite_idx]
+		sprite = folder.sprites[sprite_idx]
 		if not sprite.rectangles:
 			return None
 		if rect_idx >= len(sprite.rectangles):
@@ -759,15 +759,15 @@ class ItemDBViewer:
 		cw = max(self.preview_canvas.winfo_width(), 50)
 		ch = max(self.preview_canvas.winfo_height(), 50)
 
-		pak_file = meta.get('pak_file')
-		if not pak_file:
-			self.preview_canvas.create_text(cw // 2, ch // 2, text='No PAK (non-equippable)',
+		stem = meta.get('sprite_folder')
+		if not stem:
+			self.preview_canvas.create_text(cw // 2, ch // 2, text='No sprites (non-equippable)',
 											fill=FG_DIM, font=('Consolas', 10))
 			return
 
-		pak = self._get_pak(pak_file)
-		if pak is None:
-			self.preview_canvas.create_text(cw // 2, ch // 2, text=f'PAK missing: {pak_file}',
+		folder = self._get_folder(stem)
+		if folder is None:
+			self.preview_canvas.create_text(cw // 2, ch // 2, text=f'Sprite folder missing: {stem}',
 											fill=RED, font=('Consolas', 10))
 			return
 
@@ -778,13 +778,13 @@ class ItemDBViewer:
 		female_frame = None
 
 		if has_male:
-			idx = meta['male'].get('pak_index_start', 0)
-			rect = self._get_dir_rect_idx(pak, idx, d)
-			male_frame = self._extract_frame(pak, idx, rect_idx=rect)
+			idx = meta['male'].get('sprite_index_start', 0)
+			rect = self._get_dir_rect_idx(folder, idx, d)
+			male_frame = self._extract_frame(folder, idx, rect_idx=rect)
 		if has_female:
-			idx = meta['female'].get('pak_index_start', 12)
-			rect = self._get_dir_rect_idx(pak, idx, d)
-			female_frame = self._extract_frame(pak, idx, rect_idx=rect)
+			idx = meta['female'].get('sprite_index_start', 12)
+			rect = self._get_dir_rect_idx(folder, idx, d)
+			female_frame = self._extract_frame(folder, idx, rect_idx=rect)
 
 		frames = []
 		labels = []
@@ -847,9 +847,9 @@ def main():
 	parser.add_argument('--metadata', default=str(DEFAULT_METADATA),
 						help='Path to ItemSpriteMetadata.json')
 	parser.add_argument('--items-dir', default=str(DEFAULT_ITEMS_DIR),
-						help='Path to per-item PAK directory')
+						help='Path to the per-item sprite folders directory')
 	parser.add_argument('--atlas', default=str(DEFAULT_ATLAS),
-						help='Path to item_atlas.pak')
+						help='Path to the item_atlas sprite folder')
 	args = parser.parse_args()
 
 	root = tk.Tk()

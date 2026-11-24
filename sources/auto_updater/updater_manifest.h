@@ -7,7 +7,7 @@ namespace hb::updater
 {
 	struct manifest_entry
 	{
-		std::string path;       // Relative path from game root (e.g. "sprites/H-Earth1.pak")
+		std::string path;       // Relative path from game root (e.g. "sprites/npcs/ogre/000.png")
 		std::string sha256;     // Expected SHA256 hex digest
 		std::string platform;   // "windows", "linux", or "any"
 		uint64_t size;          // File size in bytes

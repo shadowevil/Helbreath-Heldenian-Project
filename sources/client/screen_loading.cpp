@@ -28,8 +28,12 @@ void Screen_Loading::on_initialize()
 {
     m_iLoadingStage = 0;
 
+    const std::string sprite_root = hb::shared::sprite::Sprites::get_sprite_path();
+    if (!hb::shared::sprite::sprite_index_loaded(sprite_root))
+        hb::logger::warn("Sprite index {}/index.json is missing or malformed; reading each asset's manifest.json directly", sprite_root);
+
     // Pre-load the loading screen sprite so it can render immediately
-    hb::shared::sprite::SpriteLoader::open_pak("interface/intermediate_screens", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("interface/intermediate_screens", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[InterfaceNdLoading] = loader.get_sprite(0, false);
     });
 }
@@ -76,7 +80,7 @@ void Screen_Loading::on_render()
 //=============================================================================
 void Screen_Loading::LoadStage_Interface()
 {
-    hb::shared::sprite::SpriteLoader::open_pak("interface/newmaps", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("interface/newmaps", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[InterfaceNewMaps1] = loader.get_sprite(0, false);
         m_game->m_sprite[InterfaceNewMaps2] = loader.get_sprite(1, false);
         m_game->m_sprite[InterfaceNewMaps3] = loader.get_sprite(2, false);
@@ -84,7 +88,7 @@ void Screen_Loading::LoadStage_Interface()
         m_game->m_sprite[InterfaceNewMaps5] = loader.get_sprite(4, false);
     });
 
-    hb::shared::sprite::SpriteLoader::open_pak("interface/intermediate_screens", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("interface/intermediate_screens", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[InterfaceNdMainMenu] = loader.get_sprite(1, false);
         m_game->m_sprite[InterfaceNdQuit] = loader.get_sprite(2, false);
         m_game->m_sprite[InterfaceNdNewAccount] = loader.get_sprite(2, false);
@@ -93,7 +97,7 @@ void Screen_Loading::LoadStage_Interface()
         m_game->m_sprite[InterfaceNdNewChar] = loader.get_sprite(6, false);
     });
 
-    hb::shared::sprite::SpriteLoader::open_pak("interface/game_dialogs", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("interface/game_dialogs", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[InterfaceNdGame1] = loader.get_sprite(0, false);
         m_game->m_sprite[InterfaceNdGame2] = loader.get_sprite(1, false);
         m_game->m_sprite[InterfaceNdGame3] = loader.get_sprite(2, false);
@@ -110,7 +114,7 @@ void Screen_Loading::LoadStage_Interface()
     make_sprite("interface/monster", InterfaceMonster, 1, false);
 
     // load sprite_fonts sprites (font1, font2, sprfonts + number font, sprfonts2)
-    hb::shared::sprite::SpriteLoader::open_pak("interface/sprite_fonts", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("interface/sprite_fonts", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[InterfaceFont1] = loader.get_sprite(0, false);
         m_game->m_sprite[InterfaceFont2] = loader.get_sprite(1, false);
         m_game->m_sprite[InterfaceSprFonts] = loader.get_sprite(2, false);
@@ -156,7 +160,7 @@ void Screen_Loading::LoadStage_Interface()
 void Screen_Loading::LoadStage_Tiles1()
 {
     make_tile_spr("tiles/maptiles1", 0, 32, true);
-    hb::shared::sprite::SpriteLoader::open_pak("objects/structures1", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("objects/structures1", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_tile_spr[1 + 50] = loader.get_sprite(1, true);
         m_game->m_tile_spr[5 + 50] = loader.get_sprite(5, true);
     });
@@ -218,7 +222,7 @@ void Screen_Loading::LoadStage_Tiles3()
     make_sprite("objects/item-dynamic", ItemDynamicPivotPoint, 3, false);
 
     // Item atlas sprites (unified atlas for new display_id system)
-    hb::shared::sprite::SpriteLoader::open_pak("items/item_atlas", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("items/item_atlas", [&](hb::shared::sprite::SpriteLoader& loader) {
         for (size_t i = 0; i < 3 && i < loader.get_sprite_count(); i++) {
             m_game->m_item_sprites[i] = loader.get_sprite(i, false);
         }
@@ -237,7 +241,7 @@ void Screen_Loading::LoadStage_Tiles3()
 void Screen_Loading::LoadStage_Equipment1()
 {
     // Equipment models (body, hair, underwear) — male 0-2, female 3-5
-    hb::shared::sprite::SpriteLoader::open_pak("interface/equip_models", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("interface/equip_models", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[ItemEquipPivotPoint + 0] = loader.get_sprite(0, false);
         m_game->m_sprite[ItemEquipPivotPoint + 18] = loader.get_sprite(1, false);
         m_game->m_sprite[ItemEquipPivotPoint + 19] = loader.get_sprite(2, false);
@@ -312,7 +316,7 @@ void Screen_Loading::LoadStage_Monsters2()
     make_sprite("npcs/dummy", Mob + 7 * 8 * 24, 40, true);
 
     // Energy Ball - all 40 slots use the same sprite
-    hb::shared::sprite::SpriteLoader::open_pak("effects/effect5", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("effects/effect5", [&](hb::shared::sprite::SpriteLoader& loader) {
         for (int i = 0; i < 40; i++)
             m_game->m_sprite[Mob + i + 7 * 8 * 25] = loader.get_sprite(0, true);
     });
@@ -419,7 +423,7 @@ void Screen_Loading::LoadStage_CosmeticsMale()
     make_sprite("npcs/gate", Mob + 7 * 8 * 81, 24, true);
 
     // Male underwear
-    hb::shared::sprite::SpriteLoader::open_pak("players/male-underwear", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("players/male-underwear", [&](hb::shared::sprite::SpriteLoader& loader) {
         for (int g = 0; g < 8; g++) {
             for (int i = 0; i < 12; i++) {
                 m_game->m_sprite[UndiesM + i + 15 * g] = loader.get_sprite(i + 12 * g, true);
@@ -428,7 +432,7 @@ void Screen_Loading::LoadStage_CosmeticsMale()
     });
 
     // Male hair
-    hb::shared::sprite::SpriteLoader::open_pak("players/male-hair", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("players/male-hair", [&](hb::shared::sprite::SpriteLoader& loader) {
         for (int g = 0; g < 8; g++) {
             for (int i = 0; i < 12; i++) {
                 m_game->m_sprite[HairM + i + 15 * g] = loader.get_sprite(i + 12 * g, true);
@@ -445,7 +449,7 @@ void Screen_Loading::LoadStage_CosmeticsMale()
 void Screen_Loading::LoadStage_CosmeticsFemale()
 {
     // Female underwear
-    hb::shared::sprite::SpriteLoader::open_pak("players/female-underwear", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("players/female-underwear", [&](hb::shared::sprite::SpriteLoader& loader) {
         for (int g = 0; g < 8; g++) {
             for (int i = 0; i < 12; i++) {
                 m_game->m_sprite[UndiesW + i + 15 * g] = loader.get_sprite(i + 12 * g, true);
@@ -454,7 +458,7 @@ void Screen_Loading::LoadStage_CosmeticsFemale()
     });
 
     // Female hair
-    hb::shared::sprite::SpriteLoader::open_pak("players/female-hair", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("players/female-hair", [&](hb::shared::sprite::SpriteLoader& loader) {
         for (int g = 0; g < 8; g++) {
             for (int i = 0; i < 12; i++) {
                 m_game->m_sprite[HairW + i + 15 * g] = loader.get_sprite(i + 12 * g, true);
@@ -486,33 +490,29 @@ void Screen_Loading::LoadStage_EquipmentBatch()
         if (current < m_equip_load_cursor || current >= batch_end) { current++; return; }
         current++;
 
-        if (entry.pak_file.empty()) return;
+        if (entry.sprite_folder.empty()) return;
 
-        // Strip .pak extension and prepend items/ subdirectory
-        std::string pak_name = entry.pak_file;
-        if (pak_name.size() > 4 && pak_name.compare(pak_name.size() - 4, 4, ".pak") == 0)
-            pak_name.resize(pak_name.size() - 4);
-        std::string pak_path = "items/" + pak_name;
+        const std::string asset_name = "items/" + entry.sprite_folder;
 
         try {
-            hb::shared::sprite::SpriteLoader::open_pak(pak_path.c_str(), [&](hb::shared::sprite::SpriteLoader& loader) {
+            hb::shared::sprite::SpriteLoader::open(asset_name, [&](hb::shared::sprite::SpriteLoader& loader) {
                 size_t sprite_count = loader.get_sprite_count();
-                // Male sprites: pak indices 0-11
+                // Male sprites: asset indices 0-11
                 for (int pose = 0; pose < equip_sprite::sprites_per_item; pose++) {
                     int slot = equip_sprite::index(false, entry.id, pose);
                     if (slot >= 0 && static_cast<size_t>(pose) < sprite_count)
                         m_game->m_equip_sprites[slot] = loader.get_sprite(pose, true);
                 }
-                // Female sprites: pak indices 12-23
+                // Female sprites: asset indices 12-23
                 for (int pose = 0; pose < equip_sprite::sprites_per_item; pose++) {
-                    int pak_idx = equip_sprite::sprites_per_item + pose;
+                    int sprite_idx = equip_sprite::sprites_per_item + pose;
                     int slot = equip_sprite::index(true, entry.id, pose);
-                    if (slot >= 0 && static_cast<size_t>(pak_idx) < sprite_count)
-                        m_game->m_equip_sprites[slot] = loader.get_sprite(pak_idx, true);
+                    if (slot >= 0 && static_cast<size_t>(sprite_idx) < sprite_count)
+                        m_game->m_equip_sprites[slot] = loader.get_sprite(sprite_idx, true);
                 }
             });
         } catch (const std::exception& ex) {
-            hb::logger::warn("Failed to load equipment pak '{}': {}", pak_path, ex.what());
+            hb::logger::warn("Failed to load equipment sprites '{}': {}", asset_name, ex.what());
         }
     });
 
@@ -536,7 +536,7 @@ void Screen_Loading::LoadStage_Effects()
     make_effect_spr("effects/effect4", 19, 5, false);
 
     // Effect5 batch load
-    hb::shared::sprite::SpriteLoader::open_pak("effects/effect5", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("effects/effect5", [&](hb::shared::sprite::SpriteLoader& loader) {
         for (int i = 0; i <= 6; i++) {
             m_game->m_effect_sprites[i + 24] = loader.get_sprite(i + 1, false);
         }
@@ -573,10 +573,10 @@ void Screen_Loading::LoadStage_Effects()
 void Screen_Loading::make_sprite(const char* FileName, short start, short count, bool alpha_effect)
 {
     try {
-        hb::shared::sprite::SpriteLoader::open_pak(FileName, [&](hb::shared::sprite::SpriteLoader& loader) {
-            size_t totalInPak = loader.get_sprite_count();
+        hb::shared::sprite::SpriteLoader::open(FileName, [&](hb::shared::sprite::SpriteLoader& loader) {
+            size_t total_in_asset = loader.get_sprite_count();
             size_t toLoad = static_cast<size_t>(count);
-            if (toLoad > totalInPak) toLoad = totalInPak;
+            if (toLoad > total_in_asset) toLoad = total_in_asset;
 
             for (size_t i = 0; i < toLoad; i++) {
                 m_game->m_sprite[i + start] = loader.get_sprite(i, alpha_effect);
@@ -592,10 +592,10 @@ void Screen_Loading::make_sprite(const char* FileName, short start, short count,
 void Screen_Loading::make_tile_spr(const char* FileName, short start, short count, bool alpha_effect)
 {
     try {
-        hb::shared::sprite::SpriteLoader::open_pak(FileName, [&](hb::shared::sprite::SpriteLoader& loader) {
-            size_t totalInPak = loader.get_sprite_count();
+        hb::shared::sprite::SpriteLoader::open(FileName, [&](hb::shared::sprite::SpriteLoader& loader) {
+            size_t total_in_asset = loader.get_sprite_count();
             size_t toLoad = static_cast<size_t>(count);
-            if (toLoad > totalInPak) toLoad = totalInPak;
+            if (toLoad > total_in_asset) toLoad = total_in_asset;
 
             for (size_t i = 0; i < toLoad; i++) {
                 m_game->m_tile_spr[i + start] = loader.get_sprite(i, alpha_effect);
@@ -609,10 +609,10 @@ void Screen_Loading::make_tile_spr(const char* FileName, short start, short coun
 void Screen_Loading::make_effect_spr(const char* FileName, short start, short count, bool alpha_effect)
 {
     try {
-        hb::shared::sprite::SpriteLoader::open_pak(FileName, [&](hb::shared::sprite::SpriteLoader& loader) {
-            size_t totalInPak = loader.get_sprite_count();
+        hb::shared::sprite::SpriteLoader::open(FileName, [&](hb::shared::sprite::SpriteLoader& loader) {
+            size_t total_in_asset = loader.get_sprite_count();
             size_t toLoad = static_cast<size_t>(count);
-            if (toLoad > totalInPak) toLoad = totalInPak;
+            if (toLoad > total_in_asset) toLoad = total_in_asset;
 
             for (size_t i = 0; i < toLoad; i++) {
                 m_game->m_effect_sprites[i + start] = loader.get_sprite(i, alpha_effect);

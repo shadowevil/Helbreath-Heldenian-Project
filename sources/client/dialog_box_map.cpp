@@ -137,7 +137,7 @@ void DialogBox_Map::on_draw()
 	{
 		const int mx = static_cast<int>(std::lround(marker_x));
 		const int my = static_cast<int>(std::lround(marker_y));
-		// the shipped game_dialogs pak has no frame 43 in InterfaceNdGame4, so the legacy marker draws only
+		// the shipped interface/game_dialogs sprites have no frame 43 in InterfaceNdGame4, so the legacy marker draws only
 		// its coordinates; the kit adds the guide map's player dot (centred by its pivot) on the tile
 		m_game->m_sprite[InterfaceNdCrusade]->draw(mx, my, 37);
 		draw_marker(sX, sY, mx - sX, my - sY);

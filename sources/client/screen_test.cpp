@@ -36,7 +36,7 @@ void Screen_Test::load_bitmap_fonts()
 		return;
 
 	// load sprite_fonts sprites
-	hb::shared::sprite::SpriteLoader::open_pak("sprite_fonts", [&](hb::shared::sprite::SpriteLoader& loader) {
+	hb::shared::sprite::SpriteLoader::open("interface/sprite_fonts", [&](hb::shared::sprite::SpriteLoader& loader) {
 		m_game->m_sprite[InterfaceFont1] = loader.get_sprite(0, false);
 		m_game->m_sprite[InterfaceFont2] = loader.get_sprite(1, false);
 		m_game->m_sprite[InterfaceSprFonts] = loader.get_sprite(2, false);

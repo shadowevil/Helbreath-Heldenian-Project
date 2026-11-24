@@ -109,3 +109,12 @@ The corner minimap now has two zoom levels, the whole map and the mid view. The 
 The client now ships Liberation Serif (regular, bold, italic, bold italic) in `fonts/`, the open-licence counterpart to Times New Roman with identical letter widths, beside Wine Tahoma (HH-0053). No screen uses it yet.
 
 Every sprite `.pak` (361 files) is now also extracted beside itself into a folder of the same name, holding `manifest.json` (every header field, sprite, frame and pivot) and the sprite images exactly as stored (HH-0052). `sprites/index.json` lists every asset by the name the client loads. New tool `.claude/tools/scripts/pak_extract.py` rebuilds each pak from its folder and byte-compares it (361 of 361 identical); it never overwrites an existing folder. The client still loads the paks until the folder loader lands (HH-0056).
+
+The game and its tools no longer use `.pak` files (HH-0055).
+- **Client (HH-0056):** sprites load from the sprite folders through `sprites/index.json` and each folder's `manifest.json`. There are no directory scans, and textures still load on first draw. An image that can't be read logs one warning and is not retried. A missing or broken `index.json` logs one warning at startup. Unsafe paths in the data are refused. `PAK.h` and every pak name in the code are gone. In the item sprite metadata, `pak_file` is now `sprite_folder`, and `pak_index_start`/`pak_index_end` are now `sprite_index_start`/`sprite_index_end`. The sprite-font test screen now loads its fonts from the right folder.
+- **Startup:** loading the manifests makes the loading screen slower in Debug, about 4.3 s against 0.64 s with paks. This is accepted until the new asset system lands.
+- **Tools (HH-0057):**
+  - **Folders:** the map kit builder, the map renderer, the asset builder and the display_id_manager tools read the folders through one shared reader, `tools/sprite_folder/sprite_folder.py`. The map kit still rebuilds byte-for-byte.
+  - **Renamed:** the item and minimap generators now write folders, as `sprite_generator.py` and `build_minimap_sprites.py`. When they rewrite a folder they list leftover image files and never delete them.
+  - **Removed:** the pak-only tools, both `paklib.py` copies, `pak_to_png.py`, `pak_extract.py` and `fetch_korea_2024.py`.
+- **Files (HH-0058):** all 361 `.pak` files are removed, each only after its folder rebuilt it byte-for-byte. Deploy removes the deployed copies. The unused prebuilt libraries in `sources/dependencies/client/libs/` are removed too.

@@ -2,7 +2,7 @@
 """
 Helbreath Map Renderer — Generates high-resolution map images from .amd files.
 
-Reads .amd map data and renders tiles + objects using PAK sprite sheets.
+Reads .amd map data and renders tiles + objects using the sprite folders (tools/sprite_folder).
 Each tile is 32x32 pixels. Objects are overlaid on top of tiles.
 
 Usage:
@@ -22,19 +22,20 @@ from pathlib import Path
 from PIL import Image
 Image.MAX_IMAGE_PIXELS = None  # Maps can exceed default decompression bomb limit
 
-# paklib is a sibling file
-sys.path.insert(0, str(Path(__file__).parent))
-from paklib import PAKFile, SpriteRectangle
+# the shared sprite-folder reader lives in tools/sprite_folder
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "sprite_folder"))
+import sprite_folder
+from sprite_folder import SpriteFolder, SpriteRectangle
 
 TILE_SIZE = 32
 
 # ---------------------------------------------------------------------------
-# Sprite ID → PAK file mapping (mirrors screen_loading.cpp)
+# Sprite ID → sprite folder mapping (mirrors screen_loading.cpp)
 # ---------------------------------------------------------------------------
-# Format: (pak_relative_path, start_id, count)
+# Format: (sprite_folder_name, start_id, count)
 # "tiles/maptiles1" → sprite IDs 0..31 loaded into m_tile_spr[]
 
-TILE_PAK_MAP = [
+TILE_SPRITE_MAP = [
     # Stage 4: Tiles1
     ("tiles/maptiles1",       0,   32),
     ("tiles/sinside1",        70,  27),
@@ -81,42 +82,44 @@ STRUCTURES1_MAP = {51: 1, 55: 5}
 
 
 class SpriteCache:
-    """Loads and caches PAK sprite sheets + their frame rectangles."""
+    """Loads and caches sprite-folder sheets + their frame rectangles."""
 
     def __init__(self, sprites_dir: Path):
         self.sprites_dir = sprites_dir
         # sprite_id → (PIL.Image sheet, [SpriteRectangle])
         self._cache: dict[int, tuple[Image.Image, list[SpriteRectangle]]] = {}
-        self._pak_cache: dict[str, PAKFile] = {}
-        self._missing_paks: set[str] = set()
+        self._folder_cache: dict[str, SpriteFolder] = {}
+        self._missing_folders: set[str] = set()
         self._load_all()
 
-    def _load_pak(self, rel_path: str) -> PAKFile | None:
-        if rel_path in self._pak_cache:
-            return self._pak_cache[rel_path]
-        if rel_path in self._missing_paks:
+    def _load_folder(self, rel_path: str) -> SpriteFolder | None:
+        if rel_path in self._folder_cache:
+            return self._folder_cache[rel_path]
+        if rel_path in self._missing_folders:
             return None
 
-        pak_path = self.sprites_dir / (rel_path + ".pak")
-        if not pak_path.exists():
-            print(f"  Warning: PAK not found: {pak_path}")
-            self._missing_paks.add(rel_path)
+        try:
+            folder = sprite_folder.open_asset(rel_path, self.sprites_dir)
+        except FileNotFoundError:
+            print(f"  Warning: sprite folder not found: {self.sprites_dir / rel_path}")
+            self._missing_folders.add(rel_path)
             return None
 
-        pak = PAKFile.read(pak_path)
-        self._pak_cache[rel_path] = pak
-        return pak
+        self._folder_cache[rel_path] = folder
+        return folder
 
     def _load_all(self):
-        """Pre-load all tile/object PAK files into the cache."""
-        print("Loading sprite PAKs...")
+        """Pre-load all tile/object sprite folders into the cache."""
+        print("Loading sprite folders...")
 
-        for rel_path, start_id, count in TILE_PAK_MAP:
-            pak = self._load_pak(rel_path)
-            if pak is None:
+        for rel_path, start_id, count in TILE_SPRITE_MAP:
+            folder = self._load_folder(rel_path)
+            if folder is None:
                 continue
-            for i in range(min(count, len(pak.sprites))):
-                sprite = pak.sprites[i]
+            for i in range(min(count, len(folder.sprites))):
+                sprite = folder.sprites[i]
+                if sprite.empty:
+                    continue  # no image, no frames: nothing to draw
                 try:
                     img = sprite.get_image().convert("RGBA")
                     self._cache[start_id + i] = (img, sprite.rectangles)
@@ -124,11 +127,13 @@ class SpriteCache:
                     print(f"  Warning: Failed to load sprite {start_id + i} from {rel_path}: {e}")
 
         # structures1 special entries
-        pak = self._load_pak("objects/structures1")
-        if pak:
-            for sprite_id, pak_index in STRUCTURES1_MAP.items():
-                if pak_index < len(pak.sprites):
-                    sprite = pak.sprites[pak_index]
+        folder = self._load_folder("objects/structures1")
+        if folder:
+            for sprite_id, sprite_idx in STRUCTURES1_MAP.items():
+                if sprite_idx < len(folder.sprites):
+                    sprite = folder.sprites[sprite_idx]
+                    if sprite.empty:
+                        continue
                     try:
                         img = sprite.get_image().convert("RGBA")
                         self._cache[sprite_id] = (img, sprite.rectangles)
@@ -437,8 +442,8 @@ def main():
     tool_dir = Path(__file__).parent
     repo_root = tool_dir.parent.parent
 
-    sprites_dir = Path(args.sprites_dir) if args.sprites_dir else repo_root / "Binaries" / "Game" / "sprites"
-    mapdata_dir = Path(args.mapdata_dir) if args.mapdata_dir else repo_root / "Binaries" / "Game" / "mapdata"
+    sprites_dir = Path(args.sprites_dir) if args.sprites_dir else sprite_folder.STAGED_TREE
+    mapdata_dir = Path(args.mapdata_dir) if args.mapdata_dir else repo_root / "staged" / "shared" / "mapdata"
     output_dir = Path(args.output) if args.output else tool_dir / "output"
 
     if not sprites_dir.exists():
@@ -450,7 +455,7 @@ def main():
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Load all sprite PAKs once
+    # Load all sprite folders once
     sprite_cache = SpriteCache(sprites_dir)
 
     # Determine which maps to render

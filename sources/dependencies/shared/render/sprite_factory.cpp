@@ -18,14 +18,11 @@ ISpriteFactory* Sprites::get_factory() {
     return s_factory;
 }
 
-ISprite* Sprites::create(const std::string& pakName, int spriteIndex, bool alphaEffect) {
+ISprite* Sprites::create(const std::string& asset_name, int spriteIndex, bool alphaEffect) {
     if (s_factory) {
-        // Build full path and soft-lock the PAK file
-        std::string pakPath = s_factory->get_sprite_path() + "/" + pakName + ".pak";
-        PAKLib::pak_lock_manager::lock(pakPath);
-        return s_factory->create_sprite(pakName, spriteIndex, alphaEffect);
+        return s_factory->create_sprite(asset_name, spriteIndex, alphaEffect);
     }
-    printf("[Sprites::create] ERROR: No factory set! Cannot create sprite %s[%d]\n", pakName.c_str(), spriteIndex);
+    printf("[Sprites::create] ERROR: No factory set! Cannot create sprite %s[%d]\n", asset_name.c_str(), spriteIndex);
     return nullptr;
 }
 
@@ -48,9 +45,9 @@ int Sprites::get_ambient_light_level() {
     return 1;
 }
 
-int Sprites::get_sprite_count(const std::string& pakName) {
+int Sprites::get_sprite_count(const std::string& asset_name) {
     if (s_factory) {
-        return s_factory->get_sprite_count(pakName);
+        return s_factory->get_sprite_count(asset_name);
     }
     return 0;
 }

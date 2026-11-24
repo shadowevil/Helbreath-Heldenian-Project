@@ -1,7 +1,7 @@
 {
   "id": "HH-0058",
   "summary": "Remove all .pak files after the folder loader passes",
-  "status": "open",
+  "status": "in_review",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-24T18:36:16Z",
-  "updated": "2026-11-24T18:36:16Z",
+  "updated": "2026-11-24T20:31:37Z",
   "links": {
     "commits": [],
     "files": [],
@@ -24,5 +24,12 @@
       "HH-0057"
     ]
   },
-  "body": "Remove every `.pak` under `staged/` and `tools/display_id_manager/sprites/` with `git rm` (part of HH-0055). Do this only after the folder loader passes the in-game check and the pak_extract `--verify` comes back clean. Then run deploy `--dry-run` to confirm the old paks leave `game/client/sprites`.\n\n**Done when:** no `.pak` is tracked, deploy removes the deployed copies, and the game runs.\n\nSource: user, 2026-11-24: \"Fix the client and remove the pak files\".\n"
+  "body": "Remove every `.pak` under `staged/` and `tools/display_id_manager/sprites/` with `git rm` (part of HH-0055). Do this only after the folder loader passes the in-game check and the pak_extract `--verify` comes back clean. Then run deploy `--dry-run` to confirm the old paks leave `game/client/sprites`.\n\n**Done when:** no `.pak` is tracked, deploy removes the deployed copies, and the game runs.\n\nSource: user, 2026-11-24: \"Fix the client and remove the pak files\".\n",
+  "comments": [
+    {
+      "author": "client",
+      "at": "2026-11-24T20:31:36Z",
+      "body": "Pak removal done (uncommitted, staged in the index).\n\n- Pre-delete proof: `pak_extract.py --verify` -> 361 of 361 byte-identical, 0 failed.\n- Tracked paks: 361 (264 `staged/`, 97 `tools/display_id_manager/sprites/`), none outside. Removed with Mode 2 script `.claude/scratch/pak_rm/pak_rm.py` (dry-run 361; verify 361 checked, 0 failed: each path tracked, `.pak`, in-tree, sibling `manifest.json` tracked with matching source, size and sha256); applied `git rm` in chunks of 40 on the explicit list. `git ls-files \"*.pak\"` is now empty.\n- `git rm` of `.claude/tools/scripts/pak_extract.py` and `fetch_korea_2024.py`.\n- Deploy (`deploy.py --target all --config Debug`): dry-run then real run; removed all 264 deployed paks from `game/client/sprites/` (deploy manifest owned them), added 2 new staged files (`sprites/panelkit/panel_kit.json`, `.png`), server unchanged. 0 `.pak` left in `game/`. Runtime state untouched.\n- Not done here: no build, no in-game run after the deploy, no commit, no doc edits. Residue mentions (comments/docstrings, one doc line) reported to the PM."
+    }
+  ]
 }

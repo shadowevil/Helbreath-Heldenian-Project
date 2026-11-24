@@ -23,7 +23,7 @@ Screen_Splash::Screen_Splash(CGame* game)
 
 void Screen_Splash::on_initialize()
 {
-    hb::shared::sprite::SpriteLoader::open_pak("interface/intermediate_screens", [&](hb::shared::sprite::SpriteLoader& loader) {
+    hb::shared::sprite::SpriteLoader::open("interface/intermediate_screens", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[SplashScreen] = loader.get_sprite(3, false);
         });
 

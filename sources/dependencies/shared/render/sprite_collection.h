@@ -105,7 +105,7 @@ public:
     void set(size_t index, ISprite* sprite);
 
     // Create and set sprite using factory
-    ISprite* create(size_t index, const std::string& pakName, int spriteIndex, bool alphaEffect = true);
+    ISprite* create(size_t index, const std::string& asset_name, int spriteIndex, bool alphaEffect = true);
 
     // Remove sprite at index
     void remove(size_t index);
@@ -143,11 +143,6 @@ public:
     //------------------------------------------------------------------
     // Bulk Operations
     //------------------------------------------------------------------
-
-    // Load sprites from a PAK file using a loader callback
-    // Usage: collection.loadFromPak("Gmtile", [](loader) { collection[0] = loader.get(0); });
-    template<typename Func>
-    void loadFromPak(const std::string& pakName, Func&& loader);
 
     // Preload all sprites in collection
     void preloadAll();
@@ -273,9 +268,9 @@ inline void SpriteCollection::set(size_t index, ISprite* sprite)
     }
 }
 
-inline ISprite* SpriteCollection::create(size_t index, const std::string& pakName, int spriteIndex, bool alphaEffect)
+inline ISprite* SpriteCollection::create(size_t index, const std::string& asset_name, int spriteIndex, bool alphaEffect)
 {
-    ISprite* sprite = Sprites::create(pakName, spriteIndex, alphaEffect);
+    ISprite* sprite = Sprites::create(asset_name, spriteIndex, alphaEffect);
     if (sprite) {
         m_sprites[index] = SpritePtr(sprite);
     }

@@ -8,7 +8,7 @@
 #pragma once
 
 #include "sprite.h"
-#include "PAK.h"
+#include "sprite_types.h"
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
@@ -23,12 +23,10 @@ class SFMLRenderer;
 class SFMLSprite : public hb::shared::sprite::ISprite
 {
 public:
-    // Construction from file path (reads metadata only — texture loaded on demand)
-    SFMLSprite(SFMLRenderer* renderer, const std::string& pakFilePath, int spriteIndex, bool alphaEffect = true);
-
-    // Construction from pre-loaded metadata (no file I/O, no image data — used by SpriteLoader)
-    SFMLSprite(SFMLRenderer* renderer, const std::vector<PAKLib::sprite_rect>& frames,
-               const std::string& pakFilePath, int spriteIndex, bool alphaEffect = true);
+    // Construction from pre-loaded metadata (no file I/O, no image data); the texture is
+    // loaded from image_path on first draw, and an empty image_path is an empty sprite
+    SFMLSprite(SFMLRenderer* renderer, const std::vector<hb::shared::sprite::SpriteRect>& frames,
+               const std::string& image_path, bool alphaEffect = true);
 
     virtual ~SFMLSprite();
 
@@ -54,7 +52,7 @@ public:
     bool CheckCollision(int spriteX, int spriteY, int frame, int pointX, int pointY) override;
 
     // Resource management — Unload() releases GPU texture and collision image
-    // but keeps frame metadata and PAK path for lazy reload on next draw
+    // but keeps frame metadata and image path for lazy reload on next draw
     void Preload() override;
     void Unload() override;
     bool IsLoaded() const override;
@@ -79,11 +77,9 @@ private:
     // Internal Methods
     //------------------------------------------------------------------
 
-    // Create SFML texture from 16-bit image data
-    bool create_texture();
-
-    // Re-read sprite image data from PAK file after Unload()
-    bool reload_from_pak();
+    // Read the image file and create the texture and collision image; called lazily on first
+    // use and again after Unload()
+    bool load_texture();
 
     // draw implementation
     void DrawInternal(sf::RenderTarget* target, int x, int y, int frame, const hb::shared::sprite::DrawParams& params);
@@ -98,15 +94,12 @@ private:
     // hb::shared::render::Renderer reference
     SFMLRenderer* m_renderer;
 
-    // PAK file info (for lazy loading)
-    std::string m_pakFilePath;
-    int m_spriteIndex;
+    // Image file (for lazy loading); empty for an empty sprite
+    std::string m_image_path;
 
-    // Frame data from PAK
-    std::vector<PAKLib::sprite_rect> m_frames;
+    // Frame data from the asset manifest
+    std::vector<hb::shared::sprite::SpriteRect> m_frames;
 
-    // PNG image data (cleared after texture creation to save memory)
-    std::vector<uint8_t> m_imageData;
     uint16_t m_bitmapWidth;
     uint16_t m_bitmapHeight;
 
@@ -114,6 +107,7 @@ private:
     sf::Texture m_texture;
     sf::Image m_collisionImage;  // Retained for pixel-perfect collision detection
     bool m_textureLoaded;
+    bool m_load_failed;  // Image unreadable: logged once, not retried until Unload() or Restore()
 
     // Alpha effect
     bool m_alphaEffect;

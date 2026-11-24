@@ -6,6 +6,8 @@
 #include "sfml_sprite_factory.h"
 #include "sfml_sprite.h"
 #include "sfml_renderer.h"
+#include "sprite_folder.h"
+#include <stdexcept>
 
 SFMLSpriteFactory::SFMLSpriteFactory(SFMLRenderer* renderer)
     : m_renderer(renderer)
@@ -20,28 +22,24 @@ SFMLSpriteFactory::~SFMLSpriteFactory()
     // Caller is responsible for destroying sprites via destroy_sprite
 }
 
-hb::shared::sprite::ISprite* SFMLSpriteFactory::create_sprite(const std::string& pakName, int spriteIndex, bool alphaEffect)
+hb::shared::sprite::ISprite* SFMLSpriteFactory::create_sprite(const std::string& asset_name, int spriteIndex, bool alphaEffect)
 {
-    std::string fullPath = BuildPakPath(pakName);
-
-    SFMLSprite* sprite = new SFMLSprite(m_renderer, fullPath, spriteIndex, alphaEffect);
-
-    // Apply global alpha degree
-    if (alphaEffect && m_ambient_light_level != 1)
+    std::vector<hb::shared::sprite::folder_sprite> sprites = hb::shared::sprite::load_sprite_folder(m_spritePath, asset_name);
+    if (spriteIndex < 0 || static_cast<size_t>(spriteIndex) >= sprites.size())
     {
-        sprite->set_ambient_light_level(static_cast<char>(m_ambient_light_level));
+        throw std::out_of_range("Sprite index " + std::to_string(spriteIndex) + " out of range in " + asset_name);
     }
 
-    return sprite;
+    const hb::shared::sprite::folder_sprite& entry = sprites[static_cast<size_t>(spriteIndex)];
+    return create_sprite_from_metadata(entry.frames, entry.image_path, alphaEffect);
 }
 
 hb::shared::sprite::ISprite* SFMLSpriteFactory::create_sprite_from_metadata(
-    const std::vector<PAKLib::sprite_rect>& frames,
-    const std::string& pakFilePath,
-    int spriteIndex,
+    const std::vector<hb::shared::sprite::SpriteRect>& frames,
+    const std::string& image_path,
     bool alphaEffect)
 {
-    SFMLSprite* sprite = new SFMLSprite(m_renderer, frames, pakFilePath, spriteIndex, alphaEffect);
+    SFMLSprite* sprite = new SFMLSprite(m_renderer, frames, image_path, alphaEffect);
 
     // Apply global alpha degree
     if (alphaEffect && m_ambient_light_level != 1)
@@ -73,39 +71,7 @@ int SFMLSpriteFactory::get_ambient_light_level() const
     return m_ambient_light_level;
 }
 
-int SFMLSpriteFactory::get_sprite_count(const std::string& pakName) const
+int SFMLSpriteFactory::get_sprite_count(const std::string& asset_name) const
 {
-    std::string fullPath = BuildPakPath(pakName);
-
-    try
-    {
-        PAKLib::pak pakFile = PAKLib::loadpak_metadata_fast(fullPath);
-        return static_cast<int>(pakFile.sprite_count);
-    }
-    catch (...)
-    {
-        return 0;
-    }
-}
-
-std::string SFMLSpriteFactory::BuildPakPath(const std::string& pakName) const
-{
-    // If pakName already has a path or extension, use as-is
-    if (pakName.find('/') != std::string::npos ||
-        pakName.find('\\') != std::string::npos ||
-        pakName.find('.') != std::string::npos)
-    {
-        return pakName;
-    }
-
-    // Build path: spritePath/pakName.pak
-    std::string path = m_spritePath;
-    if (!path.empty() && path.back() != '/' && path.back() != '\\')
-    {
-        path += '/';
-    }
-    path += pakName;
-    path += ".pak";
-
-    return path;
+    return hb::shared::sprite::sprite_folder_count(m_spritePath, asset_name);
 }

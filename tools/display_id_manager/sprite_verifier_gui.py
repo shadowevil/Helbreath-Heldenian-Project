@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Sprite Verifier GUI — scroll through per-item PAK files to visually verify
+Sprite Verifier GUI — scroll through per-item sprite folders to visually verify
 that all 24 sprites (12 male + 12 female) look correct.
 
 Usage:
@@ -15,9 +15,10 @@ from pathlib import Path
 from PIL import Image, ImageTk, ImageDraw, ImageFont
 import io
 
+# the shared sprite-folder reader lives in tools/sprite_folder
 _SCRIPT_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(_SCRIPT_DIR))
-from paklib import PAKFile
+sys.path.insert(0, str(_SCRIPT_DIR.parent / 'sprite_folder'))
+import sprite_folder
 
 DEFAULT_ITEMS_DIR = _SCRIPT_DIR / 'sprites' / 'items'
 DEFAULT_METADATA = _SCRIPT_DIR / 'contents' / 'item_sprite_metadata.json'
@@ -123,8 +124,8 @@ class SpriteVerifierApp:
         self.items_dir = DEFAULT_ITEMS_DIR
         self.metadata_path = DEFAULT_METADATA
         self.metadata = []
-        self.equippable = []  # Items with pak_file
-        self.pak_cache = {}
+        self.equippable = []  # Items with sprite_folder
+        self.folder_cache = {}
         self.tk_images = []  # prevent GC
 
         self._load_metadata()
@@ -139,13 +140,13 @@ class SpriteVerifierApp:
         if self.metadata_path.exists():
             with open(self.metadata_path) as f:
                 self.metadata = json.load(f)
-        # Filter to equippable items that have a PAK file
+        # Filter to equippable items that have a sprite folder
         self.equippable = [
             m for m in self.metadata
-            if m.get("pak_file") and (self.items_dir / m["pak_file"]).exists()
+            if m.get("sprite_folder") and (self.items_dir / m["sprite_folder"] / "manifest.json").is_file()
         ]
-        # Sort by pak_file for easy browsing
-        self.equippable.sort(key=lambda m: m["pak_file"])
+        # Sort by sprite_folder for easy browsing
+        self.equippable.sort(key=lambda m: m["sprite_folder"])
 
     def _build_ui(self):
         # Main horizontal split
@@ -237,10 +238,10 @@ class SpriteVerifierApp:
         self._displayed = []
         search = self.search_var.get().lower()
         for i, m in enumerate(self.equippable):
-            pak = m.get("pak_file", "")
-            name = m.get("name", pak.replace(".pak", ""))
+            folder = m.get("sprite_folder", "")
+            name = m.get("name", folder)
             label = f"{name}"
-            if search and search not in label.lower() and search not in pak.lower():
+            if search and search not in label.lower() and search not in folder.lower():
                 continue
             self._displayed.append(i)
             self.item_list.insert(tk.END, label)
@@ -290,17 +291,17 @@ class SpriteVerifierApp:
         self.item_list.see(new)
         self.item_list.event_generate("<<ListboxSelect>>")
 
-    def _get_pak(self, pak_file):
-        if pak_file not in self.pak_cache:
-            path = self.items_dir / pak_file
-            if not path.exists():
+    def _get_folder(self, stem):
+        if stem not in self.folder_cache:
+            path = self.items_dir / stem
+            if not (path / "manifest.json").is_file():
                 return None
             try:
-                self.pak_cache[pak_file] = PAKFile.read(path)
+                self.folder_cache[stem] = sprite_folder.open_folder(path)
             except Exception as e:
-                print(f"Error reading {pak_file}: {e}")
+                print(f"Error reading {stem}: {e}")
                 return None
-        return self.pak_cache[pak_file]
+        return self.folder_cache[stem]
 
     def _show_item(self, meta):
         # Clear previous
@@ -308,13 +309,13 @@ class SpriteVerifierApp:
             w.destroy()
         self.tk_images.clear()
 
-        pak_file = meta.get("pak_file", "?")
-        name = meta.get("name", pak_file.replace(".pak", ""))
+        stem = meta.get("sprite_folder", "?")
+        name = meta.get("name", stem)
         equip_type = meta.get("equip_type", "?")
         has_male = "male" in meta
         has_female = "female" in meta
 
-        self.info_label.config(text=f"{name}  ({pak_file})")
+        self.info_label.config(text=f"{name}  ({stem})")
 
         gender_info = []
         if has_male:
@@ -325,9 +326,9 @@ class SpriteVerifierApp:
             text=f"Type: {equip_type}  |  Genders: {', '.join(gender_info)}  |  "
                  f"ID: {meta.get('id', '?')}")
 
-        pak = self._get_pak(pak_file)
-        if not pak:
-            tk.Label(self.grid_inner, text=f"Cannot load {pak_file}",
+        folder = self._get_folder(stem)
+        if not folder:
+            tk.Label(self.grid_inner, text=f"Cannot load {stem}",
                      bg=BG_DARK, fg=RED, font=('Consolas', 11)).grid(row=0, column=0)
             return
 
@@ -358,26 +359,26 @@ class SpriteVerifierApp:
 
             # Male sprite
             if has_male:
-                self._add_sprite_cell(pak, pose_idx, row, 1, 2)
+                self._add_sprite_cell(folder, pose_idx, row, 1, 2)
 
             # Female sprite
             if has_female:
                 f_col = 3 if has_male else 1
-                self._add_sprite_cell(pak, pose_idx + 12, row, f_col, f_col + 1)
+                self._add_sprite_cell(folder, pose_idx + 12, row, f_col, f_col + 1)
 
         # Update scroll region
         self.grid_inner.update_idletasks()
         self.grid_canvas.config(scrollregion=self.grid_canvas.bbox('all'))
         self.grid_canvas.yview_moveto(0)
 
-    def _add_sprite_cell(self, pak, sprite_idx, grid_row, img_col, info_col):
+    def _add_sprite_cell(self, folder, sprite_idx, grid_row, img_col, info_col):
         """Add a sprite thumbnail + info to the grid."""
-        if sprite_idx >= len(pak.sprites):
+        if sprite_idx >= len(folder.sprites):
             tk.Label(self.grid_inner, text="N/A", bg=BG_DARK, fg=RED,
                      font=('Consolas', 8)).grid(row=grid_row, column=img_col)
             return
 
-        sprite = pak.sprites[sprite_idx]
+        sprite = folder.sprites[sprite_idx]
         n_rects = len(sprite.rectangles)
 
         # Choose a representative frame:

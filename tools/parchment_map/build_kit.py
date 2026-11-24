@@ -9,8 +9,8 @@ Writes into --out (default staged/client/sprites/mapkit/), all names lowercase:
                          pixel for pixel onto a padded sheet so mipmaps do not bleed between frames, plus
                          the exit arrow baked in 8 rotations (arrow_0 ... arrow_315, clockwise from north)
   icons.json             frames by name: {image, x, y, w, h}
-  creatures.png / .json  every killable creature (an NPC pak in the client's loading stage with the full
-                         40-sprite action set, plus KILLABLE_SHORT_PAKS) standing, facing south-east, frame 0,
+  creatures.png / .json  every killable creature (an NPC sprite folder in the client's loading stage with the
+                         full 40-sprite action set, plus KILLABLE_SHORT_NPCS) standing, facing south-east, frame 0,
                          at native scale: {npc_type, npc_ids, npc_names, x, y, w, h, pivot_x, pivot_y}.
                          icons.json also holds them as creature_<name> frames (image creatures.png): a
                          monster area with creature art draws up to CREATURE_MAX_PER_AREA of them in place
@@ -37,7 +37,6 @@ import io
 import json
 import re
 import shutil
-import subprocess
 import sys
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
@@ -49,6 +48,8 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
 sys.path.insert(0, str(HERE))
 import make_parchment as mp  # noqa: E402
+sys.path.insert(0, str(REPO / "tools" / "sprite_folder"))
+import sprite_folder  # noqa: E402
 
 MAPDATA = REPO / "staged" / "shared" / "mapdata"
 ATLAS_PNG = REPO / "working" / "sprite_work" / "map_icons.png"
@@ -390,14 +391,12 @@ def draw_leaders(ink_path, out_path, leaders):
 
 # ---------------------------------------------------------------- creatures
 LOADING_CPP = REPO / "sources" / "client" / "screen_loading.cpp"
-NPC_PAKS = REPO / "staged" / "client" / "sprites" / "npcs"
 NPC_CONFIGS = REPO / "sources" / "database" / "gamedata" / "npc_configs.data.sql"
-PAK_TO_PNG = REPO / ".claude" / "tools" / "scripts" / "pak_to_png.py"
-NPC_TYPE_BASE = 10            # owner type = 10 + pak slot (equipment_indices.cpp CalcNpc: Mob + (type - 10) * 56)
+NPC_TYPE_BASE = 10            # owner type = 10 + sprite slot (equipment_indices.cpp CalcNpc: Mob + (type - 10) * 56)
 FULL_ACTION_SET = 40          # 5 poses x 8 directions: stop, move, attack, damage, dying
-# paks with fewer sprites whose NPCs are still fought and killed (npc_configs action_limit 0, or a
-# destroyable crusade structure, 5); the rest of the short paks are townsfolk, quest givers and the gate
-KILLABLE_SHORT_PAKS = {"wyvern", "fire-wyvern", "abaddon", "helbreath-tank", "crusade-barricade-turret", "apocalypse-cannon"}
+# sprite folders with fewer sprites whose NPCs are still fought and killed (npc_configs action_limit 0, or a
+# destroyable crusade structure, 5); the rest of the short ones are townsfolk, quest givers and the gate
+KILLABLE_SHORT_NPCS = {"wyvern", "fire-wyvern", "abaddon", "helbreath-tank", "crusade-barricade-turret", "apocalypse-cannon"}
 # atlas names the user ruled out of the kit (2026-11-24, HH-0049): "Those are not needed in the minimap kit"
 NOT_IN_KIT = {
 	"dummy", "arrow_guard_tower", "cannon_guard_tower", "mana_collector", "detector", "energy_shield",
@@ -409,8 +408,8 @@ STAND_SE_SPRITE = 0 * 8 + (4 - 1)   # pose 0 (stop, npc_renderer.cpp draw_stop) 
 CREATURE_PAD = 4
 
 
-def npc_paks():
-	"""[(pak name, npc type, sprite count)] from the client's loading stage, in load order."""
+def npc_sprites():
+	"""[(npc sprite folder name, npc type, sprite count)] from the client's loading stage, in load order."""
 	pat = re.compile(r'make_sprite\("npcs/([a-z0-9-]+)", Mob \+ 7 \* 8 \* (\d+), (\d+), true\)')
 	return [(m.group(1), NPC_TYPE_BASE + int(m.group(2)), int(m.group(3))) for m in pat.finditer(LOADING_CPP.read_text(encoding="utf-8"))]
 
@@ -421,36 +420,30 @@ def npc_configs():
 	return {r["npc_id"]: (str(r["name"]).replace("''", "'"), r["npc_type"]) for r in mp.sql_rows(NPC_CONFIGS, "npc_configs")}
 
 
-def creature_atlas(work, configs):
-	"""(sheet, {name: entry}, excluded [(pak, reason)]): the standing, south-east frame 0 of every killable
-	creature at native scale with its pivot. Extracts the paks with pak_to_png.py into work/npcs."""
+def creature_atlas(configs):
+	"""(sheet, {name: entry}, excluded [(npc, reason)]): the standing, south-east frame 0 of every killable
+	creature at native scale with its pivot, read from the npcs/<name> sprite folders."""
 	by_type = {}
 	for nid, (_, t) in configs.items():
 		by_type.setdefault(t, []).append(nid)
 	chosen, excluded = [], []
 	found = set()
-	for pak, t, count in npc_paks():
-		if pak.replace("-", "_") in NOT_IN_KIT:
-			found.add(pak.replace("-", "_"))
-			excluded.append((pak, "not needed in the kit (user, HH-0049)"))
-		elif count >= FULL_ACTION_SET or pak in KILLABLE_SHORT_PAKS:
-			chosen.append((pak, t))
+	for npc, t, count in npc_sprites():
+		if npc.replace("-", "_") in NOT_IN_KIT:
+			found.add(npc.replace("-", "_"))
+			excluded.append((npc, "not needed in the kit (user, HH-0049)"))
+		elif count >= FULL_ACTION_SET or npc in KILLABLE_SHORT_NPCS:
+			chosen.append((npc, t))
 		else:
-			excluded.append((pak, f"{count} sprites, not a killable creature"))
+			excluded.append((npc, f"{count} sprites, not a killable creature"))
 	if NOT_IN_KIT - found:
-		raise SystemExit(f"error: NOT_IN_KIT names no loaded pak: {sorted(NOT_IN_KIT - found)}")
-	out = Path(work) / "npcs"
-	missing = [p for p, _ in chosen if not (out / p / "frames.json").exists()]
-	if missing:
-		subprocess.run([sys.executable, "-I", str(PAK_TO_PNG), str(NPC_PAKS), str(out), "--only", *missing],
-		               check=True, stdout=subprocess.DEVNULL)
+		raise SystemExit(f"error: NOT_IN_KIT names no loaded npc sprite: {sorted(NOT_IN_KIT - found)}")
 	frames = []
-	for pak, t in chosen:
-		meta = json.loads((out / pak / "frames.json").read_text(encoding="utf-8"))
-		spr = meta["sprites"][STAND_SE_SPRITE]
-		f = spr["frames"][0]
-		im = Image.open(out / pak / spr["file"]).convert("RGBA").crop((f["x"], f["y"], f["x"] + f["w"], f["y"] + f["h"]))
-		frames.append((pak.replace("-", "_"), t, im, f["pivot_x"], f["pivot_y"]))
+	for npc, t in chosen:
+		spr = sprite_folder.open_asset(f"npcs/{npc}").sprites[STAND_SE_SPRITE]
+		f = spr.rectangles[0]
+		im = spr.rgba().crop((f.x, f.y, f.x + f.width, f.y + f.height))
+		frames.append((npc.replace("-", "_"), t, im, f.pivot_x, f.pivot_y))
 	sheet, rects = pack({name: im for name, _, im, _, _ in frames}, "creatures.png", CREATURE_PAD)
 	entries = {}
 	for name, t, _, pvx, pvy in frames:
@@ -522,7 +515,7 @@ def main(argv=None):
 	icons, frames, buildings, factors = icon_sheets()
 	icons.save(out / "icons.png", optimize=True)
 	configs = npc_configs()
-	cre_sheet, cre_entries, cre_excluded = creature_atlas(work, configs)
+	cre_sheet, cre_entries, cre_excluded = creature_atlas(configs)
 	cre_sheet.save(out / "creatures.png", optimize=True)
 	# creature frames join the icon frames (the client loads whichever sheet a frame names)
 	frames.update({f"creature_{n}": {"image": "creatures.png", "x": e["x"], "y": e["y"], "w": e["w"], "h": e["h"]}
@@ -562,8 +555,8 @@ def main(argv=None):
 	total = sum(p.stat().st_size for p in out.rglob("*") if p.is_file())
 	print(f"kit: {len(maps)} maps, {len(cre_entries)} creatures ({cre_sheet.width}x{cre_sheet.height}) -> {out}, {total / 1048576:.1f} MiB"
 	      + (f", {len(failed)} failed" if failed else ""))
-	for pak, why in cre_excluded:
-		print(f"  creature excluded: {pak} ({why})")
+	for npc, why in cre_excluded:
+		print(f"  creature excluded: {npc} ({why})")
 	for n in names:
 		if n in EXCLUDE:
 			print(f"  excluded: {n} ({EXCLUDE[n]})")

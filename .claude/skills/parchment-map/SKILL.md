@@ -45,7 +45,7 @@ Options:
   overlay (red original, green generated, yellow both); without, the generated map alone.
 - `-v` lists every placement and the reason for it.
 
-Outputs go under the session's `.claude/scratch/`; packing into `interface/newmaps.pak` is not part of this tool.
+Outputs go under the session's `.claude/scratch/`; packing into the `interface/newmaps` sprite folder is not part of this tool.
 
 ## Icon placements (for the icon kit)
 
@@ -83,7 +83,7 @@ Unknown tile sprite ids (not in the palette) still get outlines; they are never 
 ## How to judge the output
 
 1. Look at it next to an original (`--sheet` with `--reference`); at scale 4 also look at a 1:1 crop.
-   Originals: `interface/newmaps.pak` frames: aresden, elvine (sheet 0), middleland, default = beginner zone
+   Originals: the `interface/newmaps` sprite folder (`staged/client/sprites`, read with `tools/sprite_folder/sprite_folder.py`), frames: aresden, elvine (sheet 0), middleland, default = beginner zone
    (sheet 1), huntzone2, huntzone1 (sheet 2), huntzone4, huntzone3 (sheet 3), arefarm, elvfarm (sheet 4).
 2. Ink NCC against the original. Measured with the shipped settings at scale 1: default 0.45, huntzones
    0.44-0.51, farms 0.26-0.34 (scale 4 scores about the same: default 0.48, huntzone1 0.52). aresden, elvine
@@ -117,6 +117,7 @@ Unknown tile sprite ids (not in the palette) still get outlines; they are never 
 sheet, plus its north-pointing `exit_arrow` baked in 8 rotations `arrow_<deg>`), `creatures.png` + `creatures.json`
 (every killable creature standing, facing south-east, native scale, with pivot and npc ids; monster areas in
 placements.json list `npc_ids`/`npc_types`/`creatures`, not drawn) and `index.json`. Intermediates go to
-`build/mapkit_work/`. Icon sizes (building factor, other heights) and layout rules are constants at the top of
-build_kit.py. Re-run it after editing the atlas, the paper, a map or the database, then deploy. `working/` is
-gitignored, so the atlas exists only on the user's machine; without it, keep the committed `icons.png`/`icons.json`.
+`build/mapkit_work/`. Creature art is read from the `npcs/<name>` sprite folders. Icon sizes (building factor,
+other heights) and layout rules are constants at the top of build_kit.py. Re-run it after editing the atlas, the
+paper, a map or the database, then deploy. `working/` is gitignored, so the atlas exists only on the user's
+machine; without it, keep the committed `icons.png`/`icons.json`.

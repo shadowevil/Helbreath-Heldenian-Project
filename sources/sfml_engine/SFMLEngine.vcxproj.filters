@@ -78,6 +78,9 @@
     <ClInclude Include="..\dependencies\shared\render\sprite_collection.h">
       <Filter>Shared\Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="..\dependencies\shared\render\sprite_folder.h">
+      <Filter>Shared\Rendering</Filter>
+    </ClInclude>
     <ClInclude Include="..\dependencies\shared\render\sprite_loader.h">
       <Filter>Shared\Rendering</Filter>
     </ClInclude>
@@ -99,6 +102,9 @@
   <ItemGroup>
     <ClCompile Include="..\dependencies\shared\render\sprite_factory.cpp">
       <Filter>Shared\Interfaces</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\shared\render\sprite_folder.cpp">
+      <Filter>Shared\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="..\dependencies\shared\render\text_lib.cpp">
       <Filter>Shared\Rendering</Filter>

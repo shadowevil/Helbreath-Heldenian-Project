@@ -1,6 +1,6 @@
-// sprite_loader.h: Efficient batch sprite loading from PAK files
+// sprite_loader.h: Efficient batch sprite loading from an extracted sprite folder
 //
-// Opens a PAK file once and allows loading multiple sprites from it
+// Reads an asset's manifest once and allows creating multiple sprites from it
 // without repeated file I/O operations.
 //////////////////////////////////////////////////////////////////////
 
@@ -8,54 +8,36 @@
 
 #include "sprite.h"
 #include "sprite_factory.h"
-#include "PAK.h"
+#include "sprite_folder.h"
 #include <string>
-#include <functional>
 #include <stdexcept>
-#include <memory>
+#include <vector>
 
 namespace hb::shared::sprite {
 
 class SpriteLoader {
 public:
-    // Open a PAK file and execute a callback with the loader.
-    // Only reads metadata (frame rects) — no image data is loaded.
-    // The PAK file is soft-locked to prevent external modification.
+    // Read an asset's manifest (e.g. "npcs/ogre") and execute a callback with the loader.
+    // Only frame metadata is read; each texture is loaded from its image file on first draw.
     template<typename Func>
-    static void open_pak(const std::string& pakName, Func&& use) {
-        SpriteLoader loader;
-        loader.m_pakName = pakName;
-
+    static void open(const std::string& asset_name, Func&& use) {
         ISpriteFactory* factory = Sprites::get_factory();
         if (!factory) {
             throw std::runtime_error("No sprite factory set");
         }
 
-        // Build full path using factory's configured sprite path
-        std::string pakPath = factory->get_sprite_path() + "/" + pakName + ".pak";
-
-        try {
-            loader.m_pak = PAKLib::loadpak_metadata_fast(pakPath);
-            loader.m_isPakOpen = true;
-            PAKLib::pak_lock_manager::lock(pakPath);
-            use(loader);
-        }
-        catch (...) {
-            loader.m_isPakOpen = false;
-            throw;
-        }
-        loader.m_isPakOpen = false;
+        SpriteLoader loader;
+        loader.m_asset_name = asset_name;
+        loader.m_sprites = load_sprite_folder(factory->get_sprite_path(), asset_name);
+        use(loader);
     }
 
-    // get a sprite from the loaded PAK file.
+    // get a sprite from the loaded asset.
     // Returns a sprite with only metadata — texture loaded on demand from disk.
     ISprite* get_sprite(size_t index, bool alphaEffect = true) {
-        if (!m_isPakOpen) {
-            throw std::runtime_error("No PAK file is currently open");
-        }
-        if (index >= m_pak.sprites.size()) {
+        if (index >= m_sprites.size()) {
             throw std::out_of_range("Sprite index out of range: " + std::to_string(index) +
-                                    " >= " + std::to_string(m_pak.sprites.size()));
+                                    " >= " + std::to_string(m_sprites.size()));
         }
 
         ISpriteFactory* factory = Sprites::get_factory();
@@ -64,32 +46,22 @@ public:
         }
 
         return factory->create_sprite_from_metadata(
-            m_pak.sprites[index].sprite_rectangles,
-            m_pak.pak_file_path,
-            static_cast<int>(index),
+            m_sprites[index].frames,
+            m_sprites[index].image_path,
             alphaEffect);
     }
 
-    // get the number of sprites in the PAK
-    size_t get_sprite_count() const {
-        if (!m_isPakOpen) {
-            return 0;
-        }
-        return m_pak.sprites.size();
-    }
+    // get the number of sprites in the asset
+    size_t get_sprite_count() const { return m_sprites.size(); }
 
-    // get PAK name
-    const std::string& get_pak_name() const { return m_pakName; }
-
-    // Check if PAK is open
-    bool is_open() const { return m_isPakOpen; }
+    // get asset name
+    const std::string& get_asset_name() const { return m_asset_name; }
 
 private:
     SpriteLoader() = default;
 
-    bool m_isPakOpen = false;
-    std::string m_pakName;
-    PAKLib::pak m_pak;
+    std::string m_asset_name;
+    std::vector<folder_sprite> m_sprites;
 };
 
 } // namespace hb::shared::sprite

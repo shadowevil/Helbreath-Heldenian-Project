@@ -60,7 +60,7 @@ constexpr int SplashScreen                  = 18491;
 
 } // namespace hb::client::sprite_id
 
-// Equipment sprite index calculation for the new per-item pak system.
+// Equipment sprite index calculation for the per-item sprite folders (sprites/items/<folder>).
 // Each equippable item gets 12 sprites per gender (one per body pose).
 // Male sprites occupy [0, female_base), female sprites occupy [female_base, ...).
 namespace equip_sprite {

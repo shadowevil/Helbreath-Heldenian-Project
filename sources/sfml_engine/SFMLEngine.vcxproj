@@ -44,13 +44,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(HbOutDir)</OutDir>
     <IntDir>$(HbIntDir)</IntDir>
-    <IncludePath>$(HbSourcesDir)dependencies\shared;$(HbSourcesDir)dependencies\shared\entity;$(HbSourcesDir)dependencies\shared\game;$(HbSourcesDir)dependencies\shared\net;$(HbSourcesDir)dependencies\shared\render;$(HbSourcesDir)dependencies\shared\util;$(HbSourcesDir)dependencies\client\includes;$(HbSourcesDir)dependencies\SFML\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(HbSourcesDir)dependencies\shared;$(HbSourcesDir)dependencies\shared\entity;$(HbSourcesDir)dependencies\shared\game;$(HbSourcesDir)dependencies\shared\net;$(HbSourcesDir)dependencies\shared\render;$(HbSourcesDir)dependencies\shared\util;$(HbSourcesDir)dependencies\shared\log;$(HbSourcesDir)dependencies\client\includes;$(HbSourcesDir)dependencies\SFML\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(HbSourcesDir)dependencies\SFML\lib_x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(HbOutDir)</OutDir>
     <IntDir>$(HbIntDir)</IntDir>
-    <IncludePath>$(HbSourcesDir)dependencies\shared;$(HbSourcesDir)dependencies\shared\entity;$(HbSourcesDir)dependencies\shared\game;$(HbSourcesDir)dependencies\shared\net;$(HbSourcesDir)dependencies\shared\render;$(HbSourcesDir)dependencies\shared\util;$(HbSourcesDir)dependencies\client\includes;$(HbSourcesDir)dependencies\SFML\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(HbSourcesDir)dependencies\shared;$(HbSourcesDir)dependencies\shared\entity;$(HbSourcesDir)dependencies\shared\game;$(HbSourcesDir)dependencies\shared\net;$(HbSourcesDir)dependencies\shared\render;$(HbSourcesDir)dependencies\shared\util;$(HbSourcesDir)dependencies\shared\log;$(HbSourcesDir)dependencies\client\includes;$(HbSourcesDir)dependencies\SFML\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(HbSourcesDir)dependencies\SFML\lib_x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -123,6 +123,7 @@
     <ClInclude Include="..\dependencies\shared\render\renderer_factory.h" />
     <ClInclude Include="..\dependencies\shared\render\resolution_config.h" />
     <ClInclude Include="..\dependencies\shared\render\sprite_collection.h" />
+    <ClInclude Include="..\dependencies\shared\render\sprite_folder.h" />
     <ClInclude Include="..\dependencies\shared\render\sprite_loader.h" />
     <ClInclude Include="..\dependencies\shared\render\sprite_types.h" />
     <ClInclude Include="..\dependencies\shared\render\text_lib.h" />
@@ -138,6 +139,7 @@
     <ClCompile Include="sfml_input.cpp" />
     <ClCompile Include="renderer_factory.cpp" />
     <ClCompile Include="..\dependencies\shared\render\sprite_factory.cpp" />
+    <ClCompile Include="..\dependencies\shared\render\sprite_folder.cpp" />
     <ClCompile Include="..\dependencies\shared\render\text_lib.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

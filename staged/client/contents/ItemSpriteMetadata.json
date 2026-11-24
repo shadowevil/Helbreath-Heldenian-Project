@@ -1,17 +1,17 @@
 [
   {
-    "pak_file": "full_helm.pak",
+    "sprite_folder": "full_helm",
     "id": 0,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 53,
       "ground_frame_index": 134,
       "pack_frame_index": 134
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 162,
       "ground_frame_index": 134,
       "pack_frame_index": 134
@@ -19,18 +19,18 @@
     "equip_type": "helm"
   },
   {
-    "pak_file": "helm.pak",
+    "sprite_folder": "helm",
     "id": 1,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 52,
       "ground_frame_index": 133,
       "pack_frame_index": 133
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 161,
       "ground_frame_index": 133,
       "pack_frame_index": 133
@@ -38,18 +38,18 @@
     "equip_type": "helm"
   },
   {
-    "pak_file": "horned_helm.pak",
+    "sprite_folder": "horned_helm",
     "id": 2,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 54,
       "ground_frame_index": 135,
       "pack_frame_index": 135
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 163,
       "ground_frame_index": 135,
       "pack_frame_index": 135
@@ -57,18 +57,18 @@
     "equip_type": "helm"
   },
   {
-    "pak_file": "wings_helm.pak",
+    "sprite_folder": "wings_helm",
     "id": 3,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 55,
       "ground_frame_index": 136,
       "pack_frame_index": 136
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 164,
       "ground_frame_index": 136,
       "pack_frame_index": 136
@@ -76,18 +76,18 @@
     "equip_type": "helm"
   },
   {
-    "pak_file": "wizard_cap.pak",
+    "sprite_folder": "wizard_cap",
     "id": 4,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 56,
       "ground_frame_index": 137,
       "pack_frame_index": 137
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 165,
       "ground_frame_index": 137,
       "pack_frame_index": 137
@@ -95,18 +95,18 @@
     "equip_type": "helm"
   },
   {
-    "pak_file": "wizard_hat.pak",
+    "sprite_folder": "wizard_hat",
     "id": 5,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 57,
       "ground_frame_index": 138,
       "pack_frame_index": 138
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 166,
       "ground_frame_index": 138,
       "pack_frame_index": 138
@@ -114,18 +114,18 @@
     "equip_type": "helm"
   },
   {
-    "pak_file": "elvine_hero_helm.pak",
+    "sprite_folder": "elvine_hero_helm",
     "id": 6,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 58,
       "ground_frame_index": 139,
       "pack_frame_index": 139
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 167,
       "ground_frame_index": 139,
       "pack_frame_index": 139
@@ -133,18 +133,18 @@
     "equip_type": "helm"
   },
   {
-    "pak_file": "aresden_hero_helm.pak",
+    "sprite_folder": "aresden_hero_helm",
     "id": 7,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 59,
       "ground_frame_index": 140,
       "pack_frame_index": 140
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 168,
       "ground_frame_index": 140,
       "pack_frame_index": 140
@@ -152,18 +152,18 @@
     "equip_type": "helm"
   },
   {
-    "pak_file": "elvine_hero_cap.pak",
+    "sprite_folder": "elvine_hero_cap",
     "id": 8,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 60,
       "ground_frame_index": 141,
       "pack_frame_index": 141
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 169,
       "ground_frame_index": 141,
       "pack_frame_index": 141
@@ -171,18 +171,18 @@
     "equip_type": "helm"
   },
   {
-    "pak_file": "aresden_hero_cap.pak",
+    "sprite_folder": "aresden_hero_cap",
     "id": 9,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 61,
       "ground_frame_index": 142,
       "pack_frame_index": 142
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 170,
       "ground_frame_index": 142,
       "pack_frame_index": 142
@@ -190,18 +190,18 @@
     "equip_type": "helm"
   },
   {
-    "pak_file": "leather.pak",
+    "sprite_folder": "leather",
     "id": 10,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 98,
       "ground_frame_index": 343,
       "pack_frame_index": 343
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 211,
       "ground_frame_index": 48,
       "pack_frame_index": 48
@@ -209,18 +209,18 @@
     "equip_type": "armor"
   },
   {
-    "pak_file": "chain_mail.pak",
+    "sprite_folder": "chain_mail",
     "id": 11,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 99,
       "ground_frame_index": 344,
       "pack_frame_index": 344
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 212,
       "ground_frame_index": 49,
       "pack_frame_index": 49
@@ -228,18 +228,18 @@
     "equip_type": "armor"
   },
   {
-    "pak_file": "scale_mail.pak",
+    "sprite_folder": "scale_mail",
     "id": 12,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 100,
       "ground_frame_index": 345,
       "pack_frame_index": 345
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 213,
       "ground_frame_index": 50,
       "pack_frame_index": 50
@@ -247,18 +247,18 @@
     "equip_type": "armor"
   },
   {
-    "pak_file": "plate_mail.pak",
+    "sprite_folder": "plate_mail",
     "id": 13,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 101,
       "ground_frame_index": 346,
       "pack_frame_index": 346
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 214,
       "ground_frame_index": 51,
       "pack_frame_index": 51
@@ -266,11 +266,11 @@
     "equip_type": "armor"
   },
   {
-    "pak_file": "tunic.pak",
+    "sprite_folder": "tunic",
     "id": 14,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 102,
       "ground_frame_index": 347,
       "pack_frame_index": 347
@@ -278,18 +278,18 @@
     "equip_type": "armor"
   },
   {
-    "pak_file": "robe.pak",
+    "sprite_folder": "robe",
     "id": 15,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 103,
       "ground_frame_index": 348,
       "pack_frame_index": 348
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 215,
       "ground_frame_index": 52,
       "pack_frame_index": 52
@@ -297,18 +297,18 @@
     "equip_type": "armor"
   },
   {
-    "pak_file": "elvine_hero_armor.pak",
+    "sprite_folder": "elvine_hero_armor",
     "id": 16,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 105,
       "ground_frame_index": 350,
       "pack_frame_index": 350
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 217,
       "ground_frame_index": 54,
       "pack_frame_index": 54
@@ -316,18 +316,18 @@
     "equip_type": "armor"
   },
   {
-    "pak_file": "aresden_hero_armor.pak",
+    "sprite_folder": "aresden_hero_armor",
     "id": 17,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 106,
       "ground_frame_index": 351,
       "pack_frame_index": 351
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 218,
       "ground_frame_index": 55,
       "pack_frame_index": 55
@@ -335,18 +335,18 @@
     "equip_type": "armor"
   },
   {
-    "pak_file": "elvine_hero_robe.pak",
+    "sprite_folder": "elvine_hero_robe",
     "id": 18,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 107,
       "ground_frame_index": 352,
       "pack_frame_index": 352
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 219,
       "ground_frame_index": 56,
       "pack_frame_index": 56
@@ -354,18 +354,18 @@
     "equip_type": "armor"
   },
   {
-    "pak_file": "aresden_hero_robe.pak",
+    "sprite_folder": "aresden_hero_robe",
     "id": 19,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 108,
       "ground_frame_index": 353,
       "pack_frame_index": 353
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 220,
       "ground_frame_index": 57,
       "pack_frame_index": 57
@@ -373,18 +373,18 @@
     "equip_type": "armor"
   },
   {
-    "pak_file": "shirt.pak",
+    "sprite_folder": "shirt",
     "id": 20,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 88,
       "ground_frame_index": 333,
       "pack_frame_index": 333
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 198,
       "ground_frame_index": 35,
       "pack_frame_index": 35
@@ -392,18 +392,18 @@
     "equip_type": "arm_armor"
   },
   {
-    "pak_file": "hauberk.pak",
+    "sprite_folder": "hauberk",
     "id": 21,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 89,
       "ground_frame_index": 334,
       "pack_frame_index": 334
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 199,
       "ground_frame_index": 36,
       "pack_frame_index": 36
@@ -411,18 +411,18 @@
     "equip_type": "arm_armor"
   },
   {
-    "pak_file": "elvine_hero_hauberk.pak",
+    "sprite_folder": "elvine_hero_hauberk",
     "id": 22,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 90,
       "ground_frame_index": 335,
       "pack_frame_index": 335
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 200,
       "ground_frame_index": 37,
       "pack_frame_index": 37
@@ -430,18 +430,18 @@
     "equip_type": "arm_armor"
   },
   {
-    "pak_file": "aresden_hero_hauberk.pak",
+    "sprite_folder": "aresden_hero_hauberk",
     "id": 23,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 91,
       "ground_frame_index": 336,
       "pack_frame_index": 336
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 201,
       "ground_frame_index": 38,
       "pack_frame_index": 38
@@ -449,18 +449,18 @@
     "equip_type": "arm_armor"
   },
   {
-    "pak_file": "trousers.pak",
+    "sprite_folder": "trousers",
     "id": 24,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 92,
       "ground_frame_index": 337,
       "pack_frame_index": 337
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 203,
       "ground_frame_index": 40,
       "pack_frame_index": 40
@@ -468,18 +468,18 @@
     "equip_type": "pants"
   },
   {
-    "pak_file": "knee_trousers.pak",
+    "sprite_folder": "knee_trousers",
     "id": 25,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 93,
       "ground_frame_index": 338,
       "pack_frame_index": 338
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 204,
       "ground_frame_index": 41,
       "pack_frame_index": 41
@@ -487,18 +487,18 @@
     "equip_type": "pants"
   },
   {
-    "pak_file": "chain_hose.pak",
+    "sprite_folder": "chain_hose",
     "id": 26,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 94,
       "ground_frame_index": 339,
       "pack_frame_index": 339
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 205,
       "ground_frame_index": 42,
       "pack_frame_index": 42
@@ -506,18 +506,18 @@
     "equip_type": "pants"
   },
   {
-    "pak_file": "plate_leggings.pak",
+    "sprite_folder": "plate_leggings",
     "id": 27,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 95,
       "ground_frame_index": 340,
       "pack_frame_index": 340
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 206,
       "ground_frame_index": 43,
       "pack_frame_index": 43
@@ -525,18 +525,18 @@
     "equip_type": "pants"
   },
   {
-    "pak_file": "elvine_hero_leggings.pak",
+    "sprite_folder": "elvine_hero_leggings",
     "id": 28,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 96,
       "ground_frame_index": 341,
       "pack_frame_index": 341
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 207,
       "ground_frame_index": 44,
       "pack_frame_index": 44
@@ -544,18 +544,18 @@
     "equip_type": "pants"
   },
   {
-    "pak_file": "aresden_hero_leggings.pak",
+    "sprite_folder": "aresden_hero_leggings",
     "id": 29,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 97,
       "ground_frame_index": 342,
       "pack_frame_index": 342
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 208,
       "ground_frame_index": 45,
       "pack_frame_index": 45
@@ -563,18 +563,18 @@
     "equip_type": "pants"
   },
   {
-    "pak_file": "shoes.pak",
+    "sprite_folder": "shoes",
     "id": 30,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 86,
       "ground_frame_index": 175,
       "pack_frame_index": 175
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 187,
       "ground_frame_index": 175,
       "pack_frame_index": 175
@@ -582,18 +582,18 @@
     "equip_type": "boots"
   },
   {
-    "pak_file": "long_boots.pak",
+    "sprite_folder": "long_boots",
     "id": 31,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 87,
       "ground_frame_index": 176,
       "pack_frame_index": 176
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 188,
       "ground_frame_index": 176,
       "pack_frame_index": 176
@@ -601,18 +601,18 @@
     "equip_type": "boots"
   },
   {
-    "pak_file": "wood_shield.pak",
+    "sprite_folder": "wood_shield",
     "id": 32,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 68,
       "ground_frame_index": 157,
       "pack_frame_index": 157
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 177,
       "ground_frame_index": 157,
       "pack_frame_index": 157
@@ -620,18 +620,18 @@
     "equip_type": "shield"
   },
   {
-    "pak_file": "leather_shield.pak",
+    "sprite_folder": "leather_shield",
     "id": 33,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 69,
       "ground_frame_index": 158,
       "pack_frame_index": 158
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 178,
       "ground_frame_index": 158,
       "pack_frame_index": 158
@@ -639,18 +639,18 @@
     "equip_type": "shield"
   },
   {
-    "pak_file": "targe_shield.pak",
+    "sprite_folder": "targe_shield",
     "id": 34,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 70,
       "ground_frame_index": 159,
       "pack_frame_index": 159
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 179,
       "ground_frame_index": 159,
       "pack_frame_index": 159
@@ -658,18 +658,18 @@
     "equip_type": "shield"
   },
   {
-    "pak_file": "scrutum_shield.pak",
+    "sprite_folder": "scrutum_shield",
     "id": 35,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 71,
       "ground_frame_index": 160,
       "pack_frame_index": 160
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 180,
       "ground_frame_index": 160,
       "pack_frame_index": 160
@@ -677,18 +677,18 @@
     "equip_type": "shield"
   },
   {
-    "pak_file": "blonde_shield.pak",
+    "sprite_folder": "blonde_shield",
     "id": 36,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 72,
       "ground_frame_index": 161,
       "pack_frame_index": 161
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 181,
       "ground_frame_index": 161,
       "pack_frame_index": 161
@@ -696,18 +696,18 @@
     "equip_type": "shield"
   },
   {
-    "pak_file": "iron_shield.pak",
+    "sprite_folder": "iron_shield",
     "id": 37,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 73,
       "ground_frame_index": 162,
       "pack_frame_index": 162
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 182,
       "ground_frame_index": 162,
       "pack_frame_index": 162
@@ -715,18 +715,18 @@
     "equip_type": "shield"
   },
   {
-    "pak_file": "lagi_shield.pak",
+    "sprite_folder": "lagi_shield",
     "id": 38,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 74,
       "ground_frame_index": 163,
       "pack_frame_index": 163
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 183,
       "ground_frame_index": 163,
       "pack_frame_index": 163
@@ -734,18 +734,18 @@
     "equip_type": "shield"
   },
   {
-    "pak_file": "kite_shield.pak",
+    "sprite_folder": "kite_shield",
     "id": 39,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 75,
       "ground_frame_index": 164,
       "pack_frame_index": 164
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 184,
       "ground_frame_index": 164,
       "pack_frame_index": 164
@@ -753,18 +753,18 @@
     "equip_type": "shield"
   },
   {
-    "pak_file": "tower_shield.pak",
+    "sprite_folder": "tower_shield",
     "id": 40,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 76,
       "ground_frame_index": 165,
       "pack_frame_index": 165
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 185,
       "ground_frame_index": 165,
       "pack_frame_index": 165
@@ -772,18 +772,18 @@
     "equip_type": "shield"
   },
   {
-    "pak_file": "dagger.pak",
+    "sprite_folder": "dagger",
     "id": 41,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 0,
       "ground_frame_index": 0,
       "pack_frame_index": 0
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 109,
       "ground_frame_index": 0,
       "pack_frame_index": 0
@@ -791,18 +791,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "short_sword.pak",
+    "sprite_folder": "short_sword",
     "id": 42,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 1,
       "ground_frame_index": 1,
       "pack_frame_index": 1
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 110,
       "ground_frame_index": 1,
       "pack_frame_index": 1
@@ -810,18 +810,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "long_sword.pak",
+    "sprite_folder": "long_sword",
     "id": 43,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 2,
       "ground_frame_index": 2,
       "pack_frame_index": 2
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 111,
       "ground_frame_index": 2,
       "pack_frame_index": 2
@@ -829,18 +829,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "sabre.pak",
+    "sprite_folder": "sabre",
     "id": 44,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 3,
       "ground_frame_index": 3,
       "pack_frame_index": 3
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 112,
       "ground_frame_index": 3,
       "pack_frame_index": 3
@@ -848,18 +848,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "excalibur.pak",
+    "sprite_folder": "excalibur",
     "id": 45,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 19,
       "ground_frame_index": 19,
       "pack_frame_index": 19
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 128,
       "ground_frame_index": 19,
       "pack_frame_index": 19
@@ -867,18 +867,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "scimitar.pak",
+    "sprite_folder": "scimitar",
     "id": 46,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 5,
       "ground_frame_index": 5,
       "pack_frame_index": 5
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 114,
       "ground_frame_index": 5,
       "pack_frame_index": 5
@@ -886,18 +886,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "esterk.pak",
+    "sprite_folder": "esterk",
     "id": 47,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 6,
       "ground_frame_index": 6,
       "pack_frame_index": 6
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 115,
       "ground_frame_index": 6,
       "pack_frame_index": 6
@@ -905,18 +905,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "kloness_esterk.pak",
+    "sprite_folder": "kloness_esterk",
     "id": 48,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 27,
       "ground_frame_index": 27,
       "pack_frame_index": 27
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 136,
       "ground_frame_index": 27,
       "pack_frame_index": 27
@@ -924,18 +924,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "double_axe.pak",
+    "sprite_folder": "double_axe",
     "id": 49,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 28,
       "ground_frame_index": 59,
       "pack_frame_index": 59
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 137,
       "ground_frame_index": 59,
       "pack_frame_index": 59
@@ -943,18 +943,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "war_axe.pak",
+    "sprite_folder": "war_axe",
     "id": 50,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 29,
       "ground_frame_index": 60,
       "pack_frame_index": 60
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 138,
       "ground_frame_index": 60,
       "pack_frame_index": 60
@@ -962,18 +962,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "light_axe.pak",
+    "sprite_folder": "light_axe",
     "id": 51,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 30,
       "ground_frame_index": 61,
       "pack_frame_index": 61
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 139,
       "ground_frame_index": 61,
       "pack_frame_index": 61
@@ -981,18 +981,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "saxon_axe.pak",
+    "sprite_folder": "saxon_axe",
     "id": 52,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 31,
       "ground_frame_index": 62,
       "pack_frame_index": 62
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 140,
       "ground_frame_index": 62,
       "pack_frame_index": 62
@@ -1000,18 +1000,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "golden_axe.pak",
+    "sprite_folder": "golden_axe",
     "id": 53,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 32,
       "ground_frame_index": 63,
       "pack_frame_index": 63
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 141,
       "ground_frame_index": 63,
       "pack_frame_index": 63
@@ -1019,18 +1019,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "pick_axe.pak",
+    "sprite_folder": "pick_axe",
     "id": 54,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 33,
       "ground_frame_index": 64,
       "pack_frame_index": 64
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 142,
       "ground_frame_index": 64,
       "pack_frame_index": 64
@@ -1038,18 +1038,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "hoe.pak",
+    "sprite_folder": "hoe",
     "id": 55,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 37,
       "ground_frame_index": 68,
       "pack_frame_index": 68
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 146,
       "ground_frame_index": 68,
       "pack_frame_index": 68
@@ -1057,18 +1057,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "berserk_magic_wand_ms.20.pak",
+    "sprite_folder": "berserk_magic_wand_ms.20",
     "id": 56,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 44,
       "ground_frame_index": 125,
       "pack_frame_index": 125
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 153,
       "ground_frame_index": 125,
       "pack_frame_index": 125
@@ -1076,18 +1076,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "magic_wand_ms30_llf.pak",
+    "sprite_folder": "magic_wand_ms30_llf",
     "id": 57,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 40,
       "ground_frame_index": 121,
       "pack_frame_index": 121
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 149,
       "ground_frame_index": 121,
       "pack_frame_index": 121
@@ -1095,18 +1095,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "magic_wand_ms20.pak",
+    "sprite_folder": "magic_wand_ms20",
     "id": 58,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 41,
       "ground_frame_index": 122,
       "pack_frame_index": 122
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 150,
       "ground_frame_index": 122,
       "pack_frame_index": 122
@@ -1114,18 +1114,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "dark_mage_templar.pak",
+    "sprite_folder": "dark_mage_templar",
     "id": 59,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 42,
       "ground_frame_index": 123,
       "pack_frame_index": 123
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 151,
       "ground_frame_index": 123,
       "pack_frame_index": 123
@@ -1133,18 +1133,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "resurrection_magic_wand_ms.20.pak",
+    "sprite_folder": "resurrection_magic_wand_ms.20",
     "id": 60,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 43,
       "ground_frame_index": 124,
       "pack_frame_index": 124
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 152,
       "ground_frame_index": 124,
       "pack_frame_index": 124
@@ -1152,18 +1152,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "kloness_magic_wand_ms.20.pak",
+    "sprite_folder": "kloness_magic_wand_ms.20",
     "id": 61,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 45,
       "ground_frame_index": 126,
       "pack_frame_index": 126
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 154,
       "ground_frame_index": 126,
       "pack_frame_index": 126
@@ -1171,18 +1171,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "broad_sword.pak",
+    "sprite_folder": "broad_sword",
     "id": 62,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 7,
       "ground_frame_index": 7,
       "pack_frame_index": 7
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 116,
       "ground_frame_index": 7,
       "pack_frame_index": 7
@@ -1190,18 +1190,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "bastad_sword.pak",
+    "sprite_folder": "bastad_sword",
     "id": 63,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 8,
       "ground_frame_index": 8,
       "pack_frame_index": 8
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 117,
       "ground_frame_index": 8,
       "pack_frame_index": 8
@@ -1209,18 +1209,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "claymore.pak",
+    "sprite_folder": "claymore",
     "id": 64,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 9,
       "ground_frame_index": 9,
       "pack_frame_index": 9
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 118,
       "ground_frame_index": 9,
       "pack_frame_index": 9
@@ -1228,18 +1228,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "great_sword.pak",
+    "sprite_folder": "great_sword",
     "id": 65,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 10,
       "ground_frame_index": 10,
       "pack_frame_index": 10
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 119,
       "ground_frame_index": 10,
       "pack_frame_index": 10
@@ -1247,18 +1247,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "flameberge.pak",
+    "sprite_folder": "flameberge",
     "id": 66,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 11,
       "ground_frame_index": 11,
       "pack_frame_index": 11
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 120,
       "ground_frame_index": 11,
       "pack_frame_index": 11
@@ -1266,18 +1266,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "giant_sword.pak",
+    "sprite_folder": "giant_sword",
     "id": 67,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 17,
       "ground_frame_index": 17,
       "pack_frame_index": 17
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 126,
       "ground_frame_index": 17,
       "pack_frame_index": 17
@@ -1285,18 +1285,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "dark_knight_templar.pak",
+    "sprite_folder": "dark_knight_templar",
     "id": 68,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 20,
       "ground_frame_index": 20,
       "pack_frame_index": 20
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 129,
       "ground_frame_index": 20,
       "pack_frame_index": 20
@@ -1304,18 +1304,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "storm_bringer.pak",
+    "sprite_folder": "storm_bringer",
     "id": 69,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 26,
       "ground_frame_index": 26,
       "pack_frame_index": 26
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 135,
       "ground_frame_index": 26,
       "pack_frame_index": 26
@@ -1323,18 +1323,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "dark_executor.pak",
+    "sprite_folder": "dark_executor",
     "id": 70,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 24,
       "ground_frame_index": 24,
       "pack_frame_index": 24
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 133,
       "ground_frame_index": 24,
       "pack_frame_index": 24
@@ -1342,18 +1342,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "kloness_blade.pak",
+    "sprite_folder": "kloness_blade",
     "id": 71,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 23,
       "ground_frame_index": 23,
       "pack_frame_index": 23
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 132,
       "ground_frame_index": 23,
       "pack_frame_index": 23
@@ -1361,18 +1361,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "the_devastator.pak",
+    "sprite_folder": "the_devastator",
     "id": 72,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 21,
       "ground_frame_index": 21,
       "pack_frame_index": 21
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 130,
       "ground_frame_index": 21,
       "pack_frame_index": 21
@@ -1380,18 +1380,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "battle_axe.pak",
+    "sprite_folder": "battle_axe",
     "id": 73,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 34,
       "ground_frame_index": 65,
       "pack_frame_index": 65
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 143,
       "ground_frame_index": 65,
       "pack_frame_index": 65
@@ -1399,18 +1399,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "kloness_axe.pak",
+    "sprite_folder": "kloness_axe",
     "id": 74,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 39,
       "ground_frame_index": 70,
       "pack_frame_index": 70
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 148,
       "ground_frame_index": 70,
       "pack_frame_index": 70
@@ -1418,18 +1418,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "lighting_blade.pak",
+    "sprite_folder": "lighting_blade",
     "id": 75,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 22,
       "ground_frame_index": 22,
       "pack_frame_index": 22
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 131,
       "ground_frame_index": 22,
       "pack_frame_index": 22
@@ -1437,18 +1437,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "hammer.pak",
+    "sprite_folder": "hammer",
     "id": 76,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 35,
       "ground_frame_index": 66,
       "pack_frame_index": 66
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 144,
       "ground_frame_index": 66,
       "pack_frame_index": 66
@@ -1456,18 +1456,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "battle_hammer.pak",
+    "sprite_folder": "battle_hammer",
     "id": 77,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 36,
       "ground_frame_index": 67,
       "pack_frame_index": 67
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 145,
       "ground_frame_index": 67,
       "pack_frame_index": 67
@@ -1475,18 +1475,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "barbarian_hammer.pak",
+    "sprite_folder": "barbarian_hammer",
     "id": 78,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 38,
       "ground_frame_index": 69,
       "pack_frame_index": 69
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 147,
       "ground_frame_index": 69,
       "pack_frame_index": 69
@@ -1494,18 +1494,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "black_shadow_sword.pak",
+    "sprite_folder": "black_shadow_sword",
     "id": 79,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 25,
       "ground_frame_index": 25,
       "pack_frame_index": 25
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 134,
       "ground_frame_index": 25,
       "pack_frame_index": 25
@@ -1513,18 +1513,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "short_bow.pak",
+    "sprite_folder": "short_bow",
     "id": 80,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 62,
       "ground_frame_index": 28,
       "pack_frame_index": 28
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 171,
       "ground_frame_index": 28,
       "pack_frame_index": 28
@@ -1532,18 +1532,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "long_bow.pak",
+    "sprite_folder": "long_bow",
     "id": 81,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 63,
       "ground_frame_index": 29,
       "pack_frame_index": 29
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 172,
       "ground_frame_index": 29,
       "pack_frame_index": 29
@@ -1551,18 +1551,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "direction_bow.pak",
+    "sprite_folder": "direction_bow",
     "id": 82,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 66,
       "ground_frame_index": 32,
       "pack_frame_index": 32
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 175,
       "ground_frame_index": 32,
       "pack_frame_index": 32
@@ -1570,18 +1570,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "fire_bow.pak",
+    "sprite_folder": "fire_bow",
     "id": 83,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 67,
       "ground_frame_index": 33,
       "pack_frame_index": 33
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 176,
       "ground_frame_index": 33,
       "pack_frame_index": 33
@@ -1589,18 +1589,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "aresden_heros_cape.pak",
+    "sprite_folder": "aresden_heros_cape",
     "id": 84,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 46,
       "ground_frame_index": 127,
       "pack_frame_index": 127
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 155,
       "ground_frame_index": 127,
       "pack_frame_index": 127
@@ -1608,18 +1608,18 @@
     "equip_type": "mantle"
   },
   {
-    "pak_file": "elvine_heros_cape.pak",
+    "sprite_folder": "elvine_heros_cape",
     "id": 85,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 47,
       "ground_frame_index": 128,
       "pack_frame_index": 128
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 156,
       "ground_frame_index": 128,
       "pack_frame_index": 128
@@ -1627,18 +1627,18 @@
     "equip_type": "mantle"
   },
   {
-    "pak_file": "cape.pak",
+    "sprite_folder": "cape",
     "id": 86,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 48,
       "ground_frame_index": 129,
       "pack_frame_index": 129
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 157,
       "ground_frame_index": 129,
       "pack_frame_index": 129
@@ -1646,18 +1646,18 @@
     "equip_type": "mantle"
   },
   {
-    "pak_file": "aresden_heros_cape_+1.pak",
+    "sprite_folder": "aresden_heros_cape_+1",
     "id": 87,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 49,
       "ground_frame_index": 130,
       "pack_frame_index": 130
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 158,
       "ground_frame_index": 130,
       "pack_frame_index": 130
@@ -1665,18 +1665,18 @@
     "equip_type": "mantle"
   },
   {
-    "pak_file": "elvine_heros_cape_+1.pak",
+    "sprite_folder": "elvine_heros_cape_+1",
     "id": 88,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 50,
       "ground_frame_index": 131,
       "pack_frame_index": 131
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 159,
       "ground_frame_index": 131,
       "pack_frame_index": 131
@@ -1684,18 +1684,18 @@
     "equip_type": "mantle"
   },
   {
-    "pak_file": "combatant_cape.pak",
+    "sprite_folder": "combatant_cape",
     "id": 89,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 51,
       "ground_frame_index": 132,
       "pack_frame_index": 132
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 160,
       "ground_frame_index": 132,
       "pack_frame_index": 132
@@ -1703,18 +1703,18 @@
     "equip_type": "mantle"
   },
   {
-    "pak_file": "santa_costume.pak",
+    "sprite_folder": "santa_costume",
     "id": 90,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 104,
       "ground_frame_index": 349,
       "pack_frame_index": 349
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 216,
       "ground_frame_index": 53,
       "pack_frame_index": 53
@@ -1722,11 +1722,11 @@
     "equip_type": "armor"
   },
   {
-    "pak_file": "skirt.pak",
+    "sprite_folder": "skirt",
     "id": 91,
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 202,
       "ground_frame_index": 39,
       "pack_frame_index": 39
@@ -1734,11 +1734,11 @@
     "equip_type": "pants"
   },
   {
-    "pak_file": "dress.pak",
+    "sprite_folder": "dress",
     "id": 92,
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 197,
       "ground_frame_index": 34,
       "pack_frame_index": 34
@@ -1746,11 +1746,11 @@
     "equip_type": "pants"
   },
   {
-    "pak_file": "bodice1.pak",
+    "sprite_folder": "bodice1",
     "id": 93,
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 209,
       "ground_frame_index": 46,
       "pack_frame_index": 46
@@ -1758,11 +1758,11 @@
     "equip_type": "armor"
   },
   {
-    "pak_file": "bodice2.pak",
+    "sprite_folder": "bodice2",
     "id": 94,
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 210,
       "ground_frame_index": 47,
       "pack_frame_index": 47
@@ -1770,1152 +1770,1152 @@
     "equip_type": "armor"
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 95,
     "inventory_frame_index": 177,
     "ground_frame_index": 177
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 96,
     "inventory_frame_index": 178,
     "ground_frame_index": 178
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 97,
     "inventory_frame_index": 179,
     "ground_frame_index": 179
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 98,
     "inventory_frame_index": 180,
     "ground_frame_index": 180
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 99,
     "inventory_frame_index": 181,
     "ground_frame_index": 181
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 100,
     "inventory_frame_index": 182,
     "ground_frame_index": 182
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 101,
     "inventory_frame_index": 183,
     "ground_frame_index": 183
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 102,
     "inventory_frame_index": 184,
     "ground_frame_index": 184
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 103,
     "inventory_frame_index": 185,
     "ground_frame_index": 185
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 104,
     "inventory_frame_index": 186,
     "ground_frame_index": 186
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 105,
     "inventory_frame_index": 187,
     "ground_frame_index": 187
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 106,
     "inventory_frame_index": 188,
     "ground_frame_index": 188
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 107,
     "inventory_frame_index": 189,
     "ground_frame_index": 189
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 108,
     "inventory_frame_index": 191,
     "ground_frame_index": 191
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 109,
     "inventory_frame_index": 192,
     "ground_frame_index": 192
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 110,
     "inventory_frame_index": 193,
     "ground_frame_index": 193
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 111,
     "inventory_frame_index": 194,
     "ground_frame_index": 194
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 112,
     "inventory_frame_index": 195,
     "ground_frame_index": 195
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 113,
     "inventory_frame_index": 196,
     "ground_frame_index": 196
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 114,
     "inventory_frame_index": 197,
     "ground_frame_index": 197
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 115,
     "inventory_frame_index": 199,
     "ground_frame_index": 199
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 116,
     "inventory_frame_index": 198,
     "ground_frame_index": 198
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 117,
     "inventory_frame_index": 200,
     "ground_frame_index": 200
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 118,
     "inventory_frame_index": 201,
     "ground_frame_index": 201
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 119,
     "inventory_frame_index": 202,
     "ground_frame_index": 202
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 120,
     "inventory_frame_index": 203,
     "ground_frame_index": 203
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 121,
     "inventory_frame_index": 204,
     "ground_frame_index": 204
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 122,
     "inventory_frame_index": 205,
     "ground_frame_index": 205
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 123,
     "inventory_frame_index": 206,
     "ground_frame_index": 206
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 124,
     "inventory_frame_index": 207,
     "ground_frame_index": 207
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 125,
     "inventory_frame_index": 208,
     "ground_frame_index": 208
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 126,
     "inventory_frame_index": 209,
     "ground_frame_index": 209
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 127,
     "inventory_frame_index": 210,
     "ground_frame_index": 210
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 128,
     "inventory_frame_index": 211,
     "ground_frame_index": 211
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 129,
     "inventory_frame_index": 212,
     "ground_frame_index": 212
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 130,
     "inventory_frame_index": 213,
     "ground_frame_index": 213
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 131,
     "inventory_frame_index": 214,
     "ground_frame_index": 214
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 132,
     "inventory_frame_index": 215,
     "ground_frame_index": 215
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 133,
     "inventory_frame_index": 216,
     "ground_frame_index": 216
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 134,
     "inventory_frame_index": 217,
     "ground_frame_index": 217
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 135,
     "inventory_frame_index": 218,
     "ground_frame_index": 218
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 136,
     "inventory_frame_index": 219,
     "ground_frame_index": 219
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 137,
     "inventory_frame_index": 220,
     "ground_frame_index": 220
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 138,
     "inventory_frame_index": 221,
     "ground_frame_index": 221
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 139,
     "inventory_frame_index": 222,
     "ground_frame_index": 222
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 140,
     "inventory_frame_index": 223,
     "ground_frame_index": 223
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 141,
     "inventory_frame_index": 224,
     "ground_frame_index": 224
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 142,
     "inventory_frame_index": 225,
     "ground_frame_index": 225
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 143,
     "inventory_frame_index": 226,
     "ground_frame_index": 226
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 144,
     "inventory_frame_index": 227,
     "ground_frame_index": 227
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 145,
     "inventory_frame_index": 228,
     "ground_frame_index": 228
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 146,
     "inventory_frame_index": 229,
     "ground_frame_index": 229
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 147,
     "inventory_frame_index": 230,
     "ground_frame_index": 230
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 148,
     "inventory_frame_index": 231,
     "ground_frame_index": 231
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 149,
     "inventory_frame_index": 232,
     "ground_frame_index": 232
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 150,
     "inventory_frame_index": 233,
     "ground_frame_index": 233
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 151,
     "inventory_frame_index": 234,
     "ground_frame_index": 234
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 152,
     "inventory_frame_index": 251,
     "ground_frame_index": 251
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 153,
     "inventory_frame_index": 252,
     "ground_frame_index": 252
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 154,
     "inventory_frame_index": 253,
     "ground_frame_index": 253
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 155,
     "inventory_frame_index": 254,
     "ground_frame_index": 254
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 156,
     "inventory_frame_index": 255,
     "ground_frame_index": 255
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 157,
     "inventory_frame_index": 256,
     "ground_frame_index": 256
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 158,
     "inventory_frame_index": 257,
     "ground_frame_index": 257
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 159,
     "inventory_frame_index": 258,
     "ground_frame_index": 258
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 160,
     "inventory_frame_index": 259,
     "ground_frame_index": 259
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 161,
     "inventory_frame_index": 260,
     "ground_frame_index": 260
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 162,
     "inventory_frame_index": 261,
     "ground_frame_index": 261
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 163,
     "inventory_frame_index": 262,
     "ground_frame_index": 262
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 164,
     "inventory_frame_index": 263,
     "ground_frame_index": 263
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 165,
     "inventory_frame_index": 264,
     "ground_frame_index": 264
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 166,
     "inventory_frame_index": 265,
     "ground_frame_index": 265
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 167,
     "inventory_frame_index": 266,
     "ground_frame_index": 266
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 168,
     "inventory_frame_index": 268,
     "ground_frame_index": 268
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 169,
     "inventory_frame_index": 269,
     "ground_frame_index": 269
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 170,
     "inventory_frame_index": 270,
     "ground_frame_index": 270
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 171,
     "inventory_frame_index": 271,
     "ground_frame_index": 271
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 172,
     "inventory_frame_index": 272,
     "ground_frame_index": 272
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 173,
     "inventory_frame_index": 273,
     "ground_frame_index": 273
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 174,
     "inventory_frame_index": 274,
     "ground_frame_index": 274
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 175,
     "inventory_frame_index": 275,
     "ground_frame_index": 275
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 176,
     "inventory_frame_index": 276,
     "ground_frame_index": 276
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 177,
     "inventory_frame_index": 277,
     "ground_frame_index": 277
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 178,
     "inventory_frame_index": 278,
     "ground_frame_index": 278
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 179,
     "inventory_frame_index": 279,
     "ground_frame_index": 279
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 180,
     "inventory_frame_index": 280,
     "ground_frame_index": 280
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 181,
     "inventory_frame_index": 281,
     "ground_frame_index": 281
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 182,
     "inventory_frame_index": 282,
     "ground_frame_index": 282
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 183,
     "inventory_frame_index": 283,
     "ground_frame_index": 283
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 184,
     "inventory_frame_index": 284,
     "ground_frame_index": 284
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 185,
     "inventory_frame_index": 290,
     "ground_frame_index": 290
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 186,
     "inventory_frame_index": 291,
     "ground_frame_index": 291
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 187,
     "inventory_frame_index": 292,
     "ground_frame_index": 292
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 188,
     "inventory_frame_index": 293,
     "ground_frame_index": 293
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 189,
     "inventory_frame_index": 294,
     "ground_frame_index": 294
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 190,
     "inventory_frame_index": 295,
     "ground_frame_index": 295
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 191,
     "inventory_frame_index": 296,
     "ground_frame_index": 296
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 192,
     "inventory_frame_index": 297,
     "ground_frame_index": 297
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 193,
     "inventory_frame_index": 298,
     "ground_frame_index": 298
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 194,
     "inventory_frame_index": 299,
     "ground_frame_index": 299
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 195,
     "inventory_frame_index": 300,
     "ground_frame_index": 300
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 196,
     "inventory_frame_index": 301,
     "ground_frame_index": 301
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 197,
     "inventory_frame_index": 302,
     "ground_frame_index": 302
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 198,
     "inventory_frame_index": 303,
     "ground_frame_index": 303
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 199,
     "inventory_frame_index": 304,
     "ground_frame_index": 304
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 200,
     "inventory_frame_index": 305,
     "ground_frame_index": 305
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 201,
     "inventory_frame_index": 306,
     "ground_frame_index": 306
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 202,
     "inventory_frame_index": 307,
     "ground_frame_index": 307
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 203,
     "inventory_frame_index": 308,
     "ground_frame_index": 308
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 204,
     "inventory_frame_index": 309,
     "ground_frame_index": 309
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 205,
     "inventory_frame_index": 310,
     "ground_frame_index": 310
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 206,
     "inventory_frame_index": 311,
     "ground_frame_index": 311
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 207,
     "inventory_frame_index": 312,
     "ground_frame_index": 312
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 208,
     "inventory_frame_index": 313,
     "ground_frame_index": 313
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 209,
     "inventory_frame_index": 314,
     "ground_frame_index": 314
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 210,
     "inventory_frame_index": 315,
     "ground_frame_index": 315
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 211,
     "inventory_frame_index": 316,
     "ground_frame_index": 316
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 212,
     "inventory_frame_index": 317,
     "ground_frame_index": 317
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 213,
     "inventory_frame_index": 318,
     "ground_frame_index": 318
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 214,
     "inventory_frame_index": 319,
     "ground_frame_index": 319
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 215,
     "inventory_frame_index": 320,
     "ground_frame_index": 320
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 216,
     "inventory_frame_index": 321,
     "ground_frame_index": 321
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 217,
     "inventory_frame_index": 322,
     "ground_frame_index": 322
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 218,
     "inventory_frame_index": 323,
     "ground_frame_index": 323
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 219,
     "inventory_frame_index": 324,
     "ground_frame_index": 324
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 220,
     "inventory_frame_index": 325,
     "ground_frame_index": 325
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 221,
     "inventory_frame_index": 326,
     "ground_frame_index": 326
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 222,
     "inventory_frame_index": 327,
     "ground_frame_index": 327
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 223,
     "inventory_frame_index": 328,
     "ground_frame_index": 328
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 224,
     "inventory_frame_index": 329,
     "ground_frame_index": 329
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 225,
     "inventory_frame_index": 330,
     "ground_frame_index": 330
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 226,
     "inventory_frame_index": 331,
     "ground_frame_index": 331
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 227,
     "inventory_frame_index": 332,
     "ground_frame_index": 332
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 228,
     "inventory_frame_index": 58,
     "ground_frame_index": 58
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 229,
     "inventory_frame_index": 87,
     "ground_frame_index": 87
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 230,
     "inventory_frame_index": 88,
     "ground_frame_index": 88
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 231,
     "inventory_frame_index": 89,
     "ground_frame_index": 89
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 232,
     "inventory_frame_index": 90,
     "ground_frame_index": 90
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 233,
     "inventory_frame_index": 105,
     "ground_frame_index": 105
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 234,
     "inventory_frame_index": 108,
     "ground_frame_index": 108
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 235,
     "inventory_frame_index": 109,
     "ground_frame_index": 109
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 236,
     "inventory_frame_index": 110,
     "ground_frame_index": 110
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 237,
     "inventory_frame_index": 111,
     "ground_frame_index": 111
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 238,
     "inventory_frame_index": 112,
     "ground_frame_index": 112
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 239,
     "inventory_frame_index": 143,
     "ground_frame_index": 143
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 240,
     "inventory_frame_index": 144,
     "ground_frame_index": 144
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 241,
     "inventory_frame_index": 145,
     "ground_frame_index": 145
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 242,
     "inventory_frame_index": 146,
     "ground_frame_index": 146
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 243,
     "inventory_frame_index": 147,
     "ground_frame_index": 147
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 244,
     "inventory_frame_index": 148,
     "ground_frame_index": 148
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 245,
     "inventory_frame_index": 119,
     "ground_frame_index": 119
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 246,
     "inventory_frame_index": 85,
     "ground_frame_index": 85
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 247,
     "inventory_frame_index": 154,
     "ground_frame_index": 154
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 248,
     "inventory_frame_index": 76,
     "ground_frame_index": 76
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 249,
     "inventory_frame_index": 78,
     "ground_frame_index": 78
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 250,
     "inventory_frame_index": 77,
     "ground_frame_index": 77
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 251,
     "inventory_frame_index": 79,
     "ground_frame_index": 79
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 252,
     "inventory_frame_index": 80,
     "ground_frame_index": 80
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 253,
     "inventory_frame_index": 99,
     "ground_frame_index": 99
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 254,
     "inventory_frame_index": 100,
     "ground_frame_index": 100
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 255,
     "inventory_frame_index": 101,
     "ground_frame_index": 101
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 256,
     "inventory_frame_index": 102,
     "ground_frame_index": 102
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 257,
     "inventory_frame_index": 103,
     "ground_frame_index": 103
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 258,
     "inventory_frame_index": 104,
     "ground_frame_index": 104
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 259,
     "inventory_frame_index": 106,
     "ground_frame_index": 106
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 260,
     "inventory_frame_index": 107,
     "ground_frame_index": 107
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 261,
     "inventory_frame_index": 113,
     "ground_frame_index": 113
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 262,
     "inventory_frame_index": 114,
     "ground_frame_index": 114
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 263,
     "inventory_frame_index": 117,
     "ground_frame_index": 117
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 264,
     "inventory_frame_index": 120,
     "ground_frame_index": 120
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 265,
     "inventory_frame_index": 118,
     "ground_frame_index": 118
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 266,
     "inventory_frame_index": 75,
     "ground_frame_index": 75
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 267,
     "inventory_frame_index": 86,
     "ground_frame_index": 86
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 268,
     "inventory_frame_index": 84,
     "ground_frame_index": 84
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 269,
     "inventory_frame_index": 81,
     "ground_frame_index": 81
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 270,
     "inventory_frame_index": 82,
     "ground_frame_index": 82
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 271,
     "inventory_frame_index": 83,
     "ground_frame_index": 83
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 272,
     "inventory_frame_index": 91,
     "ground_frame_index": 91
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 273,
     "inventory_frame_index": 92,
     "ground_frame_index": 92
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 274,
     "inventory_frame_index": 95,
     "ground_frame_index": 95
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 275,
     "inventory_frame_index": 94,
     "ground_frame_index": 94
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 276,
     "inventory_frame_index": 96,
     "ground_frame_index": 96
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 277,
     "inventory_frame_index": 97,
     "ground_frame_index": 97
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 278,
     "inventory_frame_index": 98,
     "ground_frame_index": 98
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 279,
     "inventory_frame_index": 115,
     "ground_frame_index": 115
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 280,
     "inventory_frame_index": 153,
     "ground_frame_index": 153
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 281,
     "inventory_frame_index": 155,
     "ground_frame_index": 155
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 282,
     "inventory_frame_index": 156,
     "ground_frame_index": 156
   },
   {
-    "pak_file": null,
+    "sprite_folder": null,
     "id": 283,
     "inventory_frame_index": 116,
     "ground_frame_index": 116
   },
   {
-    "pak_file": "falchion.pak",
+    "sprite_folder": "falchion",
     "id": 284,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 4,
       "ground_frame_index": 4,
       "pack_frame_index": 4
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 113,
       "ground_frame_index": 4,
       "pack_frame_index": 4
@@ -2923,18 +2923,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "battle_axe.pak",
+    "sprite_folder": "battle_axe",
     "id": 285,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 12,
       "ground_frame_index": 12,
       "pack_frame_index": 12
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 121,
       "ground_frame_index": 12,
       "pack_frame_index": 12
@@ -2942,18 +2942,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "great_sword.pak",
+    "sprite_folder": "great_sword",
     "id": 286,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 13,
       "ground_frame_index": 13,
       "pack_frame_index": 13
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 122,
       "ground_frame_index": 13,
       "pack_frame_index": 13
@@ -2961,18 +2961,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "esterk.pak",
+    "sprite_folder": "esterk",
     "id": 287,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 14,
       "ground_frame_index": 14,
       "pack_frame_index": 14
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 123,
       "ground_frame_index": 14,
       "pack_frame_index": 14
@@ -2980,18 +2980,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "great_sword.pak",
+    "sprite_folder": "great_sword",
     "id": 288,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 16,
       "ground_frame_index": 16,
       "pack_frame_index": 16
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 125,
       "ground_frame_index": 16,
       "pack_frame_index": 16
@@ -2999,18 +2999,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "great_sword.pak",
+    "sprite_folder": "great_sword",
     "id": 289,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 15,
       "ground_frame_index": 15,
       "pack_frame_index": 15
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 124,
       "ground_frame_index": 15,
       "pack_frame_index": 15
@@ -3018,18 +3018,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "short_bow.pak",
+    "sprite_folder": "short_bow",
     "id": 290,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 65,
       "ground_frame_index": 31,
       "pack_frame_index": 31
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 174,
       "ground_frame_index": 31,
       "pack_frame_index": 31
@@ -3037,18 +3037,18 @@
     "equip_type": "weapon"
   },
   {
-    "pak_file": "long_bow.pak",
+    "sprite_folder": "long_bow",
     "id": 291,
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 64,
       "ground_frame_index": 30,
       "pack_frame_index": 30
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 173,
       "ground_frame_index": 30,
       "pack_frame_index": 30
@@ -3057,25 +3057,25 @@
   },
   {
     "id": 292,
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 149,
     "ground_frame_index": 149
   },
   {
     "id": 293,
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 151,
     "ground_frame_index": 151
   },
   {
     "id": 294,
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 150,
     "ground_frame_index": 150
   },
   {
     "id": 295,
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 152,
     "ground_frame_index": 152
   },
@@ -3083,17 +3083,17 @@
     "id": 296,
     "name": "Merian Shield",
     "equip_type": "shield",
-    "pak_file": "tower_shield.pak",
+    "sprite_folder": "tower_shield",
     "male": {
-      "pak_index_start": 0,
-      "pak_index_end": 11,
+      "sprite_index_start": 0,
+      "sprite_index_end": 11,
       "equip_frame_index": 77,
       "ground_frame_index": 166,
       "pack_frame_index": 166
     },
     "female": {
-      "pak_index_start": 12,
-      "pak_index_end": 23,
+      "sprite_index_start": 12,
+      "sprite_index_end": 23,
       "equip_frame_index": 186,
       "ground_frame_index": 166,
       "pack_frame_index": 166
@@ -3103,7 +3103,7 @@
     "id": 297,
     "name": "potion1",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 250,
     "ground_frame_index": 250
   },
@@ -3111,7 +3111,7 @@
     "id": 298,
     "name": "potion2",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 242,
     "ground_frame_index": 242
   },
@@ -3119,7 +3119,7 @@
     "id": 299,
     "name": "potion3",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 248,
     "ground_frame_index": 248
   },
@@ -3127,7 +3127,7 @@
     "id": 300,
     "name": "potion4",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 245,
     "ground_frame_index": 245
   },
@@ -3135,7 +3135,7 @@
     "id": 301,
     "name": "potion5",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 237,
     "ground_frame_index": 237
   },
@@ -3143,7 +3143,7 @@
     "id": 302,
     "name": "potion6",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 239,
     "ground_frame_index": 239
   },
@@ -3151,7 +3151,7 @@
     "id": 303,
     "name": "potion7",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 241,
     "ground_frame_index": 241
   },
@@ -3159,7 +3159,7 @@
     "id": 304,
     "name": "potion8",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 243,
     "ground_frame_index": 243
   },
@@ -3167,7 +3167,7 @@
     "id": 305,
     "name": "poiton9",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 244,
     "ground_frame_index": 244
   },
@@ -3175,7 +3175,7 @@
     "id": 306,
     "name": "potion10",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 246,
     "ground_frame_index": 246
   },
@@ -3183,7 +3183,7 @@
     "id": 307,
     "name": "potion11",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 236,
     "ground_frame_index": 236
   },
@@ -3191,7 +3191,7 @@
     "id": 308,
     "name": "potion12",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 247,
     "ground_frame_index": 247
   },
@@ -3199,7 +3199,7 @@
     "id": 309,
     "name": "potion13",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 238,
     "ground_frame_index": 238
   },
@@ -3207,7 +3207,7 @@
     "id": 310,
     "name": "potion14",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 240,
     "ground_frame_index": 240
   },
@@ -3215,7 +3215,7 @@
     "id": 311,
     "name": "potion15",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 235,
     "ground_frame_index": 235
   },
@@ -3223,7 +3223,7 @@
     "id": 312,
     "name": "potion16",
     "equip_type": "none",
-    "pak_file": null,
+    "sprite_folder": null,
     "inventory_frame_index": 249,
     "ground_frame_index": 249
   }

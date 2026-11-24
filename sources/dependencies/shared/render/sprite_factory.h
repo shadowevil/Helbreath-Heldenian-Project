@@ -6,8 +6,9 @@
 #pragma once
 
 #include "sprite.h"
-#include "PAK.h"
+#include "sprite_types.h"
 #include <string>
+#include <vector>
 
 namespace hb::shared::sprite {
 
@@ -19,19 +20,19 @@ public:
     // Sprite Creation/Destruction
     //------------------------------------------------------------------
 
-    // Create a sprite from a PAK file
-    // pakName: Name of the PAK file (without path/extension, e.g., "Gmtile")
-    // spriteIndex: Index of the sprite within the PAK
+    // Create a sprite from an extracted sprite folder
+    // asset_name: Asset name below the sprite path (e.g., "npcs/ogre")
+    // spriteIndex: Index of the sprite within the asset
     // alphaEffect: Whether this sprite supports alpha degree changes
-    virtual ISprite* create_sprite(const std::string& pakName, int spriteIndex, bool alphaEffect = true) = 0;
+    virtual ISprite* create_sprite(const std::string& asset_name, int spriteIndex, bool alphaEffect = true) = 0;
 
     // Create a sprite from pre-loaded metadata (used by SpriteLoader for batch loading)
-    // Only stores frame rects + PAK path/index — no image data is copied.
-    // Texture is loaded on demand from disk when the sprite is first drawn.
+    // Only stores frame rects + image path — no image data is read.
+    // Texture is loaded on demand from image_path when the sprite is first drawn;
+    // an empty image_path is an empty sprite.
     virtual ISprite* create_sprite_from_metadata(
-        const std::vector<PAKLib::sprite_rect>& frames,
-        const std::string& pakFilePath,
-        int spriteIndex,
+        const std::vector<SpriteRect>& frames,
+        const std::string& image_path,
         bool alphaEffect = true) = 0;
 
     // Destroy a sprite and free its resources
@@ -47,18 +48,18 @@ public:
     virtual int get_ambient_light_level() const = 0;
 
     //------------------------------------------------------------------
-    // PAK File Information
+    // Asset Information
     //------------------------------------------------------------------
 
-    // get the number of sprites in a PAK file
-    // Returns 0 if the file cannot be opened or is invalid
-    virtual int get_sprite_count(const std::string& pakName) const = 0;
+    // get the number of sprites in an asset
+    // Returns 0 if the asset is unknown or its manifest is invalid
+    virtual int get_sprite_count(const std::string& asset_name) const = 0;
 
     //------------------------------------------------------------------
     // Path Configuration
     //------------------------------------------------------------------
 
-    // get the base path for sprite PAK files
+    // get the base path for sprite asset folders
     virtual std::string get_sprite_path() const = 0;
 };
 
@@ -75,15 +76,15 @@ public:
     static ISpriteFactory* get_factory();
 
     // Convenience methods that delegate to the active factory
-    static ISprite* create(const std::string& pakName, int spriteIndex, bool alphaEffect = true);
+    static ISprite* create(const std::string& asset_name, int spriteIndex, bool alphaEffect = true);
     static void destroy(ISprite* sprite);
 
     // Global alpha degree
     static void set_ambient_light_level(int level);
     static int get_ambient_light_level();
 
-    // PAK file information
-    static int get_sprite_count(const std::string& pakName);
+    // Asset information
+    static int get_sprite_count(const std::string& asset_name);
 
     // Path configuration
     static std::string get_sprite_path();

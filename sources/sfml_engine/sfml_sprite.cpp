@@ -6,6 +6,8 @@
 #include "sfml_sprite.h"
 #include "sfml_renderer.h"
 #include "common_types.h"
+#include "sprite_folder.h"
+#include "log.h"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 
@@ -58,32 +60,15 @@ private:
     bool m_active;
 };
 
-SFMLSprite::SFMLSprite(SFMLRenderer* renderer, const std::string& pakFilePath, int spriteIndex, bool alphaEffect)
+SFMLSprite::SFMLSprite(SFMLRenderer* renderer, const std::vector<hb::shared::sprite::SpriteRect>& frames,
+                       const std::string& image_path, bool alphaEffect)
     : m_renderer(renderer)
-    , m_pakFilePath(pakFilePath)
-    , m_spriteIndex(spriteIndex)
-    , m_bitmapWidth(0)
-    , m_bitmapHeight(0)
-    , m_textureLoaded(false)
-    , m_alphaEffect(alphaEffect)
-    , m_ambient_light_level(1)
-    , m_inUse(false)
-    , m_lastAccessTime(0)
-{
-    // Read only frame metadata from PAK — no image data loaded
-    PAKLib::sprite metadata = PAKLib::get_sprite_metadata_fast(pakFilePath, spriteIndex);
-    m_frames = std::move(metadata.sprite_rectangles);
-}
-
-SFMLSprite::SFMLSprite(SFMLRenderer* renderer, const std::vector<PAKLib::sprite_rect>& frames,
-                       const std::string& pakFilePath, int spriteIndex, bool alphaEffect)
-    : m_renderer(renderer)
-    , m_pakFilePath(pakFilePath)
-    , m_spriteIndex(spriteIndex)
+    , m_image_path(image_path)
     , m_frames(frames)
     , m_bitmapWidth(0)
     , m_bitmapHeight(0)
     , m_textureLoaded(false)
+    , m_load_failed(false)
     , m_alphaEffect(alphaEffect)
     , m_ambient_light_level(1)
     , m_inUse(false)
@@ -96,59 +81,43 @@ SFMLSprite::~SFMLSprite()
     Unload();
 }
 
-bool SFMLSprite::create_texture()
+bool SFMLSprite::load_texture()
 {
     if (m_textureLoaded)
         return true;
 
-    if (m_imageData.empty())
+    // An empty sprite has no image; a failed one is not retried on every draw
+    if (m_image_path.empty() || m_load_failed)
         return false;
 
-    // Load image data - SFML handles PNG natively with alpha channel support
-    if (!m_collisionImage.loadFromMemory(m_imageData.data(), m_imageData.size()))
+    // SFML detects the image format (PNG, BMP, JPEG) from the bytes
+    const std::vector<uint8_t> imageData = hb::shared::sprite::read_file_bytes(m_image_path);
+    if (imageData.empty() || !m_collisionImage.loadFromMemory(imageData.data(), imageData.size())
+        || !m_texture.loadFromImage(m_collisionImage))
+    {
+        m_load_failed = true;
+        m_collisionImage = sf::Image();
+        hb::logger::warn("Sprite image failed to load, not retried until unloaded: {}", m_image_path);
         return false;
+    }
 
     // get dimensions from loaded image
     sf::Vector2u size = m_collisionImage.getSize();
     m_bitmapWidth = static_cast<uint16_t>(size.x);
     m_bitmapHeight = static_cast<uint16_t>(size.y);
 
-    // Create texture from image
-    if (!m_texture.loadFromImage(m_collisionImage))
-        return false;
-
     // Disable smooth filtering to prevent edge artifacts and ensure crisp pixel art
     m_texture.setSmooth(false);
-
-    // Clear PNG data to free memory - we have the texture and collision image now
-    m_imageData.clear();
-    m_imageData.shrink_to_fit();
 
     m_textureLoaded = true;
     return true;
 }
 
-bool SFMLSprite::reload_from_pak()
-{
-    if (m_pakFilePath.empty())
-        return false;
-
-    PAKLib::sprite spriteData = PAKLib::get_sprite_fast(m_pakFilePath, m_spriteIndex);
-    m_imageData = std::move(spriteData.image_data);
-
-    return create_texture();
-}
-
 void SFMLSprite::draw(int x, int y, int frame, const hb::shared::sprite::DrawParams& params)
 {
-    // Lazy load texture on first draw, or reload from PAK after eviction
+    // Lazy load texture on first draw, or reload after Unload()
     if (!m_textureLoaded)
-    {
-        if (m_imageData.empty())
-            reload_from_pak();
-        else
-            create_texture();
-    }
+        load_texture();
 
     if (!m_textureLoaded || !m_renderer || frame < 0 || frame >= static_cast<int>(m_frames.size()))
         return;
@@ -169,14 +138,9 @@ void SFMLSprite::draw(int x, int y, int frame, const hb::shared::sprite::DrawPar
 
 void SFMLSprite::DrawToSurface(void* destSurface, int x, int y, int frame, const hb::shared::sprite::DrawParams& params)
 {
-    // Lazy load texture on first draw, or reload from PAK after eviction
+    // Lazy load texture on first draw, or reload after Unload()
     if (!m_textureLoaded)
-    {
-        if (m_imageData.empty())
-            reload_from_pak();
-        else
-            create_texture();
-    }
+        load_texture();
 
     if (!destSurface || !m_textureLoaded || frame < 0 || frame >= static_cast<int>(m_frames.size()))
         return;
@@ -201,7 +165,7 @@ void SFMLSprite::DrawInternal(sf::RenderTarget* target, int x, int y, int frame,
     if (!target)
         return;
 
-    const PAKLib::sprite_rect& frameRect = m_frames[frame];
+    const hb::shared::sprite::SpriteRect& frameRect = m_frames[frame];
 
     // Shadow rendering - replicate DDraw's skewed shadow effect
     if (params.m_shadow)
@@ -479,14 +443,9 @@ void SFMLSprite::DrawInternal(sf::RenderTarget* target, int x, int y, int frame,
 
 void SFMLSprite::DrawWidth(int x, int y, int frame, int width, bool vertical)
 {
-    // Lazy load texture on first draw, or reload from PAK after eviction
+    // Lazy load texture on first draw, or reload after Unload()
     if (!m_textureLoaded)
-    {
-        if (m_imageData.empty())
-            reload_from_pak();
-        else
-            create_texture();
-    }
+        load_texture();
 
     if (!m_textureLoaded || !m_renderer || frame < 0 || frame >= static_cast<int>(m_frames.size()))
         return;
@@ -500,7 +459,7 @@ void SFMLSprite::DrawWidth(int x, int y, int frame, int width, bool vertical)
     m_inUse = true;
     m_lastAccessTime = GameClock::get_time_ms();
 
-    const PAKLib::sprite_rect& frameRect = m_frames[frame];
+    const hb::shared::sprite::SpriteRect& frameRect = m_frames[frame];
 
     int drawX = x + frameRect.pivotX;
     int drawY = y + frameRect.pivotY;
@@ -553,14 +512,9 @@ void SFMLSprite::DrawShifted(int x, int y, int shiftX, int shiftY, int frame, co
     // This is used for the guide map to show a viewport window into a large map sprite
     // Matches DDraw's CSprite::PutShiftSpriteFast / PutShiftTransSprite2
 
-    // Lazy load texture on first draw, or reload from PAK after eviction
+    // Lazy load texture on first draw, or reload after Unload()
     if (!m_textureLoaded)
-    {
-        if (m_imageData.empty())
-            reload_from_pak();
-        else
-            create_texture();
-    }
+        load_texture();
 
     if (!m_textureLoaded || !m_renderer || frame < 0 || frame >= static_cast<int>(m_frames.size()))
         return;
@@ -577,7 +531,7 @@ void SFMLSprite::DrawShifted(int x, int y, int shiftX, int shiftY, int frame, co
 
     m_inUse = true;
 
-    const PAKLib::sprite_rect& frameRect = m_frames[frame];
+    const hb::shared::sprite::SpriteRect& frameRect = m_frames[frame];
 
     // Source position within the sprite texture - start at frame origin and add shift
     int srcX = frameRect.x + shiftX;
@@ -665,15 +619,7 @@ hb::shared::sprite::SpriteRect SFMLSprite::GetFrameRect(int frame) const
         return hb::shared::sprite::SpriteRect{0, 0, 0, 0, 0, 0};
     }
 
-    const PAKLib::sprite_rect& src = m_frames[frame];
-    hb::shared::sprite::SpriteRect rect;
-    rect.x = src.x;
-    rect.y = src.y;
-    rect.width = src.width;
-    rect.height = src.height;
-    rect.pivotX = src.pivotX;
-    rect.pivotY = src.pivotY;
-    return rect;
+    return m_frames[frame];
 }
 
 void SFMLSprite::GetBoundingRect(int x, int y, int frame, int& left, int& top, int& right, int& bottom)
@@ -684,7 +630,7 @@ void SFMLSprite::GetBoundingRect(int x, int y, int frame, int& left, int& top, i
         return;
     }
 
-    const PAKLib::sprite_rect& frameRect = m_frames[frame];
+    const hb::shared::sprite::SpriteRect& frameRect = m_frames[frame];
 
     left = x + frameRect.pivotX;
     top = y + frameRect.pivotY;
@@ -700,7 +646,7 @@ void SFMLSprite::CalculateBounds(int x, int y, int frame)
         return;
     }
 
-    const PAKLib::sprite_rect& frameRect = m_frames[frame];
+    const hb::shared::sprite::SpriteRect& frameRect = m_frames[frame];
 
     m_boundRect.left = x + frameRect.pivotX;
     m_boundRect.top = y + frameRect.pivotY;
@@ -730,7 +676,7 @@ bool SFMLSprite::CheckCollision(int spriteX, int spriteY, int frame, int pointX,
     if (frame < 0 || frame >= static_cast<int>(m_frames.size()))
         return false;
 
-    const PAKLib::sprite_rect& frameRect = m_frames[frame];
+    const hb::shared::sprite::SpriteRect& frameRect = m_frames[frame];
 
     int left = spriteX + frameRect.pivotX;
     int top = spriteY + frameRect.pivotY;
@@ -743,12 +689,7 @@ bool SFMLSprite::CheckCollision(int spriteX, int spriteY, int frame, int pointX,
 
     // Reload texture if evicted (needed for pixel-perfect collision image)
     if (!m_textureLoaded)
-    {
-        if (m_imageData.empty())
-            reload_from_pak();
-        else
-            create_texture();
-    }
+        load_texture();
 
     // Pixel-perfect check using cached image alpha channel
     if (m_collisionImage.getSize().x == 0)
@@ -766,16 +707,13 @@ bool SFMLSprite::CheckCollision(int spriteX, int spriteY, int frame, int pointX,
 void SFMLSprite::Preload()
 {
     if (!m_textureLoaded)
-    {
-        if (m_imageData.empty())
-            reload_from_pak();
-        else
-            create_texture();
-    }
+        load_texture();
 }
 
 void SFMLSprite::Unload()
 {
+    m_load_failed = false;  // a later draw retries the image
+
     if (!m_textureLoaded)
         return;
 
@@ -785,17 +723,13 @@ void SFMLSprite::Unload()
     // Release collision image
     m_collisionImage = sf::Image();
 
-    // Clear any lingering image data (should already be empty after create_texture)
-    m_imageData.clear();
-    m_imageData.shrink_to_fit();
-
     // Reset dimensions
     m_bitmapWidth = 0;
     m_bitmapHeight = 0;
 
     m_textureLoaded = false;
 
-    // Keep: m_frames, m_pakFilePath, m_spriteIndex — needed for reload
+    // Keep: m_frames, m_image_path — needed for reload
 }
 
 bool SFMLSprite::IsLoaded() const
@@ -805,14 +739,10 @@ bool SFMLSprite::IsLoaded() const
 
 void SFMLSprite::Restore()
 {
-    // Recreate texture if needed (e.g. after device loss)
+    // Recreate texture if needed (e.g. after device loss); retries a failed image
+    m_load_failed = false;
     if (!m_textureLoaded)
-    {
-        if (m_imageData.empty())
-            reload_from_pak();
-        else
-            create_texture();
-    }
+        load_texture();
 }
 
 bool SFMLSprite::IsInUse() const

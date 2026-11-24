@@ -71,6 +71,7 @@ set(SHARED_SOURCES
     ../dependencies/shared/render/application.cpp
     ../dependencies/shared/render/event.cpp
     ../dependencies/shared/render/sprite_factory.cpp
+    ../dependencies/shared/render/sprite_folder.cpp
     ../dependencies/shared/render/resolution_config.cpp
     ../dependencies/shared/render/text_lib.cpp
     ../dependencies/shared/util/sha256.cpp

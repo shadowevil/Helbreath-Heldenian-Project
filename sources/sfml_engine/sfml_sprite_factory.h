@@ -1,7 +1,7 @@
 ﻿// sfml_sprite_factory.h: SFML implementation of ISpriteFactory interface
 //
 // Part of SFMLEngine static library
-// Creates SFMLSprite instances from PAK files
+// Creates SFMLSprite instances from extracted sprite folders
 //////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -23,11 +23,10 @@ public:
     //------------------------------------------------------------------
 
     // Sprite creation
-    hb::shared::sprite::ISprite* create_sprite(const std::string& pakName, int spriteIndex, bool alphaEffect = true) override;
+    hb::shared::sprite::ISprite* create_sprite(const std::string& asset_name, int spriteIndex, bool alphaEffect = true) override;
     hb::shared::sprite::ISprite* create_sprite_from_metadata(
-        const std::vector<PAKLib::sprite_rect>& frames,
-        const std::string& pakFilePath,
-        int spriteIndex,
+        const std::vector<hb::shared::sprite::SpriteRect>& frames,
+        const std::string& image_path,
         bool alphaEffect = true) override;
 
     // Sprite destruction
@@ -37,8 +36,8 @@ public:
     void set_ambient_light_level(int level) override;
     int get_ambient_light_level() const override;
 
-    // PAK file information
-    int get_sprite_count(const std::string& pakName) const override;
+    // Asset information
+    int get_sprite_count(const std::string& asset_name) const override;
 
     //------------------------------------------------------------------
     // Configuration
@@ -49,9 +48,6 @@ public:
     std::string get_sprite_path() const override { return m_spritePath; }
 
 private:
-    // Build full PAK file path from pak name
-    std::string BuildPakPath(const std::string& pakName) const;
-
     SFMLRenderer* m_renderer;
     std::string m_spritePath;
     int m_ambient_light_level;
