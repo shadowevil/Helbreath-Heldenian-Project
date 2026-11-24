@@ -28,6 +28,10 @@ public:
     void on_update() override;
     void on_render() override;
 
+#ifdef DEF_CLAUDE_TESTING
+    cc::control_collection* agent_controls() override { return &m_controls; }
+#endif
+
 private:
     static constexpr uint32_t SPLASH_DURATION_MS = 12000;  // 12 seconds total
     static constexpr int NUM_CONTRIBUTORS = 5;

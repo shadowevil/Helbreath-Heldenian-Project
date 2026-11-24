@@ -22,6 +22,18 @@ public:
     void on_update() override;
     void on_render() override;
 
+#ifdef DEF_CLAUDE_TESTING
+    cc::control_collection* agent_controls() override { return &m_controls; }
+    std::span<const agent_control_name> agent_control_names() const override
+    {
+        static constexpr agent_control_name names[] = {
+            {BTN_YES, "query_delete_character.yes"},
+            {BTN_NO, "query_delete_character.no"},
+        };
+        return names;
+    }
+#endif
+
 private:
     static constexpr int BTN_YES = 1;
     static constexpr int BTN_NO = 2;

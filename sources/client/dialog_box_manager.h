@@ -2,6 +2,7 @@
 
 #include "dialog_box_ids.h"
 #include "dialog_box.h"
+#include "claude_testing.h"
 #include <cstdint>
 #include <memory>
 #include <unordered_map>
@@ -77,6 +78,10 @@ public:
 	// --- Z-Order ---
 	void set_z_layer(DialogBoxId::Type id, z_layer::type layer);
 	int get_top_id() const;  // topmost normal-layer dialog
+#ifdef DEF_CLAUDE_TESTING
+	// Agent bridge, read-only: every enabled dialog in click order (topmost layer first, then normal, then underlay)
+	std::vector<const IDialogBox*> agent_dialogs_top_to_bottom() const;
+#endif
 
 	// --- Rendering + Input (no mouse params — reads hb::shared::input) ---
 	void draw_all();

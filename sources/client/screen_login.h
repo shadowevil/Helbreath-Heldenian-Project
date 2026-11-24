@@ -25,6 +25,16 @@ public:
     bool on_net_response(uint16_t response_type, char* data) override;
 #ifdef DEF_CLAUDE_TESTING
     cc::control_collection* agent_controls() override { return &m_controls; }
+    std::span<const agent_control_name> agent_control_names() const override
+    {
+        static constexpr agent_control_name names[] = {
+            {TXT_NAME, "login.name"},
+            {TXT_PASSWORD, "login.password"},
+            {BTN_LOGIN, "login.ok"},
+            {BTN_CANCEL, "login.cancel"},
+        };
+        return names;
+    }
 #endif
 
 private:

@@ -244,6 +244,18 @@ bool DialogBoxManager::for_each_top_to_bottom(Func&& fn) const
 	return false;
 }
 
+#ifdef DEF_CLAUDE_TESTING
+std::vector<const IDialogBox*> DialogBoxManager::agent_dialogs_top_to_bottom() const
+{
+	std::vector<const IDialogBox*> dialogs;
+	for_each_top_to_bottom([&](IDialogBox* dlg) -> bool {
+		dialogs.push_back(dlg);
+		return false;
+	});
+	return dialogs;
+}
+#endif
+
 int DialogBoxManager::get_top_id() const
 {
 	// Return topmost normal-layer dialog (topmost layer excluded)

@@ -1,7 +1,7 @@
 {
   "id": "HH-0040",
   "summary": "MCP server 7: phase 2, widgets",
-  "status": "open",
+  "status": "in_review",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "backlog",
@@ -12,7 +12,7 @@
   ],
   "author": "pm",
   "created": "2026-11-24T01:27:45Z",
-  "updated": "2026-11-24T01:27:47Z",
+  "updated": "2026-11-24T04:18:35Z",
   "links": {
     "commits": [],
     "files": [],

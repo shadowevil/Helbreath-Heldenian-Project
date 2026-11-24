@@ -56,3 +56,7 @@ Groundwork for an agent bridge in Debug builds (HH-0035). Debug clients accept `
 The Debug client now runs the agent bridge (HH-0037). It listens on 127.0.0.1 only and answers `ping`, `get_state` and `screenshot`, which saves a PNG of the window into `build/screenshots/` under a 20 MB folder cap. Malformed or hostile input is refused without stalling the game.
 
 The Debug agent bridge can now drive the client (HH-0038): mouse moves, clicks, wheel, keys, typing, setting text, held modifiers, waiting for a state, and a coordinate probe. Input goes through the same path as the real mouse and keyboard, one presented frame per step, and it is held during screen fades. Text typed into password fields never appears in replies or logs. The window-to-interface mapping now has one shared, exact implementation for both directions.
+
+An MCP server for the Debug client is ported from Helbreath-SDL into `.claude/tools/agent_mcp/` and registered in `.mcp.json` (HH-0039). An agent can attach to a running Debug client to read its state, take screenshots and send input. Tools the client does not support yet stay hidden, and scanning for clients never takes over a client another session is driving.
+
+The Debug agent bridge can list and click named controls (HH-0040): every interactive control on the 11 menu screens and overlays has a stable name (`login.ok`, `main_menu.login`, ...). Dialogs and the HUD are listed as windows, and clicks report what consumed them. Password fields report only that they are masked.

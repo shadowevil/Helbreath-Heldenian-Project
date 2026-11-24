@@ -13,6 +13,7 @@
 #include "game_mode.h"
 #include "claude_testing.h"
 #include <cstdint>
+#include <span>
 #include <string>
 
 enum class KeyCode : int;
@@ -95,10 +96,23 @@ public:
     virtual void on_transition_out() {}
 
 #ifdef DEF_CLAUDE_TESTING
-    // Agent bridge: the screen's CControls, so get_state can report focus (never field text); the bridge only
-    // reads them (non-const because control_collection::find is). nullptr where a screen does not expose
-    // them yet (phase 2 adds the rest).
+    // Agent bridge: the screen's CControls, so get_state can report focus (never field text) and `widgets` can
+    // list them; the bridge only reads them (non-const because control_collection::find is). nullptr where a
+    // screen has no CControls.
     virtual cc::control_collection* agent_controls() { return nullptr; }
+
+    // The stable agent name of each interactive control, "<screen>.<control>" in snake_case. A control with no
+    // entry is still listed, as "<screen>.#<id>", so a missed entry shows up in `widgets`. A toggle_button lists
+    // one entry per half (part_w > 0: a strip of the control starting part_x from its left edge), because a click
+    // at the toggle's centre lands on neither half.
+    struct agent_control_name
+    {
+        int id;
+        const char* name;
+        int part_x = 0;
+        int part_w = 0;
+    };
+    virtual std::span<const agent_control_name> agent_control_names() const { return {}; }
 #endif
 
 protected:

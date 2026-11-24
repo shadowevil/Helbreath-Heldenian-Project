@@ -9,6 +9,13 @@
 // {"id": same, "ok": true, "result": {...}} or {"id": same, "ok": false, "error": "text"}.
 // Polled on the main thread once per update (CGame::on_update), so nothing here is threaded.
 //
+// Widgets (HH-0040): `widgets` lists the named controls of what takes input (the overlay if one is up, else the
+// screen; in the world, the legacy dialogs as coarse windows). Names are "<screen>.<control>" from each screen's
+// agent_control_names(). `widget_click {name}` clicks a widget's centre through the input queue; click, mouse_down,
+// mouse_up and probe_point report what the point reaches ("consumed_by" / "front"; with count 2 or 3 it reflects the
+// last press). widget_click fails with "widget_stale" if the widget is gone when the press runs. A masked field
+// reports neither text nor length.
+//
 // Input is injected through the window's IWindowEventHandler, the calls SFMLWindow makes for real events, one
 // queued step per presented frame (legacy dialogs read the mouse in on_draw, which only presented frames run).
 // A real mouse moving over the window overwrites the injected position; while a pointer job runs its position
@@ -33,6 +40,7 @@
 #include <vector>
 
 class CGame;
+class IGameScreen;
 namespace hb::shared::render { class IRenderer; class IWindow; class IWindowEventHandler; }
 
 namespace hb::client
@@ -43,7 +51,7 @@ namespace hb::client
 		using json = nlohmann::json;
 
 		// Bumped when a command's arguments or result keys change incompatibly
-		static constexpr int bridge_protocol = 2;
+		static constexpr int bridge_protocol = 3;
 
 		agent_bridge();
 		~agent_bridge();
@@ -116,6 +124,36 @@ namespace hb::client
 			bool pointer = false; // re-send the pointer position each update while it runs
 			int pointer_x = 0;
 			int pointer_y = 0;
+			bool report_front = false; // add "consumed_by" to the reply, taken just before front_step runs
+			step_kind front_step = step_kind::button_down;
+			std::string widget; // widget_click: re-aimed at the widget's centre as the job starts and before the press
+		};
+
+		// One listed widget: a named CControls control (or one half of a toggle), or a legacy dialog. Rect in UI units.
+		struct widget_row
+		{
+			std::string name;
+			std::string kind;  // button | text_field | window
+			std::string owner; // "screen:<type>" or "dialog:<name>"
+			int x = 0;
+			int y = 0;
+			int w = 0;
+			int h = 0;
+			bool enabled = true;
+			bool visible = true;
+			bool focused = false;
+			bool is_field = false;
+			bool masked = false;
+			std::size_t length = 0; // characters; only reported for an unmasked field
+			bool is_dialog = false;
+			int dialog_id = 0;
+
+			// CControls: left/top edge in, right/bottom out; legacy dialogs hit-test strictly inside
+			bool contains(int px, int py) const
+			{
+				return is_dialog ? (px > x && px < x + w && py > y && py < y + h)
+					: (px >= x && px < x + w && py >= y && py < y + h);
+			}
 		};
 
 		static const command_entry commands[];
@@ -134,6 +172,8 @@ namespace hb::client
 		bool run_set_text(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
 		bool run_modifiers(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
 		bool run_wait_for(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
+		bool run_widgets(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
+		bool run_widget_click(const json& id, const json& args, CGame& active_game, json& result, std::string& error);
 
 		// the bodies of the entry points, which catch whatever escapes them and call disable
 		bool open_listener(std::uint16_t port);
@@ -157,8 +197,20 @@ namespace hb::client
 		bool resolve_xy(const json& args, CGame& active_game, int& x, int& y, std::string& error) const;
 		bool read_job_timeout(const json& args, std::chrono::milliseconds& timeout, std::string& error) const;
 		bool enqueue(const json& id, input_job job, std::string& error);
-		void advance_input();
+		bool queue_click(const json& id, const json& args, int x, int y, const json& extra, std::string& error,
+			const std::string& widget = {});
+		std::vector<widget_row> input_rows(CGame& active_game) const;
+		bool widget_centre(CGame& active_game, const std::string& name, int& x, int& y, bool& enabled,
+			std::string& error) const;
+		void advance_input(CGame& active_game);
 		void execute(const input_step& step);
+
+		// widgets: what takes input now is the overlay if one is up, else the screen; in the world, the dialogs
+		std::vector<widget_row> control_rows(IGameScreen* surface) const;
+		std::vector<widget_row> dialog_rows(CGame& active_game) const;
+		json widget_json(const widget_row& row) const;
+		// what a point reaches first: {kind, owner, name?}, mirroring the routing (overlay, transition, dialogs)
+		json front_at(CGame& active_game, int x, int y) const;
 		void release_held();
 		void modifier_steps(bool shift, bool ctrl, bool alt, bool press, std::vector<input_step>& steps) const;
 

@@ -28,6 +28,25 @@ public:
 
     bool enter_game();
 
+#ifdef DEF_CLAUDE_TESTING
+    cc::control_collection* agent_controls() override { return &m_controls; }
+    std::span<const agent_control_name> agent_control_names() const override
+    {
+        static constexpr agent_control_name names[] = {
+            {SLOT_1, "select_character.slot1"},
+            {SLOT_2, "select_character.slot2"},
+            {SLOT_3, "select_character.slot3"},
+            {SLOT_4, "select_character.slot4"},
+            {BTN_ENTER, "select_character.enter"},
+            {BTN_NEW, "select_character.new"},
+            {BTN_DELETE, "select_character.delete"},
+            {BTN_CHANGE_PW, "select_character.change_password"},
+            {BTN_EXIT, "select_character.exit"},
+        };
+        return names;
+    }
+#endif
+
 private:
     void activate_slot(int slot_id);
     void render_character_previews();

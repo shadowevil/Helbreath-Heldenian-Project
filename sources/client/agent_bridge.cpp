@@ -14,6 +14,7 @@
 #include "updater_file_ops.h" // hb::updater::get_exe_path, the client's existing cross-platform exe lookup
 #include "window.h"
 #include "ccontrols.h"
+#include "dialog_box_manager.h"
 #include <algorithm>
 #include <array>
 #include <charconv>
@@ -21,6 +22,8 @@
 #include <optional>
 #include <format>
 #include <fstream>
+#include <iterator>
+#include <span>
 
 namespace hb::client
 {
@@ -143,6 +146,58 @@ namespace hb::client
 			}
 			return screen->get_type_id();
 		}
+
+		// What takes input now: an overlay hides the base screen's controls (update_screens_impl suppresses it)
+		IGameScreen* input_surface()
+		{
+			IGameScreen* overlay = GameModeManager::get_active_overlay();
+			return overlay != nullptr ? overlay : GameModeManager::get_active_screen();
+		}
+
+		std::string screen_owner(const IGameScreen* screen)
+		{
+			return std::string("screen:") + (screen != nullptr && screen->get_type_id() != nullptr ? screen->get_type_id() : "none");
+		}
+
+		// characters, not bytes: count the UTF-8 lead bytes
+		std::size_t utf8_length(const std::string& text)
+		{
+			return static_cast<std::size_t>(std::count_if(text.begin(), text.end(),
+				[](char c) { return (static_cast<unsigned char>(c) & 0xC0) != 0x80; }));
+		}
+
+		std::string dialog_name(DialogBoxId::Type id)
+		{
+			using namespace DialogBoxId;
+			static constexpr std::pair<Type, std::string_view> names[] = {
+				{CharacterInfo, "character_info"}, {Inventory, "inventory"}, {Magic, "magic"},
+				{ItemDropConfirm, "item_drop_confirm"}, {WarningBattleArea, "warning_battle_area"},
+				{GuildMenu, "guild_menu"}, {GuildOperation, "guild_operation"}, {GuideMap, "guide_map"},
+				{ChatHistory, "chat_history"}, {SaleMenu, "sale_menu"}, {LevelUpSetting, "level_up_setting"},
+				{CityHallMenu, "city_hall_menu"}, {Bank, "bank"}, {Skill, "skill"}, {MagicShop, "magic_shop"},
+				{ItemDropExternal, "item_drop_external"}, {Text, "text"}, {SystemMenu, "system_menu"},
+				{NpcActionQuery, "npc_action_query"}, {NpcTalk, "npc_talk"}, {Map, "map"},
+				{SellOrRepair, "sell_or_repair"}, {Fishing, "fishing"}, {Noticement, "noticement"},
+				{Manufacture, "manufacture"}, {Exchange, "exchange"}, {Quest, "quest"}, {HudPanel, "hud_panel"},
+				{SellList, "sell_list"}, {Party, "party"}, {CrusadeJob, "crusade_job"}, {ItemUpgrade, "item_upgrade"},
+				{Help, "help"}, {CrusadeCommander, "crusade_commander"}, {CrusadeConstructor, "crusade_constructor"},
+				{CrusadeSoldier, "crusade_soldier"}, {GiveItem, "give_item"}, {Slates, "slates"},
+				{ConfirmExchange, "confirm_exchange"}, {ChangeStatsMajestic, "change_stats_majestic"},
+				{StatusOverlay, "status_overlay"}, {Resurrect, "resurrect"}, {CommandHallMenu, "command_hall_menu"},
+				{RepairAll, "repair_all"},
+#ifdef TESTER_ONLY
+				{TesterMenu, "tester_menu"}, {ItemCreator, "item_creator"},
+#endif
+			};
+			for (const auto& [known, name] : names)
+			{
+				if (known == id)
+				{
+					return std::string(name);
+				}
+			}
+			return std::format("dialog{}", static_cast<std::size_t>(id));
+		}
 	}
 
 	// The one dispatch table; ping's commands[] is built from it, so the list never drifts from the code
@@ -161,6 +216,8 @@ namespace hb::client
 		{"set_text", &agent_bridge::run_set_text},
 		{"modifiers", &agent_bridge::run_modifiers},
 		{"wait_for", &agent_bridge::run_wait_for},
+		{"widgets", &agent_bridge::run_widgets},
+		{"widget_click", &agent_bridge::run_widget_click},
 	};
 
 	agent_bridge::agent_bridge()
@@ -366,7 +423,7 @@ namespace hb::client
 			return;
 		}
 
-		advance_input();
+		advance_input(active_game);
 		settle_waits(active_game);
 		expire_deferred();
 		flush_outbound();
@@ -676,11 +733,7 @@ namespace hb::client
 
 		// focus on a screen that exposes its CControls (the overlay first: it takes the input). Field text never
 		// leaves the client; a masked field reports neither its text nor its length.
-		IGameScreen* front = GameModeManager::get_active_overlay();
-		if (front == nullptr || front->agent_controls() == nullptr)
-		{
-			front = GameModeManager::get_active_screen();
-		}
+		IGameScreen* front = input_surface();
 		cc::control_collection* controls = front != nullptr ? front->agent_controls() : nullptr;
 		result["focus_id"] = nullptr;
 		if (controls != nullptr)
@@ -692,10 +745,7 @@ namespace hb::client
 				result["focus_masked"] = field->is_hidden();
 				if (!field->is_hidden())
 				{
-					// characters, not bytes: count the UTF-8 lead bytes
-					const std::string& text = field->text();
-					result["focus_text_length"] = std::count_if(text.begin(), text.end(),
-						[](char c) { return (static_cast<unsigned char>(c) & 0xC0) != 0x80; });
+					result["focus_text_length"] = utf8_length(field->text());
 				}
 			}
 		}
@@ -1125,7 +1175,7 @@ namespace hb::client
 		}
 	}
 
-	void agent_bridge::advance_input()
+	void agent_bridge::advance_input(CGame& active_game)
 	{
 		if (m_jobs.empty() || m_handler == nullptr)
 		{
@@ -1162,6 +1212,37 @@ namespace hb::client
 		if (GameModeManager::is_transitioning() && !release)
 		{
 			return;
+		}
+		if (!job.widget.empty() && (job.next == 0 || step.kind == step_kind::button_down))
+		{
+			// a widget click aims where the widget is NOW: the queue may run it after a transition or a re-layout
+			int x = 0;
+			int y = 0;
+			bool enabled = true;
+			std::string why;
+			if (!widget_centre(active_game, job.widget, x, y, enabled, why))
+			{
+				const json id = job.id;
+				const std::string error = "widget_stale: " + why;
+				m_jobs.pop_front();
+				release_held();
+				queue_reply(id, {}, error);
+				return;
+			}
+			for (std::size_t i = job.next; i < job.steps.size(); ++i)
+			{
+				job.steps[i].x = x;
+				job.steps[i].y = y;
+			}
+			job.pointer_x = x;
+			job.pointer_y = y;
+			job.result["x"] = x;
+			job.result["y"] = y;
+		}
+		if (job.report_front && step.kind == job.front_step)
+		{
+			// taken before the press runs: a press can change the screen, and the queue can run later than it was asked
+			job.result["consumed_by"] = front_at(active_game, step.x, step.y);
 		}
 		execute(step);
 		if (step.kind == step_kind::move)
@@ -1281,6 +1362,7 @@ namespace hb::client
 			const hb::shared::geometry::GamePoint world = active_game.m_Renderer->ui_to_world({ui_x, ui_y});
 			result["world"] = {world.x, world.y};
 		}
+		result["front"] = front_at(active_game, ui_x, ui_y);
 		return true;
 	}
 
@@ -1303,14 +1385,27 @@ namespace hb::client
 
 	bool agent_bridge::run_click(const json& id, const json& args, CGame& active_game, json&, std::string& error)
 	{
-		input_job job;
 		int x = 0;
 		int y = 0;
+		if (!resolve_xy(args, active_game, x, y, error))
+		{
+			return true;
+		}
+		return queue_click(id, args, x, y, json::object(), error);
+	}
+
+	// The click shared by click and widget_click: args carry button, count, shift, ctrl and timeout_ms; extra keys
+	// are merged into the reply. false = queued, the reply comes when the job finishes.
+	bool agent_bridge::queue_click(const json& id, const json& args, int x, int y, const json& extra, std::string& error,
+		const std::string& widget)
+	{
+		input_job job;
+		job.widget = widget;
 		int button = 0;
 		int count = 1;
 		bool shift = false;
 		bool ctrl = false;
-		if (!resolve_xy(args, active_game, x, y, error) || !read_button(args, button, error)
+		if (!read_button(args, button, error)
 			|| !read_int(args, "count", false, 1, 3, count, error) || !read_bool(args, "shift", shift, error)
 			|| !read_bool(args, "ctrl", ctrl, error) || !read_job_timeout(args, job.timeout, error))
 		{
@@ -1328,7 +1423,252 @@ namespace hb::client
 		job.pointer_x = x;
 		job.pointer_y = y;
 		job.result = {{"x", x}, {"y", y}, {"button", button}, {"count", count}};
+		job.result.update(extra);
+		job.report_front = true;
 		return !enqueue(id, std::move(job), error);
+	}
+
+	bool agent_bridge::run_widgets(const json&, const json&, CGame& active_game, json& result, std::string&)
+	{
+		IGameScreen* surface = input_surface();
+		result["surface"] = screen_id_or_null(surface);
+		result["overlay"] = GameModeManager::get_active_overlay() != nullptr;
+		result["transitioning"] = GameModeManager::is_transitioning();
+		json list = json::array();
+		for (const widget_row& row : control_rows(surface))
+		{
+			list.push_back(widget_json(row));
+		}
+		if (GameModeManager::get_active_overlay() == nullptr)
+		{
+			for (const widget_row& row : dialog_rows(active_game))
+			{
+				list.push_back(widget_json(row));
+			}
+		}
+		result["widgets"] = std::move(list);
+		return true;
+	}
+
+	bool agent_bridge::run_widget_click(const json& id, const json& args, CGame& active_game, json&, std::string& error)
+	{
+		const auto name = args.find("name");
+		if (name == args.end() || !name->is_string())
+		{
+			error = "widget_click requires a string 'name' (see widgets)";
+			return true;
+		}
+		const std::string& wanted = name->get_ref<const std::string&>();
+		int x = 0;
+		int y = 0;
+		bool enabled = true;
+		if (!widget_centre(active_game, wanted, x, y, enabled, error))
+		{
+			return true;
+		}
+		return queue_click(id, args, x, y, json{{"widget", wanted}, {"enabled", enabled}}, error, wanted);
+	}
+
+	// Every widget that takes input now: the overlay's or screen's controls, and (no overlay) the dialogs
+	std::vector<agent_bridge::widget_row> agent_bridge::input_rows(CGame& active_game) const
+	{
+		std::vector<widget_row> rows = control_rows(input_surface());
+		if (GameModeManager::get_active_overlay() == nullptr)
+		{
+			std::vector<widget_row> dialogs = dialog_rows(active_game);
+			rows.insert(rows.end(), std::make_move_iterator(dialogs.begin()), std::make_move_iterator(dialogs.end()));
+		}
+		return rows;
+	}
+
+	// The clamped centre of a named, visible widget; false with `error` set when there is none
+	bool agent_bridge::widget_centre(CGame& active_game, const std::string& name, int& x, int& y, bool& enabled,
+		std::string& error) const
+	{
+		const std::vector<widget_row> rows = input_rows(active_game);
+		const auto found = std::find_if(rows.begin(), rows.end(), [&](const widget_row& row) { return row.name == name; });
+		if (found == rows.end())
+		{
+			error = "no widget named '" + name + "' on the screen that takes input (see widgets)";
+			return false;
+		}
+		if (!found->visible || found->w <= 0 || found->h <= 0)
+		{
+			error = "widget '" + name + "' is not visible";
+			return false;
+		}
+		x = found->x + found->w / 2;
+		y = found->y + found->h / 2;
+		if (m_window != nullptr)
+		{
+			m_window->clamp_ui(x, y);
+		}
+		enabled = found->enabled;
+		return true;
+	}
+
+	std::vector<agent_bridge::widget_row> agent_bridge::control_rows(IGameScreen* surface) const
+	{
+		std::vector<widget_row> rows;
+		cc::control_collection* controls = surface != nullptr ? surface->agent_controls() : nullptr;
+		if (controls == nullptr || controls->root() == nullptr)
+		{
+			return rows;
+		}
+		const std::span<const IGameScreen::agent_control_name> names = surface->agent_control_names();
+		// the fallback name for a control the screen's table misses, so the gap is visible in `widgets`
+		const std::string prefix = surface->get_type_id() != nullptr ? surface->get_type_id() : "screen";
+		const std::string owner = screen_owner(surface);
+		const int focused = controls->focused_id();
+		controls->root()->walk([&](const cc::control& control)
+		{
+			const auto* field = dynamic_cast<const cc::text_input*>(&control);
+			if (field == nullptr && dynamic_cast<const cc::button*>(&control) == nullptr
+				&& dynamic_cast<const cc::toggle_button*>(&control) == nullptr)
+			{
+				return; // panels and labels take no input
+			}
+			const cc::rect bounds = control.screen_bounds();
+			const auto add_row = [&](std::string name, int part_x, int part_w)
+			{
+				widget_row row;
+				row.name = std::move(name);
+				row.kind = field != nullptr ? "text_field" : "button";
+				row.owner = owner;
+				row.x = bounds.x + part_x;
+				row.y = bounds.y;
+				row.w = part_w > 0 ? part_w : bounds.w;
+				row.h = bounds.h;
+				row.enabled = control.is_effectively_enabled();
+				row.visible = control.is_effectively_visible();
+				row.focused = control.id() == focused;
+				if (field != nullptr)
+				{
+					row.is_field = true;
+					row.masked = field->is_hidden();
+					row.length = row.masked ? 0 : utf8_length(field->text()); // a masked field leaks neither text nor length
+				}
+				rows.push_back(std::move(row));
+			};
+			bool named = false;
+			for (const IGameScreen::agent_control_name& entry : names)
+			{
+				if (entry.id == control.id())
+				{
+					add_row(entry.name, entry.part_x, entry.part_w);
+					named = true;
+				}
+			}
+			if (!named)
+			{
+				add_row(std::format("{}.#{}", prefix, control.id()), 0, 0);
+			}
+		});
+		return rows;
+	}
+
+	std::vector<agent_bridge::widget_row> agent_bridge::dialog_rows(CGame& active_game) const
+	{
+		std::vector<widget_row> rows;
+		Screen_OnGame* on_game = active_game.on_game();
+		if (on_game == nullptr || active_game.m_player == nullptr)
+		{
+			return rows;
+		}
+		DialogBoxManager& dialogs = on_game->get_dialog_box_manager();
+		const int top = dialogs.get_top_id();
+		for (const IDialogBox* dialog : dialogs.agent_dialogs_top_to_bottom())
+		{
+			widget_row row;
+			row.name = dialog_name(dialog->get_id());
+			row.kind = "window";
+			row.owner = "dialog:" + row.name;
+			row.x = dialog->m_x;
+			row.y = dialog->m_y;
+			row.w = dialog->m_size_x;
+			row.h = dialog->m_size_y;
+			if (dialog->get_id() == DialogBoxId::HudPanel && active_game.m_Renderer != nullptr)
+			{
+				// the HUD is laid out and hit-tested in world-rect units: map both corners into UI units
+				const auto top_left = active_game.m_Renderer->world_to_ui({row.x, row.y});
+				const auto bottom_right = active_game.m_Renderer->world_to_ui({row.x + row.w, row.y + row.h});
+				row.x = top_left.x;
+				row.y = top_left.y;
+				row.w = bottom_right.x - top_left.x;
+				row.h = bottom_right.y - top_left.y;
+			}
+			row.focused = static_cast<int>(dialog->get_id()) == top;
+			row.is_dialog = true;
+			row.dialog_id = static_cast<int>(dialog->get_id());
+			rows.push_back(std::move(row));
+		}
+		return rows;
+	}
+
+	agent_bridge::json agent_bridge::widget_json(const widget_row& row) const
+	{
+		json out = {{"name", row.name}, {"kind", row.kind}, {"owner", row.owner},
+			{"rect", {{"x", row.x}, {"y", row.y}, {"w", row.w}, {"h", row.h}}},
+			{"enabled", row.enabled}, {"visible", row.visible}, {"focused", row.focused}};
+		if (m_window != nullptr)
+		{
+			int left = 0;
+			int top = 0;
+			int right = 0;
+			int bottom = 0;
+			m_window->ui_to_window(row.x, row.y, left, top);
+			m_window->ui_to_window(row.x + row.w, row.y + row.h, right, bottom);
+			out["window_rect"] = {{"x", left}, {"y", top}, {"w", right - left}, {"h", bottom - top}};
+		}
+		if (row.is_field)
+		{
+			out["masked"] = row.masked;
+			if (!row.masked)
+			{
+				out["length"] = row.length;
+			}
+		}
+		if (row.is_dialog)
+		{
+			out["dialog_id"] = row.dialog_id;
+		}
+		return out;
+	}
+
+	agent_bridge::json agent_bridge::front_at(CGame& active_game, int x, int y) const
+	{
+		IGameScreen* overlay = GameModeManager::get_active_overlay();
+		IGameScreen* surface = input_surface();
+		const std::string owner = screen_owner(surface);
+		if (GameModeManager::is_transitioning())
+		{
+			return {{"kind", "transition"}, {"owner", owner}}; // input is suppressed while a screen fades
+		}
+		const std::vector<widget_row> rows = control_rows(surface);
+		for (auto it = rows.rbegin(); it != rows.rend(); ++it) // later controls draw on top
+		{
+			// CControls never hovers or presses a disabled or hidden control, so a click goes through it
+			if (it->visible && it->enabled && it->contains(x, y))
+			{
+				return {{"kind", "widget"}, {"owner", owner}, {"name", it->name}};
+			}
+		}
+		if (overlay != nullptr)
+		{
+			return {{"kind", "modal"}, {"owner", owner}}; // an overlay swallows what its controls do not take
+		}
+		for (const widget_row& row : dialog_rows(active_game))
+		{
+			if (row.contains(x, y))
+			{
+				return {{"kind", "window"}, {"owner", row.owner}, {"name", row.name}};
+			}
+		}
+		if (active_game.on_game() != nullptr && active_game.m_player != nullptr)
+		{
+			return {{"kind", "world"}, {"owner", owner}};
+		}
+		return {{"kind", "screen"}, {"owner", owner}};
 	}
 
 	bool agent_bridge::run_mouse_down(const json& id, const json& args, CGame& active_game, json&, std::string& error)
@@ -1347,6 +1687,7 @@ namespace hb::client
 		job.pointer = true;
 		job.pointer_x = x;
 		job.pointer_y = y;
+		job.report_front = true;
 		job.result = {{"x", x}, {"y", y}, {"button", button}};
 		return !enqueue(id, std::move(job), error);
 	}
@@ -1368,6 +1709,8 @@ namespace hb::client
 		job.pointer = true;
 		job.pointer_x = x;
 		job.pointer_y = y;
+		job.report_front = true;
+		job.front_step = step_kind::button_up;
 		job.result = {{"x", x}, {"y", y}, {"button", button}};
 		return !enqueue(id, std::move(job), error);
 	}

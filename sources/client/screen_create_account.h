@@ -18,6 +18,23 @@ public:
     void on_render() override;
     bool on_net_response(uint16_t response_type, char* data) override;
 
+#ifdef DEF_CLAUDE_TESTING
+    cc::control_collection* agent_controls() override { return &m_controls; }
+    std::span<const agent_control_name> agent_control_names() const override
+    {
+        static constexpr agent_control_name names[] = {
+            {TXT_ACCOUNT, "create_account.account"},
+            {TXT_PASSWORD, "create_account.password"},
+            {TXT_CONFIRM, "create_account.confirm"},
+            {TXT_EMAIL, "create_account.email"},
+            {BTN_CREATE, "create_account.create"},
+            {BTN_CLEAR, "create_account.clear"},
+            {BTN_CANCEL, "create_account.cancel"},
+        };
+        return names;
+    }
+#endif
+
 private:
     void submit_create_account();
 
