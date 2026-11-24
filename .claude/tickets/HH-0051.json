@@ -1,7 +1,7 @@
 {
   "id": "HH-0051",
   "summary": "Map kit: smaller stairs and no overlapping map objects",
-  "status": "in_progress",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "client",
   "created": "2026-11-24T18:11:17Z",
-  "updated": "2026-11-24T18:11:17Z",
+  "updated": "2026-11-24T18:21:57Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "d95843b"
+    ],
     "files": [],
     "tickets": [],
     "relates_to": [
       "HH-0050"
     ]
   },
-  "body": "Goal (user, 2026-11-24): \"Make the stairs smaller and try not to allow overlap of map objects\".\n\nDone-when: stairs about two thirds of current height; icons placed with gap-based nudging instead of drop-when-covered; zero intersecting icon rects (clusters excepted); kit rebuilt, ink unchanged; previews checked.\n"
+  "body": "Goal (user, 2026-11-24): \"Make the stairs smaller and try not to allow overlap of map objects\".\n\nDone-when: stairs about two thirds of current height; icons placed with gap-based nudging instead of drop-when-covered; zero intersecting icon rects (clusters excepted); kit rebuilt, ink unchanged; previews checked.\n\n**Verified, 2026-11-24:** the read-only review passed after the fixes (leaders are skipped when their point is covered by a placed icon; leader ink is written straight to the kit; dropped icons are named). The reviewer's own JSON check over 293 icons found 0 overlaps, 0 margin or bounds violations and 0 missing frames. 17 icons were nudged, 0 dropped, 0 leaders, and no ink.png changed. The kit was deployed and the Map item opened in game on `default`. The smaller stairs were checked only in previews, not in game. Committed as d95843b.\n"
 }

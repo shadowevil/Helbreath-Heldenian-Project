@@ -1,7 +1,7 @@
 {
   "id": "HH-0053",
   "summary": "Ship Liberation Serif (Times New Roman counterpart) with the client",
-  "status": "in_progress",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,11 +11,13 @@
   ],
   "author": "pm",
   "created": "2026-11-24T18:18:20Z",
-  "updated": "2026-11-24T18:18:20Z",
+  "updated": "2026-11-24T18:21:57Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "edf8f61"
+    ],
     "files": [],
     "tickets": []
   },
-  "body": "Ship Liberation Serif with the client as the open counterpart to Times New Roman, the way Wine Tahoma stands in for Tahoma. The user's ruling (2026-11-24): \"We can ship liberation serif with the client as well\".\n\n| measured | result |\n|---|---|\n| advance widths, Times New Roman vs Liberation Serif 2.1.5, 4 styles x 11/12/14/18/28 px | identical in all 20 cases (PIL, `.claude/scratch/fonts/compare.py`) |\n| licence | SIL OFL 1.1 (release LICENSE file) |\n\nStaged as `staged/client/fonts/liberation_serif_{regular,bold,italic,bold_italic}.ttf`, plus `liberation-serif-OFL-1.1.txt`. They come from the official release `liberation-fonts-ttf-2.1.5.tar.gz` (github.com/liberationfonts). No client code uses them yet.\n\n**Done when:** the four TTFs and the licence are committed in `staged/client/fonts/` and deployed to `game/client/fonts/`.\n\nSource: user message, 2026-11-24; comparison image `.claude/scratch/fonts/times_vs_liberation.png`.\n"
+  "body": "Ship Liberation Serif with the client as the open counterpart to Times New Roman, the way Wine Tahoma stands in for Tahoma. The user's ruling (2026-11-24): \"We can ship liberation serif with the client as well\".\n\n| measured | result |\n|---|---|\n| advance widths, Times New Roman vs Liberation Serif 2.1.5, 4 styles x 11/12/14/18/28 px | identical in all 20 cases (PIL, `.claude/scratch/fonts/compare.py`) |\n| licence | SIL OFL 1.1 (release LICENSE file) |\n\nStaged as `staged/client/fonts/liberation_serif_{regular,bold,italic,bold_italic}.ttf`, plus `liberation-serif-OFL-1.1.txt`. They come from the official release `liberation-fonts-ttf-2.1.5.tar.gz` (github.com/liberationfonts). No client code uses them yet.\n\n**Done when:** the four TTFs and the licence are committed in `staged/client/fonts/` and deployed to `game/client/fonts/`.\n\nSource: user message, 2026-11-24; comparison image `.claude/scratch/fonts/times_vs_liberation.png`.\n\n**Verified, 2026-11-24:** Committed as edf8f61. Deploy copied the four TTFs and the licence to `game/client/fonts/` (listed after deploy).\n"
 }
