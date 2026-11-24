@@ -1,7 +1,7 @@
 {
   "id": "HH-0063",
   "summary": "Panel kit 4: character dialog from the kit",
-  "status": "open",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:14Z",
-  "updated": "2026-11-24T20:30:14Z",
+  "updated": "2026-11-24T22:31:55Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "5492ac0c"
+    ],
     "files": [
       "sources/client/dialog_box_character.cpp:249"
     ],
@@ -24,5 +26,12 @@
       "HH-0059"
     ]
   },
-  "body": "Spec step 4. Replace InterfaceNdText frame 0 with compose + placements (layout: scratch dialogs.py character()); dialogTrans reaches every draw.\n\nDone when: in-game screenshot matches recon/character_1x.png; values update."
+  "body": "Spec step 4. Replace InterfaceNdText frame 0 with compose + placements (layout: scratch dialogs.py character()); dialogTrans reaches every draw.\n\nDone when: in-game screenshot matches recon/character_1x.png; values update.\n\n**Verified, 2026-11-24:** review passed with fixes, and the fixes are in. Windows and Linux builds pass. In game the dialog renders and the buttons hover, Party opens the party menu, and the slot rings sit within about 2 px of the old ones. The user: \"Looks much better just from looking at it\". Dragging and equipment slots are unverified (bridge mouse_down bug HH-0069; no equipped items), and that code is unchanged. Committed 5492ac0c.\n",
+  "comments": [
+    {
+      "author": "client",
+      "at": "2026-11-24T22:23:25Z",
+      "body": "Character dialog converted to a kit_dialog (frame, title, headings with flourishes, 14 label/inset fields, doll box with slot rings, rule, 3 kit buttons). The old sprite path stays as the fallback when the kit is missing. Checkpoints: ed503b8a (conversion), c18e6df8 (panel_kit + dialog, flourish centring), 0141f3ae (text renderer, per-face smoothing).\n\nUser feedback addressed:\n- Flourishes centred on the heading text: they now sit on the cap-height centre (cap top to baseline) of the text as drawn, not 2 px below. `panel_kit::cap_middle()` added; `heading()` lost `flourish_dy`. `tools/panel_kit/compose.py` got a `heading` inner type with the same rule, and its preview uses it. Measured: the flourish centre and the text cap centre sit within 0.5 px in both the preview and the live client.\n- Blurred headings: the cause was not sampling. Two faux-bold copies, each drawn at the pass alpha, stacked the 75% shadow to about 94% and the 35% emboss to about 58%. Each copy now draws at `1 - sqrt(1 - a)` (or `a / 2` when additive), which stacks back to `a`.\n- Per-recipe `\"smooth\"` and `\"subpixel\"` (both default true) are read from the kit json. The staged json is unchanged because the defaults measured best.\n\nMAE against compose.py on the same background (s = smooth, p = subpixel):\n\n| Recipe | s1p1 at 1x | s1p0 at 1x | s0p1 at 1x | s0p0 at 1x | s1p1 at 1x, after the bold fix |\n|---|---|---|---|---|---|\n| title_red | 11.18 | 11.18 | 11.18 | 11.18 | 11.18 |\n| heading | 4.56 | 10.50 | 11.59 | 10.50 | 3.70 |\n| field_label | 0.00 | 2.22 | 2.20 | 2.22 | 0.00 |\n| small_button_label | 8.28 | 10.61 | 10.91 | 10.61 | 8.28 |\n| wide_button_label | 10.90 | 10.74 | 11.23 | 11.36 | 10.72 |\n\nAt 1.6x (reference upscaled with Lanczos), s1p1 / s1p0 / s0p1 / s0p0:\n- heading: 25.92 / 25.76 / 26.54 / 25.76\n- small_button_label: 22.59 / 23.13 / 23.20 / 23.81\n- wide_button_label: 18.86 / 19.08 / 19.11 / 19.33\n\nThe flags make little difference at 1.6x.\n\ntitle_red does not change with any flag because it has no faux bold. Its 11.18 is a recipe difference: the mockup uses the Photoshop title style.\n\nScreenshots in build/screenshots:\n- hh0063_before_character.jpg, hh0063_after_character.jpg\n- hh0063_after_hover_{quest,party,levelset,doll}.jpg\n- hh0063_flourish_3x.jpg (before / after)\n- hh0063_headings_3x_1x.jpg, hh0063_headings_3x_live.jpg (mockup / before / after)\n\nIn-game checks:\n\n| Check | Result |\n|---|---|\n| Dialog opens, values update | verified |\n| Hover Quest, Party and Level Set. | verified |\n| Party click opens the Party Menu | verified |\n| Journal clean | verified |\n| Dragging | unverified: hb_mouse_down is rejected by the client (\"unknown argument 'ctrl'\"), a bridge tool fault |\n| Equipment slot interaction | unverified: no equipped item to hover or drop. That code is unchanged. |\n\nDeviations:\n- The mockup's shade band (14,85,242,14) is not drawn.\n- Values are still drawn by put_aligned_string.\n- Labels are English literals, as in the baked art."
+    }
+  ]
 }

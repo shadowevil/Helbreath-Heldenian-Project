@@ -1,6 +1,6 @@
 {
   "id": "HH-0069",
-  "summary": "MCP: hb_close_window reply errors though the window closes",
+  "summary": "MCP: hb_close_window reply errors; hb_mouse_down sends an unknown 'ctrl' argument",
   "status": "open",
   "severity": "low",
   "owner_area": "client",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-24T20:45:00Z",
-  "updated": "2026-11-24T20:45:00Z",
+  "updated": "2026-11-24T22:24:41Z",
   "links": {
     "commits": [],
     "files": [],
@@ -20,5 +20,5 @@
       "HH-0032"
     ]
   },
-  "body": "hb_close_window returns \"internal error: sequence item 0: expected str instance, dict found\" even though the window does close (seen 2026-11-24 during the parchment map check). The MCP server seems to join a list of dicts as strings when it formats the reply.\n\n**Done when:** hb_close_window reports the closed window normally.\n\nSource: main session, 2026-11-24, in-game check.\n"
+  "body": "hb_close_window returns \"internal error: sequence item 0: expected str instance, dict found\" even though the window does close (seen 2026-11-24 during the parchment map check). The MCP server seems to join a list of dicts as strings when it formats the reply.\n\n**Done when:** hb_close_window reports the closed window normally.\n\nSource: main session, 2026-11-24, in-game check.\n\n**Also seen, 2026-11-24:** hb_mouse_down is refused by the client with \"unknown argument 'ctrl'\", so dragging a dialog can't be tested through the bridge. The MCP server seems to send a ctrl field the client's mouse_down command does not accept.\n"
 }
