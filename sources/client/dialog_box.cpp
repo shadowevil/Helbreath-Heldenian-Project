@@ -61,6 +61,8 @@ namespace
 		{1, "Skills", 20},
 		{4, "Quest", 20},
 		{3, "Party Menu", 20},
+		{18, "Cityhall Menu", 21},
+		{19, "Guild Menu", 21},
 	};
 }
 

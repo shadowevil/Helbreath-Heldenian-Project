@@ -15,8 +15,7 @@ void DialogBox_GuildMenu::on_draw()
 	short sX = m_x;
 	short sY = m_y;
 
-	m_game->draw_new_dialog_box(InterfaceNdGame2, sX, sY, 2);
-	m_game->draw_new_dialog_box(InterfaceNdText, sX, sY, 19);
+	draw_tall_frame(tall_frame::rivet, sX, sY, 19);   // "Guild Menu"
 }
 
 bool DialogBox_GuildMenu::on_click()

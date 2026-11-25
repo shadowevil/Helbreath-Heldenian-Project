@@ -77,7 +77,7 @@ void DialogBox_CrusadeJob::on_draw()
 	short sX = m_x;
 	short sY = m_y;
 
-	draw_new_dialog_box(InterfaceNdGame2, sX, sY, 0);
+	draw_tall_frame(tall_frame::stone, sX, sY);
 
 	switch (m_mode)
 	{

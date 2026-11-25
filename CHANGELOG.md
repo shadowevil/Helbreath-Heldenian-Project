@@ -165,3 +165,5 @@ The tester menu draws a kit frame and the standard red title with black flourish
 The magic shop, NPC talk, text, quest, help, party and shutdown-notice dialogs now draw plain kit frames, without their old pictures (HH-0066, batch 4).
 - **Shared code:** every tall dialog uses `draw_tall_frame` and `draw_tall_scrollbar`, and the repeated title colour and panel sizes are now shared constants.
 - **NPC talk:** the kit version shows a working scrollbar thumb, where the original drew only the track.
+
+The city hall, command hall, crusade job and both guild dialogs now draw plain kit frames through the shared tall-frame helper (HH-0066, batch 5). Crusade job was not seen in game; it only opens for a citizen.

@@ -34,7 +34,7 @@ void DialogBox_CommandHallMenu::on_draw()
 	sX = m_x;
 	sY = m_y;
 	size_x = m_size_x;
-	draw_new_dialog_box(InterfaceNdGame2, sX, sY, 2);
+	draw_tall_frame(tall_frame::rivet, sX, sY);
 
 	switch (m_mode) {
 	case mode::main_menu:

@@ -108,7 +108,8 @@ protected:
 	// The kit part names a kit_frame style stands for (for a kit_dialog built by the dialog itself)
 	static const hb::client::panel_style& kit_frame_style(kit_frame::type style);
 	// A tall 258x339 frame with the title the Text sprite frame title_frame carries (-1 = none; 11 Item for
-	// Sale, 10 Repair Item, 21 Items In Storage, 1 Skills, 4 Quest, 3 Party Menu): a plain kit frame, title and sunken list
+	// Sale, 10 Repair Item, 21 Items In Storage, 1 Skills, 4 Quest, 3 Party Menu, 18 Cityhall Menu, 19 Guild
+	// Menu): a plain kit frame, title and sunken list
 	// panel, else the original Game2 frame and Text title
 	void draw_tall_frame(tall_frame::type style, int x, int y, int title_frame = -1);
 	// A tall dialog's scrollbar at the original 274 px thumb travel: the kit groove and thumb at pos (0..1,

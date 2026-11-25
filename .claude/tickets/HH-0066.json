@@ -11,7 +11,7 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:14Z",
-  "updated": "2026-11-25T03:10:27Z",
+  "updated": "2026-11-25T03:21:03Z",
   "links": {
     "commits": [],
     "files": [
@@ -69,6 +69,16 @@
       "author": "client",
       "at": "2026-11-25T03:10:27Z",
       "body": "Batch 4 done, uncommitted. Checkpoints: 6fc12de5 (shared: dialog_box.h/.cpp generalised to draw_tall_frame / draw_tall_scrollbar with tall_frame::stone|rivet, kit_layout constants and kit_frame::rivet_box; batch 3 call sites renamed; skill now on the helpers; magic and tester use the shared constants), bad818a8 (npc_talk, text, quest, help, party), 1f297828 (magic shop, noticement). Plain kit frames, no pictures; old sprites remain the fallback. Windows and Linux builds clean. Shots: build/screenshots/hh0066_b4_*.jpg."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-25T03:11:52Z",
+      "body": "Batch 4 committed in 9dda3302 after review PASS (one comment added for the title table). Next: guild and city menus."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-25T03:21:03Z",
+      "body": "Batch 5 done, uncommitted. Checkpoints: 484d1467 (dialog_box.h/.cpp title table + city hall, command hall, crusade job), 0030ef4c (guild menu, guild operation). All on draw_tall_frame: city hall rivet + \"Cityhall Menu\" y 21; command hall rivet, no title; crusade job stone, no title; guild menu rivet + \"Guild Menu\" y 21; guild operation stone + \"Guild Menu\". Commander, constructor and soldier (310x386 crusade map dialogs) are not in this batch. Windows and Linux builds clean. Shots: build/screenshots/hh0066_b5_*.jpg. Crusade job unverified in game (needs a citizen in crusade mode)."
     }
   ]
 }

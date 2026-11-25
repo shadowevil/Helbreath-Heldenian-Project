@@ -28,8 +28,7 @@ void DialogBox_CityHallMenu::on_draw()
 	short sY = m_y;
 	short size_x = m_size_x;
 
-	m_game->draw_new_dialog_box(InterfaceNdGame2, sX, sY, 2);
-	m_game->draw_new_dialog_box(InterfaceNdText, sX, sY, 18);
+	draw_tall_frame(tall_frame::rivet, sX, sY, 18);   // "Cityhall Menu"
 
 	switch (m_mode)
 	{
