@@ -94,15 +94,21 @@ for _i, _n in enumerate(MENU):
 MARGIN = 12
 LEFT_DX = MARGIN - 90             # left group: tubes, hunger, SP, message frame; leftmost = the tubes at x 90
 RIGHT_DX = (800 - MARGIN) - 711   # right group: crusade icon, combat socket, menu; rightmost = the menu's end, x 711
+INFO_DX = 8                       # SP trough and message frame, a further shift right to give the hunger tube room
+                                  # (user, 2026-11-25, HH-0102); 8, not the sketch's ~7, leaves a
+                                  # 17 px gap in which the 7 px hunger tube centres exactly
+# The hunger tube centred between the HP/MP tubes' right end and the shifted message frame's left edge (user,
+# 2026-11-25: "make sure the hunger bar is horizontally centered"): (90 + 128 .. 227 + INFO_DX) + LEFT_DX, width 7
+HUNGER_X = (90 + 128 + 227 + INFO_DX - 7) // 2 + LEFT_DX
 LAYOUT = {
 	"note": "bar-relative: screen (x, hud_top + y); the bar itself at (0, 0)",
 	"bar": [0, 0],
 	"exp_fill": [0, 0],
-	"msg_frame": [227 + LEFT_DX, 20],
+	"msg_frame": [227 + LEFT_DX + INFO_DX, 20],
 	"tube_hp": [90 + LEFT_DX, 8],
 	"tube_mp": [90 + LEFT_DX, 30],
-	"sp_trough": [229 + LEFT_DX, 7],
-	"hunger_trough": [219 + LEFT_DX, 7],
+	"sp_trough": [229 + LEFT_DX + INFO_DX, 7],
+	"hunger_trough": [HUNGER_X, 7],
 	"socket": [442 + RIGHT_DX, 7],
 	"crusade": [405 + RIGHT_DX, 8],
 	"menu": [493 + RIGHT_DX, 8],

@@ -36,6 +36,8 @@ private:
 	// Left: tubes, SP, hunger, message frame and their text. Right: crusade icon, combat button, menu buttons.
 	static constexpr int left_group_dx = -78;
 	static constexpr int right_group_dx = 77;
+	// The SP bar and message frame (with their text) shift a further INFO_DX right, past the hunger tube (HH-0102)
+	static constexpr int info_block_dx = left_group_dx + 8;
 
 	static constexpr int MAX_HUNGER = 100;
 
@@ -53,15 +55,15 @@ private:
 	static int HP_NUM_X() { return BASE_HP_NUM_X + hud_x_offset() + left_group_dx; }
 	static int HP_NUM_Y() { return BASE_HP_NUM_Y + hud_y_offset(); }
 	static int MP_NUM_Y() { return BASE_MP_NUM_Y + hud_y_offset(); }
-	static int SP_NUM_X() { return BASE_SP_NUM_X + hud_x_offset() + left_group_dx; }
+	static int SP_NUM_X() { return BASE_SP_NUM_X + hud_x_offset() + info_block_dx; }
 	static int SP_NUM_Y() { return BASE_SP_NUM_Y + hud_y_offset(); }
 
 	// Map message text position
 	static constexpr int BASE_MAP_MSG_X1 = 142;
 	static constexpr int BASE_MAP_MSG_X2 = 325;
 	static constexpr int BASE_MAP_MSG_Y = 456;
-	static int MAP_MSG_X1() { return BASE_MAP_MSG_X1 + hud_x_offset() + left_group_dx; }
-	static int MAP_MSG_X2() { return BASE_MAP_MSG_X2 + hud_x_offset() + left_group_dx; }
+	static int MAP_MSG_X1() { return BASE_MAP_MSG_X1 + hud_x_offset() + info_block_dx; }
+	static int MAP_MSG_X2() { return BASE_MAP_MSG_X2 + hud_x_offset() + info_block_dx; }
 	static int MAP_MSG_Y() { return BASE_MAP_MSG_Y + hud_y_offset(); }
 
 	// Button regions (Y is shared, right-side X needs offset)

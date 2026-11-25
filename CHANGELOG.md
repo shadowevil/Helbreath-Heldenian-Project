@@ -205,3 +205,5 @@ The character-select and create-character screens no longer draw a second copy o
 The HD numeral glyphs on sprite font sheet 002 are cleaned up: the stray mark on the 3 is gone, and the 6, 7 and 9 are tidier. The previous sheet is archived.
 
 The action bar now draws from the user's HD upscale of the HUD art at every screen size, so it stays sharp on large windows while still covering the same 800 game pixels (HH-0100). The old low-resolution HUD kit is archived. The bar is also split: the health, mana and stamina tubes and the info display sit at the left edge, the combat orb and menu buttons at the right edge, and the space is in the middle.
+
+On the action bar, the stamina bar and info panel move 8 pixels right, and the hunger tube now sits centred between the health/mana tubes and the info panel (HH-0102).
