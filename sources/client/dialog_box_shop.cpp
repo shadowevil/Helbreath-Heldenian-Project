@@ -423,11 +423,15 @@ void DialogBox_Shop::draw_quantity_selector(short sX, short sY, short mouse_x, s
     char temp[16];
     int max_qty = get_max_quantity();
 
+    // The kit's square + / - at the old frames' places (their pivot is -6, -5)
+    const hb::client::panel_kit& kit = m_game->get_panel_kit();
+    constexpr int pivot_x = -6;
+    constexpr int pivot_y = -5;
+    constexpr int button_x[] = {128, 142, 156, 170};
+
     // 4 up buttons
-    m_game->m_sprite[InterfaceNdGame2]->draw(sX + 128, sY + 219, 19);
-    m_game->m_sprite[InterfaceNdGame2]->draw(sX + 142, sY + 219, 19);
-    m_game->m_sprite[InterfaceNdGame2]->draw(sX + 156, sY + 219, 19);
-    m_game->m_sprite[InterfaceNdGame2]->draw(sX + 170, sY + 219, 19);
+    for (int x : button_x)
+        kit.piece("btn_sq_plus", sX + x + pivot_x, sY + 219 + pivot_y);
 
     // "Quantity:" label
     hb::shared::text::draw_text(GameFont::Default, sX + 80, sY + 227, DRAW_DIALOGBOX_SHOP27, hb::shared::text::TextStyle::from_color(GameColors::UILabel));
@@ -454,10 +458,8 @@ void DialogBox_Shop::draw_quantity_selector(short sX, short sY, short mouse_x, s
     }
 
     // 4 down buttons
-    m_game->m_sprite[InterfaceNdGame2]->draw(sX + 128, sY + 244, 20);
-    m_game->m_sprite[InterfaceNdGame2]->draw(sX + 142, sY + 244, 20);
-    m_game->m_sprite[InterfaceNdGame2]->draw(sX + 156, sY + 244, 20);
-    m_game->m_sprite[InterfaceNdGame2]->draw(sX + 170, sY + 244, 20);
+    for (int x : button_x)
+        kit.piece("btn_sq_minus", sX + x + pivot_x, sY + 244 + pivot_y);
 }
 
 bool DialogBox_Shop::on_click()

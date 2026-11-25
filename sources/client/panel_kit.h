@@ -168,7 +168,9 @@ namespace hb::client
 		void groove(const kit_rect& r, float alpha = 1.0f) const;
 		void thumb(int cx, int cy, float alpha = 1.0f) const;
 		// A named frame (a decor piece) at its natural size, top-left at (x, y); false if the kit lacks it
-		bool piece(std::string_view name, int x, int y, float alpha = 1.0f) const;
+		// tint multiplies the piece (a white mask takes its colour); none = as drawn in the atlas
+		bool piece(std::string_view name, int x, int y, float alpha = 1.0f,
+			const hb::shared::render::Color* tint = nullptr) const;
 		// A flourish centred on (cx, cy) in its JSON tint and blend (or style's); scale <= 0 = the JSON scale
 		void flourish(std::string_view name, int cx, int cy, bool mirror = false, float scale = 0.0f, float alpha = 1.0f,
 			const flourish_style* style = nullptr) const;

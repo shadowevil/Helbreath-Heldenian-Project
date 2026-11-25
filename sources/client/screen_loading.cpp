@@ -167,7 +167,6 @@ void Screen_Loading::LoadStage_Interface()
     });
 
     hb::shared::sprite::SpriteLoader::open("interface/game_dialogs", [&](hb::shared::sprite::SpriteLoader& loader) {
-        m_game->m_sprite[InterfaceNdGame2] = loader.get_sprite(1, false);
         m_game->m_sprite[InterfaceNdGame3] = loader.get_sprite(2, false);
         m_game->m_sprite[InterfaceNdGame4] = loader.get_sprite(3, false);
         m_game->m_sprite[InterfaceNdCrusade] = loader.get_sprite(4, false);

@@ -789,12 +789,17 @@ namespace hb::client
 		m_data->draw(m_data->scroll_thumb, cx - t.w / 2, cy - t.h / 2, alpha);
 	}
 
-	bool panel_kit::piece(std::string_view name, int x, int y, float alpha) const
+	bool panel_kit::piece(std::string_view name, int x, int y, float alpha, const Color* tint) const
 	{
 		const kit_data::piece* p = m_data ? m_data->find(name) : nullptr;
 		if (!p)
 			return false;
-		m_data->draw(p, x, y, alpha);
+		if (tint)
+			m_data->renderer->draw_texture_region(m_data->sheet.get(), p->x, p->y, static_cast<float>(p->w), static_cast<float>(p->h),
+				static_cast<float>(x), static_cast<float>(y), static_cast<float>(p->w), static_cast<float>(p->h), alpha,
+				hb::shared::render::draw_tint{*tint});
+		else
+			m_data->draw(p, x, y, alpha);
 		return true;
 	}
 

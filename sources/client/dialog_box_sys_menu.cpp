@@ -339,12 +339,16 @@ void DialogBox_SysMenu::draw_box(int frame, int x, int y)
 
 void DialogBox_SysMenu::draw_slider(int x, int y, int value)
 {
-	// Track: a kit groove over the sprite track; knob: the kit thumb centred where the sprite knob was
+	// Track: a kit groove over the sprite track; knob: a kit box button
 	const hb::shared::sprite::SpriteRect track = m_game->m_sprite[InterfaceNdButton]->GetFrameRect(80);
-	const hb::shared::sprite::SpriteRect knob = m_game->m_sprite[InterfaceNdGame2]->GetFrameRect(8);
+	// The old knob frame's pivot (Game2 frame 8, 15x15)
+	constexpr int knob_pivot_x = -6;
+	constexpr int knob_pivot_y = -5;
 	const hb::client::kit_point o = m_kit->origin();
 	m_kit->groove({x + track.pivotX - o.x, y + 5 + track.pivotY - o.y, track.width, track.height});
-	m_kit->thumb(x + value + knob.pivotX + knob.width / 2 - o.x, y + knob.pivotY + knob.height / 2 - o.y);
+	// The knob is the kit's framed orange down-arrow box (btn_box_b, 15x15 like the old frame; user, 2026-11-25), where the
+	// old frame was. The scrollbar thumb is the left-arrow box (btn_box_a), which vertical scrollbars keep.
+	m_kit->piece("btn_box_b", {x + value + knob_pivot_x - o.x, y + knob_pivot_y - o.y});
 }
 
 void DialogBox_SysMenu::draw_graphics_scrollbar(int max_scroll)

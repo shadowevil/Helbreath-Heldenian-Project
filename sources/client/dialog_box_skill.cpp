@@ -77,9 +77,11 @@ void DialogBox_Skill::on_draw()
 					}
 				}
 
+				// The kit's white-mask arrows, tinted as the sprite frames were
+				static constexpr hb::shared::render::Color arrow_dark{1, 1, 1};
 				if (m_game->on_game()->m_down_skill_index == (i + m_scroll_position))
-					m_game->m_sprite[InterfaceNdGame2]->draw(sX + 220, sY + 49 + i * 15, 26, hb::shared::sprite::DrawParams::tint(GameColors::UIWhite.r, GameColors::UIWhite.g, GameColors::UIWhite.b));
-				else m_game->m_sprite[InterfaceNdGame2]->draw(sX + 220, sY + 49 + i * 15, 25, hb::shared::sprite::DrawParams::tint(1, 1, 1));
+					m_game->get_panel_kit().piece("arrow_down_small", sX + 220, sY + 49 + i * 15, 1.0f, &GameColors::UIWhite);
+				else m_game->get_panel_kit().piece("arrow_up_small", sX + 220, sY + 49 + i * 15, 1.0f, &arrow_dark);
 			}
 
 		total_lines = 0;

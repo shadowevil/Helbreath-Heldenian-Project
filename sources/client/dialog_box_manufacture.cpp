@@ -304,13 +304,14 @@ void DialogBox_Manufacture::draw_manufacture_list(short sX, short sY)
 			loc++;
 		}
 
-	if ((m_scroll_view >= 1) && (build_item_manager::get().get_display_list()[m_scroll_view - 1] != 0))
-		m_game->m_sprite[InterfaceNdGame2]->draw(sX + adj_x + 225, sY + adj_y + 210, 23);
-	else m_game->m_sprite[InterfaceNdGame2]->draw(sX + adj_x + 225, sY + adj_y + 210, 23, hb::shared::sprite::DrawParams::tinted_alpha(GameColors::UIBlack.r, GameColors::UIBlack.g, GameColors::UIBlack.b, 0.7f));
-
-	if (build_item_manager::get().get_display_list()[m_scroll_view + 13] != 0)
-		m_game->m_sprite[InterfaceNdGame2]->draw(sX + adj_x + 225, sY + adj_y + 230, 24);
-	else m_game->m_sprite[InterfaceNdGame2]->draw(sX + adj_x + 225, sY + adj_y + 230, 24, hb::shared::sprite::DrawParams::tinted_alpha(GameColors::UIBlack.r, GameColors::UIBlack.g, GameColors::UIBlack.b, 0.7f));
+	// The kit's round up / down at the old frames' places (their pivot is -6, -5), the dark pieces when disabled
+	{
+		const hb::client::panel_kit& scroll_kit = m_game->get_panel_kit();
+		const bool can_up = (m_scroll_view >= 1) && (build_item_manager::get().get_display_list()[m_scroll_view - 1] != 0);
+		const bool can_down = build_item_manager::get().get_display_list()[m_scroll_view + 13] != 0;
+		scroll_kit.piece(can_up ? "btn_round_up" : "btn_round_up_dark", sX + adj_x + 225 - 6, sY + adj_y + 210 - 5);
+		scroll_kit.piece(can_down ? "btn_round_down" : "btn_round_down_dark", sX + adj_x + 225 - 6, sY + adj_y + 230 - 5);
+	}
 
 	if ((lb != 0) && (m_game->get_dialog_box_manager().get_top_id() == DialogBoxId::Manufacture)) {
 		if ((mouse_x >= sX + adj_x + 225) && (mouse_x <= sX + adj_x + 245) && (mouse_y >= sY + adj_y + 210) && (mouse_y <= sY + adj_y + 230)) {
@@ -401,7 +402,7 @@ void DialogBox_Manufacture::draw_manufacture_waiting(short sX, short sY)
 		{
 			int slotX = (slot % 3) * 45;
 			int slotY = (slot / 3) * 45;
-			m_game->m_sprite[InterfaceNdGame2]->draw(sX + adj_x + 55 + 30 + slotX + 13, sY + adj_y + 55 + slotY + 180, 27);
+			m_game->get_panel_kit().piece("ring_bevel_26", sX + adj_x + 55 + 30 + slotX + 13, sY + adj_y + 55 + slotY + 180);
 		}
 
 		// draw items in slots
@@ -520,7 +521,7 @@ void DialogBox_Manufacture::draw_manufacture_in_progress(short sX, short sY)
 	{
 		int slotX = (slot % 3) * 45;
 		int slotY = (slot / 3) * 45;
-		m_game->m_sprite[InterfaceNdGame2]->draw(sX + adj_x + 55 + 30 + slotX + 13, sY + adj_y + 55 + slotY + 180, 27);
+		m_game->get_panel_kit().piece("ring_bevel_26", sX + adj_x + 55 + 30 + slotX + 13, sY + adj_y + 55 + slotY + 180);
 	}
 
 	// draw items in slots
