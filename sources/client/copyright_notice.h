@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "bake_debounce.h"
 #include "texture.h"
 
 #include <array>
@@ -33,5 +34,6 @@ namespace hb::client
 
 		std::array<std::unique_ptr<hb::shared::render::ITexture>, 2> m_lines;   // company, recreation
 		float m_scale = 0.0f;   // the UI scale they were baked for; 0 = not yet
+		bake_debounce m_debounce;
 	};
 }

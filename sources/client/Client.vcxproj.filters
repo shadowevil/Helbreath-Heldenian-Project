@@ -150,6 +150,12 @@
     <ClInclude Include="copyright_notice.h">
       <Filter>Managers</Filter>
     </ClInclude>
+    <ClInclude Include="bake_debounce.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="small_caps_label.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
     <ClInclude Include="hud_kit.h">
       <Filter>Managers</Filter>
     </ClInclude>
@@ -773,6 +779,9 @@
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="copyright_notice.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="small_caps_label.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="hud_kit.cpp">

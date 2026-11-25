@@ -375,8 +375,8 @@ std::array<bool, hb::shared::limits::MaxItems> m_is_item_equipped{};
 	cursor_art m_cursor_art;          // High-resolution cursor art; falls back to m_sprite[MouseCursor]
 	bool m_cursor_art_tried = false;  // Load is attempted once, on the first cursor draw
 	std::unique_ptr<hb::client::panel_kit> m_panel_kit;   // Dialog panels and text buttons (get_panel_kit)
-	std::unique_ptr<hb::client::copyright_notice> m_copyright_notice;   // baked textures: released before the renderer (get_copyright_notice)
-	std::unique_ptr<hb::client::hud_kit> m_hud_kit;      // The HUD action bar (get_hud_kit)
+	std::unique_ptr<hb::client::copyright_notice> m_copyright_notice;   // Baked lines, released before the renderer (get_copyright_notice)
+	std::unique_ptr<hb::client::hud_kit> m_hud_kit;       // The HUD action bar (get_hud_kit)
 
 	bool m_force_disconn;
 

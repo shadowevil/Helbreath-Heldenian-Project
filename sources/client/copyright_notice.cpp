@@ -7,6 +7,7 @@
 #include "text_renderer.h"
 #include "log.h"
 #include <cmath>
+#include <cstddef>
 
 namespace
 {
@@ -54,7 +55,7 @@ void copyright_notice::bake(float scale)
 
 	// Baked at the window's resolution (white; the colour is the draw's tint) and drawn back at 1/scale
 	const hb::shared::text::text_run run{0, static_cast<int>(std::lround(static_cast<float>(font_px) * scale))};
-	for (size_t i = 0; i < m_lines.size(); i++)
+	for (std::size_t i = 0; i < m_lines.size(); i++)
 	{
 		m_lines[i].reset(text->bake_run(lines[i], run, hb::shared::render::Color::White(), pad_px));
 		if (!m_lines[i])
@@ -65,21 +66,23 @@ void copyright_notice::bake(float scale)
 void copyright_notice::draw(hb::shared::render::IRenderer& renderer, bool show_company)
 {
 	const float scale = renderer.ui_scale();
-	if (m_scale == 0.0f || std::fabs(scale - m_scale) > 0.001f)
+	if (m_debounce.update(m_scale, scale))
 		bake(scale);
 
+	// Until a rebake lands (a live resize), the baked textures draw at the scale they were baked for
+
 	const hb::shared::render::screen_extent extent = renderer.get_screen_extent();
-	const size_t first = show_company ? 0 : 1;
+	const std::size_t first = show_company ? 0 : 1;
 	const float bottom = extent.y + extent.height - bottom_margin;
-	for (size_t i = first; i < m_lines.size(); i++)
+	for (std::size_t i = first; i < m_lines.size(); i++)
 	{
 		hb::shared::render::ITexture* texture = m_lines[i].get();
 		if (!texture)
 			continue;
 		const float width = static_cast<float>(texture->get_width());
 		const float height = static_cast<float>(texture->get_height());
-		const float w = width / scale;
-		const float h = height / scale;
+		const float w = width / m_scale;
+		const float h = height / m_scale;
 		const float x = snap(extent.x + (extent.width - w) / 2.0f, scale);
 		const float line_top = bottom - line_height * static_cast<float>(m_lines.size() - i);
 		const float y = snap(line_top + (line_height - h) / 2.0f, scale);

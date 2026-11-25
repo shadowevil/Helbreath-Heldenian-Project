@@ -208,7 +208,6 @@ bool Screen_SelectCharacter::enter_game()
     m_game->m_selected_char_level = static_cast<int>(m_game->m_char_list[slot_index]->m_level);
     if (!CMisc::check_valid_string(m_game->m_selected_char_name.c_str())) return false;
 
-    m_game->m_sprite[InterfaceNdLogin]->Unload();
     m_game->m_enter_game_type = EnterGameMsg::New;
     m_game->m_map_name = m_game->m_char_list[slot_index]->m_map_name;
 

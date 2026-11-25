@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <cstring>
 #include <string>
 #include <utility>
@@ -342,9 +343,9 @@ void filter_plane(std::vector<float>& plane, unsigned int width, unsigned int he
                 const int sx = static_cast<int>(x) + (horizontal ? k : 0);
                 const int sy = static_cast<int>(y) + (horizontal ? 0 : k);
                 const bool inside = sx >= 0 && sy >= 0 && sx < static_cast<int>(width) && sy < static_cast<int>(height);
-                result = combine(result, inside ? plane[static_cast<size_t>(sy) * width + static_cast<size_t>(sx)] : 0.0f, k);
+                result = combine(result, inside ? plane[static_cast<std::size_t>(sy) * width + static_cast<std::size_t>(sx)] : 0.0f, k);
             }
-            out[static_cast<size_t>(y) * width + x] = result;
+            out[static_cast<std::size_t>(y) * width + x] = result;
         }
     }
     plane.swap(out);
@@ -390,11 +391,11 @@ hb::shared::render::ITexture* SFMLTextRenderer::bake_glow(const char* text, cons
         return nullptr;
 
     const sf::Vector2u size = image.getSize();
-    std::vector<float> plane(static_cast<size_t>(size.x) * size.y);
+    std::vector<float> plane(static_cast<std::size_t>(size.x) * size.y);
     for (unsigned int y = 0; y < size.y; y++)
     {
         for (unsigned int x = 0; x < size.x; x++)
-            plane[static_cast<size_t>(y) * size.x + x] = static_cast<float>(image.getPixel({x, y}).a) / 255.0f;
+            plane[static_cast<std::size_t>(y) * size.x + x] = static_cast<float>(image.getPixel({x, y}).a) / 255.0f;
     }
 
     // Dilate by a square window, then blur with a Gaussian; the pad leaves room for both
@@ -405,17 +406,17 @@ hb::shared::render::ITexture* SFMLTextRenderer::bake_glow(const char* text, cons
     if (blur > 0.0f)
     {
         const int radius = static_cast<int>(std::ceil(blur * 3.0f));
-        std::vector<float> weights(static_cast<size_t>(2 * radius + 1));
+        std::vector<float> weights(static_cast<std::size_t>(2 * radius + 1));
         float sum = 0.0f;
         for (int k = -radius; k <= radius; k++)
         {
             const float w = std::exp(-static_cast<float>(k * k) / (2.0f * blur * blur));
-            weights[static_cast<size_t>(k + radius)] = w;
+            weights[static_cast<std::size_t>(k + radius)] = w;
             sum += w;
         }
         const auto gaussian = [&weights, radius, sum](float total, float sample, int k)
         {
-            return total + sample * weights[static_cast<size_t>(k + radius)] / sum;
+            return total + sample * weights[static_cast<std::size_t>(k + radius)] / sum;
         };
         filter_plane(plane, size.x, size.y, true, radius, gaussian);
         filter_plane(plane, size.x, size.y, false, radius, gaussian);
@@ -425,7 +426,7 @@ hb::shared::render::ITexture* SFMLTextRenderer::bake_glow(const char* text, cons
     {
         for (unsigned int x = 0; x < size.x; x++)
         {
-            const float coverage = (std::min)(plane[static_cast<size_t>(y) * size.x + x], 1.0f);
+            const float coverage = (std::min)(plane[static_cast<std::size_t>(y) * size.x + x], 1.0f);
             image.setPixel({x, y}, sf::Color(color.r, color.g, color.b, static_cast<std::uint8_t>(coverage * static_cast<float>(color.a))));
         }
     }

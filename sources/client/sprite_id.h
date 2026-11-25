@@ -18,7 +18,6 @@ constexpr int InterfaceNewMaps4             = 38;
 constexpr int InterfaceNewMaps5             = 39;
 
 constexpr int InterfaceMonster              = 50;
-constexpr int InterfaceNdLogin              = 53;
 constexpr int InterfaceNdQuit               = 55;
 constexpr int InterfaceNdSelectChar         = 57;
 constexpr int InterfaceNdNewChar            = 58;

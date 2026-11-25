@@ -2,6 +2,7 @@
 
 #include "game_screen.h"
 #include "ccontrols.h"
+#include "bake_debounce.h"
 #include "panel_kit.h"
 #include "primitive_types.h"
 #include "texture.h"
@@ -64,6 +65,7 @@ private:
     int m_form_y = 0;
     std::unique_ptr<hb::shared::render::ITexture> m_title_glow;   // baked; redone when the UI scale changes
     float m_glow_scale = 0.0f;   // the UI scale it was baked for; 0 = not yet
+    hb::client::bake_debounce m_glow_debounce;
     float m_glow_x = 0.0f;       // its rect relative to the title's centre, in UI units
     float m_glow_y = 0.0f;
     float m_glow_w = 0.0f;

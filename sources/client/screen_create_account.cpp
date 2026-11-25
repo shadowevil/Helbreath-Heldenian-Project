@@ -229,9 +229,13 @@ void Screen_CreateAccount::draw_title(const hb::client::panel_kit& kit, int cx, 
     // wave flourishes either side as the kit's titles have
     if (m_title_glow)
     {
+        // On a whole window pixel, so the baked texels land 1:1 at a fractional UI scale
+        const float scale = m_game->m_Renderer->ui_scale();
+        const float x = std::round((static_cast<float>(cx) + m_glow_x) * scale) / scale;
+        const float y = std::round((static_cast<float>(cy) + m_glow_y) * scale) / scale;
         m_game->m_Renderer->draw_texture_region(m_title_glow.get(), 0.0f, 0.0f,
             static_cast<float>(m_title_glow->get_width()), static_cast<float>(m_title_glow->get_height()),
-            static_cast<float>(cx) + m_glow_x, static_cast<float>(cy) + m_glow_y, m_glow_w, m_glow_h);
+            x, y, m_glow_w, m_glow_h);
     }
     kit.text("title_red", title_text, cx, cy, hb::client::text_anchor::middle, title_fill);
     const int reach = kit.text_width("title_red", title_text) / 2 + 14 + kit.flourish_size("divider_wave", 0.56f).x / 2;
@@ -250,7 +254,7 @@ void Screen_CreateAccount::on_uninitialize()
 void Screen_CreateAccount::update_layout()
 {
     m_fit = hb::shared::render::cover_fit(m_game->m_Renderer->get_screen_extent(), art_width, art_height);
-    if (m_glow_scale == 0.0f || std::fabs(m_game->m_Renderer->ui_scale() - m_glow_scale) > 0.001f)
+    if (m_glow_debounce.update(m_glow_scale, m_game->m_Renderer->ui_scale()))
         bake_title_glow();
 
     // The form is centred on the tablet, which the fit places; it is drawn at the kit's own size
