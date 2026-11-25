@@ -1,7 +1,7 @@
 {
   "id": "HH-0101",
   "summary": "Remove interface/monster; guide-map event marker from the map kit creatures",
-  "status": "in_progress",
+  "status": "verified",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,11 +11,14 @@
   ],
   "author": "pm",
   "created": "2026-11-25T21:11:33Z",
-  "updated": "2026-11-25T21:11:33Z",
+  "updated": "2026-11-25T22:29:39Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "0cff2f0d",
+      "260a6e22"
+    ],
     "files": [],
     "tickets": []
   },
-  "body": "The user, 2026-11-25, on `staged/client/sprites/interface/monster`: \"Can be entirely removed as it isn't going to be used anymore since the map kit has all of the monsters and more\".\n\n| fact | value |\n|---|---|\n| sheet | `staged/client/sprites/interface/monster/000.png` (21,955 B) plus manifest.json; 100 frames of 28x28, pivot -14,-14 - measured |\n| loader | `sources/client/screen_loading.cpp:182` `make_sprite(\"interface/monster\", InterfaceMonster, 1, false)` (as of 2026-11-25) |\n| id | `sources/client/sprite_id.h:20` `InterfaceMonster = 50` |\n| only draw | `sources/client/dialog_box_guide_map.cpp:123`: the blinking monster-event marker at (m_event_x, m_event_y), frame m_monster_id |\n| replacement | `staged/client/sprites/mapkit/creatures.{png,json}`, keyed by creature with npc_type / npc_ids and a pivot; drawing code is in `parchment_kit.{h,cpp}` - located |\n\n**Done when:**\n- The guide-map event marker draws the matching map-kit creature icon, sized to fit the minimap marker.\n- The interface/monster load, `InterfaceMonster` and the folder are gone.\n- The folder is archived byte-identical to `working/archive/interface/monster/`.\n- Both builds are clean.\n\nSource: user message, 2026-11-25.\n"
+  "body": "The user, 2026-11-25, on `staged/client/sprites/interface/monster`: \"Can be entirely removed as it isn't going to be used anymore since the map kit has all of the monsters and more\".\n\n| fact | value |\n|---|---|\n| sheet | `staged/client/sprites/interface/monster/000.png` (21,955 B) plus manifest.json; 100 frames of 28x28, pivot -14,-14 - measured |\n| loader | `sources/client/screen_loading.cpp:182` `make_sprite(\"interface/monster\", InterfaceMonster, 1, false)` (as of 2026-11-25) |\n| id | `sources/client/sprite_id.h:20` `InterfaceMonster = 50` |\n| only draw | `sources/client/dialog_box_guide_map.cpp:123`: the blinking monster-event marker at (m_event_x, m_event_y), frame m_monster_id |\n| replacement | `staged/client/sprites/mapkit/creatures.{png,json}`, keyed by creature with npc_type / npc_ids and a pivot; drawing code is in `parchment_kit.{h,cpp}` - located |\n\n**Done when:**\n- The guide-map event marker draws the matching map-kit creature icon, sized to fit the minimap marker.\n- The interface/monster load, `InterfaceMonster` and the folder are gone.\n- The folder is archived byte-identical to `working/archive/interface/monster/`.\n- Both builds are clean.\n\nSource: user message, 2026-11-25.\n\n**Landed, 2026-11-25:** commits 0cff2f0d and 260a6e22. Reviews passed, and the build and deploy are clean. The sheet is archived byte-identical and removed. Still open: an in-client check, which needs this ticket's map dialog or monster-event marker on screen.\n"
 }

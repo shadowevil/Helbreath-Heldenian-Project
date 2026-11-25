@@ -1,7 +1,7 @@
 {
   "id": "HH-0106",
   "summary": "Cursor: HD art only; retire game_dialogs sheet 008",
-  "status": "in_progress",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,17 @@
   ],
   "author": "pm",
   "created": "2026-11-25T21:59:07Z",
-  "updated": "2026-11-25T21:59:07Z",
+  "updated": "2026-11-25T22:29:38Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "0cff2f0d",
+      "260a6e22"
+    ],
     "files": [],
     "tickets": [],
     "relates_to": [
       "HH-0092"
     ]
   },
-  "body": "The user, 2026-11-25: \"Yes the hd cursors should have replaced 008 sd cursors\" (decision d-036, no fallbacks).\n\n| fact | value |\n|---|---|\n| HD path | `interface/cursors_hq.png` + `.json`, frames 0-12, drawn by `m_cursor_art.draw` (`cursor_art.cpp:90-104`) - verified by the audit |\n| fallback | `game.cpp:615-646` draws `m_sprite[MouseCursor]` (game_dialogs sheet 008) when the HQ art fails or a frame is missing; `game.cpp:632-641` holds an item-target special case only on that path |\n| load | `screen_loading.cpp:178` (MouseCursor = sheet 008) |\n\n**Done when:** the cursor draws only from the HQ art; the item-target special case is reproduced on the HQ path (or shown to be obsolete); the 008 load and id are gone; `game_dialogs/008.png` is replaced by an empty placeholder and archived byte-identical; and both builds are clean with an in-client check of the normal and item-target cursors.\n\nSource: user message and fallback audit, 2026-11-25.\n"
+  "body": "The user, 2026-11-25: \"Yes the hd cursors should have replaced 008 sd cursors\" (decision d-036, no fallbacks).\n\n| fact | value |\n|---|---|\n| HD path | `interface/cursors_hq.png` + `.json`, frames 0-12, drawn by `m_cursor_art.draw` (`cursor_art.cpp:90-104`) - verified by the audit |\n| fallback | `game.cpp:615-646` draws `m_sprite[MouseCursor]` (game_dialogs sheet 008) when the HQ art fails or a frame is missing; `game.cpp:632-641` holds an item-target special case only on that path |\n| load | `screen_loading.cpp:178` (MouseCursor = sheet 008) |\n\n**Done when:** the cursor draws only from the HQ art; the item-target special case is reproduced on the HQ path (or shown to be obsolete); the 008 load and id are gone; `game_dialogs/008.png` is replaced by an empty placeholder and archived byte-identical; and both builds are clean with an in-client check of the normal and item-target cursors.\n\nSource: user message and fallback audit, 2026-11-25.\n\n**Closed, 2026-11-25:** commits 0cff2f0d (HQ-only cursor) and 260a6e22 (008 load removed; 008.png archived byte-identical, now a placeholder). Reviews passed. The cursor was seen in the client on the main menu, in the world and on the quit screen.\n"
 }

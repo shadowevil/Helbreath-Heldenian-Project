@@ -1,7 +1,7 @@
 {
   "id": "HH-0103",
   "summary": "Recreate the exit screen and its message from the HD art",
-  "status": "in_progress",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-25T21:45:11Z",
-  "updated": "2026-11-25T21:45:11Z",
+  "updated": "2026-11-25T22:29:38Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "260a6e22"
+    ],
     "files": [],
     "tickets": [],
     "relates_to": [
       "HH-0089"
     ]
   },
-  "body": "Recreate the exit (quit) screen from the user's new HD art. The user, 2026-11-25: \"We need to recreate the exit message as well\"; \"Won't be 1:1 but the message and font type is what we need to recreate\".\n\n| fact | value |\n|---|---|\n| new art | `working/classic_ui/hd/exitscreen.png`, 1920x1405 RGBA - measured. The top 1920x1080 is the background. The strip below it holds the empty message panel (two gold rules), bbox (20,1080)-(822,1345) - measured |\n| old art | `intermediate_screens` sprite 2: frame 0 is the 800x600 background; frame 1 is the 356x102 message panel drawn at (335,183), which fades in over 500 ms - `screen_quit.cpp:66-78` (as of 2026-11-25) |\n| old message | \"Thank you for playing Helbreath.\" / \"Please visit our homepage board for\" / \"bug report or question about game.\" / \"www.helbreathusa.com\", in gold with a black drop shadow (user screenshot, 2026-11-25) |\n| other user | `overlay_version_not_match.cpp:73` draws frame 0 as its backdrop |\n\nThe pattern to follow is the login recreation (HH-0089, commit 5ef258b9): the background is cover-fit as 1920x1080 art, the panel sits where the original did and fades in, and the text is baked in code with the classic drop shadow (d-034).\n\n**Done when:**\n- The quit screen and the version-mismatch backdrop draw the new art.\n- The message is recreated in code, with the same wording and a matching font type.\n- Sprite 2 is retired: an empty placeholder, archived byte-identical, with InterfaceNdQuit removed.\n- Both builds are clean, and the user has approved a screenshot.\n\nSource: user messages and screenshot, 2026-11-25.\n"
+  "body": "Recreate the exit (quit) screen from the user's new HD art. The user, 2026-11-25: \"We need to recreate the exit message as well\"; \"Won't be 1:1 but the message and font type is what we need to recreate\".\n\n| fact | value |\n|---|---|\n| new art | `working/classic_ui/hd/exitscreen.png`, 1920x1405 RGBA - measured. The top 1920x1080 is the background. The strip below it holds the empty message panel (two gold rules), bbox (20,1080)-(822,1345) - measured |\n| old art | `intermediate_screens` sprite 2: frame 0 is the 800x600 background; frame 1 is the 356x102 message panel drawn at (335,183), which fades in over 500 ms - `screen_quit.cpp:66-78` (as of 2026-11-25) |\n| old message | \"Thank you for playing Helbreath.\" / \"Please visit our homepage board for\" / \"bug report or question about game.\" / \"www.helbreathusa.com\", in gold with a black drop shadow (user screenshot, 2026-11-25) |\n| other user | `overlay_version_not_match.cpp:73` draws frame 0 as its backdrop |\n\nThe pattern to follow is the login recreation (HH-0089, commit 5ef258b9): the background is cover-fit as 1920x1080 art, the panel sits where the original did and fades in, and the text is baked in code with the classic drop shadow (d-034).\n\n**Done when:**\n- The quit screen and the version-mismatch backdrop draw the new art.\n- The message is recreated in code, with the same wording and a matching font type.\n- Sprite 2 is retired: an empty placeholder, archived byte-identical, with InterfaceNdQuit removed.\n- Both builds are clean, and the user has approved a screenshot.\n\nSource: user messages and screenshot, 2026-11-25.\n\n**Closed, 2026-11-25:** commits 3579f8fd (screen) and 260a6e22 (old sprite 2 load removed and archived). The user approved the screen, both reviews passed, and the quit screen was reached in the client.\n"
 }
