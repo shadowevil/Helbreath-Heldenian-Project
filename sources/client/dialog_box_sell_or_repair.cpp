@@ -39,8 +39,7 @@ void DialogBox_SellOrRepair::on_draw()
 	switch (m_mode) {
 	case mode::sell:
 	{
-		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 2);
-		draw_new_dialog_box(InterfaceNdText, sX, sY, 11);
+		draw_shop_frame(11, sX, sY);   // "Item for Sale"
 
 		item_id = m_item_index;
 
@@ -89,8 +88,7 @@ void DialogBox_SellOrRepair::on_draw()
 
 	case mode::repair:
 	{
-		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 2);
-		draw_new_dialog_box(InterfaceNdText, sX, sY, 10);
+		draw_shop_frame(10, sX, sY);   // "Repair Item"
 		item_id = m_item_index;
 		item_color = player().m_item_list[item_id]->m_instance.item_color;
 		{
@@ -133,8 +131,7 @@ void DialogBox_SellOrRepair::on_draw()
 	}
 
 	case mode::sell_pending:
-		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 2);
-		draw_new_dialog_box(InterfaceNdText, sX, sY, 11);
+		draw_shop_frame(11, sX, sY);   // "Item for Sale"
 
 		put_string(sX + 55, sY + 100, DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM8, GameColors::UILabel);
 		put_string(sX + 55, sY + 120, DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM9, GameColors::UILabel);
@@ -142,8 +139,7 @@ void DialogBox_SellOrRepair::on_draw()
 		break;
 
 	case mode::repair_pending:
-		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 2);
-		draw_new_dialog_box(InterfaceNdText, sX, sY, 10);
+		draw_shop_frame(10, sX, sY);   // "Repair Item"
 
 		put_string(sX + 55, sY + 100, DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM11, GameColors::UILabel);
 		put_string(sX + 55, sY + 120, DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM9, GameColors::UILabel);

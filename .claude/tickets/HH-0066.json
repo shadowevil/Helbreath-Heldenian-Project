@@ -11,7 +11,7 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:14Z",
-  "updated": "2026-11-25T02:12:39Z",
+  "updated": "2026-11-25T02:36:00Z",
   "links": {
     "commits": [],
     "files": [
@@ -24,7 +24,8 @@
       "HH-0059"
     ],
     "blocked_by": [
-      "HH-0071"
+      "HH-0071",
+      "HH-0072"
     ]
   },
   "body": "Spec step 7. Same pattern, one dialog per cycle; the census in spec step 8 lists the users.\n\nDone when: no dialog draws a Game1-4 or Text frame as its background.",
@@ -53,6 +54,11 @@
       "author": "pm",
       "at": "2026-11-25T02:12:39Z",
       "body": "Batch 2 (skill, magic) committed in b3b40459 after review PASS. Next: shops."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-25T02:36:00Z",
+      "body": "Batch 3 (shop family) done, uncommitted, checkpoint 812d451c. Shop, sell list, sell or repair (all four modes), repair all and bank/warehouse share Game2 frame 2; they now draw through two new IDialogBox helpers, `draw_shop_frame(title_frame, x, y)` and `draw_shop_scrollbar(x, y, pos, pointer_loc, track_frame)`: plain kit frame with rivet corners (matched to the original's), standard red title with flourishes, a 220-wide sunken panel, kit groove and thumb on the original 274 px travel. Old sprites remain the fallback. Magic shop (Game4 frame 1, 304x328) uses a different frame and is not in this batch. Windows and Linux builds clean. Shots: build/screenshots/hh0066_b3_*.jpg. Bridge thumb drag (mouse_down/move/up) still does not scroll; the wheel was verified instead."
     }
   ]
 }

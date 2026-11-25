@@ -79,6 +79,13 @@ protected:
 	// A plain panel-kit frame of w x h at (x, y); false when the kit is not loaded, and the caller then draws
 	// its original sprite frame. transparent = the dialog transparency setting's 0.25 opacity
 	bool draw_kit_background(kit_frame::type style, int x, int y, int w, int h, bool transparent = false);
+	// The shop family's 258x339 frame (shop, sell list, sell or repair, repair all, bank: Game2 frame 2) with the
+	// title the Text sprite frame title_frame carries (11 Item for Sale, 10 Repair Item, 21 Items In Storage):
+	// a plain kit frame, title and sunken list panel, else the original sprites
+	void draw_shop_frame(int title_frame, int x, int y);
+	// The shop family's scrollbar at the original 274 px thumb travel: the kit groove and thumb at pos (0..1,
+	// clamped), else the original Game2 track frame (3, or 1 for repair all) and thumb frame 7 at pointer_loc
+	void draw_shop_scrollbar(int x, int y, float pos, int pointer_loc, int track_frame = 3);
 	void put_string(int iX, int iY, const char* string, const hb::shared::render::Color& color);
 	void put_aligned_string(int x1, int x2, int iY, const char* string, const hb::shared::render::Color& color = GameColors::UIBlack);
 	void add_event_list(const char* txt, char color = 0, bool dup_allow = true);

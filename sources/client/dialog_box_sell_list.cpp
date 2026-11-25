@@ -31,8 +31,7 @@ void DialogBox_SellList::on_draw()
 	short sY = m_y;
 	short size_x = m_size_x;
 
-	draw_new_dialog_box(InterfaceNdGame2, sX, sY, 2);
-	draw_new_dialog_box(InterfaceNdText, sX, sY, 11);
+	draw_shop_frame(11, sX, sY);   // "Item for Sale"
 
 	int empty_count = 0;
 	draw_item_list(sX, sY, size_x, mouse_x, mouse_y, empty_count);

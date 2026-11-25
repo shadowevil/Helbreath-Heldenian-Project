@@ -157,3 +157,5 @@ The magic dialog's engraved hexagram-in-a-ring is back as a transparent kit piec
 The skill and magic dialogs now draw plain kit frames (HH-0066, batch 2), and the magic dialog draws the engraved circle behind its list (HH-0071).
 - **Skill dialog:** the portrait is gone, and the scrollbar uses the kit's groove and thumb over the same travel as before.
 - **Kit:** a new `piece()` call draws one named kit frame at its own size and skips it if the kit lacks it.
+
+The shop, sell list, sell-or-repair, repair-all and warehouse dialogs now draw plain kit frames with silver-ball corners, the red title and the kit scrollbar (HH-0066, batch 3). Two shared helpers, `draw_shop_frame` and `draw_shop_scrollbar`, replace the repeated sprite draws, and the old sprites stay as the fallback.
