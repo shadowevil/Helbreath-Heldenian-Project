@@ -177,3 +177,5 @@ The commander, constructor and soldier crusade dialogs and change-password now d
 - **Titles:** all kit titles come from one table through `find_title()`.
 
 The magic shop draws the magic circle behind its spell list, centred where its old hexagram was (HH-0075).
+
+The item creator draws a kit frame and the standard titles "Create Item" and "Configure Item", with no portrait (HH-0076).
