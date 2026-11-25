@@ -9,9 +9,12 @@
 
 #include "game_screen.h"
 #include "ccontrols.h"
+#include "primitive_types.h"
+#include "texture.h"
 #include <cstdint>
 #include <string>
 #include <array>
+#include <memory>
 
 class Screen_Splash : public IGameScreen
 {
@@ -53,6 +56,7 @@ private:
 
     cc::control_collection m_controls;
     std::array<Credit, NUM_CONTRIBUTORS> m_credits;
+	std::unique_ptr<hb::shared::render::ITexture> m_logo;   // interface/front_end/splash_logo.png
 
     float get_contributor_alpha(uint32_t elapsedMs, int contributorIndex) const;
 };

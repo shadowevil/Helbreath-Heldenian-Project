@@ -211,3 +211,5 @@ On the action bar, the stamina bar and info panel move 8 pixels right, and the h
 The exit screen is recreated on the user's new HD art (HH-0103). The message panel fades in where the original sat. Its four original lines are drawn in gold Liberation Serif Bold with the classic black drop shadow. The version-mismatch screen uses the same new backdrop.
 
 The guide map's monster-event marker now shows the map kit's creature icon (HH-0101). The map dialog draws only from the map kit, and the old newmaps fallback is gone (HH-0105). The mouse cursor draws only from its HD art, and the old sheet-008 fallback is gone (HH-0106).
+
+The splash screen shows the user's new HD Helbreath logo on black (HH-0107). The credits roll is unchanged, and the old splash image is archived.

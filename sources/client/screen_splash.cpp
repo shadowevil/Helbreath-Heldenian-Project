@@ -12,9 +12,24 @@
 #include "common_types.h"
 #include "game_fonts.h"
 #include "text_lib_ext.h"
-#include "sprite_loader.h"
 #include "input.h"
-using namespace hb::client::sprite_id;
+#include "renderer.h"
+#include "sprite_factory.h"
+#include "log.h"
+#include <string>
+
+namespace
+{
+
+// interface/front_end/splash_logo.png (HH-0107): the logo cut from the 1920x1080 splash art, its alpha box
+// (679,365)-(1241,716) plus 16 px of padding, the colour of the transparent edge bled outward so smooth
+// filtering leaves no white halo. Drawn over black at its place in the art, through the cover fit.
+constexpr float art_width = 1920.0f;
+constexpr float art_height = 1080.0f;
+constexpr float logo_art_x = 663.0f;
+constexpr float logo_art_y = 349.0f;
+
+}
 
 Screen_Splash::Screen_Splash(CGame* game)
     : IGameScreen(game)
@@ -23,9 +38,10 @@ Screen_Splash::Screen_Splash(CGame* game)
 
 void Screen_Splash::on_initialize()
 {
-    hb::shared::sprite::SpriteLoader::open("interface/intermediate_screens", [&](hb::shared::sprite::SpriteLoader& loader) {
-        m_game->m_sprite[SplashScreen] = loader.get_sprite(3, false);
-        });
+	const std::string logo_path = hb::shared::sprite::Sprites::get_sprite_path() + "/interface/front_end/splash_logo.png";
+	m_logo.reset(m_game->m_Renderer->create_texture_from_file(logo_path.c_str()));
+	if (!m_logo)
+		hb::logger::error("Splash logo not loaded: {}", logo_path);
 
     m_credits = {{
         { "Centuu - HelbreathServer starting base", "https://github.com/centuu/HelbreathServer" },
@@ -83,7 +99,7 @@ void Screen_Splash::on_initialize()
 
 void Screen_Splash::on_uninitialize()
 {
-    m_game->m_sprite.remove(SplashScreen);
+	m_logo.reset();
 }
 
 void Screen_Splash::on_update()
@@ -143,6 +159,14 @@ float Screen_Splash::get_contributor_alpha(uint32_t elapsedMs, int contributorIn
 
 void Screen_Splash::on_render()
 {
-    m_game->m_sprite[SplashScreen]->draw(0, 0, 0);
+	if (m_logo)
+	{
+		hb::shared::render::IRenderer* renderer = m_game->m_Renderer;
+		const hb::shared::render::art_fit fit = hb::shared::render::cover_fit(renderer->get_screen_extent(), art_width, art_height);
+		const float w = static_cast<float>(m_logo->get_width());
+		const float h = static_cast<float>(m_logo->get_height());
+		renderer->draw_texture_region(m_logo.get(), 0.0f, 0.0f, w, h,
+			fit.x(logo_art_x), fit.y(logo_art_y), w * fit.scale, h * fit.scale);
+	}
     m_controls.render();
 }
