@@ -1,7 +1,7 @@
 {
   "id": "HH-0071",
   "summary": "Kit 6b: engraved magic circle as a transparent kit piece",
-  "status": "in_progress",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -12,16 +12,18 @@
   ],
   "author": "pm",
   "created": "2026-11-25T01:57:54Z",
-  "updated": "2026-11-25T02:00:03Z",
+  "updated": "2026-11-25T02:12:39Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "b3b40459"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0066"
     ]
   },
-  "body": "The magic dialog keeps its engraved hexagram-in-a-ring as a transparent kit piece, an exception to the HH-0066 ruling \"Drop the pictures\". User asked for a recreation (2026-11-24: \"recreate the pentagram for the magic circle as a transparent bevel\"), asked for 50% opacity, and approved v6 (\"Approve, add to kit\").\n\n- Prototype: .claude/scratch/coordinator/magic_circle/make_circle6.py (gitignored scratch), output 200x200 RGBA.\n- Geometry (measured on game_dialogs sprite 0 frame 1): centre (128.5, 162.5) in the 258x328 dialog, ring outer radius 90, ring band 7.5, star circumradius 85, star band 9.\n- Look: engraved, lit from the top-left, mauve floor, 50% overall opacity.\n\n**Done when:** the panel kit builder generates the piece (--check passes), the staged kit carries it, and the magic dialog draws it at the measured place, verified by a bridge screenshot.\n\nSource: chat, 2026-11-24.\n",
+  "body": "The magic dialog keeps its engraved hexagram-in-a-ring as a transparent kit piece, an exception to the HH-0066 ruling \"Drop the pictures\". User asked for a recreation (2026-11-24: \"recreate the pentagram for the magic circle as a transparent bevel\"), asked for 50% opacity, and approved v6 (\"Approve, add to kit\").\n\n- Prototype: .claude/scratch/coordinator/magic_circle/make_circle6.py (gitignored scratch), output 200x200 RGBA.\n- Geometry (measured on game_dialogs sprite 0 frame 1): centre (128.5, 162.5) in the 258x328 dialog, ring outer radius 90, ring band 7.5, star circumradius 85, star band 9.\n- Look: engraved, lit from the top-left, mauve floor, 50% overall opacity.\n\n**Done when:** the panel kit builder generates the piece (--check passes), the staged kit carries it, and the magic dialog draws it at the measured place, verified by a bridge screenshot.\n\nSource: chat, 2026-11-24.\n\nVerified: read-only review PASS; Windows and Linux builds clean; bridge screenshot build/screenshots/hh0066_b2_magic_circle.jpg shows the circle at (28,62) behind the magic list.\n",
   "comments": [
     {
       "author": "pm",
