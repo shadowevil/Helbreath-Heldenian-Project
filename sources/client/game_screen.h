@@ -127,6 +127,8 @@ protected:
     // Computes centered position AND draws the dialog box in one call
     void draw_centered_dialog_box(char type, int frame, int& out_x, int& out_y,
                                   bool is_no_color_key = false, bool is_trans = false);
+    // The notice box (Game4 frame 2) centred: the plain kit frame, else the original sprite (HH-0066)
+    void draw_centered_notice_frame(int& out_x, int& out_y);
     void put_string(int iX, int iY, const char* string, const hb::shared::render::Color& color);
     void put_aligned_string(int x1, int x2, int iY, const char* string,
                           const hb::shared::render::Color& color = GameColors::UIBlack);

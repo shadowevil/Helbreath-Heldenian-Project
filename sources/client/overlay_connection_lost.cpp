@@ -42,7 +42,7 @@ void Overlay_ConnectionLost::on_update()
 void Overlay_ConnectionLost::on_render()
 {
     int dlgX, dlgY;
-    draw_centered_dialog_box(InterfaceNdGame4, 2, dlgX, dlgY);
+    draw_centered_notice_frame(dlgX, dlgY);
     hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 64, dlgY + 55, "Connection Lost!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
     put_string(dlgX + 60, dlgY + 85, UPDATE_SCREEN_ON_CONNECTION_LOST, GameColors::UIBlack);
     draw_version();

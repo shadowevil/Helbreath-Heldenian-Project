@@ -52,7 +52,16 @@ namespace kit_layout
 	// The scroll groove: the thumb's top at 30 + 274 * pos, where the sprite thumb drew (frame 7, pivot -6,-5, at
 	// x 242, y 35 + pointer_loc), so the dialogs' 274 px drag maths keeps it under the cursor
 	constexpr hb::client::kit_rect tall_track{236, 30, 15, 274 + 15};
+	// The notice box (Game4 frame 2: noticement, warning message and the connection / query overlays)
+	constexpr hb::client::kit_point notice_size{315, 171};
+	constexpr hb::client::kit_rect notice_panel{16, 18, 284, 134};
 }
+
+// The kit part names a kit_frame style stands for (for a kit_dialog a dialog or screen builds itself)
+const hb::client::panel_style& kit_frame_style(kit_frame::type style);
+// The notice box as a plain kit frame (the original's ruined city is dropped, user ruling; HH-0066) with its
+// sunken panel at (x, y); false when the kit is not loaded, and the caller then draws Game4 frame 2
+bool draw_kit_notice_frame(hb::client::panel_kit* kit, int x, int y);
 
 class CGame;
 class CPlayer;
@@ -117,8 +126,6 @@ protected:
 	// A plain panel-kit frame of w x h at (x, y); false when the kit is not loaded, and the caller then draws
 	// its original sprite frame. transparent = the dialog transparency setting's 0.25 opacity
 	bool draw_kit_background(kit_frame::type style, int x, int y, int w, int h, bool transparent = false);
-	// The kit part names a kit_frame style stands for (for a kit_dialog built by the dialog itself)
-	static const hb::client::panel_style& kit_frame_style(kit_frame::type style);
 	// A tall 258x339 frame with the title the Text sprite frame title_frame carries (-1 = none; 11 Item for
 	// Sale, 10 Repair Item, 21 Items In Storage, 1 Skills, 4 Quest, 3 Party Menu, 18 Cityhall Menu, 19 Guild
 	// Menu, 2 Level up Setting, 5 Item Upgrade): a plain kit frame, title and sunken list panel, else the original

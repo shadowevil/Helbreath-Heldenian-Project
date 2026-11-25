@@ -99,7 +99,7 @@ void Overlay_QueryDeleteCharacter::on_render()
     }
 
     int dlgX, dlgY;
-    draw_centered_dialog_box(InterfaceNdGame4, 2, dlgX, dlgY);
+    draw_centered_notice_frame(dlgX, dlgY);
 
     // Title
     hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 96, dlgY + 35, "Delete Character", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));

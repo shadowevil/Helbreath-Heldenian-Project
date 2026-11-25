@@ -3,6 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "game_screen.h"
+#include "dialog_box.h"   // draw_kit_notice_frame
 #include "event_list_manager.h"
 #include "game.h"
 #include "game_mode_manager.h"
@@ -86,6 +87,14 @@ void IGameScreen::draw_centered_dialog_box(char type, int frame, int& out_x, int
 {
 	get_centered_dialog_pos(type, frame, out_x, out_y);
 	draw_new_dialog_box(type, out_x, out_y, frame, is_no_color_key, is_trans);
+}
+
+void IGameScreen::draw_centered_notice_frame(int& out_x, int& out_y)
+{
+	using namespace hb::client::sprite_id;
+	get_centered_dialog_pos(InterfaceNdGame4, 2, out_x, out_y);
+	if (!draw_kit_notice_frame(m_game->get_panel_kit(), out_x, out_y))
+		draw_new_dialog_box(InterfaceNdGame4, out_x, out_y, 2);
 }
 
 // ============== GameMode ==============

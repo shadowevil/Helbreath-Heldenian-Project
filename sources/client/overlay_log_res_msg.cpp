@@ -271,7 +271,7 @@ void Overlay_LogResMsg::render_message(int dlgX, int dlgY)
 void Overlay_LogResMsg::on_render()
 {
     int dlgX, dlgY;
-    draw_centered_dialog_box(InterfaceNdGame4, 2, dlgX, dlgY);
+    draw_centered_notice_frame(dlgX, dlgY);
 
     // render the appropriate message
     render_message(dlgX, dlgY);

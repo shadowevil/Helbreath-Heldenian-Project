@@ -179,3 +179,5 @@ The commander, constructor and soldier crusade dialogs and change-password now d
 The magic shop draws the magic circle behind its spell list, centred where its old hexagram was (HH-0075).
 
 The item creator draws a kit frame and the standard titles "Create Item" and "Configure Item", with no portrait (HH-0076).
+
+The warning box, the shutdown notice and the eight connection and status popups now share one kit notice frame, without the ruined-city picture (HH-0066, batch 8). That finishes the dialog conversion; alchemy and crafting keep their cauldron art.

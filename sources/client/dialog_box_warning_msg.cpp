@@ -18,7 +18,8 @@ void DialogBox_WarningMsg::on_draw()
 	short sX = m_x;
 	short sY = m_y;
 
-	draw_new_dialog_box(InterfaceNdGame4, sX, sY, 2);
+	if (!draw_kit_notice_frame(m_game->get_panel_kit(), sX, sY))
+		draw_new_dialog_box(InterfaceNdGame4, sX, sY, 2);
 
 	hb::shared::text::draw_text(GameFont::Default, sX + 63, sY + 35, DEF_MSG_WARNING1, hb::shared::text::TextStyle::with_shadow(GameColors::UIYellow));
 	put_string(sX + 30, sY + 57, DEF_MSG_WARNING2, GameColors::UIOrange);

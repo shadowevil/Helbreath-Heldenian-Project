@@ -11,7 +11,7 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:14Z",
-  "updated": "2026-11-25T04:14:10Z",
+  "updated": "2026-11-25T04:31:20Z",
   "links": {
     "commits": [],
     "files": [
@@ -99,6 +99,11 @@
       "author": "pm",
       "at": "2026-11-25T04:14:10Z",
       "body": "Batch 7 committed in 56846e2b after review PASS. Remaining: warning_msg plus eight overlays on the ruined-city frame (Game4 frame 2)."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-25T04:31:20Z",
+      "body": "Batch 8 (notice box) done, uncommitted. Checkpoints e519aa1b (shared helper, noticement, warning message, change-password accessor) and c41e7492 (game_screen helper + the eight overlays).\n\n- One shared helper, `draw_kit_notice_frame(kit, x, y)` (dialog_box.h/.cpp): a plain rivet-corner kit frame at the Game4 frame 2 size (315x171) with the sunken panel (16,18 284x134). Noticement, warning message and, through the new `IGameScreen::draw_centered_notice_frame`, the connecting, waiting-response, force-login query, delete-character query, log result message, version mismatch, connection lost and wait-init-data overlays all draw it. The Game4 frame 2 sprite stays as the no-kit fallback.\n- Reviewer note folded in: `kit_frame_style` is now a free function, so change-password uses it instead of its local rivet_box copy.\n- In game: all eight overlays opened at the main menu (temporary file trigger) and the warning message in the world; shots hh0066_b8_*.jpg, original reference hh0066_b8_original_notice_frame.jpg. Trigger reverted (checkpoint 149fdbd7), grep clean, settings.json unchanged.\n- Builds after the revert: Windows Debug (deployed) and Linux client, 0 errors, 0 warnings.\n- Census: no Game4 frame 2 draw remains outside the fallbacks. Nothing frame-like is left apart from alchemy/crafting and HH-0073 / HH-0074; the remaining Game sprite draws are fallbacks or non-frame art (item-upgrade slot picture, sys-menu sliders/scrollbar, chat scroll thumb, map)."
     }
   ]
 }

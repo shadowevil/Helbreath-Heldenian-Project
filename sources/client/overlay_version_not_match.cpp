@@ -73,7 +73,7 @@ void Overlay_VersionNotMatch::on_render()
     draw_new_dialog_box(InterfaceNdQuit, 0, 0, 0, true);
 
     int dlgX, dlgY;
-    draw_centered_dialog_box(InterfaceNdGame4, 2, dlgX, dlgY);
+    draw_centered_notice_frame(dlgX, dlgY);
     put_aligned_string(dlgX + 6, dlgX + 312, dlgY + 35, UPDATE_SCREEN_ON_VERSION_NO_MATCH1);
     put_aligned_string(dlgX + 6, dlgX + 312, dlgY + 55, UPDATE_SCREEN_ON_VERSION_NO_MATCH2);
     const std::string client_line = std::format("client {}", hb::shared::version::version_string(hb::shared::version::component::client));

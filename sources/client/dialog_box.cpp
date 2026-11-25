@@ -28,12 +28,22 @@ void IDialogBox::draw_new_dialog_box(char type, int sX, int sY, int frame, bool 
 	m_game->draw_new_dialog_box(type, sX, sY, frame, is_no_color_key, is_trans);
 }
 
-const hb::client::panel_style& IDialogBox::kit_frame_style(kit_frame::type style)
+const hb::client::panel_style& kit_frame_style(kit_frame::type style)
 {
 	// Built once: the kit part names per style (matched to the original sprite frames, HH-0066)
 	static const hb::client::panel_style gold_box{"stone_cloth", "wood_light", "gold"};
 	static const hb::client::panel_style rivet_box{"stone_cloth", "wood_light", "rivet"};
 	return style == kit_frame::rivet_box ? rivet_box : gold_box;
+}
+
+bool draw_kit_notice_frame(hb::client::panel_kit* kit, int x, int y)
+{
+	if (!kit)
+		return false;
+	const hb::client::kit_dialog dialog(*kit, kit_layout::notice_size, hb::client::kit_point{x, y}, 1.0f,
+		kit_frame_style(kit_frame::rivet_box));
+	dialog.inset(kit_layout::notice_panel);
+	return true;
 }
 
 bool IDialogBox::draw_kit_background(kit_frame::type style, int x, int y, int w, int h, bool transparent)

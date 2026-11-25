@@ -61,7 +61,7 @@ void Overlay_WaitInitData::on_render()
     if (elapsed >= 3000)
     {
         int dlgX, dlgY;
-        draw_centered_dialog_box(InterfaceNdGame4, 2, dlgX, dlgY);
+        draw_centered_notice_frame(dlgX, dlgY);
 
         G_cTxt = std::format("Waiting for response... {}sec", elapsed / 1000);
         hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 54, dlgY + 65, G_cTxt.c_str(), hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));

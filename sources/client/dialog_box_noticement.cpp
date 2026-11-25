@@ -38,16 +38,7 @@ void DialogBox_Noticement::on_draw()
 	m_size_x = size_x;
 	m_size_y = static_cast<short>(rect.height);
 
-	// A plain kit frame and sunken panel (the original's ruined city is dropped, user ruling; HH-0066), else the
-	// original sprite frame
-	if (hb::client::panel_kit* panel_kit = m_game->get_panel_kit())
-	{
-		constexpr hb::client::kit_rect content_panel{16, 18, 284, 134};
-		const hb::client::kit_dialog kit(*panel_kit, hb::client::kit_point{m_size_x, m_size_y},
-			hb::client::kit_point{sX, sY}, 1.0f, kit_frame_style(kit_frame::rivet_box));
-		kit.inset(content_panel);
-	}
-	else
+	if (!draw_kit_notice_frame(m_game->get_panel_kit(), sX, sY))
 		draw_new_dialog_box(InterfaceNdGame4, sX, sY, 2);
 
 	using namespace hb::shared::text;

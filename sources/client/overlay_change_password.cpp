@@ -210,10 +210,9 @@ void Overlay_ChangePassword::on_render()
         // A plain kit frame at the original's place and size (its axe picture is dropped, user ruling; HH-0066),
         // with the title, the sunken panel and the four field boxes the sprite carried (the fourth was frame 7)
         get_centered_dialog_pos(InterfaceNdGame4, 0, dlgX, dlgY);
-        static const hb::client::panel_style rivet_box{"stone_cloth", "wood_light", "rivet"};
         constexpr hb::client::kit_rect content_panel{16, 31, 302, 207};
         const hb::client::kit_dialog kit(*panel_kit, hb::client::kit_point{334, 256}, hb::client::kit_point{dlgX, dlgY},
-            1.0f, rivet_box);
+            1.0f, kit_frame_style(kit_frame::rivet_box));
         kit.title("Change Password", 21, kit_layout::title_fill, "divider_wave", 14);
         kit.inset(content_panel);
         for (int i = 0; i < 4; i++)

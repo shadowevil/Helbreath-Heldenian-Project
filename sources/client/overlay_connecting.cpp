@@ -77,7 +77,7 @@ void Overlay_Connecting::on_render()
     uint32_t elapsed = time - m_dwStartTime;
 
     int dlgX, dlgY;
-    draw_centered_dialog_box(InterfaceNdGame4, 2, dlgX, dlgY);
+    draw_centered_notice_frame(dlgX, dlgY);
 
     // draw countdown text
     std::string txt;
