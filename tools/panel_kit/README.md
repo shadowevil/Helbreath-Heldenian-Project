@@ -8,9 +8,11 @@ Builds the runtime dialog and button kit the client composes panels from (HH-005
   needs numpy and scipy). The json frame carries a `placement` (dialog `magic`, top-left 28,62 in the 258x328 dialog).
 - `compose.py` is the reference composer: what the client's `panel_kit` class must draw. It reads only the staged kit.
 - `text_fx.py` draws the multi-pass button text used by `compose.py`.
-- `build_hud_kit.py` slices the HUD action-bar sheet (`working/sprite_work/GameDialog/gamedialog_sprite_6.png`) into
-  `staged/client/sprites/hudkit/hud_kit.png` and `hud_kit.json` (parts, bar-relative layout, gauge offsets), for the
-  client's `hud_kit` class (HH-0068). Same `--check` / `--dry-run` and exit codes as `build_panel_kit.py`.
+- `build_hud_kit.py` slices the 2.4x HD HUD action-bar sheet (`working/classic_ui/hd/gamedialog_sprite_6.png`) into
+  `staged/client/sprites/hudkit/hud_kit.png` and `hud_kit.json` (HD atlas rects with each part's game-pixel size,
+  bar-relative layout, gauge offsets), for the client's `hud_kit` class (HH-0068, HD since HH-0100). The client draws
+  the HD frames at every scale; the old native kit is archived in `working/archive/hudkit/`. Same `--check` /
+  `--dry-run` and exit codes as `build_panel_kit.py`.
 
 The client specs are `.claude/design/plans/panel-kit-runtime.md` and `.claude/design/plans/hud-kit-runtime.md`.
 

@@ -1,9 +1,11 @@
 // hud_kit.h: The HUD action bar drawn from the staged HUD kit (presentation only)
 //
-// Kit files (tools/panel_kit/build_hud_kit.py) under <sprite_dir>/hudkit/: hud_kit.png (the atlas) and
-// hud_kit.json (frames by name, the bar-relative layout and the gauge offsets). Spec:
-// .claude/design/plans/hud-kit-runtime.md.
+// Kit files (tools/panel_kit/build_hud_kit.py) under <sprite_dir>/hudkit/: hud_kit.png (the HD atlas, cut
+// from the 2.4x HUD sheet) and hud_kit.json (frames by name with their atlas rect and game-pixel size, the
+// bar-relative layout and the gauge offsets). Spec: .claude/design/plans/hud-kit-runtime.md.
 //
+// All positions, sizes and gauge math are in game pixels: the bar covers the same 800x53 at every screen
+// size, and each HD frame is drawn scaled into its game-pixel rect at every scale, 1x included (HH-0100).
 // Every draw takes the bar's top (the HUD dialog's y); x is bar-relative, the bar itself at x 0.
 // Gauge rule (user, 2026-11-24, "A, hard cut"): trough, then the fill clipped to value / max with a straight
 // edge, then the trough's caps over the fill's ends. HP, MP, SP and EXP are anchored left and deplete to the

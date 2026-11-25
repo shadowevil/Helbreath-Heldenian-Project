@@ -89,9 +89,9 @@ void DialogBox_HudPanel::draw_gauge_bars()
 	statBuf = std::format("{}", display_value);
 	if (player().m_is_poisoned)
 	{
-		hb::shared::text::draw_text(GameFont::Numbers, 85 + hud_x_offset(), HP_NUM_Y(), statBuf.c_str(),
+		hb::shared::text::draw_text(GameFont::Numbers, 85 + hud_x_offset() + left_group_dx, HP_NUM_Y(), statBuf.c_str(),
 			hb::shared::text::TextStyle::from_color(GameColors::PoisonText));
-		hb::shared::text::draw_text(GameFont::SprFont3_2, 35 + hud_x_offset(), HP_BAR_Y() + 2, "Poisoned",
+		hb::shared::text::draw_text(GameFont::SprFont3_2, 35 + hud_x_offset() + left_group_dx, HP_BAR_Y() + 2, "Poisoned",
 			hb::shared::text::TextStyle::from_color(GameColors::PoisonLabel).with_alpha(0.7f));
 	}
 	else
@@ -182,7 +182,7 @@ void DialogBox_HudPanel::draw_icon_buttons()
 {
 	short mouse_x = hud_mouse_x();
 	short mouse_y = hud_mouse_y();
-	int xOffset = hud_x_offset();
+	const int xOffset = menu_x_offset();
 
 	// The hovered button (same rects as the clicks), -1 = none
 	int hovered = -1;
@@ -275,7 +275,7 @@ bool DialogBox_HudPanel::on_click()
 	}
 
 	// Dialog toggle buttons (Character, Inventory, Magic, Skill, Chat, System)
-	int xOffset = hud_x_offset();
+	const int xOffset = menu_x_offset();
 	for (int i = 0; i < TOGGLE_BUTTON_COUNT; i++)
 	{
 		const auto& btn = TOGGLE_BUTTONS[i];

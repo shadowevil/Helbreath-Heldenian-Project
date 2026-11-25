@@ -44,10 +44,13 @@ namespace hb::client
 
 	struct hud_kit::kit_data
 	{
+		// An atlas rect (HD pixels) and the game-pixel size it is drawn at; every region and offset is in game
+		// pixels and maps onto the atlas rect by kx, ky (about 2.4)
 		struct part
 		{
 			float x = 0.0f, y = 0.0f;
-			int w = 0, h = 0;
+			float kx = 1.0f, ky = 1.0f;   // atlas pixels per game pixel
+			int w = 0, h = 0;             // game pixels
 		};
 
 		std::unique_ptr<hb::shared::render::ITexture> sheet;
@@ -63,14 +66,15 @@ namespace hb::client
 		point tube_fill, sp_fill_at, hunger_fill_at;
 		int tube_cap_left = 0, tube_cap_right = 0, hunger_cap = 0;
 
-		// Part of a part (sx, sy, w, h in part pixels) at (x, y), unscaled
-		void region(const part& p, int sx, int sy, int w, int h, int x, int y, float alpha = 1.0f) const
+		// Part of a part (sx, sy, w, h in game pixels) drawn w x h game pixels at (x, y)
+		void region(const part& p, int sx, int sy, int w, int h, int x, int y, float alpha = 1.0f,
+			const hb::shared::render::draw_tint& tint = {}) const
 		{
 			if (w <= 0 || h <= 0)
 				return;
-			renderer->draw_texture_region(sheet.get(), p.x + static_cast<float>(sx), p.y + static_cast<float>(sy),
-				static_cast<float>(w), static_cast<float>(h), static_cast<float>(x), static_cast<float>(y),
-				static_cast<float>(w), static_cast<float>(h), alpha);
+			renderer->draw_texture_region(sheet.get(), p.x + static_cast<float>(sx) * p.kx, p.y + static_cast<float>(sy) * p.ky,
+				static_cast<float>(w) * p.kx, static_cast<float>(h) * p.ky, static_cast<float>(x), static_cast<float>(y),
+				static_cast<float>(w), static_cast<float>(h), alpha, tint);
 		}
 
 		void draw(const part& p, int x, int y) const
@@ -83,14 +87,9 @@ namespace hb::client
 		{
 			const int x = at_socket.x + (socket.w - p.w) / 2;
 			const int y = top + at_socket.y + (socket.h - p.h) / 2;
-			if (!additive)
-			{
-				region(p, 0, 0, p.w, p.h, x, y, alpha);
-				return;
-			}
-			renderer->draw_texture_region(sheet.get(), p.x, p.y, static_cast<float>(p.w), static_cast<float>(p.h),
-				static_cast<float>(x), static_cast<float>(y), static_cast<float>(p.w), static_cast<float>(p.h), alpha,
-				hb::shared::render::draw_tint{hb::shared::render::Color::White(), hb::shared::render::BlendMode::Additive});
+			namespace render = hb::shared::render;
+			region(p, 0, 0, p.w, p.h, x, y, alpha,
+				render::draw_tint{render::Color::White(), additive ? render::BlendMode::Additive : render::BlendMode::Alpha});
 		}
 	};
 
@@ -119,7 +118,12 @@ namespace hb::client
 			{
 				const json& f = frames.at(name);
 				sheet_name = f.at("image").get<std::string>();
-				return kit_data::part{f.at("x").get<float>(), f.at("y").get<float>(), f.at("w").get<int>(), f.at("h").get<int>()};
+				const point size = point_of(f.at("size"));
+				if (size.x <= 0 || size.y <= 0)
+					throw std::runtime_error("frame " + name + " has an empty size");
+				return kit_data::part{f.at("x").get<float>(), f.at("y").get<float>(),
+					f.at("w").get<float>() / static_cast<float>(size.x), f.at("h").get<float>() / static_cast<float>(size.y),
+					size.x, size.y};
 			};
 			data->bar = part_of("bar");
 			data->exp_fill = part_of("exp_fill");
@@ -172,7 +176,9 @@ namespace hb::client
 			data->hunger_cap = gauges.at("hunger").at("cap").get<int>();
 
 			const std::string sheet_path = dir + "/" + sheet_name;
-			data->sheet.reset(renderer.create_texture_from_file(sheet_path.c_str(), hb::shared::render::texture_filter::nearest));
+			// The HD atlas is always drawn scaled (down at 1x, about 2.4 atlas px per game px), so smooth with
+			// mipmaps; its parts are padded and edge-extruded for that
+			data->sheet.reset(renderer.create_texture_from_file(sheet_path.c_str(), hb::shared::render::texture_filter::smooth));
 			if (!data->sheet || data->sheet->get_width() == 0)
 				throw std::runtime_error("cannot load " + sheet_path);
 		}

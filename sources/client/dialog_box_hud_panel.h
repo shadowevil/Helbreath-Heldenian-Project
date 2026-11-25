@@ -31,6 +31,12 @@ private:
 	// At 640x480: offset = 0, At 800x600: offset = 80 (centered)
 	static int hud_x_offset() { return (LOGICAL_WIDTH() - 640) / 2; }
 
+	// The bar's two groups sit flush to its ends (HH-0100); these shift the original (centred) positions and
+	// must match LEFT_DX / RIGHT_DX in tools/panel_kit/build_hud_kit.py, which places the art in hud_kit.json.
+	// Left: tubes, SP, hunger, message frame and their text. Right: crusade icon, combat button, menu buttons.
+	static constexpr int left_group_dx = -78;
+	static constexpr int right_group_dx = 77;
+
 	static constexpr int MAX_HUNGER = 100;
 
 	// The HP bar's top (base value for 640x480; the Poisoned label sits on it)
@@ -44,18 +50,18 @@ private:
 	static constexpr int BASE_SP_NUM_X = 230;
 	static constexpr int BASE_SP_NUM_Y = 435;
 
-	static int HP_NUM_X() { return BASE_HP_NUM_X + hud_x_offset(); }
+	static int HP_NUM_X() { return BASE_HP_NUM_X + hud_x_offset() + left_group_dx; }
 	static int HP_NUM_Y() { return BASE_HP_NUM_Y + hud_y_offset(); }
 	static int MP_NUM_Y() { return BASE_MP_NUM_Y + hud_y_offset(); }
-	static int SP_NUM_X() { return BASE_SP_NUM_X + hud_x_offset(); }
+	static int SP_NUM_X() { return BASE_SP_NUM_X + hud_x_offset() + left_group_dx; }
 	static int SP_NUM_Y() { return BASE_SP_NUM_Y + hud_y_offset(); }
 
 	// Map message text position
 	static constexpr int BASE_MAP_MSG_X1 = 142;
 	static constexpr int BASE_MAP_MSG_X2 = 325;
 	static constexpr int BASE_MAP_MSG_Y = 456;
-	static int MAP_MSG_X1() { return BASE_MAP_MSG_X1 + hud_x_offset(); }
-	static int MAP_MSG_X2() { return BASE_MAP_MSG_X2 + hud_x_offset(); }
+	static int MAP_MSG_X1() { return BASE_MAP_MSG_X1 + hud_x_offset() + left_group_dx; }
+	static int MAP_MSG_X2() { return BASE_MAP_MSG_X2 + hud_x_offset() + left_group_dx; }
 	static int MAP_MSG_Y() { return BASE_MAP_MSG_Y + hud_y_offset(); }
 
 	// Button regions (Y is shared, right-side X needs offset)
@@ -69,10 +75,12 @@ private:
 	static constexpr int BASE_BTN_CRUSADE_X2 = 357;
 	static constexpr int BASE_BTN_COMBAT_X1 = 362;
 	static constexpr int BASE_BTN_COMBAT_X2 = 404;
-	static int BTN_CRUSADE_X1() { return BASE_BTN_CRUSADE_X1 + hud_x_offset(); }
-	static int BTN_CRUSADE_X2() { return BASE_BTN_CRUSADE_X2 + hud_x_offset(); }
-	static int BTN_COMBAT_X1() { return BASE_BTN_COMBAT_X1 + hud_x_offset(); }
-	static int BTN_COMBAT_X2() { return BASE_BTN_COMBAT_X2 + hud_x_offset(); }
+	static int BTN_CRUSADE_X1() { return BASE_BTN_CRUSADE_X1 + hud_x_offset() + right_group_dx; }
+	static int BTN_CRUSADE_X2() { return BASE_BTN_CRUSADE_X2 + hud_x_offset() + right_group_dx; }
+	static int BTN_COMBAT_X1() { return BASE_BTN_COMBAT_X1 + hud_x_offset() + right_group_dx; }
+	static int BTN_COMBAT_X2() { return BASE_BTN_COMBAT_X2 + hud_x_offset() + right_group_dx; }
+	// The menu buttons' TOGGLE_BUTTONS x ranges are shifted by this
+	static int menu_x_offset() { return hud_x_offset() + right_group_dx; }
 
 	// toggle button info structure
 	struct ToggleButtonInfo {
