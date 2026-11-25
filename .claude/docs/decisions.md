@@ -54,3 +54,6 @@ Sidecars are under `.claude/docs/decisions/`. Each line: id, title - scope; side
 - d-031 Test accounts and characters without asking - create as needed on the local server, track and reuse them. Read before an in-game test.
 - d-032 The minimap uses SDL's three-tier pyramid - levels 01-03 as JPG q92, no 2k level, hidden on maps without art. Read before changing the minimap or its images.
 - d-033 Two-tier minimap; the top tier becomes the parchment map view - supersedes d-032's three tiers. Read before changing the minimap or the parchment view.
+
+## UI look (`decisions/ui-look.md`)
+- d-034 Text uses the classic drop shadow, rarely an outline - black copy +1 px right and down. Read before styling recreated text.

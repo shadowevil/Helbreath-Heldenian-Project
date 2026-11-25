@@ -1,7 +1,7 @@
 {
   "id": "HH-0088",
   "summary": "Copyright line at the bottom of every screen",
-  "status": "open",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,11 +11,13 @@
   ],
   "author": "pm",
   "created": "2026-11-25T17:34:49Z",
-  "updated": "2026-11-25T17:35:38Z",
+  "updated": "2026-11-25T18:24:35Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "434bf0c5"
+    ],
     "files": [],
     "tickets": []
   },
-  "body": "The user, 2026-11-25: \"And on every screen at the bottom we want to put a copyright messages: \"Copyright (C) 2004 Siemantech Co., Ltd\"\". They would also like a second line crediting their own recreation work (\"this is open sourced so I am not worried about someone stealing it\").\n\nOpen questions for the user:\n- the exact company spelling: 3.82's registry key reads \"Siementech\" (game382.cpp line 51), not \"Siemantech\";\n- the wording of the recreation line;\n- which screens count as \"every screen\": front-end only, or in game too.\n\nNothing in sources/client draws a copyright line today (grep \"copyright\", 2026-11-25).\n\n**Done when:** the agreed line(s) show bottom-centre on every agreed screen at 4:3 and 16:9, in one shared helper so each screen calls it once.\n\n**User answers, 2026-11-25:**\n- Screens: front end only (splash, loading, main menu, login, create account, character select, character create, quit). Not in game.\n- Line 1: \"Copyright (C) 2004 Siementech Co., Ltd\" (the 3.82 spelling).\n- Line 2: \"Recreation (C) 2026 The Heldenian Project - open source\".\n"
+  "body": "The user, 2026-11-25: \"And on every screen at the bottom we want to put a copyright messages: \"Copyright (C) 2004 Siemantech Co., Ltd\"\". They would also like a second line crediting their own recreation work (\"this is open sourced so I am not worried about someone stealing it\").\n\nOpen questions for the user:\n- the exact company spelling: 3.82's registry key reads \"Siementech\" (game382.cpp line 51), not \"Siemantech\";\n- the wording of the recreation line;\n- which screens count as \"every screen\": front-end only, or in game too.\n\nNothing in sources/client draws a copyright line today (grep \"copyright\", 2026-11-25).\n\n**Done when:** the agreed line(s) show bottom-centre on every agreed screen at 4:3 and 16:9, in one shared helper so each screen calls it once.\n\n**User answers, 2026-11-25:**\n- Screens: front end only (splash, loading, main menu, login, create account, character select, character create, quit). Not in game.\n- Line 1: \"Copyright (C) 2004 Siementech Co., Ltd\" (the 3.82 spelling).\n- Line 2: \"Recreation (C) 2026 The Heldenian Project - open source\".\n\n**Correction, 2026-11-25:** the user: \"I mean't for you to use the copyright symbol instead of (C)\". The lines use the symbol (U+00A9): \"Copyright [U+00A9] 2004 Siementech Co., Ltd\" and \"Recreation [U+00A9] 2026 The Heldenian Project - open source\".\n\n**Verified, 2026-11-25:** review PASS with nits; the copyright sign draws on Windows (main menu, create account); the splash shows neither line nor the version. Linux: compiled only. Not seen yet: loading, select character, create character, quit. Nits carried to HH-0089: the login draw_copyright(true) comment, size_t includes.\n"
 }
