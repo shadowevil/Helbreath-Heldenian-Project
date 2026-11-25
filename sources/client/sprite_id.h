@@ -9,7 +9,6 @@ constexpr int MouseCursor                   = 0;
 constexpr int InterfaceSprFonts             = 22;
 constexpr int InterfaceFont1                = 30;
 constexpr int InterfaceFont2                = 31;
-constexpr int InterfaceSprFonts3            = 34;
 
 constexpr int InterfaceNewMaps1             = 35;
 constexpr int InterfaceNewMaps2             = 36;

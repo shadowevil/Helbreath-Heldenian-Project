@@ -149,6 +149,12 @@ void load_bitmap_font(int fontId, hb::shared::sprite::ISprite* sprite, char firs
 void load_bitmap_font_dynamic(int fontId, hb::shared::sprite::ISprite* sprite, char firstChar, char lastChar,
                            int frameOffset);
 
+// Load and register a pixel font: a TTF recreation of a bitmap font (ITextRenderer::load_pixel_face) that
+// draws, measures and wraps like the bitmap font it replaces, under the same id range. pixel_size is the
+// face's design grid, baseline the px from the draw position to the baseline, space_advance the bitmap
+// font's width for a space. False when the renderer cannot load the face.
+bool load_pixel_font(int fontId, const char* path, int pixel_size, int baseline, int space_advance);
+
 // Check if a bitmap font is loaded
 bool is_bitmap_font_loaded(int fontId);
 

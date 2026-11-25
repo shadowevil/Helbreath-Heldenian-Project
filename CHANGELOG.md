@@ -213,3 +213,5 @@ The exit screen is recreated on the user's new HD art (HH-0103). The message pan
 The guide map's monster-event marker now shows the map kit's creature icon (HH-0101). The map dialog draws only from the map kit, and the old newmaps fallback is gone (HH-0105). The mouse cursor draws only from its HD art, and the old sheet-008 fallback is gone (HH-0106).
 
 The splash screen shows the user's new HD Helbreath logo on black (HH-0107). The credits roll is unchanged, and the old splash image is archived.
+
+Sprite font 003 is replaced by the three TrueType recreations, Deathblow, Woundcut and Scratchmark (HH-0090). Damage numbers, "Critical!", "Poisoned" and the map coordinates now draw from them. At 1x they are drawn as crisp pixel masks with the original spacing and baselines, and at larger UI scales they render sharp at full size. The old sheet is archived. Spell-cast shouts such as "Recall!" are now centred over the caster (HH-0104).

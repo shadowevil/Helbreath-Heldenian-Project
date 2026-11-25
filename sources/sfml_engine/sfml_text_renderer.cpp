@@ -9,6 +9,8 @@
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/VertexArray.hpp>
+#include <array>
 #include <cstdint>
 #include <algorithm>
 #include <cmath>
@@ -431,6 +433,259 @@ hb::shared::render::ITexture* SFMLTextRenderer::bake_glow(const char* text, cons
         }
     }
     return new SFMLTexture(image, true);
+}
+
+namespace
+{
+
+// The 1:1 masks are point-sampled from the glyphs rasterised at this many times the face's pixel size:
+// odd, so every logical pixel's block has a centre texel, and large, so the auto-hinter SFML forces
+// (FT_LOAD_FORCE_AUTOHINT) moves an edge by well under a logical pixel
+constexpr int pixel_oversample = 21;
+// Masks are packed in rows no wider than this
+constexpr int pixel_atlas_row = 512;
+
+struct pixel_mask
+{
+    sf::Vector2i offset;            // top-left from the pen position on the baseline, logical px
+    sf::Vector2i size;
+    std::vector<std::uint8_t> on;   // size.x * size.y, row major, 1 where the pixel is ink
+};
+
+// One glyph's 1:1 mask: each logical pixel takes the coverage at the centre of its oversample block,
+// on a grid anchored at the pen position and baseline (not at the glyph's box), at half coverage or more
+pixel_mask sample_mask(const sf::Glyph& glyph, const sf::Image& page)
+{
+    pixel_mask mask;
+    const sf::Vector2i box_pos(glyph.bounds.position);
+    const sf::Vector2i box_size(glyph.bounds.size);
+    if (box_size.x <= 0 || box_size.y <= 0)
+        return mask;
+
+    const auto floor_div = [](int value) { return value >= 0 ? value / pixel_oversample : -((-value + pixel_oversample - 1) / pixel_oversample); };
+    const sf::Vector2i first(floor_div(box_pos.x), floor_div(box_pos.y));
+    const sf::Vector2i last(floor_div(box_pos.x + box_size.x - 1), floor_div(box_pos.y + box_size.y - 1));
+    mask.offset = first;
+    mask.size = last - first + sf::Vector2i(1, 1);
+    mask.on.assign(static_cast<std::size_t>(mask.size.x) * static_cast<std::size_t>(mask.size.y), 0);
+
+    for (int py = 0; py < mask.size.y; py++)
+    {
+        const int sy = (first.y + py) * pixel_oversample + pixel_oversample / 2 - box_pos.y;
+        if (sy < 0 || sy >= box_size.y)
+            continue;
+        for (int px = 0; px < mask.size.x; px++)
+        {
+            const int sx = (first.x + px) * pixel_oversample + pixel_oversample / 2 - box_pos.x;
+            if (sx < 0 || sx >= box_size.x)
+                continue;
+            const sf::Vector2u texel(static_cast<unsigned int>(glyph.textureRect.position.x + sx),
+                                     static_cast<unsigned int>(glyph.textureRect.position.y + sy));
+            if (page.getPixel(texel).a >= 128)
+                mask.on[static_cast<std::size_t>(py) * static_cast<std::size_t>(mask.size.x) + static_cast<std::size_t>(px)] = 1;
+        }
+    }
+    return mask;
+}
+
+// Two triangles of a textured quad: dest in target units, src in texels
+void append_quad(sf::VertexArray& quads, sf::FloatRect dest, sf::FloatRect src, sf::Color color)
+{
+    const sf::Vector2f d0 = dest.position;
+    const sf::Vector2f d1 = dest.position + dest.size;
+    const sf::Vector2f s0 = src.position;
+    const sf::Vector2f s1 = src.position + src.size;
+    const sf::Vertex corners[6] = {
+        {{d0.x, d0.y}, color, {s0.x, s0.y}}, {{d1.x, d0.y}, color, {s1.x, s0.y}}, {{d0.x, d1.y}, color, {s0.x, s1.y}},
+        {{d0.x, d1.y}, color, {s0.x, s1.y}}, {{d1.x, d0.y}, color, {s1.x, s0.y}}, {{d1.x, d1.y}, color, {s1.x, s1.y}},
+    };
+    for (const sf::Vertex& v : corners)
+        quads.append(v);
+}
+
+} // namespace
+
+int SFMLTextRenderer::load_pixel_face(const char* path, int pixel_size)
+{
+    if (!path || pixel_size <= 0)
+        return -1;
+    for (std::size_t i = 0; i < m_pixel_faces.size(); i++)
+    {
+        if (m_pixel_faces[i]->path == path && m_pixel_faces[i]->pixel_size == pixel_size)
+            return static_cast<int>(i) + 1;
+    }
+
+    auto pf = std::make_unique<pixel_face>();
+    pf->path = path;
+    pf->pixel_size = pixel_size;
+    pf->font = std::make_unique<sf::Font>();
+    if (!pf->font->openFromFile(path))
+        return -1;
+    // Scaled glyphs are drawn texel for output pixel on a snapped origin, so nearest loses nothing
+    pf->font->setSmooth(false);
+
+    // The large raster comes from a font of its own, so its glyph page is freed once the masks are taken
+    sf::Font large;
+    if (!large.openFromFile(path))
+        return -1;
+    const unsigned int large_size = static_cast<unsigned int>(pixel_size * pixel_oversample);
+    std::array<sf::Glyph, pixel_glyph_count> large_glyphs;
+    for (std::size_t i = 0; i < pixel_glyph_count; i++)
+    {
+        const char32_t code = pixel_first_char + static_cast<char32_t>(i);
+        pixel_glyph& g = pf->glyphs[i];
+        g.present = code != U' ' && pf->font->hasGlyph(code);
+        if (!g.present)
+            continue;
+        large_glyphs[i] = large.getGlyph(code, large_size, false);
+        // The design advances are whole pixels at pixel_size; the hinted large advance rounds back to them
+        g.advance = static_cast<int>(std::lround(large_glyphs[i].advance / static_cast<float>(pixel_oversample)));
+    }
+    // One read of the page, after every glyph is on it (a page that grows keeps earlier glyphs in place)
+    const sf::Image page = large.getTexture(large_size).copyToImage();
+
+    std::array<pixel_mask, pixel_glyph_count> masks;
+    sf::Vector2i cursor(0, 0);
+    int row_height = 0;
+    int atlas_width = 1;
+    for (std::size_t i = 0; i < pixel_glyph_count; i++)
+    {
+        if (!pf->glyphs[i].present)
+            continue;
+        masks[i] = sample_mask(large_glyphs[i], page);
+        const sf::Vector2i size = masks[i].size;
+        if (size.x <= 0 || size.y <= 0)
+            continue;
+        if (cursor.x > 0 && cursor.x + size.x > pixel_atlas_row)
+        {
+            cursor = {0, cursor.y + row_height + 1};
+            row_height = 0;
+        }
+        pf->glyphs[i].mask = sf::IntRect(cursor, size);
+        pf->glyphs[i].offset = masks[i].offset;
+        cursor.x += size.x + 1;
+        row_height = (std::max)(row_height, size.y);
+        atlas_width = (std::max)(atlas_width, cursor.x);
+    }
+
+    sf::Image atlas(sf::Vector2u(static_cast<unsigned int>(atlas_width), static_cast<unsigned int>(cursor.y + row_height + 1)),
+                    sf::Color::Transparent);
+    for (std::size_t i = 0; i < pixel_glyph_count; i++)
+    {
+        const sf::IntRect rect = pf->glyphs[i].mask;
+        for (int y = 0; y < rect.size.y; y++)
+        {
+            for (int x = 0; x < rect.size.x; x++)
+            {
+                if (masks[i].on[static_cast<std::size_t>(y) * static_cast<std::size_t>(rect.size.x) + static_cast<std::size_t>(x)])
+                    atlas.setPixel({static_cast<unsigned int>(rect.position.x + x), static_cast<unsigned int>(rect.position.y + y)},
+                                   sf::Color::White);
+            }
+        }
+    }
+    if (!pf->atlas.loadFromImage(atlas))
+        return -1;
+    pf->atlas.setSmooth(false);
+
+    m_pixel_faces.push_back(std::move(pf));
+    return static_cast<int>(m_pixel_faces.size());
+}
+
+const SFMLTextRenderer::pixel_face* SFMLTextRenderer::pixel_face_at(int face_id) const
+{
+    if (face_id < 1 || face_id > static_cast<int>(m_pixel_faces.size()))
+        return nullptr;
+    return m_pixel_faces[static_cast<std::size_t>(face_id - 1)].get();
+}
+
+const SFMLTextRenderer::pixel_glyph* SFMLTextRenderer::pixel_glyph_for(const pixel_face& face, char c)
+{
+    const auto code = static_cast<unsigned char>(c);
+    if (code < pixel_first_char || code >= pixel_first_char + pixel_glyph_count)
+        return nullptr;
+    const pixel_glyph& g = face.glyphs[code - pixel_first_char];
+    return g.present ? &g : nullptr;
+}
+
+template <typename Visit>
+int SFMLTextRenderer::for_each_pixel_glyph(const pixel_face& face, const char* text, const pixel_run& run, Visit visit)
+{
+    int pen = 0;
+    for (const char* p = text; *p; p++)
+    {
+        const pixel_glyph* g = pixel_glyph_for(face, *p);
+        if (!g)
+        {
+            pen += run.space_advance;
+            continue;
+        }
+        visit(*p, *g, pen);
+        pen += g->advance;
+    }
+    return pen;
+}
+
+int SFMLTextRenderer::measure_pixel_run(const char* text, const pixel_run& run) const
+{
+    const pixel_face* face = pixel_face_at(run.face);
+    if (!text || !face)
+        return 0;
+    return for_each_pixel_glyph(*face, text, run, [](char, const pixel_glyph&, int) {});
+}
+
+void SFMLTextRenderer::draw_pixel_run(int x, int y, int dx, int dy, const char* text, const pixel_run& run,
+                                      const hb::shared::render::Color& color, hb::shared::render::BlendMode blend)
+{
+    sf::RenderTarget* target = m_renderer ? m_renderer->get_current_target() : nullptr;
+    const pixel_face* face = pixel_face_at(run.face);
+    if (!text || !face || !target)
+        return;
+
+    const sf::Color fill(color.r, color.g, color.b, color.a);
+    sf::RenderStates states(blend == hb::shared::render::BlendMode::Additive ? sf::BlendAdd : sf::BlendAlpha);
+    // One array for every call (up to four per shadowed string a frame): clear() keeps its capacity
+    sf::VertexArray& quads = m_pixel_quads;
+    quads.clear();
+    const float scale = m_renderer->text_scale();
+
+    if (std::abs(scale - 1.0f) < 0.001f)
+    {
+        // 1:1 (and the world pass): the masks on whole logical pixels, as the bitmap glyphs drew
+        for_each_pixel_glyph(*face, text, run, [&](char, const pixel_glyph& g, int pen)
+        {
+            if (g.mask.size.x <= 0)
+                return;
+            const sf::Vector2f pos(static_cast<float>(x + dx + pen + g.offset.x),
+                                   static_cast<float>(y + dy + run.baseline + g.offset.y));
+            append_quad(quads, sf::FloatRect(pos, sf::Vector2f(g.mask.size)), sf::FloatRect(g.mask), fill);
+        });
+        states.texture = &face->atlas;
+    }
+    else
+    {
+        // Scaled: each glyph rasterised at the output resolution and drawn at 1/scale, its pen position
+        // (whole logical px) snapped to a whole output pixel; the baseline is the same for every glyph
+        // sf::Font keeps a glyph page per character size and never frees one; this stays small because only
+        // the few UI scales a session uses (one per window size) ever reach here
+        const auto size = static_cast<unsigned int>((std::max)(
+            static_cast<long>(std::floor(static_cast<float>(face->pixel_size) * scale + 0.001f)), 1L));
+        const sf::Vector2f shift = output_shift(dx, dy);
+        for_each_pixel_glyph(*face, text, run, [&](char c, const pixel_glyph&, int pen)
+        {
+            const sf::Glyph& glyph = face->font->getGlyph(static_cast<char32_t>(static_cast<unsigned char>(c)), size, false);
+            if (glyph.bounds.size.x <= 0.0f || glyph.bounds.size.y <= 0.0f)
+                return;
+            const sf::Vector2f origin = m_renderer->snap_to_output_pixel(
+                {static_cast<float>(x + pen), static_cast<float>(y + run.baseline)}) + shift;
+            append_quad(quads, sf::FloatRect(origin + glyph.bounds.position / scale, glyph.bounds.size / scale),
+                        sf::FloatRect(glyph.textureRect), fill);
+        });
+        // After every getGlyph: a new glyph can grow the page
+        states.texture = &face->font->getTexture(size);
+    }
+
+    if (quads.getVertexCount() > 0)
+        target->draw(quads, states);
 }
 
 void SFMLTextRenderer::draw_text_aligned(int x, int y, int width, int height, const char* text, const hb::shared::render::Color& color,

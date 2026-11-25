@@ -10,6 +10,10 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/VertexArray.hpp>
+#include <array>
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -60,6 +64,12 @@ public:
     hb::shared::render::ITexture* bake_glow(const char* text, const text_run& run,
                                             const hb::shared::render::Color& color, int dilate, float blur) override;
 
+    // Pixel faces (TTF recreations of bitmap fonts)
+    int load_pixel_face(const char* path, int pixel_size) override;
+    int measure_pixel_run(const char* text, const pixel_run& run) const override;
+    void draw_pixel_run(int x, int y, int dx, int dy, const char* text, const pixel_run& run,
+                        const hb::shared::render::Color& color, hb::shared::render::BlendMode blend) override;
+
     // Batching (no-op for SFML, no DC acquisition needed)
     void begin_batch() override;
     void end_batch() override;
@@ -71,6 +81,36 @@ private:
         bool smooth = true;
         std::unique_ptr<sf::Font> font;
     };
+
+    // Printable ASCII, the range a pixel face covers
+    static constexpr char32_t pixel_first_char = U' ';
+    static constexpr std::size_t pixel_glyph_count = 95;
+
+    struct pixel_glyph
+    {
+        bool present = false;     // the face maps the character
+        int advance = 0;          // logical px
+        sf::IntRect mask;         // the 1:1 mask in the face's atlas (empty for a glyph with no ink)
+        sf::Vector2i offset;      // the mask's top-left from the pen position on the baseline, logical px
+    };
+
+    struct pixel_face
+    {
+        std::string path;
+        int pixel_size = 16;
+        std::unique_ptr<sf::Font> font;   // scaled draws, nearest sampled
+        sf::Texture atlas;                // 1:1 masks: white, alpha 0 or 255
+        std::array<pixel_glyph, pixel_glyph_count> glyphs;
+    };
+
+    // The face for a pixel run's face id, or nullptr when it is not loaded
+    const pixel_face* pixel_face_at(int face_id) const;
+    // The glyph for a byte, or nullptr for a space, a byte outside ' '..'~' or a character the face lacks
+    static const pixel_glyph* pixel_glyph_for(const pixel_face& face, char c);
+    // Lay out a pixel run: visit(c, glyph, pen) for each glyph at its pen position (logical px from the run's
+    // start); a space or anything without a glyph advances run.space_advance. Returns the run's width.
+    template <typename Visit>
+    static int for_each_pixel_glyph(const pixel_face& face, const char* text, const pixel_run& run, Visit visit);
 
     // The font for a run's face id, or nullptr when it is not loaded
     const sf::Font* face_font(int face_id) const;
@@ -103,6 +143,8 @@ private:
     std::string m_loaded_font_path; // Source path for active TTF, used to force reload on smoothing toggle
     unsigned int m_font_size;     // Default SFML character size (GDI-adjusted)
     std::vector<face> m_faces;    // load_face fonts; face id = index + 1
+    std::vector<std::unique_ptr<pixel_face>> m_pixel_faces;  // load_pixel_face fonts; face id = index + 1
+    sf::VertexArray m_pixel_quads{sf::PrimitiveType::Triangles};  // draw_pixel_run's quads, reused per call
 };
 
 } // namespace hb::shared::text

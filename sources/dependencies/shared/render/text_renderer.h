@@ -64,6 +64,17 @@ struct text_run
     float tracking = 0.0f;    // extra logical px after every letter
 };
 
+// A pixel-face run: a TTF traced from a bitmap font, laid out on whole logical pixels exactly as that
+// bitmap font was. Every printable glyph advances by its font advance (whole px at the face's pixel
+// size); a space, a byte outside ' '..'~' and a missing glyph advance space_advance and draw nothing.
+// The glyph origin sits baseline px below the draw position (the bitmap's top-left).
+struct pixel_run
+{
+    int face = -1;            // an id from load_pixel_face
+    int baseline = 0;         // logical px from the draw position down to the baseline
+    int space_advance = 0;    // logical px for a space and for anything with no glyph
+};
+
 // Ink box of a run in logical units, relative to the origin draw_run takes
 struct ink_box
 {
@@ -161,6 +172,23 @@ public:
     static int glow_pad(int dilate, float blur)
     {
         return dilate + static_cast<int>(blur * 3.0f + 0.999f) + 1;
+    }
+
+    // Pixel faces (TTF recreations of bitmap fonts). load_pixel_face returns a face id >= 1 for a TTF whose
+    // design grid is pixel_size px (the same id again for a path already loaded), or -1 when it cannot be
+    // opened. At a 1:1 UI the glyphs are two-level masks (point-sampled from a large render, so the
+    // renderer's hinting and antialiasing never reach them); scaled, they are rasterised at the output
+    // resolution. Layout is in whole logical px either way (see pixel_run).
+    virtual int load_pixel_face(const char* path, int pixel_size) { (void)path; (void)pixel_size; return -1; }
+    // Width of a pixel run in logical px (the sum of its advances)
+    virtual int measure_pixel_run(const char* text, const pixel_run& run) const { (void)text; (void)run; return 0; }
+    // The run at (x, y), moved (dx, dy) logical px as whole output pixels (as draw_text_offset). color.a is
+    // the opacity; additive adds the glyphs to the target.
+    virtual void draw_pixel_run(int x, int y, int dx, int dy, const char* text, const pixel_run& run,
+                                const hb::shared::render::Color& color,
+                                hb::shared::render::BlendMode blend = hb::shared::render::BlendMode::Alpha)
+    {
+        (void)x; (void)y; (void)dx; (void)dy; (void)text; (void)run; (void)color; (void)blend;
     }
 
     // Batching for performance (DDraw needs DC acquisition)

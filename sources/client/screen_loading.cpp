@@ -181,12 +181,12 @@ void Screen_Loading::LoadStage_Interface()
 
     make_sprite("interface/monster", InterfaceMonster, 1, false);
 
-    // load sprite_fonts sprites (font1, font2, sprfonts + number font, sprfonts2)
+    // load sprite_fonts sprites (font1, font2, sprfonts + number font). Sprite 3 is an empty placeholder: its
+    // fonts became the TTF pixel fonts below (HH-0090)
     hb::shared::sprite::SpriteLoader::open("interface/sprite_fonts", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[InterfaceFont1] = loader.get_sprite(0, false);
         m_game->m_sprite[InterfaceFont2] = loader.get_sprite(1, false);
         m_game->m_sprite[InterfaceSprFonts] = loader.get_sprite(2, false);
-        m_game->m_sprite[InterfaceSprFonts3] = loader.get_sprite(3, false);
     });
 
     // Create and register bitmap fonts with TextLib
@@ -210,14 +210,9 @@ void Screen_Loading::LoadStage_Interface()
             '0', '9', 30, GameFont::GetFontSpacing(GameFont::Numbers));
     }
 
-    // SPRFONTS3: Characters ' ' (32) to '~' (126), with 3 different sizes (types 0, 1, 2)
-    // Each type has 95 frames offset
-    if (m_game->m_sprite[InterfaceSprFonts3])
-    {
-        hb::shared::text::load_bitmap_font_dynamic(GameFont::SprFont3_0, m_game->m_sprite[InterfaceSprFonts3].get(), ' ', '~', 0);
-        hb::shared::text::load_bitmap_font_dynamic(GameFont::SprFont3_1, m_game->m_sprite[InterfaceSprFonts3].get(), ' ', '~', 95);
-        hb::shared::text::load_bitmap_font_dynamic(GameFont::SprFont3_2, m_game->m_sprite[InterfaceSprFonts3].get(), ' ', '~', 190);
-    }
+    // The damage-number / status fonts (SprFont3_*): TTF recreations of the old sheet 003, laid out as it was
+    if (const char* failed = GameFont::load_pixel_fonts())
+        hb::logger::error("Cannot load pixel font {}", failed);
 
     m_iLoadingStage = 4;
 }

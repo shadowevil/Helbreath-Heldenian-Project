@@ -21,10 +21,40 @@ namespace GameFont
 		Bitmap1 = 1,        // INTERFACE_FONT1 - main bitmap font
 		Bitmap2 = 2,        // INTERFACE_FONT2 - secondary bitmap font
 		Numbers = 3,        // Number font from INTERFACE_ADDINTERFACE frames 6-15
-		SprFont3_0 = 4,     // SPRFONTS2 variant 0 (small)
-		SprFont3_1 = 5,     // SPRFONTS2 variant 1 (medium)
-		SprFont3_2 = 6,     // SPRFONTS2 variant 2 (large)
+		// Pixel fonts: TTF recreations of the old sprite_fonts sheet 003 (loaded during Screen_Loading)
+		SprFont3_0 = 4,     // large, fonts/deathblow.ttf
+		SprFont3_1 = 5,     // medium, fonts/woundcut.ttf
+		SprFont3_2 = 6,     // small, fonts/scratchmark.ttf
 	};
+
+	// A pixel font's face and the bitmap layout it keeps: 16 px design grid, the baseline below the
+	// draw position, and the 5 px space of the old dynamic bitmap fonts
+	struct pixel_font_spec
+	{
+		ID id;
+		const char* path;
+		int baseline;
+	};
+	constexpr int pixel_font_size = 16;
+	constexpr int pixel_font_space = 5;
+	inline constexpr pixel_font_spec pixel_fonts[] = {
+		{SprFont3_0, "fonts/deathblow.ttf", 11},
+		{SprFont3_1, "fonts/woundcut.ttf", 11},
+		{SprFont3_2, "fonts/scratchmark.ttf", 9},
+	};
+
+	// Register every pixel font with TextLib; the path of the first that fails to load, or nullptr
+	inline const char* load_pixel_fonts()
+	{
+		const char* failed = nullptr;
+		for (const pixel_font_spec& spec : pixel_fonts)
+		{
+			if (!hb::shared::text::load_pixel_font(spec.id, spec.path, pixel_font_size, spec.baseline, pixel_font_space)
+				&& !failed)
+				failed = spec.path;
+		}
+		return failed;
+	}
 
 	// Font spacing data for Bitmap1 ('!' to 'z')
 	inline const int Bitmap1Widths[] = {
@@ -59,7 +89,7 @@ namespace GameFont
 				break;
 
 			default:
-				// Bitmap2, SprFont3_* use dynamic spacing
+				// Bitmap2 uses dynamic spacing
 				spacing.useDynamicSpacing = true;
 				break;
 		}

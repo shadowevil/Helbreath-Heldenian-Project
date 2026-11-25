@@ -43,6 +43,29 @@ void load_bitmap_font_dynamic(int fontId, hb::shared::sprite::ISprite* sprite, c
 	s_ownedFonts[fontId] = CreateBitmapFontDynamic(sprite, firstChar, lastChar, frameOffset);
 }
 
+// Pixel fonts by id (face -1 = none); they share the bitmap ids, and a pixel font wins over a bitmap one
+static pixel_run s_pixel_fonts[MAX_BITMAP_FONTS];
+
+bool load_pixel_font(int fontId, const char* path, int pixel_size, int baseline, int space_advance)
+{
+	ITextRenderer* renderer = GetTextRenderer();
+	if (fontId < 0 || fontId >= MAX_BITMAP_FONTS || !renderer)
+		return false;
+
+	const int face = renderer->load_pixel_face(path, pixel_size);
+	if (face < 0)
+		return false;
+	s_pixel_fonts[fontId] = {face, baseline, space_advance};
+	return true;
+}
+
+static const pixel_run* get_pixel_font(int fontId)
+{
+	if (fontId < 0 || fontId >= MAX_BITMAP_FONTS || s_pixel_fonts[fontId].face < 0)
+		return nullptr;
+	return &s_pixel_fonts[fontId];
+}
+
 bool is_bitmap_font_loaded(int fontId)
 {
 	if (fontId >= 0 && fontId < MAX_BITMAP_FONTS)
@@ -96,6 +119,59 @@ static void GetHighlightColor(const TextStyle& style, uint8_t& hr, uint8_t& hg, 
 	hb = static_cast<uint8_t>(std::min(255, static_cast<int>(style.color.b) + 50));
 }
 
+// A pixel font drawn as the bitmap fonts draw: the shadow copies opaque black (Integrated: near-black at
+// +1,0 and +1,+1), alpha blended, then the text in its colour with the style's alpha and blend. The copies
+// cover the whole string rather than going glyph by glyph as the bitmap's Integrated shadow does.
+static void draw_pixel_text(const pixel_run& run, int x, int y, const char* text, const TextStyle& style, ShadowStyle shadow)
+{
+	ITextRenderer* renderer = GetTextRenderer();
+	if (!renderer)
+		return;
+
+	// A translucent bitmap draw takes the alpha params, which carry no integrated shadow
+	if (shadow == ShadowStyle::Integrated && style.alpha < 1.0f)
+		shadow = ShadowStyle::None;
+
+	const hb::shared::render::Color black = hb::shared::render::Color::Black();
+	const auto copy = [&](int dx, int dy, const hb::shared::render::Color& color)
+	{
+		renderer->draw_pixel_run(x, y, dx, dy, text, run, color);
+	};
+	switch (shadow)
+	{
+		case ShadowStyle::Highlight:
+		{
+			uint8_t hr, hg, hb;
+			GetHighlightColor(style, hr, hg, hb);
+			copy(1, 0, hb::shared::render::Color(hr, hg, hb));
+			break;
+		}
+		case ShadowStyle::DropShadow:
+			copy(1, 1, black);
+			break;
+		case ShadowStyle::TwoPoint:
+			copy(0, 1, black);
+			copy(1, 1, black);
+			break;
+		case ShadowStyle::ThreePoint:
+			copy(1, 1, black);
+			copy(0, 1, black);
+			copy(1, 0, black);
+			break;
+		case ShadowStyle::Integrated:
+			copy(1, 0, hb::shared::render::Color(1, 1, 1));
+			copy(1, 1, hb::shared::render::Color(1, 1, 1));
+			break;
+		default:
+			break;
+	}
+
+	// The bitmap path's opacity: alpha * 255 truncated (SFMLSprite::draw)
+	const uint8_t a = style.alpha < 1.0f ? static_cast<uint8_t>(style.alpha * 255.0f) : 255;
+	renderer->draw_pixel_run(x, y, 0, 0, text, run, hb::shared::render::Color(style.color.r, style.color.g, style.color.b, a),
+	                         style.useAdditive ? hb::shared::render::BlendMode::Additive : hb::shared::render::BlendMode::Alpha);
+}
+
 // ============== Batching ==============
 
 void begin_batch()
@@ -119,7 +195,11 @@ void draw_text(int fontId, int x, int y, const char* text, const TextStyle& styl
 	if (!text || text[0] == '\0')
 		return;
 
-	if (IsBitmapFont(fontId))
+	if (const pixel_run* run = get_pixel_font(fontId))
+	{
+		draw_pixel_text(*run, x, y, text, style, style.shadow);
+	}
+	else if (IsBitmapFont(fontId))
 	{
 		// ============== Bitmap Font Rendering ==============
 		IBitmapFont* font = get_bitmap_font(fontId);
@@ -337,13 +417,14 @@ static void DrawTextAlignedSingleLine(int fontId, int rectX, int rectY, int rect
 	uint8_t hAlign = alignment & Align::HMask;
 	uint8_t vAlign = alignment & Align::VMask;
 
-	if (IsBitmapFont(fontId))
+	const pixel_run* pixel = get_pixel_font(fontId);
+	IBitmapFont* font = pixel ? nullptr : get_bitmap_font(fontId);
+	if (pixel || IsBitmapFont(fontId))
 	{
-		IBitmapFont* font = get_bitmap_font(fontId);
-		if (!font)
+		if (!pixel && !font)
 			return;
 
-		int textWidth = font->measure_text(text);
+		int textWidth = measure_text(fontId, text).width;
 		int textHeight = 16;
 
 		int x = rectX;
@@ -357,6 +438,14 @@ static void DrawTextAlignedSingleLine(int fontId, int rectX, int rectY, int rect
 			y = rectY + (rectHeight - textHeight) / 2;
 		else if (vAlign == Align::Bottom)
 			y = rectY + rectHeight - textHeight;
+
+		if (pixel)
+		{
+			// The bitmap aligned path has no two-point shadow; nor does this
+			draw_pixel_text(*pixel, x, y, text, style,
+			                style.shadow == ShadowStyle::TwoPoint ? ShadowStyle::None : style.shadow);
+			return;
+		}
 
 		switch (style.shadow)
 		{
@@ -471,6 +560,12 @@ TextMetrics measure_text(int fontId, const char* text)
 	if (!text || text[0] == '\0')
 		return {0, 0};
 
+	if (const pixel_run* run = get_pixel_font(fontId))
+	{
+		ITextRenderer* renderer = GetTextRenderer();
+		return {renderer ? renderer->measure_pixel_run(text, *run) : 0, 16}; // the bitmap fonts' height
+	}
+
 	if (IsBitmapFont(fontId))
 	{
 		IBitmapFont* font = get_bitmap_font(fontId);
@@ -498,8 +593,7 @@ int get_fitting_char_count(int fontId, const char* text, int maxWidth)
 
 	if (IsBitmapFont(fontId))
 	{
-		IBitmapFont* font = get_bitmap_font(fontId);
-		if (!font)
+		if (!get_pixel_font(fontId) && !get_bitmap_font(fontId))
 			return 0;
 
 		// Measure progressively until we exceed maxWidth
@@ -512,7 +606,7 @@ int get_fitting_char_count(int fontId, const char* text, int maxWidth)
 			memcpy(temp, text, copyLen);
 			temp[copyLen] = '\0';
 
-			int width = font->measure_text(temp);
+			int width = measure_text(fontId, temp).width;
 			if (width <= maxWidth)
 				return i;
 		}

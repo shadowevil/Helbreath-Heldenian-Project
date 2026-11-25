@@ -14,6 +14,7 @@
 #include "sprite_loader.h"
 #include "input.h"
 #include "renderer_factory.h"
+#include "log.h"
 using namespace hb::client::sprite_id;
 
 Screen_Test::Screen_Test(CGame* game)
@@ -40,7 +41,6 @@ void Screen_Test::load_bitmap_fonts()
 		m_game->m_sprite[InterfaceFont1] = loader.get_sprite(0, false);
 		m_game->m_sprite[InterfaceFont2] = loader.get_sprite(1, false);
 		m_game->m_sprite[InterfaceSprFonts] = loader.get_sprite(2, false);
-		m_game->m_sprite[InterfaceSprFonts3] = loader.get_sprite(3, false);
 	});
 
 	// Create bitmap fonts from the loaded sprites
@@ -67,16 +67,9 @@ void Screen_Test::load_bitmap_fonts()
 			GameFont::GetFontSpacing(GameFont::Numbers));
 	}
 
-	// SPRFONTS3: Characters ' ' (32) to '~' (126), with 3 different sizes
-	if (m_game->m_sprite[InterfaceSprFonts3])
-	{
-		for (int idx = 0; idx < 3; idx++)
-		{
-			int fontId = GameFont::SprFont3_0 + idx;
-			hb::shared::text::load_bitmap_font_dynamic(fontId,
-				m_game->m_sprite[InterfaceSprFonts3].get(), ' ', '~', 95 * idx);
-		}
-	}
+	// SprFont3_*: the pixel fonts that replaced sheet 003
+	if (const char* failed = GameFont::load_pixel_fonts())
+		hb::logger::error("Cannot load pixel font {}", failed);
 }
 void Screen_Test::on_update()
 {
