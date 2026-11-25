@@ -1,7 +1,7 @@
 {
   "id": "HH-0083",
   "summary": "High-resolution sprite support; ship the 4x remastered label sheet",
-  "status": "open",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,11 +11,17 @@
   ],
   "author": "pm",
   "created": "2026-11-25T16:35:18Z",
-  "updated": "2026-11-25T16:35:18Z",
+  "updated": "2026-11-25T17:50:07Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "834ca90f"
+    ],
     "files": [],
-    "tickets": []
+    "tickets": [],
+    "blocks": [
+      "HH-0085",
+      "HH-0080"
+    ]
   },
-  "body": "Ship the remastered label sheet as high-resolution art. User, 2026-11-25:\n- \"upscaled remastered version will need resized\"\n- \"These should replace the existing\"\n- \"Make sure we get a better sprite-rect so we're not chopping off parts\"\n- \"I also don't want to ship the same sized version - I want an upscaled version which will look good on all resolutions\"\n\nAsset: working/classic_ui/hd/interface.pak-001_x4.png (1848x288, the user's) is a 4x remaster of staged/client/sprites/interface/sprite_fonts/002.png (462x72, InterfaceSprFonts, 40 frames).\n\nUses today (verified 2026-11-25):\n- the magic and magic shop dialogs draw frames 19-29 (the circle-number strip and roman numerals);\n- frames 30-39 are GameFont::Numbers, the HUD HP and MP digits (dialog_box_hud_panel.cpp:92-115);\n- frames 0-18 are the old character labels.\n\nThe remaster has NO digits: frames 30-39 are blank in it. Keep the old digits, upscaled, or replace the Numbers font separately.\n\nMeasured on a 1x trial (reverted, not shipped):\n- the remaster's ink runs past 30 of the 40 old rects, by up to 3 px per side at 1x;\n- refitting each rect to the ink assigned to it, and shifting the pivot by the same amount, cut nothing off, but 7 pairs of rects then overlap by 1-27 px (up to 9 ink pixels shared). Trial script: .claude/scratch/coordinator/main_menu_wide/refit_rects.py.\n\nNeeds: hi-res sprite support. The sprite folder format has no scale field today (sprite_folder.cpp, verified by grep), so frames always draw at their pixel size. Proposal:\n- a per-sprite art scale in the manifest (art px per logical px, here 4);\n- the loader divides rects and pivots by it;\n- the draw uses smooth filtering, so the sheet renders sharp at every output resolution.\nRects are refit on the 4x sheet so no glyph is clipped and neighbours do not bleed.\n\n**Done when:**\n- sprite_fonts 002 ships at 4x with refit rects;\n- the magic and magic shop numerals and the HUD digits draw correctly at 1x, 1.6x and fullscreen;\n- no glyph is clipped (a census of ink outside each rect reads 0);\n- both builds are clean.\n\nSource: user in chat, 2026-11-25.\n"
+  "body": "Ship the remastered label sheet as high-resolution art. User, 2026-11-25:\n- \"upscaled remastered version will need resized\"\n- \"These should replace the existing\"\n- \"Make sure we get a better sprite-rect so we're not chopping off parts\"\n- \"I also don't want to ship the same sized version - I want an upscaled version which will look good on all resolutions\"\n\nAsset: working/classic_ui/hd/interface.pak-001_x4.png (1848x288, the user's) is a 4x remaster of staged/client/sprites/interface/sprite_fonts/002.png (462x72, InterfaceSprFonts, 40 frames).\n\nUses today (verified 2026-11-25):\n- the magic and magic shop dialogs draw frames 19-29 (the circle-number strip and roman numerals);\n- frames 30-39 are GameFont::Numbers, the HUD HP and MP digits (dialog_box_hud_panel.cpp:92-115);\n- frames 0-18 are the old character labels.\n\nThe remaster has NO digits: frames 30-39 are blank in it. Keep the old digits, upscaled, or replace the Numbers font separately.\n\nMeasured on a 1x trial (reverted, not shipped):\n- the remaster's ink runs past 30 of the 40 old rects, by up to 3 px per side at 1x;\n- refitting each rect to the ink assigned to it, and shifting the pivot by the same amount, cut nothing off, but 7 pairs of rects then overlap by 1-27 px (up to 9 ink pixels shared). Trial script: .claude/scratch/coordinator/main_menu_wide/refit_rects.py.\n\nNeeds: hi-res sprite support. The sprite folder format has no scale field today (sprite_folder.cpp, verified by grep), so frames always draw at their pixel size. Proposal:\n- a per-sprite art scale in the manifest (art px per logical px, here 4);\n- the loader divides rects and pivots by it;\n- the draw uses smooth filtering, so the sheet renders sharp at every output resolution.\nRects are refit on the 4x sheet so no glyph is clipped and neighbours do not bleed.\n\n**Done when:**\n- sprite_fonts 002 ships at 4x with refit rects;\n- the magic and magic shop numerals and the HUD digits draw correctly at 1x, 1.6x and fullscreen;\n- no glyph is clipped (a census of ink outside each rect reads 0);\n- both builds are clean.\n\nSource: user in chat, 2026-11-25.\n\n**Verified, 2026-11-25:** shipped with HH-0082 in 834ca90f. Review PASS; zero clipped ink pixels in the refitted rects (73 before); HUD digits and magic numerals checked in client at 1280x960.\n"
 }

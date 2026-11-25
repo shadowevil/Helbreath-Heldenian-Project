@@ -1,0 +1,24 @@
+{
+  "id": "HH-0085",
+  "summary": "Move the numeral/digit sheet out of sprite_fonts",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    2
+  ],
+  "author": "pm",
+  "created": "2026-11-25T16:43:53Z",
+  "updated": "2026-11-25T16:43:53Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocked_by": [
+      "HH-0083"
+    ]
+  },
+  "body": "Move sprite_fonts sprite 2 (InterfaceSprFonts: the magic dialog numeral strip and roman numerals, the HUD HP/MP digits, the old character labels) out of interface/sprite_fonts into its own folder. User, 2026-11-25: \"Those aren't really sprite fonts - so yes it's fine to leave that - but it should probably move out of sprite fonts\".\n\nToday it loads with the others in screen_loading.cpp:127-131 (as of 2026-11-25). The move needs:\n- a new sprite folder with its manifest (keeping the HH-0083 art scale and the refit rects);\n- the loader line changed;\n- sprite 2 in sprite_fonts left as an empty placeholder (sprites load by position; HH-0067 used the same pattern), or the remaining fonts renumbered;\n- index.json regenerated.\n\nWaits on HH-0083, which is replacing that sheet now.\n\n**Done when:** the sheet loads from its own folder, the magic numerals and HUD digits draw as before, gen_sprite_index --check passes, and both builds are clean.\n"
+}

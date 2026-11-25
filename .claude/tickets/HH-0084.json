@@ -1,0 +1,23 @@
+{
+  "id": "HH-0084",
+  "summary": "Spell-cast shout in the 3.82 font and colour",
+  "status": "done",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    1
+  ],
+  "author": "pm",
+  "created": "2026-11-25T16:42:05Z",
+  "updated": "2026-11-25T17:50:07Z",
+  "links": {
+    "commits": [
+      "097b7a28"
+    ],
+    "files": [],
+    "tickets": []
+  },
+  "body": "Spell-cast shout follows 3.82, not our version. User, 2026-11-25: \"Follow the original 3.82 version not ours.\"\n\n3.82 (DrawChatMsgBox, message types 41/42, line 20898+ of the 3.82 bundle Game.cpp): the name is drawn with PutString (the default font) at RGB(180, 30, 30), twice, 1 px apart in x, with no shadow, centred on the legacy width estimate.\n\nOurs drew it with sprite font 003 (SprFont3_0) in Red4x, with a two-point shadow and additive blend (floating_text_manager.cpp:293-306, as of 2026-11-25).\n\nFix (guard f1428493):\n- floating_text_types.h: magic_cast_name now uses the renderer path, colour UISpellNameRed.\n- floating_text_manager.cpp: a 3.82-style branch in the renderer path.\n- common_types.h: adds UISpellNameRed.\n\nNot compiled yet: the tree currently has another agent's in-progress engine edits (HH-0083) that do not build. Compile after that lands.\n\n**Done when:** spell names draw in the default font in dark red, doubled; both builds are clean; a screenshot of a cast is attached.\n\n**Verified, 2026-11-25:** review PASS (two rounds); Windows Debug and Linux client builds clean. Not yet seen in game (needs a caster in view).\n"
+}
