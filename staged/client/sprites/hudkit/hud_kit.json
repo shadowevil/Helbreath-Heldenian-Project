@@ -1,0 +1,650 @@
+{
+ "kit": "hud_kit",
+ "version": 1,
+ "ticket": "HH-0068",
+ "inputs": {
+  "gamedialog_sprite_6": {
+   "path": "working/sprite_work/GameDialog/gamedialog_sprite_6.png",
+   "sha256": "1ab57b6b34814290a8ff50d5199a7a17a37ee5b13caf23dc903f69ceafd0fd2f"
+  }
+ },
+ "frames": {
+  "bar": {
+   "image": "hud_kit.png",
+   "x": 2,
+   "y": 2,
+   "w": 800,
+   "h": 53,
+   "use": "800x53 leather action bar, plain; its top 4 rows are the EXP trough trim",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     0,
+     135,
+     800,
+     53
+    ]
+   }
+  },
+  "exp_fill": {
+   "image": "hud_kit.png",
+   "x": 2,
+   "y": 117,
+   "w": 800,
+   "h": 4,
+   "use": "green EXP fill 800x4, drawn over the bar's top trim, clipped from the left",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     0,
+     130,
+     800,
+     4
+    ]
+   }
+  },
+  "mode_eye_lit": {
+   "image": "hud_kit.png",
+   "x": 966,
+   "y": 2,
+   "w": 34,
+   "h": 42,
+   "use": "crusade duty icon, Elvine eye, hover",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     4,
+     4,
+     34,
+     42
+    ]
+   }
+  },
+  "mode_eye": {
+   "image": "hud_kit.png",
+   "x": 930,
+   "y": 2,
+   "w": 34,
+   "h": 42,
+   "use": "crusade duty icon, Elvine eye",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     40,
+     4,
+     34,
+     42
+    ]
+   }
+  },
+  "mode_cross_lit": {
+   "image": "hud_kit.png",
+   "x": 894,
+   "y": 2,
+   "w": 34,
+   "h": 42,
+   "use": "crusade duty icon, Aresden cross, hover",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     76,
+     4,
+     34,
+     42
+    ]
+   }
+  },
+  "mode_cross": {
+   "image": "hud_kit.png",
+   "x": 858,
+   "y": 2,
+   "w": 34,
+   "h": 42,
+   "use": "crusade duty icon, Aresden cross",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     112,
+     4,
+     34,
+     42
+    ]
+   }
+  },
+  "tube_trough": {
+   "image": "hud_kit.png",
+   "x": 838,
+   "y": 57,
+   "w": 128,
+   "h": 20,
+   "use": "HP/MP glass trough: gold caps x 0-12 and 115-127, glass x 13-114",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     2,
+     54,
+     128,
+     20
+    ]
+   }
+  },
+  "tube_fill_hp": {
+   "image": "hud_kit.png",
+   "x": 2,
+   "y": 100,
+   "w": 106,
+   "h": 15,
+   "use": "HP fill, red glass; at trough + fill_offset, clipped from the left",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     13,
+     74,
+     106,
+     15
+    ]
+   }
+  },
+  "tube_fill_mp": {
+   "image": "hud_kit.png",
+   "x": 110,
+   "y": 100,
+   "w": 106,
+   "h": 15,
+   "use": "MP fill, blue glass; at trough + fill_offset, clipped from the left",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     13,
+     89,
+     106,
+     15
+    ]
+   }
+  },
+  "hunger_fill": {
+   "image": "hud_kit.png",
+   "x": 653,
+   "y": 57,
+   "w": 7,
+   "h": 35,
+   "use": "hunger fill, orange, vertical; clipped from the top (anchored at the bottom)",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     123,
+     77,
+     7,
+     35
+    ]
+   }
+  },
+  "hunger_trough": {
+   "image": "hud_kit.png",
+   "x": 804,
+   "y": 2,
+   "w": 7,
+   "h": 43,
+   "use": "hunger trough, white glass with 4 px gold caps top and bottom",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     131,
+     73,
+     7,
+     43
+    ]
+   }
+  },
+  "sp_fill": {
+   "image": "hud_kit.png",
+   "x": 392,
+   "y": 100,
+   "w": 168,
+   "h": 9,
+   "use": "SP fill, green; at trough + fill_offset, clipped from the left",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     144,
+     54,
+     168,
+     9
+    ]
+   }
+  },
+  "sp_trough": {
+   "image": "hud_kit.png",
+   "x": 218,
+   "y": 100,
+   "w": 172,
+   "h": 13,
+   "use": "SP trough, grey",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     142,
+     65,
+     172,
+     13
+    ]
+   }
+  },
+  "msg_frame": {
+   "image": "hud_kit.png",
+   "x": 662,
+   "y": 57,
+   "w": 174,
+   "h": 31,
+   "use": "map-name / coordinates box, open centre",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     141,
+     79,
+     174,
+     31
+    ]
+   }
+  },
+  "orb_peace": {
+   "image": "hud_kit.png",
+   "x": 539,
+   "y": 57,
+   "w": 36,
+   "h": 35,
+   "use": "combat orb, dark grey sword: peace mode",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     540,
+     2,
+     36,
+     35
+    ]
+   }
+  },
+  "orb_peace_hover": {
+   "image": "hud_kit.png",
+   "x": 577,
+   "y": 57,
+   "w": 36,
+   "h": 35,
+   "use": "combat orb, light grey sword: peace mode, hovered",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     578,
+     2,
+     36,
+     35
+    ]
+   }
+  },
+  "orb_attack": {
+   "image": "hud_kit.png",
+   "x": 501,
+   "y": 57,
+   "w": 36,
+   "h": 35,
+   "use": "combat orb, red sword: attack mode",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     616,
+     2,
+     36,
+     35
+    ]
+   }
+  },
+  "orb_safe": {
+   "image": "hud_kit.png",
+   "x": 615,
+   "y": 57,
+   "w": 36,
+   "h": 35,
+   "use": "combat orb, gold sword: safe attack mode",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     654,
+     2,
+     36,
+     35
+    ]
+   }
+  },
+  "orb_super": {
+   "image": "hud_kit.png",
+   "x": 463,
+   "y": 57,
+   "w": 36,
+   "h": 36,
+   "use": "purple lightning orb: super attack ready while ALT is held, additive 0.7",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     692,
+     2,
+     36,
+     36
+    ]
+   }
+  },
+  "ring_hover": {
+   "image": "hud_kit.png",
+   "x": 422,
+   "y": 57,
+   "w": 39,
+   "h": 38,
+   "use": "white ring, open centre: combat button hover",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     539,
+     38,
+     39,
+     38
+    ]
+   }
+  },
+  "socket": {
+   "image": "hud_kit.png",
+   "x": 813,
+   "y": 2,
+   "w": 43,
+   "h": 42,
+   "use": "brown square socket behind the combat orb",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     582,
+     38,
+     43,
+     42
+    ]
+   }
+  },
+  "menu_character_normal": {
+   "image": "hud_kit.png",
+   "x": 37,
+   "y": 57,
+   "w": 33,
+   "h": 41,
+   "use": "character menu button, normal",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     320,
+     1,
+     33,
+     41
+    ]
+   }
+  },
+  "menu_character_hover": {
+   "image": "hud_kit.png",
+   "x": 2,
+   "y": 57,
+   "w": 33,
+   "h": 41,
+   "use": "character menu button, hover",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     320,
+     44,
+     33,
+     41
+    ]
+   }
+  },
+  "menu_inventory_normal": {
+   "image": "hud_kit.png",
+   "x": 177,
+   "y": 57,
+   "w": 33,
+   "h": 41,
+   "use": "inventory menu button, normal",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     357,
+     1,
+     33,
+     41
+    ]
+   }
+  },
+  "menu_inventory_hover": {
+   "image": "hud_kit.png",
+   "x": 142,
+   "y": 57,
+   "w": 33,
+   "h": 41,
+   "use": "inventory menu button, hover",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     357,
+     44,
+     33,
+     41
+    ]
+   }
+  },
+  "menu_magic_normal": {
+   "image": "hud_kit.png",
+   "x": 247,
+   "y": 57,
+   "w": 33,
+   "h": 41,
+   "use": "magic menu button, normal",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     394,
+     1,
+     33,
+     41
+    ]
+   }
+  },
+  "menu_magic_hover": {
+   "image": "hud_kit.png",
+   "x": 212,
+   "y": 57,
+   "w": 33,
+   "h": 41,
+   "use": "magic menu button, hover",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     394,
+     44,
+     33,
+     41
+    ]
+   }
+  },
+  "menu_skill_normal": {
+   "image": "hud_kit.png",
+   "x": 317,
+   "y": 57,
+   "w": 33,
+   "h": 41,
+   "use": "skill menu button, normal",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     431,
+     1,
+     33,
+     41
+    ]
+   }
+  },
+  "menu_skill_hover": {
+   "image": "hud_kit.png",
+   "x": 282,
+   "y": 57,
+   "w": 33,
+   "h": 41,
+   "use": "skill menu button, hover",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     431,
+     44,
+     33,
+     41
+    ]
+   }
+  },
+  "menu_chat_log_normal": {
+   "image": "hud_kit.png",
+   "x": 107,
+   "y": 57,
+   "w": 33,
+   "h": 41,
+   "use": "chat_log menu button, normal",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     468,
+     1,
+     33,
+     41
+    ]
+   }
+  },
+  "menu_chat_log_hover": {
+   "image": "hud_kit.png",
+   "x": 72,
+   "y": 57,
+   "w": 33,
+   "h": 41,
+   "use": "chat_log menu button, hover",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     468,
+     44,
+     33,
+     41
+    ]
+   }
+  },
+  "menu_system_normal": {
+   "image": "hud_kit.png",
+   "x": 387,
+   "y": 57,
+   "w": 33,
+   "h": 41,
+   "use": "system menu button, normal",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     505,
+     1,
+     33,
+     41
+    ]
+   }
+  },
+  "menu_system_hover": {
+   "image": "hud_kit.png",
+   "x": 352,
+   "y": 57,
+   "w": 33,
+   "h": 41,
+   "use": "system menu button, hover",
+   "source": {
+    "sheet": "gamedialog_sprite_6",
+    "rect": [
+     505,
+     44,
+     33,
+     41
+    ]
+   }
+  }
+ },
+ "layout": {
+  "note": "bar-relative: screen (x, hud_top + y); the bar itself at (0, 0)",
+  "bar": [
+   0,
+   0
+  ],
+  "exp_fill": [
+   0,
+   0
+  ],
+  "msg_frame": [
+   227,
+   20
+  ],
+  "tube_hp": [
+   90,
+   8
+  ],
+  "tube_mp": [
+   90,
+   30
+  ],
+  "sp_trough": [
+   229,
+   7
+  ],
+  "hunger_trough": [
+   219,
+   7
+  ],
+  "socket": [
+   442,
+   7
+  ],
+  "crusade": [
+   405,
+   8
+  ],
+  "menu": [
+   493,
+   8
+  ],
+  "menu_step": 37,
+  "menu_order": [
+   "character",
+   "inventory",
+   "magic",
+   "skill",
+   "chat_log",
+   "system"
+  ]
+ },
+ "gauges": {
+  "rule": "trough, then the fill clipped to value/max with a hard cut, then the trough caps over the fill ends",
+  "tube": {
+   "fill_offset": [
+    11,
+    2
+   ],
+   "cap_left": 13,
+   "cap_right": 13
+  },
+  "sp": {
+   "fill_offset": [
+    2,
+    2
+   ]
+  },
+  "hunger": {
+   "fill_offset": [
+    0,
+    4
+   ],
+   "cap": 4
+  }
+ }
+}

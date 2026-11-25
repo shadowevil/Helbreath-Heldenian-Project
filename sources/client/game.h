@@ -66,6 +66,7 @@
 #include "formula_engine.h"
 #include "agent_bridge_config.h"
 #include "panel_kit.h"
+#include "hud_kit.h"
 #ifdef DEF_CLAUDE_TESTING
 namespace hb::client { class agent_bridge; }
 #endif
@@ -162,6 +163,8 @@ public:
 	void draw_new_dialog_box(char type, int sX, int sY, int frame, bool is_no_color_key = false, bool is_trans = false);
 	// The panel kit, loaded on first use; nullptr when <sprites>/panelkit is missing or bad
 	hb::client::panel_kit* get_panel_kit();
+	// The HUD kit, loaded on first use; nullptr when <sprites>/hudkit is missing or bad
+	hb::client::hud_kit* get_hud_kit();
 	void add_map_status_info(const char* data, bool is_last_data);
 	void request_map_status(const char* map_name, int mode);
 	// draw_dialog_boxs REMOVED — use get_dialog_box_manager().draw_all()
@@ -369,6 +372,8 @@ std::array<bool, hb::shared::limits::MaxItems> m_is_item_equipped{};
 	bool m_cursor_art_tried = false;  // Load is attempted once, on the first cursor draw
 	std::unique_ptr<hb::client::panel_kit> m_panel_kit;   // Dialog panels and text buttons (get_panel_kit)
 	bool m_panel_kit_tried = false;                       // Load is attempted once
+	std::unique_ptr<hb::client::hud_kit> m_hud_kit;       // The HUD action bar (get_hud_kit)
+	bool m_hud_kit_tried = false;                         // Load is attempted once
 
 	bool m_force_disconn;
 

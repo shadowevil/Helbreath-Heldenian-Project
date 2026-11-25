@@ -6,8 +6,11 @@ Builds the runtime dialog and button kit the client composes panels from (HH-005
   The PNG is the atlas; the JSON holds the frames and the recipes.
 - `compose.py` is the reference composer: what the client's `panel_kit` class must draw. It reads only the staged kit.
 - `text_fx.py` draws the multi-pass button text used by `compose.py`.
+- `build_hud_kit.py` slices the HUD action-bar sheet (`working/sprite_work/GameDialog/gamedialog_sprite_6.png`) into
+  `staged/client/sprites/hudkit/hud_kit.png` and `hud_kit.json` (parts, bar-relative layout, gauge offsets), for the
+  client's `hud_kit` class (HH-0068). Same `--check` / `--dry-run` and exit codes as `build_panel_kit.py`.
 
-The client spec is `.claude/design/plans/panel-kit-runtime.md`.
+The client specs are `.claude/design/plans/panel-kit-runtime.md` and `.claude/design/plans/hud-kit-runtime.md`.
 
 ## Inputs
 

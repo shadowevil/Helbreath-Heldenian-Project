@@ -413,6 +413,7 @@ void CGame::on_uninitialize()
 	m_effect_sprites.clear();
 	m_cursor_art.unload();
 	m_panel_kit.reset();
+	m_hud_kit.reset();
 	hb::shared::sprite::Sprites::set_factory(nullptr);
 	m_sprite_factory.reset();
 
@@ -3037,6 +3038,18 @@ hb::client::panel_kit* CGame::get_panel_kit()
 			m_panel_kit = std::move(kit);
 	}
 	return m_panel_kit.get();
+}
+
+hb::client::hud_kit* CGame::get_hud_kit()
+{
+	if (!m_hud_kit_tried)
+	{
+		m_hud_kit_tried = true;
+		auto kit = std::make_unique<hb::client::hud_kit>();
+		if (kit->load(*m_Renderer, hb::shared::sprite::Sprites::get_sprite_path()))
+			m_hud_kit = std::move(kit);
+	}
+	return m_hud_kit.get();
 }
 
 void CGame::draw_new_dialog_box(char type, int sX, int sY, int frame, bool is_no_color_key, bool is_trans)

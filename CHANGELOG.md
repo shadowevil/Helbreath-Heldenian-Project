@@ -140,3 +140,9 @@ The system menu now draws from the kit (HH-0065). That covers the frame, title, 
 - **Titles:** dialog titles sit at the original heights again (History was 4 px high).
 - **Flourishes:** they default to black like the original, and a dialog can override their colour and blend. The character heading keeps its warm look.
 - **Text shadows:** they now land the same distance from the text on every line and every letter. The offset is applied in whole screen pixels after the text position is rounded, separately for each axis. Before, chat history lines got a 1 px or 2 px shadow depending on where they fell at the 1.6x interface scale.
+
+The HUD action bar now draws from the new art (HH-0068).
+- **Gauges:** each one draws its trough, then the fill cut straight at the value, then the glass caps on top. HP, MP, SP and EXP empty toward the left, and hunger empties from the top.
+- **Other parts:** the orb, its socket and the peace-mode hover come from the new art. The menu buttons have normal and hover states.
+- **Behaviour:** clicks, tooltips and values are unchanged, and the old sprites are used if the kit is missing.
+- **Tool:** `tools/panel_kit/build_hud_kit.py` builds `staged/client/sprites/hudkit/`.
