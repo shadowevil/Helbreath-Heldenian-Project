@@ -313,15 +313,10 @@ void floating_text_manager::draw_message(const floating_text& msg, short sX, sho
 	else if (msg.m_category == floating_text::Category::Notify &&
 	         msg.m_notify_type == notify_text_type::magic_cast_name)
 	{
-		// Spell-cast shout as 3.82 drew it (DrawChatMsgBox types 41/42): the default font, centred on the
-		// legacy width estimate, drawn twice 1 px apart in x, no shadow
-		int size = 0;
-		for (size_t i = 0; i < msg.m_text.size(); i++)
-		{
-			if (static_cast<unsigned char>(msg.m_text[i]) >= 128) { size += 5; i++; }
-			else size += 4;
-		}
-		const int x = sX - size;
+		// Spell-cast shout as 3.82 drew it (DrawChatMsgBox types 41/42): the default font, drawn twice 1 px apart
+		// in x, no shadow. Centred on the width the TTF draws (HH-0104): 3.82's 4 px-per-letter estimate
+		// matched its wider font and leaves this one left of the head
+		const int x = sX - hb::shared::text::measure_text(GameFont::Default, msg.m_text.c_str()).width / 2;
 		const int y = sY - params.m_start_offset_y - rise;
 		const auto style = hb::shared::text::TextStyle::from_color(params.m_color);
 		hb::shared::text::draw_text(GameFont::Default, x, y, msg.m_text.c_str(), style);
