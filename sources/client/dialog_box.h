@@ -7,6 +7,15 @@
 // Simple rect for dialog-relative hit-testing
 struct ui_rect { int x, y, w, h; };
 
+// Plain panel-kit frame styles that replace the old Game1-4 sprite backgrounds (IDialogBox::draw_kit_background)
+namespace kit_frame
+{
+	enum type : uint8_t
+	{
+		gold_box   // small message / query boxes: cloth, light wood border, gold corners (Game1 f2, Game2 f5 / f6)
+	};
+}
+
 class CGame;
 class CPlayer;
 class DialogBoxManager;
@@ -67,6 +76,9 @@ protected:
 
 	// Helper methods - delegate to CGame
 	void draw_new_dialog_box(char type, int sX, int sY, int frame, bool is_no_color_key = false, bool is_trans = false);
+	// A plain panel-kit frame of w x h at (x, y); false when the kit is not loaded, and the caller then draws
+	// its original sprite frame. transparent = the dialog transparency setting's 0.25 opacity
+	bool draw_kit_background(kit_frame::type style, int x, int y, int w, int h, bool transparent = false);
 	void put_string(int iX, int iY, const char* string, const hb::shared::render::Color& color);
 	void put_aligned_string(int x1, int x2, int iY, const char* string, const hb::shared::render::Color& color = GameColors::UIBlack);
 	void add_event_list(const char* txt, char color = 0, bool dup_allow = true);

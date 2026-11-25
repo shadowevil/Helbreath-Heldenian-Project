@@ -29,7 +29,8 @@ void DialogBox_Fishing::on_draw()
 	uint32_t time = m_game->m_cur_time;
 	std::string txt;
 
-	draw_new_dialog_box(InterfaceNdGame1, sX, sY, 2);
+	if (!draw_kit_background(kit_frame::gold_box, sX, sY, 270, 104))   // the Game1 frame 2 box's size
+		draw_new_dialog_box(InterfaceNdGame1, sX, sY, 2);
 
 	auto itemInfo = item_name_formatter::get().format(m_game->find_item_id_by_name(m_fish_name));
 

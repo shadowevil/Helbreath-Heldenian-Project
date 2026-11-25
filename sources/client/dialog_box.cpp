@@ -25,6 +25,23 @@ void IDialogBox::draw_new_dialog_box(char type, int sX, int sY, int frame, bool 
 	m_game->draw_new_dialog_box(type, sX, sY, frame, is_no_color_key, is_trans);
 }
 
+bool IDialogBox::draw_kit_background(kit_frame::type style, int x, int y, int w, int h, bool transparent)
+{
+	hb::client::panel_kit* kit = m_game->get_panel_kit();
+	if (!kit)
+		return false;
+	// Built once: the kit part names per style (matched to the original sprite frames, HH-0066)
+	static const hb::client::panel_style gold_box{"stone_cloth", "wood_light", "gold"};
+	switch (style)
+	{
+	case kit_frame::gold_box:
+	default:
+		kit->compose(x, y, w, h, gold_box, hb::client::dialog_alpha(transparent));
+		break;
+	}
+	return true;
+}
+
 void IDialogBox::put_string(int iX, int iY, const char* string, const hb::shared::render::Color& color)
 {
 	hb::shared::text::draw_text(GameFont::Default, iX, iY, string, hb::shared::text::TextStyle::from_color(color));

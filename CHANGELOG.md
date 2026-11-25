@@ -146,3 +146,8 @@ The HUD action bar now draws from the new art (HH-0068).
 - **Other parts:** the orb, its socket and the peace-mode hover come from the new art. The menu buttons have normal and hover states.
 - **Behaviour:** clicks, tooltips and values are unchanged, and the old sprites are used if the kit is missing.
 - **Tool:** `tools/panel_kit/build_hud_kit.py` builds `staged/client/sprites/hudkit/`.
+
+Six small message boxes now draw their frame from the kit (HH-0066, batch 1): item drop, drop amount, resurrect, confirm exchange, fishing and the NPC action prompt.
+- **Look:** a cloth fill, light wood border and gold corners, the closest match to the old backgrounds. The old sprite is used if the kit is missing.
+- **Behaviour:** click areas, text and buttons are unchanged.
+- **HUD:** two small cleanups in the action bar code, with no change in behaviour.

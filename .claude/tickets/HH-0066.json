@@ -1,7 +1,7 @@
 {
   "id": "HH-0066",
   "summary": "Panel kit 7: remaining dialogs with Game1-4 / Text backgrounds",
-  "status": "open",
+  "status": "in_review",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:14Z",
-  "updated": "2026-11-24T20:30:14Z",
+  "updated": "2026-11-25T01:41:45Z",
   "links": {
     "commits": [],
     "files": [
@@ -24,5 +24,17 @@
       "HH-0059"
     ]
   },
-  "body": "Spec step 7. Same pattern, one dialog per cycle; the census in spec step 8 lists the users.\n\nDone when: no dialog draws a Game1-4 or Text frame as its background."
+  "body": "Spec step 7. Same pattern, one dialog per cycle; the census in spec step 8 lists the users.\n\nDone when: no dialog draws a Game1-4 or Text frame as its background.",
+  "comments": [
+    {
+      "author": "client",
+      "at": "2026-11-25T00:38:41Z",
+      "body": "Batch 1 done (client editor). Checkpoint 1ef330ae (dialog_box.h/.cpp + 6 dialogs); HUD nits under 433a40e5.\n\n- Census: 40 files call draw_new_dialog_box with Game1-4/Text; 3 are the converted dialogs' fallbacks. Families: small gold boxes (6), 258x339 list dialogs with scrollbar (8), 258x339 menus (13), magic/spells, notices (2), crusade title strips (3), change-password overlay, map (Game4 frame 43 is a part, not a background).\n- Batch 1, plain gold-corner boxes: item_drop, resurrect, confirm_exchange, fishing (270x104), item_drop_amount (215x87), npc_action_query (215x87 / 252x87). New IDialogBox::draw_kit_background(kit_frame::gold_box, x, y, w, h) = cloth + light wood + gold corners (closest match in hh0066_box_styles.jpg); sprite fallback kept; static style, no per-frame allocation.\n- In game: all six drawn (hh0066_b1_sheet.jpg); NPC query opened by clicking a guard, the other five via a temporary file-triggered path (removed; grep clean). Text input of the amount box closed cleanly. settings.json unchanged.\n- HUD nits: else instead of the mid-function return; unused time locals dropped.\n- Open for the user: the illustrated backgrounds (portrait, horned figure, hexagram, hammer, ruined city; hh0066_backgrounds.jpg) - drop them for plain kit frames, or keep them inside the kit frame.\n- Builds: Windows Debug and Linux, 0 warnings."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-25T01:41:45Z",
+      "body": "User ruling, 2026-11-24, in chat: \"Drop the pictures\". The illustrated backgrounds (portrait, horned figure, hexagram, hammer, ruined city) are not carried into the kit; the remaining dialogs convert to plain kit frames."
+    }
+  ]
 }

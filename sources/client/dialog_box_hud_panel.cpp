@@ -71,7 +71,6 @@ void DialogBox_HudPanel::toggle_dialog_with_sound(DialogBoxId::Type dialogId)
 void DialogBox_HudPanel::draw_gauge_bars()
 {
 	int max_point, bar_width, display_value;
-	uint32_t time = m_game->m_cur_time;
 	auto sprite = m_game->m_sprite[InterfaceNdIconPanel];
 	// The HUD kit draws each gauge as trough -> fill clipped to the value -> caps (the old bar has them baked in
 	// full, with the empty frame drawn over the missing share); EXP and the message frame go first, under the rest
@@ -161,36 +160,35 @@ void DialogBox_HudPanel::draw_gauge_bars()
 	// Hunger bar (vertical — frame 17 covers missing hunger from top)
 	int hunger = std::clamp(player().m_hunger_status, 0, MAX_HUNGER);
 	if (kit)
+		kit->hunger(m_y, hunger, MAX_HUNGER);   // the kit drew EXP first, under the rest
+	else
 	{
-		kit->hunger(m_y, hunger, MAX_HUNGER);
-		return;   // EXP went first
-	}
-	int missing_hunger = MAX_HUNGER - hunger;
-	auto hunger_frame = sprite->GetFrameRect(17);
-	int bar_height = (missing_hunger * hunger_frame.height) / MAX_HUNGER;
-	if (bar_height < 0) bar_height = 0;
-	if (bar_height > hunger_frame.height) bar_height = hunger_frame.height;
-	sprite->DrawWidth(HUNGER_BAR_X(), m_y + HUNGER_BAR_Y(), 17, bar_height, true);
+		int missing_hunger = MAX_HUNGER - hunger;
+		auto hunger_frame = sprite->GetFrameRect(17);
+		int bar_height = (missing_hunger * hunger_frame.height) / MAX_HUNGER;
+		if (bar_height < 0) bar_height = 0;
+		if (bar_height > hunger_frame.height) bar_height = hunger_frame.height;
+		sprite->DrawWidth(HUNGER_BAR_X(), m_y + HUNGER_BAR_Y(), 17, bar_height, true);
 
-	// EXP bar (horizontal — frame 18 fills from empty to full)
-	// m_exp is progress toward next level (0 to threshold), fills left-to-right
-	auto exp_frame = sprite->GetFrameRect(18);
-	int exp_width = 0;
-	if (next_level_exp > 0)
-	{
-		exp_width = (int)((uint64_t)player().m_exp * exp_frame.width / next_level_exp);
+		// EXP bar (horizontal — frame 18 fills from empty to full)
+		// m_exp is progress toward next level (0 to threshold), fills left-to-right
+		auto exp_frame = sprite->GetFrameRect(18);
+		int exp_width = 0;
+		if (next_level_exp > 0)
+		{
+			exp_width = (int)((uint64_t)player().m_exp * exp_frame.width / next_level_exp);
+		}
+		if (exp_width < 0) exp_width = 0;
+		if (exp_width > exp_frame.width) exp_width = exp_frame.width;
+		sprite->DrawWidth(EXP_BAR_X(), m_y + EXP_BAR_Y(), 18, exp_width);
 	}
-	if (exp_width < 0) exp_width = 0;
-	if (exp_width > exp_frame.width) exp_width = exp_frame.width;
-	sprite->DrawWidth(EXP_BAR_X(), m_y + EXP_BAR_Y(), 18, exp_width);
 }
 
 void DialogBox_HudPanel::draw_status_icons()
 {
 	short mouse_x = hud_mouse_x();
 	short mouse_y = hud_mouse_y();
-	uint32_t time = m_game->m_cur_time;
-	auto sprite = m_game->m_sprite[InterfaceNdIconPanel];
+	auto sprite = m_game->m_sprite[InterfaceNdIconPanel];   // the old bar's icons (no kit)
 
 	// Level Up / Restart / Tester text moved to DialogBox_StatusOverlay
 

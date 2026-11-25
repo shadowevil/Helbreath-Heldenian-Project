@@ -23,7 +23,8 @@ void DialogBox_ItemDrop::on_draw()
 	short sY = m_y;
 	std::string txt;
 
-	draw_new_dialog_box(InterfaceNdGame1, sX, sY, 2);
+	if (!draw_kit_background(kit_frame::gold_box, sX, sY, 270, 104))   // the Game1 frame 2 box's size
+		draw_new_dialog_box(InterfaceNdGame1, sX, sY, 2);
 
 	auto itemInfo = item_name_formatter::get().format(player().m_item_list[m_item_index].get());
 
