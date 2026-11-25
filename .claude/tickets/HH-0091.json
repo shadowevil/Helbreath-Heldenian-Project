@@ -1,7 +1,7 @@
 {
   "id": "HH-0091",
   "summary": "Retire game_dialogs sheet 001 (Game2) for kit pieces",
-  "status": "in_progress",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-25T20:22:01Z",
-  "updated": "2026-11-25T20:24:12Z",
+  "updated": "2026-11-25T20:43:39Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "53264bdc"
+    ],
     "files": [],
     "tickets": [],
     "relates_to": [
@@ -23,5 +25,12 @@
       "HH-0092"
     ]
   },
-  "body": "Retire game_dialogs sheet 001 (InterfaceNdGame2). The user, 2026-11-25: \"001 - The kit should have all of these\".\n\nLive uses (grep, 2026-11-25) and their kit replacements:\n\n| Frame | Look | Used in | Kit piece |\n|---|---|---|---|\n| 8 | square down button (geometry only) | dialog_box_sys_menu.cpp:344 slider knob rect | constants, or btn_sq_down's size |\n| 19 / 20 | square + / - | dialog_box_shop.cpp:427-460 | btn_sq_plus / btn_sq_minus |\n| 23 / 24 | round up / down, tinted dark when disabled | dialog_box_manufacture.cpp:308-313 | btn_round_up / btn_round_down (and _dark) |\n| 25 / 26 | small up / down arrows | dialog_box_skill.cpp:81-82 | arrow_up_small / arrow_down_small |\n| 27 | 26 px ring (slot marker) | dialog_box_manufacture.cpp:404, 523 | ring_bevel_26 |\n\n**Done when:**\n- every use draws the kit piece at the same place, keeping enabled and disabled looks;\n- InterfaceNdGame2 is removed from sprite_id.h and screen_loading.cpp;\n- sprite 1 of game_dialogs is an empty placeholder, and 001.png is archived byte-identical to working/archive/interface/game_dialogs/;\n- both builds are clean and in-client screenshots of the shop, manufacture, skill and system menu are attached.\n\nThe HH-0079 rows for sheet 001 close with this.\n"
+  "body": "Retire game_dialogs sheet 001 (InterfaceNdGame2). The user, 2026-11-25: \"001 - The kit should have all of these\".\n\nLive uses (grep, 2026-11-25) and their kit replacements:\n\n| Frame | Look | Used in | Kit piece |\n|---|---|---|---|\n| 8 | square down button (geometry only) | dialog_box_sys_menu.cpp:344 slider knob rect | constants, or btn_sq_down's size |\n| 19 / 20 | square + / - | dialog_box_shop.cpp:427-460 | btn_sq_plus / btn_sq_minus |\n| 23 / 24 | round up / down, tinted dark when disabled | dialog_box_manufacture.cpp:308-313 | btn_round_up / btn_round_down (and _dark) |\n| 25 / 26 | small up / down arrows | dialog_box_skill.cpp:81-82 | arrow_up_small / arrow_down_small |\n| 27 | 26 px ring (slot marker) | dialog_box_manufacture.cpp:404, 523 | ring_bevel_26 |\n\n**Done when:**\n- every use draws the kit piece at the same place, keeping enabled and disabled looks;\n- InterfaceNdGame2 is removed from sprite_id.h and screen_loading.cpp;\n- sprite 1 of game_dialogs is an empty placeholder, and 001.png is archived byte-identical to working/archive/interface/game_dialogs/;\n- both builds are clean and in-client screenshots of the shop, manufacture, skill and system menu are attached.\n\nThe HH-0079 rows for sheet 001 close with this.\n\n**Ruling, 2026-11-25:** the user, on the System Menu volume sliders: \"These should be the arrow down version\", then \"All horizontal sliders get the arrow down\". Every horizontal slider knob uses the kit's square down-arrow button (btn_sq_down). Vertical scrollbars are unchanged. Folded into this ticket's round.\n\n**Correction, 2026-11-25:** the user: \"the agent used the wrong down arrow - there is a left arrow which is what we have, and right next to it is the down arrow version\". The horizontal slider knob is the kit's btn_box_b (the framed down-arrow box, 15x15). btn_box_a, the left-arrow box, stays the vertical scrollbar thumb.\n\n**Verified, 2026-11-25:** review PASS with nits (comment wording only); Windows Debug and Linux client builds clean; in client: the System Menu Audio tab (approved by the user) and the skill dialog. Shop and manufacture checked by piece size and pivot math only, not in the client.\n",
+  "comments": [
+    {
+      "author": "pm",
+      "at": "2026-11-25T20:42:58Z",
+      "body": "**User approval, 2026-11-25:** \"approved - will get overhauled when we do the system menu so it doesn't have to spend too much time on it\" (hh0091_sysmenu_audio_3.png). No more polish on the system menu in this ticket."
+    }
+  ]
 }
