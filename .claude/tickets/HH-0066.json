@@ -11,7 +11,7 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:14Z",
-  "updated": "2026-11-25T04:02:21Z",
+  "updated": "2026-11-25T04:14:10Z",
   "links": {
     "commits": [],
     "files": [
@@ -94,6 +94,11 @@
       "author": "client",
       "at": "2026-11-25T04:02:21Z",
       "body": "Batch 7 done, uncommitted. Checkpoints: 6539fbaf (225-wide panel for tall dialogs without a scrollbar: tall_panel::full default, the six scrollbar dialogs pass tall_panel::scrollbar), af36db1a (crusade map dialogs: commander, constructor, soldier via the new draw_crusade_frame, gold corners, title strips and status bar; stacked on 6539fbaf in dialog_box.h/.cpp), 099d311a (change-password overlay: kit frame, title, panel and the four field boxes). Separate: e9025a65 HH-0075 magic shop circle, 5cb3d8b1 HH-0076 item creator. Still not converted: warning_msg and the eight Game4 frame 2 overlays (connecting, connection lost, log result, delete character, force login, version mismatch, wait init data, waiting response); plus HH-0073/HH-0074 follow-ups and alchemy/crafting (cauldron, user call)."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-25T04:14:10Z",
+      "body": "Batch 7 committed in 56846e2b after review PASS. Remaining: warning_msg plus eight overlays on the ruined-city frame (Game4 frame 2)."
     }
   ]
 }

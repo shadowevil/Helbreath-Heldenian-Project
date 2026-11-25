@@ -1,7 +1,7 @@
 {
   "id": "HH-0076",
   "summary": "Kit: item creator from the kit, standard titles",
-  "status": "open",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,16 +11,18 @@
   ],
   "author": "pm",
   "created": "2026-11-25T03:54:29Z",
-  "updated": "2026-11-25T04:02:22Z",
+  "updated": "2026-11-25T04:14:10Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "e85ffc36"
+    ],
     "files": [],
     "tickets": [],
     "relates_to": [
       "HH-0072"
     ]
   },
-  "body": "The tester menu's item creator (sources/client/dialog_box_item_creator.cpp) still has the portrait background and the bitmap-font titles \"Create Item\" (:265) and \"Configure Item\" (:357, as of 2026-11-24); screenshots build/screenshots/item_creator_now_*.jpg. User, 2026-11-24: \"Yes, do it\" (asked whether to convert it like the tester menu, HH-0072).\n\nConvert both pages to a kit frame with no picture and the standard kit title. The dropdowns, the search list, click rects and behaviour stay unchanged, and the old-sprite fallback stays.\n\n**Done when:** bridge screenshots of both pages (and the open dropdown) show the kit frame and title, both builds are clean, and the review passes.\n\nSource: chat, 2026-11-24.\n",
+  "body": "The tester menu's item creator (sources/client/dialog_box_item_creator.cpp) still has the portrait background and the bitmap-font titles \"Create Item\" (:265) and \"Configure Item\" (:357, as of 2026-11-24); screenshots build/screenshots/item_creator_now_*.jpg. User, 2026-11-24: \"Yes, do it\" (asked whether to convert it like the tester menu, HH-0072).\n\nConvert both pages to a kit frame with no picture and the standard kit title. The dropdowns, the search list, click rects and behaviour stay unchanged, and the old-sprite fallback stays.\n\n**Done when:** bridge screenshots of both pages (and the open dropdown) show the kit frame and title, both builds are clean, and the review passes.\n\nSource: chat, 2026-11-24.\n\nVerified: read-only review PASS; builds clean; bridge screenshots hh0076_item_creator_search/configure/configure_dropdown.jpg show the kit frame and titles.\n",
   "comments": [
     {
       "author": "client",

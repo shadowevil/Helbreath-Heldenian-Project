@@ -1,7 +1,7 @@
 {
   "id": "HH-0075",
   "summary": "Kit: magic circle in the magic shop too",
-  "status": "open",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,16 +11,18 @@
   ],
   "author": "pm",
   "created": "2026-11-25T03:48:21Z",
-  "updated": "2026-11-25T04:02:21Z",
+  "updated": "2026-11-25T04:14:09Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "101c3598"
+    ],
     "files": [],
     "tickets": [],
     "relates_to": [
       "HH-0071"
     ]
   },
-  "body": "User, 2026-11-24, in chat: \"Yes, add it\" (asked whether the magic shop should get the HH-0071 magic circle too). The magic shop (sources/client/dialog_box_magic_shop.cpp, 304x328, converted in HH-0066 batch 4) had the same hexagram baked into its old background (Game4 frame 1).\n\nDraw the kit frame magic_circle there, centred where the old hexagram's centre was (measured from the sprite), after the background and before the content. Skip it if the frame is missing.\n\n**Done when:** a bridge screenshot shows the circle behind the spell list at the measured place, both builds are clean, and the review passes.\n\nSource: chat, 2026-11-24.\n",
+  "body": "User, 2026-11-24, in chat: \"Yes, add it\" (asked whether the magic shop should get the HH-0071 magic circle too). The magic shop (sources/client/dialog_box_magic_shop.cpp, 304x328, converted in HH-0066 batch 4) had the same hexagram baked into its old background (Game4 frame 1).\n\nDraw the kit frame magic_circle there, centred where the old hexagram's centre was (measured from the sprite), after the background and before the content. Skip it if the frame is missing.\n\n**Done when:** a bridge screenshot shows the circle behind the spell list at the measured place, both builds are clean, and the review passes.\n\nSource: chat, 2026-11-24.\n\nVerified: read-only review PASS; Windows and Linux builds clean; bridge screenshot build/screenshots/hh0075_magic_shop_circle.jpg shows the ring centred at (154,161).\n",
   "comments": [
     {
       "author": "client",
