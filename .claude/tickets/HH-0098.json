@@ -1,0 +1,24 @@
+{
+  "id": "HH-0098",
+  "summary": "game_dialogs 007 (NewExchange): recreate the trade window in the kit",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    2
+  ],
+  "author": "pm",
+  "created": "2026-11-25T20:25:31Z",
+  "updated": "2026-11-25T20:25:31Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0092"
+    ]
+  },
+  "body": "The user, 2026-11-25: \"007 - we can recreate that\".\n\nSheet 007 (InterfaceNdNewExchange, 526x360, one frame) is the trade window background. It is drawn only by dialog_box_exchange.cpp:40 (draw_new_dialog_box(InterfaceNdNewExchange, sX, sY, 0), as of 2026-11-25). Recreate it with the panel kit at the same size and position, keeping every slot, label and button where it is now. Then remove InterfaceNdNewExchange, make sprite 7 an empty placeholder and archive 007.png.\n\n**Done when:** the trade window draws from the kit with every item slot, label and button in the same place, 007.png is archived byte-identical to working/archive/interface/game_dialogs/ with an empty manifest placeholder, both builds are clean, and in-client screenshots of the trade window are attached.\n"
+}

@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-25T20:24:09Z",
-  "updated": "2026-11-25T20:24:12Z",
+  "updated": "2026-11-25T20:26:02Z",
   "links": {
     "commits": [],
     "files": [],
@@ -25,8 +25,9 @@
       "HH-0095",
       "HH-0096",
       "HH-0097",
-      "HH-0091"
+      "HH-0091",
+      "HH-0098"
     ]
   },
-  "body": "The user, 2026-11-25, sheet by sheet: \"001 - The kit should have all of these\" (HH-0091); \"002 - We can recreate those too\"; \"003 - Should already exist minus the glowing + - buttons - which we can add to the kit and recreate the rest\"; \"004 - The dialog can go as we can recreate it - but the rest can stay.\"; \"005 - that's fine\"; \"006 - We can recreate that as well\"; \"010 - we can remove this entirely since the kit already includes that too\".\n\nSub-tickets block this task, one per sheet; HH-0091 is sheet 001. Sheet 005 is already an empty placeholder. Sheets 007 (exchange window) and 008 (mouse cursor) await the user's ruling.\n\n**Done when:** every live use draws from the kit at the same place and with the same look, the sheet's retired frames are no longer loaded, retired images are archived byte-identical to working/archive/interface/game_dialogs/ with empty manifest placeholders, both builds are clean, and in-client screenshots of each affected dialog are attached.\n"
+  "body": "The user, 2026-11-25, sheet by sheet: \"001 - The kit should have all of these\" (HH-0091); \"002 - We can recreate those too\"; \"003 - Should already exist minus the glowing + - buttons - which we can add to the kit and recreate the rest\"; \"004 - The dialog can go as we can recreate it - but the rest can stay.\"; \"005 - that's fine\"; \"006 - We can recreate that as well\"; \"010 - we can remove this entirely since the kit already includes that too\".\n\nSub-tickets block this task, one per sheet; HH-0091 is sheet 001. Sheet 005 is already an empty placeholder. Sheets 007 (exchange window) and 008 (mouse cursor) await the user's ruling.\n\n**Done when:** every live use draws from the kit at the same place and with the same look, the sheet's retired frames are no longer loaded, retired images are archived byte-identical to working/archive/interface/game_dialogs/ with empty manifest placeholders, both builds are clean, and in-client screenshots of each affected dialog are attached.\n\n**Update, 2026-11-25:** sheet 006 stays (HH-0096 won't do); sheet 007 is to be recreated (new sub-ticket). Sheet 008 (mouse cursor) has no ruling and stays.\n\n**Ruling, 2026-11-25:** the user: \"008 - stays because we already updated those\". The mouse cursor sheet stays.\n"
 }
