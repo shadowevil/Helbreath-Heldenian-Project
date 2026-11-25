@@ -11,13 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-25T20:22:01Z",
-  "updated": "2026-11-25T20:22:01Z",
+  "updated": "2026-11-25T20:24:12Z",
   "links": {
     "commits": [],
     "files": [],
     "tickets": [],
     "relates_to": [
       "HH-0079"
+    ],
+    "blocks": [
+      "HH-0092"
     ]
   },
   "body": "Retire game_dialogs sheet 001 (InterfaceNdGame2). The user, 2026-11-25: \"001 - The kit should have all of these\".\n\nLive uses (grep, 2026-11-25) and their kit replacements:\n\n| Frame | Look | Used in | Kit piece |\n|---|---|---|---|\n| 8 | square down button (geometry only) | dialog_box_sys_menu.cpp:344 slider knob rect | constants, or btn_sq_down's size |\n| 19 / 20 | square + / - | dialog_box_shop.cpp:427-460 | btn_sq_plus / btn_sq_minus |\n| 23 / 24 | round up / down, tinted dark when disabled | dialog_box_manufacture.cpp:308-313 | btn_round_up / btn_round_down (and _dark) |\n| 25 / 26 | small up / down arrows | dialog_box_skill.cpp:81-82 | arrow_up_small / arrow_down_small |\n| 27 | 26 px ring (slot marker) | dialog_box_manufacture.cpp:404, 523 | ring_bevel_26 |\n\n**Done when:**\n- every use draws the kit piece at the same place, keeping enabled and disabled looks;\n- InterfaceNdGame2 is removed from sprite_id.h and screen_loading.cpp;\n- sprite 1 of game_dialogs is an empty placeholder, and 001.png is archived byte-identical to working/archive/interface/game_dialogs/;\n- both builds are clean and in-client screenshots of the shop, manufacture, skill and system menu are attached.\n\nThe HH-0079 rows for sheet 001 close with this.\n"
