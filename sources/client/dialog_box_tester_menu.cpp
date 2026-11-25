@@ -18,6 +18,13 @@
 using namespace hb::shared::net;
 using namespace hb::client::sprite_id;
 
+namespace
+{
+	// Kit layout, dialog-relative, as the skill dialog's (the same Game2 frame 0; HH-0072)
+	constexpr hb::shared::render::Color title_fill{148, 24, 16};
+	constexpr hb::client::kit_rect content_panel{16, 31, 220, 288};
+}
+
 const DialogBox_TesterMenu::action_entry DialogBox_TesterMenu::actions[action_count] = {
 	{ "Reset stats" },
 	{ "Add 100 contribution" },
@@ -52,17 +59,10 @@ int DialogBox_TesterMenu::get_hovered_row(short sX, short sY, short mouse_x, sho
 	return -1;
 }
 
-void DialogBox_TesterMenu::draw_main_menu(short sX, short sY, short size_x)
+void DialogBox_TesterMenu::draw_main_menu(short sX, short sY, short /*size_x*/)
 {
 	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
 	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	// Title
-	hb::shared::text::draw_text_aligned(GameFont::Bitmap1,
-		sX, sY + 8, size_x, 15,
-		"Tester Menu",
-		hb::shared::text::TextStyle::with_integrated_shadow(GameColors::UIWarningRed),
-		hb::shared::text::Align::TopCenter);
-
 	// Action rows
 	int hovered = get_hovered_row(sX, sY, mouse_x, mouse_y, action_count);
 	for (int i = 0; i < action_count; i++)
@@ -88,19 +88,14 @@ void DialogBox_TesterMenu::draw_level_picker(short sX, short sY, short size_x)
 {
 	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
 	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	// Title
-	hb::shared::text::draw_text_aligned(GameFont::Bitmap1,
-		sX, sY + 8, size_x, 15,
-		"Set Level",
-		hb::shared::text::TextStyle::with_integrated_shadow(GameColors::UIWarningRed),
-		hb::shared::text::Align::TopCenter);
-
-	// Level display
+	// Level display: the standard font over the kit frame (as the page's other text), else the bitmap font
 	auto level_str = std::format("Level: {}", m_selected_level);
-	hb::shared::text::draw_text_aligned(GameFont::Bitmap1,
+	const bool kit = m_game->get_panel_kit() != nullptr;
+	hb::shared::text::draw_text_aligned(kit ? GameFont::Default : GameFont::Bitmap1,
 		sX, sY + 100, size_x, 15,
 		level_str.c_str(),
-		hb::shared::text::TextStyle::with_integrated_shadow(GameColors::UIWhite),
+		kit ? hb::shared::text::TextStyle::from_color(GameColors::UIBlack)
+			: hb::shared::text::TextStyle::with_integrated_shadow(GameColors::UIWhite),
 		hb::shared::text::Align::TopCenter);
 
 	// Buttons: [ -10 ] [ -1 ] [ +1 ] [ +10 ]
@@ -148,13 +143,6 @@ void DialogBox_TesterMenu::draw_teleport_page(short sX, short sY, short size_x)
 {
 	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
 	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	// Title
-	hb::shared::text::draw_text_aligned(GameFont::Bitmap1,
-		sX, sY + 8, size_x, 15,
-		"Teleport",
-		hb::shared::text::TextStyle::with_integrated_shadow(GameColors::UIWarningRed),
-		hb::shared::text::Align::TopCenter);
-
 	int list_x = sX + row_x1;
 	int list_w = row_x2 - row_x1;
 
@@ -217,7 +205,22 @@ void DialogBox_TesterMenu::on_draw()
 	short sY = m_y;
 	short size_x = m_size_x;
 
-	draw_new_dialog_box(InterfaceNdGame2, sX, sY, 0);
+	// The panel kit frame (as the skill dialog's, the same Game2 frame 0) with the standard red title, else the
+	// original sprite frame and the bitmap-font title
+	const char* title = m_page == 0 ? "Tester Menu" : (m_page == 1 ? "Set Level" : "Teleport");
+	if (hb::client::panel_kit* panel_kit = m_game->get_panel_kit())
+	{
+		const hb::client::kit_dialog kit(*panel_kit, hb::client::kit_point{258, 339}, hb::client::kit_point{sX, sY});
+		kit.title(title, 20, title_fill, "divider_wave", 14);
+		kit.inset(content_panel);
+	}
+	else
+	{
+		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 0);
+		hb::shared::text::draw_text_aligned(GameFont::Bitmap1, sX, sY + 8, size_x, 15, title,
+			hb::shared::text::TextStyle::with_integrated_shadow(GameColors::UIWarningRed),
+			hb::shared::text::Align::TopCenter);
+	}
 
 	if (m_page == 0)
 		draw_main_menu(sX, sY, size_x);

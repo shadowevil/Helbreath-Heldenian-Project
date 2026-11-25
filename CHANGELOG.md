@@ -159,3 +159,5 @@ The skill and magic dialogs now draw plain kit frames (HH-0066, batch 2), and th
 - **Kit:** a new `piece()` call draws one named kit frame at its own size and skips it if the kit lacks it.
 
 The shop, sell list, sell-or-repair, repair-all and warehouse dialogs now draw plain kit frames with silver-ball corners, the red title and the kit scrollbar (HH-0066, batch 3). Two shared helpers, `draw_shop_frame` and `draw_shop_scrollbar`, replace the repeated sprite draws, and the old sprites stay as the fallback.
+
+The tester menu draws a kit frame and the standard red title with black flourishes on every page, and its level readout uses the standard font (HH-0072).

@@ -1,0 +1,31 @@
+{
+  "id": "HH-0072",
+  "summary": "Kit 6c: tester menu from the kit, standard title",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    12,
+    3
+  ],
+  "author": "pm",
+  "created": "2026-11-25T02:24:46Z",
+  "updated": "2026-11-25T02:36:06Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0066"
+    ]
+  },
+  "body": "The tester menu still titles its pages with the old bitmap font (GameFont::Bitmap1, sources/client/dialog_box_tester_menu.cpp:60, 92, 100, 152 as of 2026-11-24) over the old Game2 frame 0 background (:220). User, 2026-11-24: \"Can you also fix the tester menu title to be the standard font and such\".\n\nFix: draw the menu from the panel kit like the other converted dialogs: a kit frame, and the standard kit title (title_red recipe with the black flourishes), at the original title height. Click rects and behaviour stay unchanged, and the old-sprite path stays as the fallback.\n\n**Done when:** every tester menu page shows the kit title and frame in a bridge screenshot, both builds are clean, and the review passes.\n\nSource: chat, 2026-11-24.\n",
+  "comments": [
+    {
+      "author": "client",
+      "at": "2026-11-25T02:36:06Z",
+      "body": "Done, uncommitted, own checkpoint ec623661 (dialog_box_tester_menu.cpp only). Kit frame as the skill dialog's (same Game2 frame 0), one title drawn in on_draw per page (Tester Menu / Set Level / Teleport) with the title_red recipe, black divider_wave flourishes, y 20; the three per-page Bitmap1 titles are gone. Fallback keeps the sprite frame and the Bitmap1 title. Click rects unchanged. Shots: build/screenshots/hh0072_tester_{main,level,teleport}.jpg."
+    }
+  ]
+}
