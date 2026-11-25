@@ -1,7 +1,7 @@
 {
   "id": "HH-0090",
   "summary": "Replace sprite font 003 with the HD TTF recreation",
-  "status": "open",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,23 @@
   ],
   "author": "pm",
   "created": "2026-11-25T20:19:46Z",
-  "updated": "2026-11-25T20:19:46Z",
+  "updated": "2026-11-25T22:23:01Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "2c163e31"
+    ],
     "files": [],
     "tickets": [],
     "blocked_by": [
       "HH-0086"
     ]
   },
-  "body": "Replace sprite font 003 (staged/client/sprites/interface/sprite_fonts/003.png, GameFont::SprFont3_0/1/2, offsets 0/95/190) with the HD TTF recreation from HH-0086 (hb_sprite3_hd_{large,medium,small}.ttf, .claude/scratch/editor/font_trace_hd/ once the glyph corrections finish).\n\nThe user, 2026-11-25: \"Once the agent is finished, go ahead and show me the symbols then add it into the game relpacing 003\".\n\nUses of 003 (confirmed against 3.82, 2026-11-25): damage numbers and \"Critical!\" / \"* Immune *\", \"Poisoned\", map coordinates and the crusade map.\n\nNotes:\n- The fonts are drop-in for metrics: 128 units per px, advance = frame width, baseline per size. At native size they must draw like the bitmap; at higher UI scales they draw smooth.\n- Check whether SFML 3.0.2 honours the fonts' hinting or forces FreeType's auto-hinter. Measure the native-size output in client against the bitmap, and fix it if glyphs shift.\n- Keep every existing style: colour, additive, the two-point shadow and transparency.\n- Ship the fonts in staged/client/fonts/ and archive 003.png to working/archive/ once nothing loads it. Leave an empty placeholder in the manifest; check sprite 3's other users first.\n\n**Done when:** every 003 text draws from the TTFs with the same position and look at 1x, smooth when the UI is scaled, both builds are clean, and in-client screenshots are attached.\n"
+  "body": "Replace sprite font 003 (staged/client/sprites/interface/sprite_fonts/003.png, GameFont::SprFont3_0/1/2, offsets 0/95/190) with the HD TTF recreation from HH-0086 (hb_sprite3_hd_{large,medium,small}.ttf, .claude/scratch/editor/font_trace_hd/ once the glyph corrections finish).\n\nThe user, 2026-11-25: \"Once the agent is finished, go ahead and show me the symbols then add it into the game relpacing 003\".\n\nUses of 003 (confirmed against 3.82, 2026-11-25): damage numbers and \"Critical!\" / \"* Immune *\", \"Poisoned\", map coordinates and the crusade map.\n\nNotes:\n- The fonts are drop-in for metrics: 128 units per px, advance = frame width, baseline per size. At native size they must draw like the bitmap; at higher UI scales they draw smooth.\n- Check whether SFML 3.0.2 honours the fonts' hinting or forces FreeType's auto-hinter. Measure the native-size output in client against the bitmap, and fix it if glyphs shift.\n- Keep every existing style: colour, additive, the two-point shadow and transparency.\n- Ship the fonts in staged/client/fonts/ and archive 003.png to working/archive/ once nothing loads it. Leave an empty placeholder in the manifest; check sprite 3's other users first.\n\n**Done when:** every 003 text draws from the TTFs with the same position and look at 1x, smooth when the UI is scaled, both builds are clean, and in-client screenshots are attached.\n\n**Note, 2026-11-25:** see HH-0086. The user's rule is that scale-down tests use nearest neighbour, because the bitmap fonts are pixel perfect. The 1x in-client comparison is pixel for pixel.\n\n**Font files, 2026-11-25:** ship them as deathblow.ttf, woundcut.ttf and scratchmark.ttf (see HH-0086).\n\n**Fonts final, 2026-11-25:** the user: \"Yes, swap them in\". The fonts are deathblow.ttf, woundcut.ttf and scratchmark.ttf in .claude/scratch/editor/font_trace_hd/ (backup: working/archive/font_trace/pass5_named/).\n\n**Closed, 2026-11-25:** commit 2c163e31. The user accepted the small 1x pixel differences (\"Accept them\"). Opus review passed, including the re-check of its fixes. Windows Debug and Linux builds are clean. In the client, damage numbers were checked at 1x and 1.8x. Not checked in the client: Critical!, Poisoned and the map coordinates (harness only). The old sheet is archived byte-identical.\n",
+  "comments": [
+    {
+      "author": "client",
+      "at": "2026-11-25T22:07:56Z",
+      "body": "Implemented, ready for review (client editor, 2026-11-25). Nothing committed.\n\n- SprFont3_0/1/2 now draw from deathblow.ttf, woundcut.ttf and scratchmark.ttf. The fonts are in staged/client/fonts/ and are byte-identical to the approved files.\n- Draw path: a new \"pixel font\" kind in text_lib, with ITextRenderer::load_pixel_face, measure_pixel_run and draw_pixel_run.\n  - Layout is in whole logical pixels: advance = hmtx/128 (the old frame width), 5 px for a space, baselines 11/11/9.\n  - Every style is kept, copied from the bitmap path: colour, additive, alpha, the two-point shadow and the other shadows, aligned and wrapped layout.\n- Hinting: SFML 3.0.2 loads every glyph with FT_LOAD_FORCE_AUTOHINT and FT_RENDER_MODE_NORMAL (Font.cpp lines 486 and 524). So the fonts' fpgm/prep/gasp are ignored, 16 px comes out antialiased, and sf::Text adds the auto-hinter's lsb/rsb deltas to the layout.\n- Fix:\n  - At 1:1, each glyph is a two-level mask. SFML renders it at 21x (336 px); each logical pixel takes the centre texel of its 21x21 block on a grid anchored at the pen and baseline, with a 50% threshold. The masks are cached once in a nearest-filtered atlas, and layout is our own, not sf::Text's.\n  - Scaled, glyphs rasterise at floor(16 x scale) px, each pen position snapped to an output pixel.\n- 1x pixel diff, measured in client: 33 strings x 3 sizes, old bitmap and new font side by side on a (70,60,90) background.\n  - Totals per style:\n    - shadow + additive: 621\n    - alpha 0.7 + additive: 339\n    - coordinates style: 534\n    - Poisoned style: 342\n  - These remaining diffs come from the outlines themselves (ideal nearest-neighbour XOR against the bitmap: 342). The renderer adds 27 ink pixels against that ideal, over all 95 glyphs x 3 sizes. 13 more are the sheet's 11 tinted pixels. Positions are identical.\n  - Game strings, no-shadow style, large/medium/small:\n    - \"-7Pts\" 4/4/1\n    - \"Critical!\" 4/2/3\n    - \"Poisoned\" 7/3/1\n    - \"(123, 45)\" 14/11/3\n- Zero diff is not reachable without changing the fonts, for example by embedding a 16 ppem bitmap strike. That is a user decision.\n- Retired: sprite_fonts sprite 3 is now an empty placeholder, 003.png is archived to working/archive/interface/sprite_fonts/003.png, and InterfaceSprFonts3 is removed.\n- Screenshots: build/screenshots/hh0090_*.png."
+    }
+  ]
 }
