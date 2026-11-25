@@ -1,7 +1,7 @@
 {
   "id": "HH-0072",
   "summary": "Kit 6c: tester menu from the kit, standard title",
-  "status": "open",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,16 +11,18 @@
   ],
   "author": "pm",
   "created": "2026-11-25T02:24:46Z",
-  "updated": "2026-11-25T02:36:06Z",
+  "updated": "2026-11-25T02:50:32Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "825240d7"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0066"
     ]
   },
-  "body": "The tester menu still titles its pages with the old bitmap font (GameFont::Bitmap1, sources/client/dialog_box_tester_menu.cpp:60, 92, 100, 152 as of 2026-11-24) over the old Game2 frame 0 background (:220). User, 2026-11-24: \"Can you also fix the tester menu title to be the standard font and such\".\n\nFix: draw the menu from the panel kit like the other converted dialogs: a kit frame, and the standard kit title (title_red recipe with the black flourishes), at the original title height. Click rects and behaviour stay unchanged, and the old-sprite path stays as the fallback.\n\n**Done when:** every tester menu page shows the kit title and frame in a bridge screenshot, both builds are clean, and the review passes.\n\nSource: chat, 2026-11-24.\n",
+  "body": "The tester menu still titles its pages with the old bitmap font (GameFont::Bitmap1, sources/client/dialog_box_tester_menu.cpp:60, 92, 100, 152 as of 2026-11-24) over the old Game2 frame 0 background (:220). User, 2026-11-24: \"Can you also fix the tester menu title to be the standard font and such\".\n\nFix: draw the menu from the panel kit like the other converted dialogs: a kit frame, and the standard kit title (title_red recipe with the black flourishes), at the original title height. Click rects and behaviour stay unchanged, and the old-sprite path stays as the fallback.\n\n**Done when:** every tester menu page shows the kit title and frame in a bridge screenshot, both builds are clean, and the review passes.\n\nSource: chat, 2026-11-24.\n\nVerified: read-only review PASS; Windows and Linux builds clean; bridge screenshots hh0072_tester_main/level/teleport.jpg show the kit title on all three pages.\n",
   "comments": [
     {
       "author": "client",
