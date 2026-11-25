@@ -59,9 +59,8 @@ void DialogBox_LevelUpSetting::on_draw()
 	uint32_t time = m_game->m_cur_time;
 	std::string txt;
 
-	draw_new_dialog_box(InterfaceNdGame2, sX, sY, 0);
-	draw_new_dialog_box(InterfaceNdText, sX, sY, 2);
-	draw_new_dialog_box(InterfaceNdGame4, sX + 16, sY + 100, 4);
+	draw_tall_frame(tall_frame::stone, sX, sY, 2);   // "Level up Setting"
+	draw_new_dialog_box(InterfaceNdGame4, sX + 16, sY + 100, 4);   // the stat table
 
 	// Header text
 	put_aligned_string(sX, sX + size_x, sY + 50, DRAW_DIALOGBOX_LEVELUP_SETTING1);

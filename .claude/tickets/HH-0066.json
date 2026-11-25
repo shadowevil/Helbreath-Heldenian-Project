@@ -11,7 +11,7 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:14Z",
-  "updated": "2026-11-25T03:21:03Z",
+  "updated": "2026-11-25T03:38:33Z",
   "links": {
     "commits": [],
     "files": [
@@ -79,6 +79,16 @@
       "author": "client",
       "at": "2026-11-25T03:21:03Z",
       "body": "Batch 5 done, uncommitted. Checkpoints: 484d1467 (dialog_box.h/.cpp title table + city hall, command hall, crusade job), 0030ef4c (guild menu, guild operation). All on draw_tall_frame: city hall rivet + \"Cityhall Menu\" y 21; command hall rivet, no title; crusade job stone, no title; guild menu rivet + \"Guild Menu\" y 21; guild operation stone + \"Guild Menu\". Commander, constructor and soldier (310x386 crusade map dialogs) are not in this batch. Windows and Linux builds clean. Shots: build/screenshots/hh0066_b5_*.jpg. Crusade job unverified in game (needs a citizen in crusade mode)."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-25T03:29:30Z",
+      "body": "Batch 5 committed in 8ec33215 after review PASS. Crusade job not seen in game (needs a citizen). Next: crafting and stats, then the crusade map dialogs, crusade strips and change-password."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-25T03:38:33Z",
+      "body": "Batch 6 done, uncommitted. Checkpoints: c97fd2fd (title table + level-up setting, majestic stat change), d215efc9 (manufacture with its own 270x381 kit frame and \"Tinkering\" title, no hammer; item upgrade). Stats dialogs keep the Game4 f4 stat table sprite (its own lighter cloth shows as a patch; follow-up candidate). Alchemy and crafting draw the cauldron sprite as the dialog itself and were left alone. Crusade job checked once with a client-side-only citizen flag: its first line and the Help button run ~4-6 px past the 220 px panel. Windows and Linux builds clean. Shots: build/screenshots/hh0066_b6_*.jpg."
     }
   ]
 }

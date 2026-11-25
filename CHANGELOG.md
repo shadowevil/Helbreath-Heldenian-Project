@@ -167,3 +167,5 @@ The magic shop, NPC talk, text, quest, help, party and shutdown-notice dialogs n
 - **NPC talk:** the kit version shows a working scrollbar thumb, where the original drew only the track.
 
 The city hall, command hall, crusade job and both guild dialogs now draw plain kit frames through the shared tall-frame helper (HH-0066, batch 5). Crusade job was not seen in game; it only opens for a citizen.
+
+The level-up and majestic stat dialogs, item upgrade and manufacture now draw plain kit frames (HH-0066, batch 6). Manufacture loses its hammer picture, and the stat dialogs keep their stat-table sprite on top for now.

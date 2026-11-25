@@ -32,8 +32,7 @@ void DialogBox_ItemUpgrade::on_draw()
     int sX = m_x;
     int sY = m_y;
 
-    m_game->draw_new_dialog_box(InterfaceNdGame2, sX, sY, 0);
-    m_game->draw_new_dialog_box(InterfaceNdText, sX, sY, 5); // Item Upgrade Text
+    draw_tall_frame(tall_frame::stone, sX, sY, 5);   // "Item Upgrade"
 
     switch (m_mode) {
     case mode::gizon_upgrade:        DrawMode1_GizonUpgrade(sX, sY); break;

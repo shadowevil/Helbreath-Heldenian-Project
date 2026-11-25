@@ -66,9 +66,8 @@ void DialogBox_ChangeStatsMajestic::on_draw()
 	short size_x = m_size_x;
 	std::string txt;
 
-	draw_new_dialog_box(InterfaceNdGame2, sX, sY, 0);
-	draw_new_dialog_box(InterfaceNdText, sX, sY, 2);
-	draw_new_dialog_box(InterfaceNdGame4, sX + 16, sY + 100, 4);
+	draw_tall_frame(tall_frame::stone, sX, sY, 2);   // "Level up Setting"
+	draw_new_dialog_box(InterfaceNdGame4, sX + 16, sY + 100, 4);   // the stat table
 
 	put_aligned_string(sX, sX + size_x, sY + 50, DRAW_DIALOGBOX_LEVELUP_SETTING14);
 	put_aligned_string(sX, sX + size_x, sY + 65, DRAW_DIALOGBOX_LEVELUP_SETTING15);

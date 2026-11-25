@@ -123,6 +123,25 @@ void DialogBox_Manufacture::on_draw()
 	}
 }
 
+// The manufacture frame: a plain kit frame (the original's hammer is dropped, user ruling) with the
+// "Tinkering" title and the sunken panel at the original sprite's places (HH-0066), else the original Game3
+// frame and its title strip (which carries the frame's top edge)
+void DialogBox_Manufacture::draw_frame(short sX, short sY)
+{
+	if (hb::client::panel_kit* panel_kit = m_game->get_panel_kit())
+	{
+		constexpr hb::client::kit_rect content_panel{17, 31, 236, 332};
+		const hb::client::kit_dialog kit(*panel_kit, hb::client::kit_point{270, 381}, hb::client::kit_point{sX, sY});
+		kit.title("Tinkering", 19, kit_layout::title_fill, "divider_wave", 14);
+		kit.inset(content_panel);
+	}
+	else
+	{
+		draw_new_dialog_box(InterfaceNdGame3, sX, sY, 0);
+		draw_new_dialog_box(InterfaceNdText, sX, sY, 8);
+	}
+}
+
 void DialogBox_Manufacture::draw_alchemy_waiting(short sX, short sY)
 {
 	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
@@ -261,8 +280,7 @@ void DialogBox_Manufacture::draw_manufacture_list(short sX, short sY)
 	std::string temp, temp2;
 	int loc;
 
-	draw_new_dialog_box(InterfaceNdGame3, sX, sY, 0);
-	draw_new_dialog_box(InterfaceNdText, sX, sY, 8);
+	draw_frame(sX, sY);
 	put_string(sX + adj_x + 44, sY + adj_y + 38, "Name", GameColors::UIBlack);
 	put_string(sX + adj_x + 171, sY + adj_y + 38, "Max.Skill", GameColors::UIBlack);
 
@@ -344,8 +362,7 @@ void DialogBox_Manufacture::draw_manufacture_waiting(short sX, short sY)
 	std::string temp;
 	int loc;
 
-	draw_new_dialog_box(InterfaceNdGame3, sX, sY, 0);
-	draw_new_dialog_box(InterfaceNdText, sX, sY, 8);
+	draw_frame(sX, sY);
 	{
 		int recipe_cfg_id = m_game->find_item_id_by_name(build_item_manager::get().get_display_list()[m_progress]->m_name.c_str());
 		CItem* recipe_cfg = m_game->get_item_config(recipe_cfg_id);
@@ -466,8 +483,7 @@ void DialogBox_Manufacture::draw_manufacture_in_progress(short sX, short sY)
 	std::string temp;
 	int loc;
 
-	draw_new_dialog_box(InterfaceNdGame3, sX, sY, 0);
-	draw_new_dialog_box(InterfaceNdText, sX, sY, 8);
+	draw_frame(sX, sY);
 	{
 		int recipe_cfg_id = m_game->find_item_id_by_name(build_item_manager::get().get_display_list()[m_progress]->m_name.c_str());
 		CItem* recipe_cfg = m_game->get_item_config(recipe_cfg_id);
@@ -589,8 +605,7 @@ void DialogBox_Manufacture::draw_manufacture_done(short sX, short sY)
 	uint32_t time = m_game->m_cur_time;
 	std::string temp;
 
-	draw_new_dialog_box(InterfaceNdGame3, sX, sY, 0);
-	draw_new_dialog_box(InterfaceNdText, sX, sY, 8);
+	draw_frame(sX, sY);
 	{
 		int recipe_cfg_id = m_game->find_item_id_by_name(build_item_manager::get().get_display_list()[m_progress]->m_name.c_str());
 		CItem* recipe_cfg = m_game->get_item_config(recipe_cfg_id);

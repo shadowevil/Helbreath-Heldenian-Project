@@ -63,6 +63,8 @@ namespace
 		{3, "Party Menu", 20},
 		{18, "Cityhall Menu", 21},
 		{19, "Guild Menu", 21},
+		{2, "Level up Setting", 19},
+		{5, "Item Upgrade", 19},
 	};
 }
 

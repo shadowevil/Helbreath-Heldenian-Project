@@ -15,6 +15,7 @@ public:
 	bool on_enable(int type, int64_t v1, int v2, const char* string) override;
 	bool on_disable() override;
 private:
+	void draw_frame(short sX, short sY);
 	void draw_alchemy_waiting(short sX, short sY);
 	void draw_alchemy_creating(short sX, short sY);
 	void draw_manufacture_list(short sX, short sY);
