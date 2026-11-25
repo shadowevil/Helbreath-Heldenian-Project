@@ -8,6 +8,10 @@
 #include <cstdint>
 #include "primitive_types.h"
 
+namespace hb::shared::render {
+class ITexture;
+}
+
 namespace hb::shared::text {
 
 // The one font the client ships: Wine's Tahoma replacement (LGPL 2.1, licence beside it).
@@ -128,6 +132,16 @@ public:
                           hb::shared::render::BlendMode blend = hb::shared::render::BlendMode::Alpha)
     {
         (void)x; (void)y; (void)text; (void)run; (void)color; (void)blend;
+    }
+    // The run rasterised once into a display texture, for art drawn like a sprite label: run.pixel_size is
+    // in texture pixels, the texture is the ink box plus pad pixels on every side, every pixel is color
+    // with the glyph coverage as alpha, sampled smooth with mipmaps. nullptr when the face or text is
+    // unusable; the caller owns the texture.
+    virtual hb::shared::render::ITexture* bake_run(const char* text, const text_run& run,
+                                                   const hb::shared::render::Color& color, int pad = 2)
+    {
+        (void)text; (void)run; (void)color; (void)pad;
+        return nullptr;
     }
 
     // Batching for performance (DDraw needs DC acquisition)

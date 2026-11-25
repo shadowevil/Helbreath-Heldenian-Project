@@ -45,4 +45,34 @@ struct draw_tint
 	BlendMode blend = BlendMode::Alpha;
 };
 
+// The window's visible area in UI units (IRenderer::get_screen_extent); fractional in stretch
+struct screen_extent
+{
+	float x = 0.0f;
+	float y = 0.0f;
+	float width = 0.0f;
+	float height = 0.0f;
+};
+
+// A source image of art_w x art_h pixels fitted to cover an extent, centred (the overflow is cropped):
+// UI units = origin + art pixels * scale
+struct art_fit
+{
+	float scale = 1.0f;
+	float origin_x = 0.0f;
+	float origin_y = 0.0f;
+
+	float x(float art_x) const { return origin_x + art_x * scale; }
+	float y(float art_y) const { return origin_y + art_y * scale; }
+};
+
+inline art_fit cover_fit(const screen_extent& extent, float art_w, float art_h)
+{
+	art_fit fit;
+	fit.scale = (extent.width / art_w > extent.height / art_h) ? extent.width / art_w : extent.height / art_h;
+	fit.origin_x = extent.x + (extent.width - art_w * fit.scale) / 2.0f;
+	fit.origin_y = extent.y + (extent.height - art_h * fit.scale) / 2.0f;
+	return fit;
+}
+
 } // namespace hb::shared::render

@@ -21,105 +21,13 @@
  "sprites": [
   {
    "index": 0,
-   "offset": 80,
-   "size": 660335,
-   "rect_count": 2,
-   "frames": [
-    [
-     0,
-     0,
-     800,
-     600,
-     0,
-     0
-    ],
-    [
-     307,
-     611,
-     136,
-     19,
-     0,
-     0
-    ]
-   ],
-   "color_key_u32": 0,
-   "color_key_hex": "00000000",
-   "color_key_rgb": [
-    0,
-    0,
-    0
-   ],
-   "image": {
-    "size": 660203,
-    "format": "png",
-    "width": 800,
-    "height": 644,
-    "bit_depth": 8,
-    "png_color_type": 6,
-    "png_interlace": 0,
-    "has_plte": false,
-    "has_trns": false,
-    "file": "000.png"
-   }
+   "rect_count": 0,
+   "empty": true
   },
   {
    "index": 1,
-   "offset": 660415,
-   "size": 695720,
-   "rect_count": 4,
-   "frames": [
-    [
-     0,
-     0,
-     800,
-     600,
-     0,
-     0
-    ],
-    [
-     151,
-     604,
-     164,
-     22,
-     0,
-     0
-    ],
-    [
-     318,
-     604,
-     164,
-     22,
-     0,
-     0
-    ],
-    [
-     485,
-     604,
-     164,
-     22,
-     0,
-     0
-    ]
-   ],
-   "color_key_u32": 0,
-   "color_key_hex": "00000000",
-   "color_key_rgb": [
-    0,
-    0,
-    0
-   ],
-   "image": {
-    "size": 695564,
-    "format": "png",
-    "width": 800,
-    "height": 630,
-    "bit_depth": 8,
-    "png_color_type": 6,
-    "png_interlace": 0,
-    "has_plte": false,
-    "has_trns": false,
-    "file": "001.png"
-   }
+   "rect_count": 0,
+   "empty": true
   },
   {
    "index": 2,

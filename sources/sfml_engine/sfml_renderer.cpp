@@ -390,8 +390,12 @@ void SFMLRenderer::update_output_rects()
 
 SFMLRenderer::screen_mapping SFMLRenderer::current_screen_mapping() const
 {
+    return screen_mapping_for(screen_rect());
+}
+
+SFMLRenderer::screen_mapping SFMLRenderer::screen_mapping_for(const sf::FloatRect& rect) const
+{
     const sf::Vector2f logical(static_cast<float>(m_width), static_cast<float>(m_height));
-    const sf::FloatRect& rect = screen_rect();
     if (rect == m_world_rect)
         return {sf::FloatRect({0.0f, 0.0f}, logical), rect};
 
@@ -608,6 +612,13 @@ float SFMLRenderer::rect_scale(const sf::FloatRect& rect) const
 float SFMLRenderer::ui_scale() const
 {
     return rect_scale(m_ui_rect);
+}
+
+hb::shared::render::screen_extent SFMLRenderer::get_screen_extent() const
+{
+    // The UI view widened to the whole window (the same region screen-space draws reach)
+    const sf::FloatRect view = screen_mapping_for(m_ui_rect).view;
+    return {view.position.x, view.position.y, view.size.x, view.size.y};
 }
 
 void SFMLRenderer::push_world_rect_view()

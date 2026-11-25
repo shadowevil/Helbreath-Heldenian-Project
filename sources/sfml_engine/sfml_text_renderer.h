@@ -55,6 +55,8 @@ public:
     ink_box measure_run(const char* text, const text_run& run) const override;
     void draw_run(float x, float y, const char* text, const text_run& run, const hb::shared::render::Color& color,
                   hb::shared::render::BlendMode blend) override;
+    hb::shared::render::ITexture* bake_run(const char* text, const text_run& run,
+                                           const hb::shared::render::Color& color, int pad = 2) override;
 
     // Batching (no-op for SFML, no DC acquisition needed)
     void begin_batch() override;

@@ -15,10 +15,15 @@ namespace hb::shared::sprite {
 
 // One sprite of an asset folder. An empty sprite has no frames and no image path; it keeps its
 // position because sprite indices are positional.
+//
+// art_scale is the sprite record's optional "art_scale": image pixels per logical pixel (a high-resolution
+// sheet drawn at its logical size), 1 when absent. frames are as stored, in image pixels; the sprite
+// divides them by art_scale, so callers see logical sizes and pivots.
 struct folder_sprite
 {
 	std::vector<SpriteRect> frames;
 	std::string image_path;
+	int art_scale = 1;
 };
 
 // Frame metadata of every sprite in the asset, in index order; no image bytes are read.

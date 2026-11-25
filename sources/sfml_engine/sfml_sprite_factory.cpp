@@ -31,15 +31,16 @@ hb::shared::sprite::ISprite* SFMLSpriteFactory::create_sprite(const std::string&
     }
 
     const hb::shared::sprite::folder_sprite& entry = sprites[static_cast<size_t>(spriteIndex)];
-    return create_sprite_from_metadata(entry.frames, entry.image_path, alphaEffect);
+    return create_sprite_from_metadata(entry.frames, entry.image_path, alphaEffect, entry.art_scale);
 }
 
 hb::shared::sprite::ISprite* SFMLSpriteFactory::create_sprite_from_metadata(
     const std::vector<hb::shared::sprite::SpriteRect>& frames,
     const std::string& image_path,
-    bool alphaEffect)
+    bool alphaEffect,
+    int art_scale)
 {
-    SFMLSprite* sprite = new SFMLSprite(m_renderer, frames, image_path, alphaEffect);
+    SFMLSprite* sprite = new SFMLSprite(m_renderer, frames, image_path, alphaEffect, art_scale);
 
     // Apply global alpha degree
     if (alphaEffect && m_ambient_light_level != 1)

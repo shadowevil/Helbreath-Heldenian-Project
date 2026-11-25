@@ -50,6 +50,7 @@ public:
     void end_world() override;
     void fill_output(const hb::shared::render::Color& color) override;
     float ui_scale() const override;
+    hb::shared::render::screen_extent get_screen_extent() const override;
     void push_world_rect_view() override;
     void pop_world_rect_view() override;
     hb::shared::geometry::GamePoint ui_to_world(hb::shared::geometry::GamePoint ui) const override;
@@ -173,6 +174,8 @@ private:
         sf::FloatRect viewport;
     };
     screen_mapping current_screen_mapping() const;
+    // The same for a given screen rect (the UI rect, or the world rect inside push_world_rect_view)
+    screen_mapping screen_mapping_for(const sf::FloatRect& rect) const;
     // Logical units of one rect -> logical units of another, through window pixels; identity when equal
     hb::shared::geometry::GamePoint map_between(const sf::FloatRect& from, const sf::FloatRect& to,
         hb::shared::geometry::GamePoint point) const;

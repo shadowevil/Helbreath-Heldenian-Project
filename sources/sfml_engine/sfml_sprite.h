@@ -24,9 +24,12 @@ class SFMLSprite : public hb::shared::sprite::ISprite
 {
 public:
     // Construction from pre-loaded metadata (no file I/O, no image data); the texture is
-    // loaded from image_path on first draw, and an empty image_path is an empty sprite
+    // loaded from image_path on first draw, and an empty image_path is an empty sprite.
+    // frames are in image pixels; art_scale > 1 marks a high-resolution sheet (image pixels per logical
+    // pixel): frame rects and pivots are reported divided by it, and frames draw at that logical size
+    // with smooth, mipmapped sampling.
     SFMLSprite(SFMLRenderer* renderer, const std::vector<hb::shared::sprite::SpriteRect>& frames,
-               const std::string& image_path, bool alphaEffect = true);
+               const std::string& image_path, bool alphaEffect = true, int art_scale = 1);
 
     virtual ~SFMLSprite();
 
@@ -84,6 +87,12 @@ private:
     // draw implementation
     void DrawInternal(sf::RenderTarget* target, int x, int y, int frame, const hb::shared::sprite::DrawParams& params);
 
+    // A frame's rect in image pixels (the stored rect; the logical one at art scale 1)
+    const hb::shared::sprite::SpriteRect& art_rect(int frame) const
+    {
+        return m_art_frames.empty() ? m_frames[frame] : m_art_frames[frame];
+    }
+
     // Apply alpha degree effect
     void ApplyAmbientLightLevel();
 
@@ -97,8 +106,14 @@ private:
     // Image file (for lazy loading); empty for an empty sprite
     std::string m_image_path;
 
-    // Frame data from the asset manifest
+    // Frame data from the asset manifest, in logical pixels (what GetFrameRect reports). With art_scale > 1
+    // only width, height and pivots are meaningful; x/y are floored and never sampled (m_art_frames is)
     std::vector<hb::shared::sprite::SpriteRect> m_frames;
+
+    // High-resolution sheet: image pixels per logical pixel, and the frames as stored, in image
+    // pixels (empty at art scale 1, where m_frames is already in image pixels)
+    int m_art_scale;
+    std::vector<hb::shared::sprite::SpriteRect> m_art_frames;
 
     uint16_t m_bitmapWidth;
     uint16_t m_bitmapHeight;

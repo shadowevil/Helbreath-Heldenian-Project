@@ -48,7 +48,8 @@ public:
         return factory->create_sprite_from_metadata(
             m_sprites[index].frames,
             m_sprites[index].image_path,
-            alphaEffect);
+            alphaEffect,
+            m_sprites[index].art_scale);
     }
 
     // get the number of sprites in the asset

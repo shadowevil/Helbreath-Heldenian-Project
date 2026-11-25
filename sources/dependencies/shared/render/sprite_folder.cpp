@@ -16,6 +16,9 @@ namespace {
 
 using json = nlohmann::json;
 
+// Largest accepted sprite art_scale (image pixels per logical pixel)
+constexpr int64_t max_art_scale = 16;
+
 struct index_entry
 {
 	std::string dir;
@@ -83,8 +86,8 @@ const index_entry* find_entry(const std::string& sprite_root, const std::string&
 	return it != index.entries.end() ? &it->second : nullptr;
 }
 
-// Streams a manifest straight into folder_sprite records, building no JSON tree: only
-// sprites[].index, sprites[].frames and sprites[].image.file are read, every other value is skipped.
+// Streams a manifest straight into folder_sprite records, building no JSON tree: only sprites[].index,
+// sprites[].art_scale, sprites[].frames and sprites[].image.file are read, every other value is skipped.
 // Over all manifests (20.9 MB) in a Debug build a filtered DOM parse took 7.3 s, this reader 3.7 s
 // (measured, HH-0056).
 class manifest_reader : public nlohmann::json_sax<json>
@@ -139,7 +142,10 @@ private:
 	scope current() const { return m_stack.empty() ? scope::skip : m_stack.back(); }
 
 	// Inside a sprite record, where an unexpected value is a malformed manifest rather than skipped data
-	bool in_record() const { return current() == scope::frame || (current() == scope::sprite && m_key == "index"); }
+	bool in_record() const
+	{
+		return current() == scope::frame || (current() == scope::sprite && (m_key == "index" || m_key == "art_scale"));
+	}
 
 	// A scalar is never valid as a sprites or frames element, nor as the frames or image value itself
 	bool scalar()
@@ -226,6 +232,12 @@ private:
 			if (value != static_cast<int64_t>(m_sprites.size()) - 1)
 				return fail("sprite list out of index order");
 			m_have_index = true;
+		}
+		else if (current() == scope::sprite && m_key == "art_scale")
+		{
+			if (value < 1 || value > max_art_scale)
+				return fail("art_scale out of range");
+			m_sprites.back().art_scale = static_cast<int>(value);
 		}
 		return true;
 	}

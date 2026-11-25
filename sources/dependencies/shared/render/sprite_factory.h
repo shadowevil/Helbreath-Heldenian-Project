@@ -29,11 +29,13 @@ public:
     // Create a sprite from pre-loaded metadata (used by SpriteLoader for batch loading)
     // Only stores frame rects + image path — no image data is read.
     // Texture is loaded on demand from image_path when the sprite is first drawn;
-    // an empty image_path is an empty sprite.
+    // an empty image_path is an empty sprite. frames are in image pixels; art_scale is image pixels per
+    // logical pixel (folder_sprite::art_scale), and the sprite reports and draws frames at logical size.
     virtual ISprite* create_sprite_from_metadata(
         const std::vector<SpriteRect>& frames,
         const std::string& image_path,
-        bool alphaEffect = true) = 0;
+        bool alphaEffect = true,
+        int art_scale = 1) = 0;
 
     // Destroy a sprite and free its resources
     virtual void destroy_sprite(ISprite* sprite) = 0;

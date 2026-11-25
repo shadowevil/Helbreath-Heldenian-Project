@@ -27,7 +27,8 @@ public:
     hb::shared::sprite::ISprite* create_sprite_from_metadata(
         const std::vector<hb::shared::sprite::SpriteRect>& frames,
         const std::string& image_path,
-        bool alphaEffect = true) override;
+        bool alphaEffect = true,
+        int art_scale = 1) override;
 
     // Sprite destruction
     void destroy_sprite(hb::shared::sprite::ISprite* sprite) override;

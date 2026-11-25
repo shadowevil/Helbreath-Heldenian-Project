@@ -10,6 +10,8 @@
 #include "log.h"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
+#include <algorithm>
+#include <cmath>
 
 // Visible bounds of the target's current view, in logical coordinates. Using view center/size
 // accounts for views with non-zero origins (e.g. detail LOD) and for the window's UI view,
@@ -60,11 +62,27 @@ private:
     bool m_active;
 };
 
+// A high-resolution frame (image pixels) in logical pixels: sizes and pivots divided by the art scale
+// and rounded, the position floored (only meaningful to the image, which the sprite reads in image pixels)
+static hb::shared::sprite::SpriteRect to_logical(const hb::shared::sprite::SpriteRect& art, int scale)
+{
+    const auto divide = [scale](int value) { return static_cast<int>(std::lround(static_cast<double>(value) / scale)); };
+    hb::shared::sprite::SpriteRect logical;
+    logical.x = static_cast<uint16_t>(art.x / scale);
+    logical.y = static_cast<uint16_t>(art.y / scale);
+    logical.width = static_cast<uint16_t>(art.width > 0 ? std::max(1, divide(art.width)) : 0);
+    logical.height = static_cast<uint16_t>(art.height > 0 ? std::max(1, divide(art.height)) : 0);
+    logical.pivotX = static_cast<int16_t>(divide(art.pivotX));
+    logical.pivotY = static_cast<int16_t>(divide(art.pivotY));
+    return logical;
+}
+
 SFMLSprite::SFMLSprite(SFMLRenderer* renderer, const std::vector<hb::shared::sprite::SpriteRect>& frames,
-                       const std::string& image_path, bool alphaEffect)
+                       const std::string& image_path, bool alphaEffect, int art_scale)
     : m_renderer(renderer)
     , m_image_path(image_path)
     , m_frames(frames)
+    , m_art_scale(std::max(1, art_scale))
     , m_bitmapWidth(0)
     , m_bitmapHeight(0)
     , m_textureLoaded(false)
@@ -74,6 +92,12 @@ SFMLSprite::SFMLSprite(SFMLRenderer* renderer, const std::vector<hb::shared::spr
     , m_inUse(false)
     , m_lastAccessTime(0)
 {
+    if (m_art_scale > 1)
+    {
+        m_art_frames = frames;
+        for (hb::shared::sprite::SpriteRect& frame : m_frames)
+            frame = to_logical(frame, m_art_scale);
+    }
 }
 
 SFMLSprite::~SFMLSprite()
@@ -106,8 +130,14 @@ bool SFMLSprite::load_texture()
     m_bitmapWidth = static_cast<uint16_t>(size.x);
     m_bitmapHeight = static_cast<uint16_t>(size.y);
 
-    // Disable smooth filtering to prevent edge artifacts and ensure crisp pixel art
-    m_texture.setSmooth(false);
+    // Pixel art stays nearest (crisp, no edge bleed). A high-resolution sheet is always drawn scaled,
+    // so it samples smooth with mipmaps; its frames are packed with gaps for that (HH-0083).
+    // Mipmaps are a quality improvement only; without them the sheet still draws.
+    m_texture.setSmooth(m_art_scale > 1);
+    if (m_art_scale > 1)
+    {
+        [[maybe_unused]] const bool mipmapped = m_texture.generateMipmap();
+    }
 
     m_textureLoaded = true;
     return true;
@@ -166,6 +196,12 @@ void SFMLSprite::DrawInternal(sf::RenderTarget* target, int x, int y, int frame,
         return;
 
     const hb::shared::sprite::SpriteRect& frameRect = m_frames[frame];
+    const hb::shared::sprite::SpriteRect& art = art_rect(frame);
+    const float inv_scale = 1.0f / static_cast<float>(m_art_scale);
+    const sf::IntRect art_src(
+        {static_cast<int>(art.x), static_cast<int>(art.y)},
+        {static_cast<int>(art.width), static_cast<int>(art.height)}
+    );
 
     // Shadow rendering - replicate DDraw's skewed shadow effect
     if (params.m_shadow)
@@ -179,21 +215,17 @@ void SFMLSprite::DrawInternal(sf::RenderTarget* target, int x, int y, int frame,
         int drawX = x + frameRect.pivotX;
         int drawY = y + frameRect.pivotY;
 
-        // Create sprite for this frame
-        sf::IntRect srcRect(
-            {static_cast<int>(frameRect.x), static_cast<int>(frameRect.y)},
-            {static_cast<int>(frameRect.width), static_cast<int>(frameRect.height)}
-        );
-
-        sf::Sprite sprite(m_texture, srcRect);
+        // Create sprite for this frame (image pixels, scaled to logical size)
+        sf::Sprite sprite(m_texture, art_src);
+        sprite.setScale({inv_scale, inv_scale});
 
         // Semi-transparent black for shadow
         // At night (m_renderer->get_ambient_light_level() == 2), reduce shadow opacity by 50%
         uint8_t shadowAlpha = (m_renderer->get_ambient_light_level() == 2) ? 70 : 140;
         sprite.setColor(sf::Color(0, 0, 0, shadowAlpha));
 
-        // Set origin to bottom-left of sprite so transforms anchor there (at feet)
-        sprite.setOrigin({0.0f, static_cast<float>(frameRect.height)});
+        // Set origin to bottom-left of sprite so transforms anchor there (at feet); local, image pixels
+        sprite.setOrigin({0.0f, static_cast<float>(art.height)});
 
         // Shadow dimensions
         float scaleY = 1.0f / 3.0f;
@@ -251,58 +283,69 @@ void SFMLSprite::DrawInternal(sf::RenderTarget* target, int x, int y, int frame,
 
     // Clip to render target's visible view bounds (logical coordinates)
     hb::shared::sprite::BoundRect view = get_view_bounds(*target);
-    int clipLeft = view.left;
-    int clipTop = view.top;
-    int clipRight = view.right;
-    int clipBottom = view.bottom;
 
-    int srcX = frameRect.x;
-    int srcY = frameRect.y;
-    int srcW = frameRect.width;
-    int srcH = frameRect.height;
-
-    // Clip left edge
-    if (drawX < clipLeft)
+    sf::Sprite sprite(m_texture);
+    if (m_art_scale > 1)
     {
-        int diff = clipLeft - drawX;
-        srcX += diff;
-        srcW -= diff;
-        drawX = clipLeft;
+        // High-resolution sheet: the whole frame at its exact logical size and pivot (sub-pixel), clipped
+        // by the target; only a frame wholly outside the view is skipped
+        if (m_boundRect.right <= view.left || m_boundRect.left >= view.right
+            || m_boundRect.bottom <= view.top || m_boundRect.top >= view.bottom)
+            return;
+        const float fx = params.m_ignore_pivot ? static_cast<float>(x) : x + art.pivotX * inv_scale;
+        const float fy = params.m_ignore_pivot ? static_cast<float>(y) : y + art.pivotY * inv_scale;
+        sprite.setTextureRect(art_src);
+        sprite.setScale({inv_scale, inv_scale});
+        sprite.setPosition({fx, fy});
     }
-    // Clip top edge
-    if (drawY < clipTop)
+    else
     {
-        int diff = clipTop - drawY;
-        srcY += diff;
-        srcH -= diff;
-        drawY = clipTop;
+        int srcX = frameRect.x;
+        int srcY = frameRect.y;
+        int srcW = frameRect.width;
+        int srcH = frameRect.height;
+
+        // Clip left edge
+        if (drawX < view.left)
+        {
+            int diff = view.left - drawX;
+            srcX += diff;
+            srcW -= diff;
+            drawX = view.left;
+        }
+        // Clip top edge
+        if (drawY < view.top)
+        {
+            int diff = view.top - drawY;
+            srcY += diff;
+            srcH -= diff;
+            drawY = view.top;
+        }
+        // Clip right edge
+        if (drawX + srcW > view.right)
+        {
+            srcW = view.right - drawX;
+        }
+        // Clip bottom edge
+        if (drawY + srcH > view.bottom)
+        {
+            srcH = view.bottom - drawY;
+        }
+
+        // Skip if completely clipped
+        if (srcW <= 0 || srcH <= 0)
+            return;
+
+        sprite.setTextureRect(sf::IntRect({srcX, srcY}, {srcW, srcH}));
+        sprite.setPosition({static_cast<float>(drawX), static_cast<float>(drawY)});
     }
-    // Clip right edge
-    if (drawX + srcW > clipRight)
-    {
-        srcW = clipRight - drawX;
-    }
-    // Clip bottom edge
-    if (drawY + srcH > clipBottom)
-    {
-        srcH = clipBottom - drawY;
-    }
 
-    // Skip if completely clipped
-    if (srcW <= 0 || srcH <= 0)
-        return;
-
-    // Backdrop smoothing; set before the blend-mode code reads isSmooth(), so it neither re-toggles nor restores early
-    scoped_ui_smoothing ui_smoothing(m_texture, m_renderer, params.m_nearest_filter, drawX, drawY, srcW, srcH);
-
-    // Create sprite for this frame with clipped source rect
-    sf::IntRect srcRect(
-        {srcX, srcY},
-        {srcW, srcH}
-    );
-
-    sf::Sprite sprite(m_texture, srcRect);
-    sprite.setPosition({static_cast<float>(drawX), static_cast<float>(drawY)});
+    // Backdrop smoothing; set before the blend-mode code reads isSmooth(), so it neither re-toggles nor
+    // restores early. A high-resolution sheet is already smooth, so this leaves it alone.
+    const sf::FloatRect dest = sprite.getGlobalBounds();
+    scoped_ui_smoothing ui_smoothing(m_texture, m_renderer, params.m_nearest_filter,
+                                     static_cast<int>(dest.position.x), static_cast<int>(dest.position.y),
+                                     static_cast<int>(dest.size.x), static_cast<int>(dest.size.y));
 
     // Check if we need any color modifications
     // Skip multiplicative tint for AdditiveOffset — shader handles the color offset
@@ -460,40 +503,45 @@ void SFMLSprite::DrawWidth(int x, int y, int frame, int width, bool vertical)
     m_lastAccessTime = GameClock::get_time_ms();
 
     const hb::shared::sprite::SpriteRect& frameRect = m_frames[frame];
+    const hb::shared::sprite::SpriteRect& art = art_rect(frame);
 
     int drawX = x + frameRect.pivotX;
     int drawY = y + frameRect.pivotY;
 
-    // Clamp width
+    // Clamp width (logical pixels)
     int maxSize = vertical ? frameRect.height : frameRect.width;
     if (width > maxSize) width = maxSize;
     if (width < 0) width = 0;
 
-    // Create partial source rect
+    // Create partial source rect, in image pixels (art scale 1: the logical rect)
+    const int art_width = std::min(width * m_art_scale, static_cast<int>(vertical ? art.height : art.width));
     sf::IntRect srcRect;
     if (vertical)
     {
         srcRect = sf::IntRect(
-            {static_cast<int>(frameRect.x), static_cast<int>(frameRect.y)},
-            {static_cast<int>(frameRect.width), width}
+            {static_cast<int>(art.x), static_cast<int>(art.y)},
+            {static_cast<int>(art.width), art_width}
         );
     }
     else
     {
         srcRect = sf::IntRect(
-            {static_cast<int>(frameRect.x), static_cast<int>(frameRect.y)},
-            {width, static_cast<int>(frameRect.height)}
+            {static_cast<int>(art.x), static_cast<int>(art.y)},
+            {art_width, static_cast<int>(art.height)}
         );
     }
 
+    const float inv_scale = 1.0f / static_cast<float>(m_art_scale);
     sf::Sprite sprite(m_texture, srcRect);
-    sprite.setPosition({static_cast<float>(drawX), static_cast<float>(drawY)});
+    sprite.setScale({inv_scale, inv_scale});
+    sprite.setPosition({x + art.pivotX * inv_scale, y + art.pivotY * inv_scale});
 
     // Use explicit alpha blending to respect PNG transparency
     if (sf::RenderTarget* target = m_renderer->get_current_target())
     {
+        const sf::FloatRect dest = sprite.getGlobalBounds();
         scoped_ui_smoothing ui_smoothing(m_texture, m_renderer, false,
-                                         drawX, drawY, srcRect.size.x, srcRect.size.y);
+                                         drawX, drawY, static_cast<int>(dest.size.x), static_cast<int>(dest.size.y));
         target->draw(sprite, sf::RenderStates(sf::BlendAlpha));
     }
 
@@ -533,9 +581,9 @@ void SFMLSprite::DrawShifted(int x, int y, int shiftX, int shiftY, int frame, co
 
     const hb::shared::sprite::SpriteRect& frameRect = m_frames[frame];
 
-    // Source position within the sprite texture - start at frame origin and add shift
-    int srcX = frameRect.x + shiftX;
-    int srcY = frameRect.y + shiftY;
+    // Source offset within the frame and its size, in logical pixels; the source rect below is in image pixels
+    int srcX = shiftX;
+    int srcY = shiftY;
     int srcW = 128;  // Guide map viewport is always 128x128
     int srcH = 128;
 
@@ -581,12 +629,15 @@ void SFMLSprite::DrawShifted(int x, int y, int shiftX, int shiftY, int frame, co
     m_boundRect.right = drawX + srcW;
     m_boundRect.bottom = drawY + srcH;
 
-    // Create sprite with the shifted source rectangle
+    // Create sprite with the shifted source rectangle, in image pixels, drawn at its logical size
+    const hb::shared::sprite::SpriteRect& art = art_rect(frame);
+    const float inv_scale = 1.0f / static_cast<float>(m_art_scale);
     sf::IntRect srcRect(
-        {srcX, srcY},
-        {srcW, srcH}
+        {art.x + srcX * m_art_scale, art.y + srcY * m_art_scale},
+        {srcW * m_art_scale, srcH * m_art_scale}
     );
     sf::Sprite sprite(m_texture, srcRect);
+    sprite.setScale({inv_scale, inv_scale});
 
     // Apply alpha if specified
     if (params.m_alpha < 1.0f)
@@ -695,11 +746,13 @@ bool SFMLSprite::CheckCollision(int spriteX, int spriteY, int frame, int pointX,
     if (m_collisionImage.getSize().x == 0)
         return true; // Fallback to bounding box if image not available
 
-    int localX = pointX - left;
-    int localY = pointY - top;
+    // Logical offset into the frame, read from the image at the art scale
+    const hb::shared::sprite::SpriteRect& art = art_rect(frame);
+    const int artX = std::min((pointX - left) * m_art_scale, art.width - 1);
+    const int artY = std::min((pointY - top) * m_art_scale, art.height - 1);
     sf::Color pixel = m_collisionImage.getPixel({
-        static_cast<unsigned int>(frameRect.x + localX),
-        static_cast<unsigned int>(frameRect.y + localY)
+        static_cast<unsigned int>(art.x + artX),
+        static_cast<unsigned int>(art.y + artY)
     });
     return pixel.a > 0;
 }

@@ -5,7 +5,11 @@
 
 #include "sfml_text_renderer.h"
 #include "sfml_renderer.h"
+#include "sfml_texture.h"
+#include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <cstdint>
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -288,6 +292,43 @@ void SFMLTextRenderer::draw_run(float x, float y, const char* text, const text_r
     const float base_y = std::floor(y);
     draw_at_output_resolution(*target, sf_text, sf_text.getCharacterSize(), base_x, base_y, states,
                               {x - base_x, y - base_y});
+}
+
+hb::shared::render::ITexture* SFMLTextRenderer::bake_run(const char* text, const text_run& run,
+                                                         const hb::shared::render::Color& color, int pad)
+{
+    const sf::Font* font = face_font(run.face);
+    if (!text || *text == '\0' || !font)
+        return nullptr;
+
+    sf::Text sf_text = make_run(*font, text, run);
+    sf_text.setFillColor(sf::Color::White);
+    const sf::FloatRect ink = sf_text.getLocalBounds();
+    pad = (std::max)(pad, 0);
+    const sf::Vector2u size(static_cast<unsigned int>(std::ceil(ink.size.x)) + 2u * static_cast<unsigned int>(pad),
+                            static_cast<unsigned int>(std::ceil(ink.size.y)) + 2u * static_cast<unsigned int>(pad));
+    sf::RenderTexture canvas;
+    if (ink.size.x <= 0.0f || ink.size.y <= 0.0f || !canvas.resize(size))
+        return nullptr;
+
+    // Coverage only: white glyphs onto transparent black at whole pixels give the union of glyph
+    // coverage in alpha; every pixel's colour is then set to the run's colour (straight alpha)
+    canvas.clear(sf::Color::Transparent);
+    sf_text.setPosition({std::round(static_cast<float>(pad) - ink.position.x),
+                         std::round(static_cast<float>(pad) - ink.position.y)});
+    canvas.draw(sf_text, sf::RenderStates(sf::BlendAlpha));
+    canvas.display();
+
+    sf::Image image = canvas.getTexture().copyToImage();
+    for (unsigned int y = 0; y < size.y; y++)
+    {
+        for (unsigned int x = 0; x < size.x; x++)
+        {
+            const std::uint8_t coverage = image.getPixel({x, y}).a;
+            image.setPixel({x, y}, sf::Color(color.r, color.g, color.b, static_cast<std::uint8_t>(coverage * color.a / 255)));
+        }
+    }
+    return new SFMLTexture(image, true);
 }
 
 void SFMLTextRenderer::draw_text_aligned(int x, int y, int width, int height, const char* text, const hb::shared::render::Color& color,

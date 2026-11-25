@@ -61,6 +61,10 @@ public:
     virtual void fill_output(const Color& color) = 0;
     // Window pixels per UI unit (the UI rect's uniform scale).
     virtual float ui_scale() const = 0;
+    // The whole window in UI units, for screen-space draws: 0,0 to the logical size when the UI fills
+    // the window or is letterboxed; wider (or taller) when the window extends past the UI rect (stretch,
+    // a widescreen window), e.g. about -133..933 x 0..600 in a 16:9 window.
+    virtual screen_extent get_screen_extent() const = 0;
     // UI units <-> world-target units through the UI rect and the world rect (the window between them).
     // Identity when the two rects coincide (letterbox, or a window with the logical aspect). Results are
     // not clamped: in stretch the world spans the whole window, beyond the UI rect.

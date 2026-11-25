@@ -18,7 +18,17 @@
 #include "item_sprite_metadata.h"
 #include "renderer_factory.h"
 #include "log.h"
+#include "text_renderer.h"
+#include <algorithm>
 using namespace hb::client::sprite_id;
+
+namespace
+{
+
+constexpr const char* loading_label = "Loading Data ...";
+constexpr int label_pad = 2;  // transparent texture pixels around the baked label's ink
+
+} // namespace
 
 Screen_Loading::Screen_Loading(CGame* game)
     : IGameScreen(game)
@@ -33,10 +43,35 @@ void Screen_Loading::on_initialize()
     if (!hb::shared::sprite::sprite_index_loaded(sprite_root))
         hb::logger::warn("Sprite index {}/index.json is missing or malformed; reading each asset's manifest.json directly", sprite_root);
 
-    // Pre-load the loading screen sprite so it can render immediately
-    hb::shared::sprite::SpriteLoader::open("interface/intermediate_screens", [&](hb::shared::sprite::SpriteLoader& loader) {
-        m_game->m_sprite[InterfaceNdLoading] = loader.get_sprite(0, false);
-    });
+    // Load the loading screen art first so it can render immediately
+    const std::string art_path = sprite_root + "/interface/front_end/loading_screen.png";
+    m_art.reset(m_game->m_Renderer->create_texture_from_file(art_path.c_str()));
+    if (!m_art)
+        hb::logger::error("Loading screen art not loaded: {}", art_path);
+
+    // The label in Liberation Serif (Times New Roman metrics), rasterised once in art pixels: size 35
+    // matches the art's old baked label (229 px wide); white and gold are that label's two colours
+    constexpr int label_pixel_size = 35;
+    constexpr hb::shared::render::Color label_white{182, 177, 173};
+    constexpr hb::shared::render::Color label_gold{246, 205, 10};
+    if (hb::shared::text::ITextRenderer* text = hb::shared::text::GetTextRenderer())
+    {
+        const hb::shared::text::text_run run{text->load_face("fonts/liberation_serif_regular.ttf"), label_pixel_size};
+        if (run.face > 0)
+        {
+            m_label_white.reset(text->bake_run(loading_label, run, label_white, label_pad));
+            m_label_gold.reset(text->bake_run(loading_label, run, label_gold, label_pad));
+        }
+    }
+    if (!m_label_white || !m_label_gold)
+        hb::logger::error("Loading screen label not rendered (fonts/liberation_serif_regular.ttf)");
+}
+
+void Screen_Loading::on_uninitialize()
+{
+    m_art.reset();
+    m_label_white.reset();
+    m_label_gold.reset();
 }
 void Screen_Loading::on_update()
 {
@@ -66,14 +101,40 @@ void Screen_Loading::on_update()
 
 void Screen_Loading::on_render()
 {
-    // draw loading background
-    draw_new_dialog_box(InterfaceNdLoading, 0, 0, 0, true);
-    draw_version();
+    // loading_screen.png (HH-0082): the user's 1920x1080 backdrop without text
+    constexpr float backdrop_w = 1920.0f;
+    constexpr float backdrop_h = 1080.0f;
+    // Where the label's ink starts on the backdrop: the classic screen's place (626,552 in 800x600),
+    // inside the centre 4:3 crop. Wider than 16:9 the cover fit crops the art's bottom, so the label is
+    // lifted to keep its art distance from the bottom of the visible area (clamped below)
+    constexpr float label_dest_x = 1367.0f;
+    constexpr float label_dest_y = 994.0f;
 
-    // draw progress bar - scale loading stage (0-100) to actual sprite frame width
-    int frame_width = m_game->m_sprite[InterfaceNdLoading]->GetFrameRect(1).width;
-    int bar_width = (m_iLoadingStage * frame_width) / 100;
-    m_game->m_sprite[InterfaceNdLoading]->DrawWidth(626, 552, 1, bar_width);
+    hb::shared::render::IRenderer* renderer = m_game->m_Renderer;
+    const hb::shared::render::screen_extent extent = renderer->get_screen_extent();
+    const hb::shared::render::art_fit fit = hb::shared::render::cover_fit(extent, backdrop_w, backdrop_h);
+    if (m_art)
+    {
+        renderer->draw_texture_region(m_art.get(), 0.0f, 0.0f, backdrop_w, backdrop_h,
+            fit.origin_x, fit.origin_y, backdrop_w * fit.scale, backdrop_h * fit.scale);
+    }
+
+    // Progress bar: the gold label over the white one, filled left to right with the stage (0-100); both
+    // are art-pixel textures placed and scaled like the backdrop
+    if (m_label_white && m_label_gold)
+    {
+        const float w = static_cast<float>(m_label_white->get_width());
+        const float h = static_cast<float>(m_label_white->get_height());
+        const float x = fit.x(label_dest_x - label_pad);
+        // No lower than its art distance above the visible bottom: identical at 4:3 and 16:9 (the art's
+        // bottom is the visible bottom), the label lifted into view where the cover fit crops it
+        const float lowest_y = extent.y + extent.height - (backdrop_h - (label_dest_y - label_pad)) * fit.scale;
+        const float y = (std::min)(fit.y(label_dest_y - label_pad), lowest_y);
+        const float filled = w * static_cast<float>(std::clamp(m_iLoadingStage, 0, 100)) / 100.0f;
+        renderer->draw_texture_region(m_label_white.get(), 0.0f, 0.0f, w, h, x, y, w * fit.scale, h * fit.scale);
+        renderer->draw_texture_region(m_label_gold.get(), 0.0f, 0.0f, filled, h, x, y, filled * fit.scale, h * fit.scale);
+    }
+    draw_version();
 }
 
 //=============================================================================
@@ -99,7 +160,6 @@ void Screen_Loading::LoadStage_Interface()
     });
 
     hb::shared::sprite::SpriteLoader::open("interface/intermediate_screens", [&](hb::shared::sprite::SpriteLoader& loader) {
-        m_game->m_sprite[InterfaceNdMainMenu] = loader.get_sprite(1, false);
         m_game->m_sprite[InterfaceNdQuit] = loader.get_sprite(2, false);
         m_game->m_sprite[InterfaceNdNewAccount] = loader.get_sprite(2, false);
         m_game->m_sprite[InterfaceNdLogin] = loader.get_sprite(4, false);

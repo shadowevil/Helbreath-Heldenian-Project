@@ -8,6 +8,8 @@
 #pragma once
 
 #include "game_screen.h"
+#include "texture.h"
+#include <memory>
 
 class Screen_Loading : public IGameScreen
 {
@@ -20,6 +22,7 @@ public:
     ~Screen_Loading() override = default;
 
     void on_initialize() override;
+    void on_uninitialize() override;
     void on_update() override;
     void on_render() override;
 
@@ -52,4 +55,12 @@ private:
 
     int m_iLoadingStage = 0;
     int m_equip_load_cursor = 0;
+
+    // staged interface/front_end/loading_screen.png (the user's loading_screen_no_text.png): 16:9 backdrop
+    // covering the window (centre 4:3 crop in letterbox)
+    std::unique_ptr<hb::shared::render::ITexture> m_art;
+    // "Loading Data ..." baked once from Liberation Serif at art resolution, in the art's white and gold;
+    // the gold copy over the white one is the progress bar
+    std::unique_ptr<hb::shared::render::ITexture> m_label_white;
+    std::unique_ptr<hb::shared::render::ITexture> m_label_gold;
 };
