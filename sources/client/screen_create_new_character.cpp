@@ -428,7 +428,6 @@ void Screen_CreateNewCharacter::on_render()
 
     // === Background ===
     m_game->draw_new_dialog_box(InterfaceNdNewChar, 0, 0, 0, true);
-    m_game->draw_new_dialog_box(InterfaceNdButton, OX, OY, 69, true);
 
     // === Static text labels ===
     hb::shared::text::draw_text_aligned(GameFont::Default, 64 + OX, 90 + OY, (282) - (64), 15, _BDRAW_ON_CREATE_NEW_CHARACTER1, hb::shared::text::TextStyle::from_color(GameColors::UIBlack), hb::shared::text::Align::TopCenter);

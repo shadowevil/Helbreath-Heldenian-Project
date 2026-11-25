@@ -199,3 +199,5 @@ The login screen is recreated on the new wide art (HH-0089). The original login 
 The shop's +/- buttons, the manufacture dialog's round arrow buttons and slot rings, and the skill list's small arrows now come from the panel kit, so the old game_dialogs sheet 001 is retired and archived (HH-0091). Horizontal slider knobs, such as the System Menu volume sliders, are now the kit's framed down-arrow box.
 
 The old text buttons in dialogs and login overlays are now drawn from the panel kit instead of game_dialogs sheet 010, and their sizes come from fixed constants rather than the sheet (HH-0097). The sheet still loads for the character-select screen's banner and cards and the create-character header while those are retired.
+
+The character-select and create-character screens no longer draw a second copy of their "Character List" and "Create New Character" banners over the background, which already shows them (HH-0097).

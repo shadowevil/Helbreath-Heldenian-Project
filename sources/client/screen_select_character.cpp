@@ -332,7 +332,6 @@ void Screen_SelectCharacter::on_render()
 {
     // Background
     m_game->draw_new_dialog_box(InterfaceNdSelectChar, 0, 0, 0);
-    m_game->draw_new_dialog_box(InterfaceNdButton, OX, OY, 50);
 
     // Slot highlights (via render handlers)
     m_controls.render();
