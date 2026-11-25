@@ -1,7 +1,7 @@
 {
   "id": "HH-0097",
   "summary": "game_dialogs 010 (Button): remove; the kit covers it",
-  "status": "in_review",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,24 @@
   ],
   "author": "pm",
   "created": "2026-11-25T20:24:12Z",
-  "updated": "2026-11-25T20:58:00Z",
+  "updated": "2026-11-25T21:04:15Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "689c4b71",
+      "f8ad89a1"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0092"
     ]
   },
-  "body": "The user, 2026-11-25, sheet by sheet: \"001 - The kit should have all of these\" (HH-0091); \"002 - We can recreate those too\"; \"003 - Should already exist minus the glowing + - buttons - which we can add to the kit and recreate the rest\"; \"004 - The dialog can go as we can recreate it - but the rest can stay.\"; \"005 - that's fine\"; \"006 - We can recreate that as well\"; \"010 - we can remove this entirely since the kit already includes that too\".\n\nSheet 010 (InterfaceNdButton) is drawn or measured in about 31 dialogs (as of 2026-11-25), including geometry reads such as frames 78-81 and the sys-menu track (frame 80). User: \"010 - we can remove this entirely since the kit already includes that too\". Move every draw to kit buttons, replace every GetFrameRect read with constants, then remove InterfaceNdButton, empty sprite 10 and archive 010.png. Large: split by dialog group if it runs long.\n\n**Done when:** every live use draws from the kit at the same place and with the same look, the sheet's retired frames are no longer loaded, retired images are archived byte-identical to working/archive/interface/game_dialogs/ with empty manifest placeholders, both builds are clean, and in-client screenshots of each affected dialog are attached.\n"
+  "body": "The user, 2026-11-25, sheet by sheet: \"001 - The kit should have all of these\" (HH-0091); \"002 - We can recreate those too\"; \"003 - Should already exist minus the glowing + - buttons - which we can add to the kit and recreate the rest\"; \"004 - The dialog can go as we can recreate it - but the rest can stay.\"; \"005 - that's fine\"; \"006 - We can recreate that as well\"; \"010 - we can remove this entirely since the kit already includes that too\".\n\nSheet 010 (InterfaceNdButton) is drawn or measured in about 31 dialogs (as of 2026-11-25), including geometry reads such as frames 78-81 and the sys-menu track (frame 80). User: \"010 - we can remove this entirely since the kit already includes that too\". Move every draw to kit buttons, replace every GetFrameRect read with constants, then remove InterfaceNdButton, empty sprite 10 and archive 010.png. Large: split by dialog group if it runs long.\n\n**Done when:** every live use draws from the kit at the same place and with the same look, the sheet's retired frames are no longer loaded, retired images are archived byte-identical to working/archive/interface/game_dialogs/ with empty manifest placeholders, both builds are clean, and in-client screenshots of each affected dialog are attached.\n\n**Closed, 2026-11-25:** the user ruled \"Keep 61/62 for now\". Sheet 010 stays loaded only for those two frames: the character-select cards, plain and gold-focused. Every other use moved to the kit (689c4b71). Frames 50 and 69 were removed because they are baked into the backgrounds (f8ad89a1). Both reviews passed and the Debug build is clean. Retiring 61/62 has its own backlog ticket.\n",
+  "comments": [
+    {
+      "author": "pm",
+      "at": "2026-11-25T21:03:05Z",
+      "body": "Frames 50 and 69 removed (baked into the backgrounds; user, 2026-11-25), commit f8ad89a1, review PASS. Waiting on the user: frame 62 (gold focused card) recreate, or keep sheet 010 for 61/62."
+    }
+  ]
 }

@@ -1,0 +1,24 @@
+{
+  "id": "HH-0099",
+  "summary": "Retire sheet 010 frames 61/62 (character-select cards)",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "backlog",
+  "tags": [
+    3,
+    2
+  ],
+  "author": "pm",
+  "created": "2026-11-25T21:04:16Z",
+  "updated": "2026-11-25T21:04:16Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "relates_to": [
+      "HH-0097"
+    ]
+  },
+  "body": "Sheet 010 (InterfaceNdButton) is now drawn only by screen_select_character.cpp, using frame 61 (the plain card) and frame 62 (the gold card on the focused slot). Frame 61 duplicates the card already baked into intermediate_screens 005. The user, 2026-11-25: \"Keep 61/62 for now\" (HH-0097).\n\n**Done when:** frame 62 is recreated (or the focus look is replaced), 61 is dropped, sprite 10 is emptied to a placeholder, and 010.png is archived to working/archive/interface/game_dialogs/.\n\nSource: HH-0097 close-out, 2026-11-25.\n"
+}
