@@ -612,38 +612,17 @@ void CGame::draw_cursor()
 
 	int frame = static_cast<int>(cursor);
 
-	// High-resolution cursor art, loaded on first use; same logical size and hotspot as the
-	// original frame. Any frame without HQ art (or no staged asset) falls back to the sprite below.
+	// High-resolution cursor art, loaded on first use (a failure is logged by the loader). It is the
+	// only cursor art: a frame it lacks draws nothing. The item-target frames (9-11) carry their
+	// hotspot at the figure's centre in cursors_hq.json, so the grow/shrink animation is symmetric
+	// about the mouse point with no special case.
 	if (!m_cursor_art_tried)
 	{
 		m_cursor_art_tried = true;
 		std::string dir = hb::shared::sprite::Sprites::get_sprite_path() + "/interface/";
 		m_cursor_art.load(*m_Renderer, dir + "cursors_hq.png", dir + "cursors_hq.json");
 	}
-	if (m_cursor_art.draw(*m_Renderer, frame, mouse_x, mouse_y))
-		return;
-
-	// draw the cursor sprite
-	if (m_sprite[MouseCursor])
-	{
-
-		// Item targeting cursor: ignore baked pivot offset and center on
-		// the mouse point so the grow/shrink animation scales symmetrically.
-		if (cursor >= cursor_type::item_target && cursor <= cursor_type::item_target_3)
-		{
-			auto rect = m_sprite[MouseCursor]->GetFrameRect(frame);
-			hb::shared::sprite::DrawParams params;
-			params.m_ignore_pivot = true;
-			m_sprite[MouseCursor]->draw(
-				mouse_x - rect.width / 2,
-				mouse_y - rect.height / 2,
-				frame, params);
-		}
-		else
-		{
-			m_sprite[MouseCursor]->draw(mouse_x, mouse_y, frame);
-		}
-	}
+	m_cursor_art.draw(*m_Renderer, frame, mouse_x, mouse_y);
 }
 
 

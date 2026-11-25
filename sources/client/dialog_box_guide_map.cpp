@@ -16,6 +16,7 @@ using namespace hb::client::sprite_id;
 namespace
 {
 	constexpr int widget_size = 128;
+	constexpr float event_marker_size = 28.0f;   // the old monster marker's frame size
 	constexpr int edge_refusal_tiles = 30;   // a double-click this close to a map edge does nothing
 }
 
@@ -29,7 +30,10 @@ void DialogBox_GuideMap::load_map(const std::string& map_name)
 {
 	if (m_game->m_Renderer == nullptr)
 		return;
-	m_minimap.load(*m_game->m_Renderer, hb::shared::sprite::Sprites::get_sprite_path(), map_name);
+	const std::string sprite_dir = hb::shared::sprite::Sprites::get_sprite_path();
+	if (!m_creature_icons.is_loaded())
+		m_creature_icons.load(*m_game->m_Renderer, sprite_dir);
+	m_minimap.load(*m_game->m_Renderer, sprite_dir, map_name);
 	m_minimap.set_zoom_level(config_manager::get().get_minimap_zoom_level());
 }
 
@@ -120,7 +124,7 @@ void DialogBox_GuideMap::draw_map(short sX, short sY)
 		if (m_minimap.tile_to_widget(sX, sY, widget_size, map.m_map_size_x, map.m_map_size_y, player_x, player_y,
 			m_game->m_event_x, m_game->m_event_y, marker_x, marker_y))
 		{
-			m_game->m_sprite[InterfaceMonster]->draw(static_cast<int>(std::lround(marker_x)), static_cast<int>(std::lround(marker_y)), m_game->m_monster_id);
+			m_creature_icons.draw(*m_game->m_Renderer, m_game->m_monster_id, marker_x, marker_y, event_marker_size);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "dialog_box.h"
+#include "creature_icons.h"
 #include "minimap.h"
 #include <string>
 
@@ -31,4 +32,5 @@ private:
 	void draw_location_tooltip(short mouse_x, short mouse_y, int tile_x, int tile_y);
 
 	hb::client::minimap m_minimap;
+	hb::client::creature_icons m_creature_icons;   // loaded on first map load
 };

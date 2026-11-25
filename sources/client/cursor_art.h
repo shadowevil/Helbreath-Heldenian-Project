@@ -2,8 +2,8 @@
 //
 // Draws the cursor frames from sprites/interface/cursors_hq.png (frame table in cursors_hq.json)
 // at the original cursor frame's logical size and hotspot, sampled smoothly from the high-resolution
-// source. A frame without HQ art, or a missing/invalid asset, makes draw() return false so the
-// caller draws the original sprite.
+// source. A frame without HQ art, or a missing/invalid asset, makes draw() return false and
+// nothing is drawn.
 //////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -24,7 +24,7 @@ public:
 	cursor_art();
 	~cursor_art();
 
-	// Loads the sheet and table; fails soft (returns false, draw() then always returns false)
+	// Loads the sheet and table; logs and returns false on failure (draw() then always returns false)
 	bool load(hb::shared::render::IRenderer& renderer, const std::string& png_path, const std::string& json_path);
 	void unload();
 	bool is_loaded() const { return m_texture != nullptr; }

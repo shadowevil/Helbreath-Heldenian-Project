@@ -373,7 +373,7 @@ std::array<bool, hb::shared::limits::MaxItems> m_is_item_equipped{};
 	bool m_hide_local_cursor;
 	bool m_mouse_initialized = false;
 	bool m_screenshot_pending = false;
-	cursor_art m_cursor_art;          // High-resolution cursor art; falls back to m_sprite[MouseCursor]
+	cursor_art m_cursor_art;          // High-resolution cursor art; the only cursor art
 	bool m_cursor_art_tried = false;  // Load is attempted once, on the first cursor draw
 	std::unique_ptr<hb::client::panel_kit> m_panel_kit;   // Dialog panels and text buttons (get_panel_kit)
 	std::unique_ptr<hb::client::copyright_notice> m_copyright_notice;   // Baked lines, released before the renderer (get_copyright_notice)

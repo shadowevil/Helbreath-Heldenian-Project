@@ -6,8 +6,8 @@
 class DialogBox_Map : public IDialogBox
 {
 public:
-	// v2 passed to on_enable when the server has no frame for the map: only the kit can show it, and
-	// on_enable refuses (the dialog stays closed) when the kit has no map or fails to load
+	// v2 passed to on_enable when the server has no frame for the map; on_enable ignores it and
+	// refuses (the dialog stays closed) when the kit has no map or fails to load
 	static constexpr int no_legacy_frame = -1;
 
 	DialogBox_Map(CGame* game);
@@ -21,12 +21,8 @@ public:
 
 	static bool kit_has_map(const std::string& map_name);
 
-	int m_map_zone{};
-	int m_map_id{};
-
 private:
 	bool load_kit_for_current_map();
-	void draw_legacy(short sX, short sY, bool dialog_trans);
 	void draw_marker(short sX, short sY, int tX, int tY);
 
 	hb::client::parchment_kit m_kit;

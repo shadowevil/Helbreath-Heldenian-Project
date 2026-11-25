@@ -24,7 +24,7 @@ bool cursor_art::load(hb::shared::render::IRenderer& renderer, const std::string
 	std::ifstream file(json_path);
 	if (!file.is_open())
 	{
-		hb::logger::warn("cursor_art: {} not found, using the original cursor", json_path);
+		hb::logger::warn("cursor_art: {} not found, no cursor will be drawn", json_path);
 		return false;
 	}
 
@@ -64,7 +64,7 @@ bool cursor_art::load(hb::shared::render::IRenderer& renderer, const std::string
 	}
 	catch (const json::exception& e)
 	{
-		hb::logger::warn("cursor_art: invalid {} ({}), using the original cursor", json_path, e.what());
+		hb::logger::warn("cursor_art: invalid {} ({}), no cursor will be drawn", json_path, e.what());
 		return false;
 	}
 
@@ -72,7 +72,7 @@ bool cursor_art::load(hb::shared::render::IRenderer& renderer, const std::string
 	std::unique_ptr<hb::shared::render::ITexture> texture(renderer.create_texture_from_file(png_path.c_str()));
 	if (!texture)
 	{
-		hb::logger::warn("cursor_art: {} not loaded, using the original cursor", png_path);
+		hb::logger::warn("cursor_art: {} not loaded, no cursor will be drawn", png_path);
 		return false;
 	}
 
