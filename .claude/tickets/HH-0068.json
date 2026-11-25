@@ -1,7 +1,7 @@
 {
   "id": "HH-0068",
   "summary": "Panel kit HUD: action bar from the new art with the fill-over-trough gauge rule",
-  "status": "open",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:35:55Z",
-  "updated": "2026-11-24T20:42:33Z",
+  "updated": "2026-11-25T00:16:42Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "61f27c57"
+    ],
     "files": [
       ".claude/design/plans/hud-kit-runtime.md",
       "sources/client/dialog_box_hud_panel.cpp:71",
@@ -27,7 +29,7 @@
       "HH-0059"
     ]
   },
-  "body": "User (2026-11-24): \"This is the new action bar ... the fill will hide back\"; confirmed \"60% HP = 60% red, 40% trough\" and \"also do the mockup of the action bar before we approve\".\n\n**Blocked on the user's approval of the mockup** `.claude/scratch/panel_kit/hud/hud_compare.png` (today vs new, gauges 100/60/15% and a mixed HP 80 / MP 35 / SP 55 / hunger 70 / EXP 40 state, 1x and 2x).\n\nPlan: `.claude/design/plans/hud-kit-runtime.md` - 39 parts from working/sprite_work/GameDialog/gamedialog_sprite_6.png; today's rule (empty frame drawn over the missing share, dialog_box_hud_panel.cpp:83-86, 111-114, 127-130, 137-144) becomes trough -> fill clipped to the value -> caps; ship staged/client/sprites/hudkit with a byte-for-byte --check; DialogBox_HudPanel::on_draw draws from the kit.\n\nOpen readings for the user: fill anchoring (mockup keeps today's: drains from the left / top), orb_peace_hover, menu 'pressed' = mouse down or dialog open.\n\nDone when: at 800x600 and 1024x768 the gauges track their values with the fill over the trough, a 100/60/15% screenshot matches the mockup, buttons and tooltips work.",
+  "body": "User (2026-11-24): \"This is the new action bar ... the fill will hide back\"; confirmed \"60% HP = 60% red, 40% trough\" and \"also do the mockup of the action bar before we approve\".\n\n**Blocked on the user's approval of the mockup** `.claude/scratch/panel_kit/hud/hud_compare.png` (today vs new, gauges 100/60/15% and a mixed HP 80 / MP 35 / SP 55 / hunger 70 / EXP 40 state, 1x and 2x).\n\nPlan: `.claude/design/plans/hud-kit-runtime.md` - 39 parts from working/sprite_work/GameDialog/gamedialog_sprite_6.png; today's rule (empty frame drawn over the missing share, dialog_box_hud_panel.cpp:83-86, 111-114, 127-130, 137-144) becomes trough -> fill clipped to the value -> caps; ship staged/client/sprites/hudkit with a byte-for-byte --check; DialogBox_HudPanel::on_draw draws from the kit.\n\nOpen readings for the user: fill anchoring (mockup keeps today's: drains from the left / top), orb_peace_hover, menu 'pressed' = mouse down or dialog open.\n\nDone when: at 800x600 and 1024x768 the gauges track their values with the fill over the trough, a 100/60/15% screenshot matches the mockup, buttons and tooltips work.\n\n**Verified, 2026-11-24:** the review passed (nits only). build_hud_kit --check is identical. Windows and Linux builds pass. In game the gauge ends measure exactly at 100/60/15/0% and the mixed state, and the bar matches the mockup at 1280x960 and 1024x768. Each menu button hovers and opens its dialog, and the orb hover and combat toggle work. Not exercised: the crusade icon and the super-attack orb. Committed 61f27c57.\n",
   "comments": [
     {
       "author": "client",
@@ -43,6 +45,11 @@
       "author": "client",
       "at": "2026-11-24T20:42:33Z",
       "body": "Mockup approved (user, 2026-11-24): \"A, hard cut\" then \"Approved though\". Unblocked and set to open.\n\nThe two open readings are recorded in `hud-kit-runtime.md` as defaults the user can change:\n- light grey sword orb (`orb_peace_hover`) = peace mode, hovered;\n- dark third menu row (`menu_*_pressed`) = mouse button held down.\n\nThe client agent picks this up after the kit buttons (HH-0062)."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-25T00:14:44Z",
+      "body": "Ready for review (client editor). Checkpoint 5cb7ed69 (game.h/.cpp, dialog_box_hud_panel.cpp/.h, Client.vcxproj/.filters); new files hud_kit.h/.cpp, tools/panel_kit/build_hud_kit.py, staged/client/sprites/hudkit/.\n\n- Kit: build_hud_kit.py slices 33 parts (same rects as the approved mockup's parts list), writes hud_kit.png + hud_kit.json (frames, bar-relative layout, gauge offsets). --check: identical.\n- Client: hb::client::hud_kit (presentation only, parts resolved at load, no per-frame allocation). DialogBox_HudPanel draws bar, EXP, message frame, gauges (trough -> fill clipped hard -> caps; HP/MP/SP/EXP from the left, hunger from the bottom), socket + orb by mode (peace hover orb), crusade icon, menu buttons normal/hover, ring on combat hover, super orb additive 0.7. Click rects, tooltips and values unchanged; sprite fallback kept when the kit is missing.\n- In game (1280x960): fixed 100/60/15/0 % and mixed 80/35/55/70/40 via a temporary file-driven path (removed; grep clean). Fill ends match fill_w = w*v/max exactly for HP/MP, SP within the number overlap, hunger a constant 3 px shading offset. Side by side with the mockup: hh0068_vs_mockup.jpg, hh0068_vs_mockup_gauges_3x.jpg. 1024x768: hh0068_1024.jpg.\n- Each menu button hovered (art + tooltip) and clicked (opens its dialog, second click closes); orb hover (ring + Peace); combat toggled peace -> attack -> peace.\n- Not exercised: crusade icon (needs crusade mode), super orb (needs super attacks + mastery 100).\n- Builds: Windows Debug and Linux, 0 warnings. settings.json byte-identical."
     }
   ]
 }
