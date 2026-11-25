@@ -26,7 +26,7 @@ void DialogBox_MagicShop::on_draw()
 	short sX = m_x;
 	short sY = m_y;
 
-	// A plain kit frame (the original's hexagram is dropped, user ruling) with the title and the sunken panel at
+	// A plain kit frame (the original's baked hexagram is replaced by the kit piece) with the title and the sunken panel at
 	// the original sprite's places (HH-0066), else the original sprite frame and title bar
 	if (hb::client::panel_kit* panel_kit = m_game->get_panel_kit())
 	{
@@ -35,6 +35,9 @@ void DialogBox_MagicShop::on_draw()
 			1.0f, kit_frame_style(kit_frame::rivet_box));
 		kit.title("Spells", 24, kit_layout::title_fill, "divider_wave", 14);
 		kit.inset(content_panel);
+		// The engraved hexagram ring (HH-0075, the magic dialog's HH-0071 piece), its centre on the original
+		// hexagram's (measured at 154.5, 161); skipped when the kit lacks it
+		kit.piece("magic_circle", hb::client::kit_point{55, 61});
 	}
 	else
 	{

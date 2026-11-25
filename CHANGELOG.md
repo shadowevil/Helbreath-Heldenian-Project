@@ -175,3 +175,5 @@ The magic circle is fainter: 35% opacity instead of 50%, so it no longer compete
 The commander, constructor and soldier crusade dialogs and change-password now draw kit frames (HH-0066, batch 7). Change-password gets kit input boxes and loses its axe picture.
 - **Wider panel:** tall dialogs without a scrollbar, the tester menu included, use a 225 px panel like the originals. The six scrollbar dialogs keep 220.
 - **Titles:** all kit titles come from one table through `find_title()`.
+
+The magic shop draws the magic circle behind its spell list, centred where its old hexagram was (HH-0075).

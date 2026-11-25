@@ -12,7 +12,7 @@
   ],
   "author": "pm",
   "created": "2026-11-25T01:57:54Z",
-  "updated": "2026-11-25T02:12:39Z",
+  "updated": "2026-11-25T03:49:28Z",
   "links": {
     "commits": [
       "b3b40459"
@@ -29,6 +29,11 @@
       "author": "pm",
       "at": "2026-11-25T02:00:03Z",
       "body": "Kit piece committed in 0cd7a9a3 after a read-only review passed (--check identical, frame names intact, README comma fixed). Remaining: the magic dialog draws it."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-25T03:49:28Z",
+      "body": "User, 2026-11-24: \"Also make it slightly less visible - it invades a bit\". Opacity lowered from 0.5 to 0.35 in bf0462f2 after review PASS (--check identical)."
     }
   ]
 }
