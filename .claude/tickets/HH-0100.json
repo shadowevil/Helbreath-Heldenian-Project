@@ -1,0 +1,24 @@
+{
+  "id": "HH-0100",
+  "summary": "HUD kit: HD atlas from the 2.4x HUD sheet, native kept for 1x",
+  "status": "in_progress",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-25T21:09:06Z",
+  "updated": "2026-11-25T21:09:06Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "relates_to": [
+      "HH-0068"
+    ]
+  },
+  "body": "The user upscaled the HUD art sheet from 800x188 to 1920x451, a uniform 2.4x: `working/classic_ui/hd/gamedialog_sprite_6.png`, with the .psd beside it. The HUD should draw from it so it stays sharp on large screens. The user, 2026-11-25: \"I also updated this to be wide screen friendly - however we will want to keep the 4:3 version as well\". Also: \"the games world logic is 4:3 800x600 tile based - so it should cover the same amount whether at 4k or 800x600 ratio\".\n\nSo the bar does NOT get longer. The HUD covers the same 800 game pixels at every screen size; the HD sheet only adds resolution.\n\n| fact | value |\n|---|---|\n| new sheet | 1920x451 RGBA, 2.4x (1920/800 exact; 451/2.4 = 187.9, so rows drift less than 1 px) - measured |\n| current kit | `staged/client/sprites/hudkit/hud_kit.{png,json}`, 33 frames, built by `tools/panel_kit/build_hud_kit.py` from `working/sprite_work/GameDialog/gamedialog_sprite_6.png` - located |\n| old 800x188 sheet | no longer on disk; its pixels survive only in the built `hud_kit.png` - measured |\n\n**Done when:**\n- The kit carries an HD atlas built from the new sheet, with the same frame names and layout in game pixels.\n- The HUD draws HD frames scaled to the screen whenever the scale is above 1x.\n- The native atlas stays and is used at 1x.\n- The build works without the missing old sheet.\n- Both builds are clean.\n- Screenshots at 800x600 and 1920x1080 are attached.\n\nSource: user messages, 2026-11-25; measurement `.claude/scratch/coordinator/hud_wide/measure.py`.\n"
+}
