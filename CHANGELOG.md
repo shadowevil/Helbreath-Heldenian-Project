@@ -153,3 +153,7 @@ Six small message boxes now draw their frame from the kit (HH-0066, batch 1): it
 - **HUD:** two small cleanups in the action bar code, with no change in behaviour.
 
 The magic dialog's engraved hexagram-in-a-ring is back as a transparent kit piece (HH-0071). It was redrawn from the original art at 50% opacity, and `tools/panel_kit/magic_circle.py` generates it into the panel kit as `magic_circle`. The client does not draw it yet.
+
+The skill and magic dialogs now draw plain kit frames (HH-0066, batch 2), and the magic dialog draws the engraved circle behind its list (HH-0071).
+- **Skill dialog:** the portrait is gone, and the scrollbar uses the kit's groove and thumb over the same travel as before.
+- **Kit:** a new `piece()` call draws one named kit frame at its own size and skips it if the kit lacks it.

@@ -166,6 +166,8 @@ namespace hb::client
 		// The scrollbar's parts on their own: a groove of any size (a slider track) and the thumb centred on (cx, cy)
 		void groove(const kit_rect& r, float alpha = 1.0f) const;
 		void thumb(int cx, int cy, float alpha = 1.0f) const;
+		// A named frame (a decor piece) at its natural size, top-left at (x, y); false if the kit lacks it
+		bool piece(std::string_view name, int x, int y, float alpha = 1.0f) const;
 		// A flourish centred on (cx, cy) in its JSON tint and blend (or style's); scale <= 0 = the JSON scale
 		void flourish(std::string_view name, int cx, int cy, bool mirror = false, float scale = 0.0f, float alpha = 1.0f,
 			const flourish_style* style = nullptr) const;
@@ -255,6 +257,7 @@ namespace hb::client
 		float scrollbar_pos_at(const kit_rect& r, int screen_y) const;   // r dialog-relative, y on screen
 		void groove(const kit_rect& r) const;
 		void thumb(int cx, int cy) const;
+		bool piece(std::string_view name, kit_point position) const;
 		// The y of the cap-height centre of a title drawn at y (for flourishes the dialog places itself)
 		int title_cap_middle(std::string_view text, int y) const;
 		void flourish(std::string_view name, int cx, int cy, bool mirror = false, float scale = 0.0f,

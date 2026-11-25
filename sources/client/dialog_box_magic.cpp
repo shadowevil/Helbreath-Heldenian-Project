@@ -15,6 +15,16 @@
 using namespace hb::shared::item;
 using namespace hb::client::sprite_id;
 
+namespace
+{
+	// Kit layout, dialog-relative, matched to the original frame (HH-0066)
+	constexpr hb::shared::render::Color title_fill{148, 24, 16};
+	constexpr hb::client::kit_rect content_panel{15, 31, 225, 277};   // the original's sunken panel
+	// The engraved hexagram ring (HH-0071, approved exception to the no-pictures ruling); its 50% opacity is
+	// baked into the frame. Placement as recorded beside the frame in panel_kit.json
+	constexpr hb::client::kit_point magic_circle_at{28, 62};
+}
+
 bool DialogBox_Magic::on_enable(int type, int64_t v1, int v2, const char* string)
 {
 	// type=1: explicit circle selection (Ctrl+number keys)
@@ -50,8 +60,21 @@ void DialogBox_Magic::on_draw()
 	sX = m_x;
 	sY = m_y;
 
-	draw_new_dialog_box(InterfaceNdGame1, sX, sY, 1, false, dialogTrans);
-	draw_new_dialog_box(InterfaceNdText, sX, sY, 7, false, dialogTrans);
+	// The panel kit draws a plain frame (the original's hexagram is dropped, user ruling), the title and the
+	// content panel at the original sprite's places; else the original sprite frame and title bar
+	if (hb::client::panel_kit* panel_kit = m_game->get_panel_kit())
+	{
+		const hb::client::kit_dialog kit(*panel_kit, hb::client::kit_point{258, 328}, hb::client::kit_point{sX, sY},
+			hb::client::dialog_alpha(dialogTrans));
+		kit.title("Magic List", 23, title_fill, "divider_wave", 14);
+		kit.inset(content_panel);
+		kit.piece("magic_circle", magic_circle_at);   // skipped when the kit lacks it
+	}
+	else
+	{
+		draw_new_dialog_box(InterfaceNdGame1, sX, sY, 1, false, dialogTrans);
+		draw_new_dialog_box(InterfaceNdText, sX, sY, 7, false, dialogTrans);
+	}
 
 	// Handle scroll wheel input
 	if (m_game->get_dialog_box_manager().get_top_id() == DialogBoxId::Magic && z != 0)

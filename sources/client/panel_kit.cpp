@@ -789,6 +789,15 @@ namespace hb::client
 		m_data->draw(m_data->scroll_thumb, cx - t.w / 2, cy - t.h / 2, alpha);
 	}
 
+	bool panel_kit::piece(std::string_view name, int x, int y, float alpha) const
+	{
+		const kit_data::piece* p = m_data ? m_data->find(name) : nullptr;
+		if (!p)
+			return false;
+		m_data->draw(p, x, y, alpha);
+		return true;
+	}
+
 	float panel_kit::scrollbar_pos_at(const kit_rect& r, int y) const
 	{
 		if (!m_data)
@@ -1037,6 +1046,11 @@ namespace hb::client
 	void kit_dialog::thumb(int cx, int cy) const
 	{
 		m_kit.thumb(m_origin.x + cx, m_origin.y + cy, m_alpha);
+	}
+
+	bool kit_dialog::piece(std::string_view name, kit_point position) const
+	{
+		return m_kit.piece(name, m_origin.x + position.x, m_origin.y + position.y, m_alpha);
 	}
 
 	int kit_dialog::title_cap_middle(std::string_view text, int y) const
