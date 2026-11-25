@@ -1,0 +1,26 @@
+{
+  "id": "HH-0107",
+  "summary": "Splash screen from the HD logo art",
+  "status": "done",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-25T22:02:39Z",
+  "updated": "2026-11-25T22:09:44Z",
+  "links": {
+    "commits": [
+      "beaba884"
+    ],
+    "files": [],
+    "tickets": [],
+    "relates_to": [
+      "HH-0103"
+    ]
+  },
+  "body": "The user, 2026-11-25: \"Updated the splash screen\", at `working/classic_ui/hd/splash_screen.png`.\n\n| fact | value |\n|---|---|\n| new art | 1920x1080 RGBA, fully transparent except the logo, alpha bbox (679,365)-(1241,716). The transparent pixels are white (255,255,255,0) - measured |\n| old art | intermediate_screens sprite 3, loaded in `screen_splash.cpp:26-28` as SplashScreen (as of 2026-11-25) |\n| keep | the credits roll in screen_splash.cpp |\n\nFollows d-035 and d-036: HD only, no fallback, old art archived.\n\n**Done when:** the splash draws the new logo (art_fit, on black, with no white halo at its edges), the old sprite 3 load is gone, sprite 3 is an empty placeholder archived byte-identical, the build is clean, and the user has approved an in-client shot.\n\nSource: user message, 2026-11-25.\n\n**Closed, 2026-11-25:** commit beaba884, with the old 003.png deletion in 0cff2f0d. The archive is byte-identical (hash checked). The user approved hh0107_splash_mine.png and the review passed. The SplashScreen id is still in sprite_id.h until the loader cleanup.\n"
+}
