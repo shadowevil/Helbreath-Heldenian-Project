@@ -1,0 +1,26 @@
+{
+  "id": "HH-0102",
+  "summary": "HUD: shift stamina bar and info panel right to give the hunger tube room",
+  "status": "done",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-25T21:32:37Z",
+  "updated": "2026-11-25T21:43:34Z",
+  "links": {
+    "commits": [
+      "57d18b06"
+    ],
+    "files": [],
+    "tickets": [],
+    "relates_to": [
+      "HH-0100"
+    ]
+  },
+  "body": "The user, 2026-11-25, with a sketch: \"Can we move over the stamina and info panel to give way to more room of the food guage?\". In the sketch the SP (stamina) bar and the info panel move right as one block until the panel's right edge reaches the marked line, about 7 game px measured from the sketch at about 2.35x. The hunger tube stays where it is and gains the room on its right. Everything else on the bar is unchanged.\n\n**Done when:** the SP bar, the info panel and their texts are shifted, the hit areas follow, an in-game crop is approved by the user, and the build is clean.\n\nSource: user message and sketch, 2026-11-25; follows HH-0100.\n\n**Closed, 2026-11-25:** commit 57d18b06. The user approved the in-game crop (hh0102_hud_1280x960.png), and the review passed; its --check reports the kit identical.\n"
+}
