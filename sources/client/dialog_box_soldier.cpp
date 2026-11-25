@@ -46,9 +46,8 @@ void DialogBox_Soldier::on_draw()
 	sY = m_y;
 	size_x = m_size_x;
 
-	draw_new_dialog_box(InterfaceNdCrusade, sX, sY - 5, 0, false, config_manager::get().is_dialog_transparency_enabled());
-	draw_new_dialog_box(InterfaceNdCrusade, sX, sY, 21, false, config_manager::get().is_dialog_transparency_enabled());
-	draw_new_dialog_box(InterfaceNdText, sX, sY, 17, false, config_manager::get().is_dialog_transparency_enabled());
+	draw_crusade_frame(17, sX, sY, config_manager::get().is_dialog_transparency_enabled());   // "Soldier Menu"
+	draw_new_dialog_box(InterfaceNdCrusade, sX, sY, 21, false, config_manager::get().is_dialog_transparency_enabled());   // the map
 
 	switch (m_mode) {
 	case mode::overview:

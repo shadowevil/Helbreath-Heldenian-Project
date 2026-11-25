@@ -29,14 +29,26 @@ namespace tall_frame
 	};
 }
 
+// A tall frame's list panel: the original frames' full width, or narrowed for a dialog with a scrollbar
+namespace tall_panel
+{
+	enum type : uint8_t
+	{
+		full,
+		scrollbar
+	};
+}
+
 // Kit layout shared by the converted dialogs, dialog-relative (HH-0066)
 namespace kit_layout
 {
 	constexpr hb::shared::render::Color title_fill{148, 24, 16};   // the baked sprite titles' red
 	constexpr hb::client::kit_point tall_size{258, 339};
-	// The tall dialogs' list panel; 220 wide so the scroll groove sits beside it (the originals ran it under
-	// their track overlay)
-	constexpr hb::client::kit_rect tall_panel{16, 31, 220, 288};
+	// The tall dialogs' list panel at the original frames' width (x 16 to 241)
+	constexpr hb::client::kit_rect tall_panel{16, 31, 225, 288};
+	// The panel of a tall dialog with a scrollbar: 220 wide so the groove sits beside it (the originals ran the
+	// panel under their track overlay)
+	constexpr hb::client::kit_rect tall_scroll_panel{16, 31, 220, 288};
 	// The scroll groove: the thumb's top at 30 + 274 * pos, where the sprite thumb drew (frame 7, pivot -6,-5, at
 	// x 242, y 35 + pointer_loc), so the dialogs' 274 px drag maths keeps it under the cursor
 	constexpr hb::client::kit_rect tall_track{236, 30, 15, 274 + 15};
@@ -111,7 +123,12 @@ protected:
 	// Sale, 10 Repair Item, 21 Items In Storage, 1 Skills, 4 Quest, 3 Party Menu, 18 Cityhall Menu, 19 Guild
 	// Menu, 2 Level up Setting, 5 Item Upgrade): a plain kit frame, title and sunken list panel, else the original
 	// Game2 frame and Text title
-	void draw_tall_frame(tall_frame::type style, int x, int y, int title_frame = -1);
+	void draw_tall_frame(tall_frame::type style, int x, int y, int title_frame = -1,
+		tall_panel::type panel = tall_panel::full);
+	// The crusade map dialogs' frame (commander, constructor, soldier) with the Text strip title_frame carries
+	// (15 Commander Menu, 16 Constructor Menu, 17 Soldier Menu): a plain gold-cornered kit frame, title and the
+	// sunken status bar, else the original Crusade frame 0 and title strip. transparent = dialog transparency
+	void draw_crusade_frame(int title_frame, int x, int y, bool transparent);
 	// A tall dialog's scrollbar at the original 274 px thumb travel: the kit groove and thumb at pos (0..1,
 	// clamped), else the original Game2 track frame (3, or 1 beside a stone frame) and thumb frame 7 at pointer_loc
 	void draw_tall_scrollbar(int x, int y, float pos, int pointer_loc, int track_frame = 3);

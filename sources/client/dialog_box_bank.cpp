@@ -38,7 +38,7 @@ void DialogBox_Bank::on_draw()
 	short sY = m_y;
 	short size_x = m_size_x - 5;
 
-	draw_tall_frame(tall_frame::rivet, sX, sY, 21);   // "Items In Storage"
+	draw_tall_frame(tall_frame::rivet, sX, sY, 21, tall_panel::scrollbar);   // "Items In Storage"
 
 	switch (m_mode) {
 	case mode::waiting:

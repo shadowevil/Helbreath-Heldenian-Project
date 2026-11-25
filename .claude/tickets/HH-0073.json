@@ -1,0 +1,21 @@
+{
+  "id": "HH-0073",
+  "summary": "Manufacture dialog dereferences an empty recipe slot",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    1,
+    3
+  ],
+  "author": "pm",
+  "created": "2026-11-25T03:46:52Z",
+  "updated": "2026-11-25T03:46:52Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": []
+  },
+  "body": "dialog_box_manufacture.cpp dereferences get_display_list()[m_progress] with no null check in the waiting, in-progress and done modes (:367, :373, :488, :494, :610, :616 as of 2026-11-24). The client agent crashed its client when it forced the done state with made-up values on a character with no recipes (measured). The reviewer found that the list is a fixed std::array, so the index cannot run out of range, but a slot can be null: build_item_manager.cpp:44-46 resets display slots on a rebuild, so a slot cleared while the dialog is open dereferences null (derived; not reproduced in normal play).\n\n**Done when:** those modes check the slot and close or go back to the list when it is empty, with no crash in a forced test.\n\nSource: HH-0066 batch 6 agent report and review, 2026-11-24.\n"
+}

@@ -65,10 +65,21 @@ namespace
 		{19, "Guild Menu", 21},
 		{2, "Level up Setting", 19},
 		{5, "Item Upgrade", 19},
+		// The crusade map dialogs' strips (draw_crusade_frame)
+		{15, "Commander Menu", 20},
+		{16, "Constructor Menu", 20},
+		{17, "Soldier Menu", 20},
 	};
+
+	const tall_title* find_title(int text_frame)
+	{
+		const auto title = std::find_if(std::begin(tall_titles), std::end(tall_titles),
+			[text_frame](const tall_title& t) { return t.text_frame == text_frame; });
+		return title != std::end(tall_titles) ? title : nullptr;
+	}
 }
 
-void IDialogBox::draw_tall_frame(tall_frame::type style, int x, int y, int title_frame)
+void IDialogBox::draw_tall_frame(tall_frame::type style, int x, int y, int title_frame, tall_panel::type panel)
 {
 	using namespace hb::client::sprite_id;
 	if (hb::client::panel_kit* kit = m_game->get_panel_kit())
@@ -78,17 +89,36 @@ void IDialogBox::draw_tall_frame(tall_frame::type style, int x, int y, int title
 		const hb::client::kit_dialog dialog(*kit, kit_layout::tall_size, hb::client::kit_point{x, y}, 1.0f,
 			style == tall_frame::rivet ? kit_frame_style(kit_frame::rivet_box) : stone);
 		// A title_frame missing from tall_titles draws no kit title: add new callers' titles to the table
-		const auto title = std::find_if(std::begin(tall_titles), std::end(tall_titles),
-			[title_frame](const tall_title& t) { return t.text_frame == title_frame; });
-		if (title != std::end(tall_titles))
+		if (const tall_title* title = find_title(title_frame))
 			dialog.title(title->text, title->y, kit_layout::title_fill, "divider_wave", 14);
-		dialog.inset(kit_layout::tall_panel);
+		dialog.inset(panel == tall_panel::scrollbar ? kit_layout::tall_scroll_panel : kit_layout::tall_panel);
 	}
 	else
 	{
 		draw_new_dialog_box(InterfaceNdGame2, x, y, style == tall_frame::rivet ? 2 : 0);
 		if (title_frame >= 0)
 			draw_new_dialog_box(InterfaceNdText, x, y, title_frame);
+	}
+}
+
+void IDialogBox::draw_crusade_frame(int title_frame, int x, int y, bool transparent)
+{
+	using namespace hb::client::sprite_id;
+	if (hb::client::panel_kit* kit = m_game->get_panel_kit())
+	{
+		// The original frame (311x373, pivot y 39, drawn 5 px up) hangs under the 34 px title strip: 407 tall in all
+		constexpr hb::client::kit_point crusade_size{311, 407};
+		constexpr hb::client::kit_rect status_strip{15, 34, 281, 21};   // the sunken bar under the title
+		const hb::client::kit_dialog dialog(*kit, crusade_size, hb::client::kit_point{x, y},
+			hb::client::dialog_alpha(transparent), kit_frame_style(kit_frame::gold_box));
+		if (const tall_title* title = find_title(title_frame))
+			dialog.title(title->text, title->y, kit_layout::title_fill, "divider_wave", 14);
+		dialog.inset(status_strip);
+	}
+	else
+	{
+		draw_new_dialog_box(InterfaceNdCrusade, x, y - 5, 0, false, transparent);
+		draw_new_dialog_box(InterfaceNdText, x, y, title_frame, false, transparent);
 	}
 }
 

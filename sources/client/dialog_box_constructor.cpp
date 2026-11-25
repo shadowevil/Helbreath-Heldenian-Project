@@ -47,8 +47,7 @@ void DialogBox_Constructor::on_draw()
 	sY = m_y;
 	size_x = m_size_x;
 
-	draw_new_dialog_box(InterfaceNdCrusade, sX, sY - 5, 0, false, config_manager::get().is_dialog_transparency_enabled());
-	draw_new_dialog_box(InterfaceNdText, sX, sY, 16, false, config_manager::get().is_dialog_transparency_enabled());
+	draw_crusade_frame(16, sX, sY, config_manager::get().is_dialog_transparency_enabled());   // "Constructor Menu"
 
 	switch (m_mode) {
 	case mode::main:

@@ -171,3 +171,7 @@ The city hall, command hall, crusade job and both guild dialogs now draw plain k
 The level-up and majestic stat dialogs, item upgrade and manufacture now draw plain kit frames (HH-0066, batch 6). Manufacture loses its hammer picture, and the stat dialogs keep their stat-table sprite on top for now.
 
 The magic circle is fainter: 35% opacity instead of 50%, so it no longer competes with the text over it (HH-0071 follow-up).
+
+The commander, constructor and soldier crusade dialogs and change-password now draw kit frames (HH-0066, batch 7). Change-password gets kit input boxes and loses its axe picture.
+- **Wider panel:** tall dialogs without a scrollbar, the tester menu included, use a 225 px panel like the originals. The six scrollbar dialogs keep 220.
+- **Titles:** all kit titles come from one table through `find_title()`.

@@ -37,7 +37,7 @@ void DialogBox_NpcTalk::on_draw()
 	short sX = m_x;
 	short sY = m_y;
 
-	draw_tall_frame(tall_frame::rivet, sX, sY);
+	draw_tall_frame(tall_frame::rivet, sX, sY, -1, tall_panel::scrollbar);
 
 	draw_buttons(sX, sY);
 	draw_text_content(sX, sY);

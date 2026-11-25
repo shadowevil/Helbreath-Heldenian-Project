@@ -35,7 +35,7 @@ void DialogBox_Text::on_draw()
 	short sX = m_x;
 	short sY = m_y;
 
-	draw_tall_frame(tall_frame::stone, sX, sY);
+	draw_tall_frame(tall_frame::stone, sX, sY, -1, tall_panel::scrollbar);
 
 	int total_lines = get_total_lines();
 

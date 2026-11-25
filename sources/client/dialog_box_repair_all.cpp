@@ -26,7 +26,7 @@ void DialogBox_RepairAll::on_draw()
 	int total_lines, pointer_loc;
 	double d1, d2, d3;
 
-	draw_tall_frame(tall_frame::rivet, sX, sY, 10);   // "Repair Item"
+	draw_tall_frame(tall_frame::rivet, sX, sY, 10, tall_panel::scrollbar);   // "Repair Item"
 
 	for (int i = 0; i < 15; i++)
 	{

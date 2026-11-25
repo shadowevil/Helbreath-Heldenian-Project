@@ -33,7 +33,7 @@ void DialogBox_Shop::on_draw()
     short sX = m_x;
     short sY = m_y;
 
-    draw_tall_frame(tall_frame::rivet, sX, sY, 11);   // "Item for Sale"
+    draw_tall_frame(tall_frame::rivet, sX, sY, 11, tall_panel::scrollbar);   // "Item for Sale"
 
     switch (m_mode) {
     case 0:

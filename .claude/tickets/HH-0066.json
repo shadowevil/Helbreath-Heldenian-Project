@@ -11,7 +11,7 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:14Z",
-  "updated": "2026-11-25T03:38:33Z",
+  "updated": "2026-11-25T04:02:21Z",
   "links": {
     "commits": [],
     "files": [
@@ -89,6 +89,11 @@
       "author": "client",
       "at": "2026-11-25T03:38:33Z",
       "body": "Batch 6 done, uncommitted. Checkpoints: c97fd2fd (title table + level-up setting, majestic stat change), d215efc9 (manufacture with its own 270x381 kit frame and \"Tinkering\" title, no hammer; item upgrade). Stats dialogs keep the Game4 f4 stat table sprite (its own lighter cloth shows as a patch; follow-up candidate). Alchemy and crafting draw the cauldron sprite as the dialog itself and were left alone. Crusade job checked once with a client-side-only citizen flag: its first line and the Help button run ~4-6 px past the 220 px panel. Windows and Linux builds clean. Shots: build/screenshots/hh0066_b6_*.jpg."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-25T04:02:21Z",
+      "body": "Batch 7 done, uncommitted. Checkpoints: 6539fbaf (225-wide panel for tall dialogs without a scrollbar: tall_panel::full default, the six scrollbar dialogs pass tall_panel::scrollbar), af36db1a (crusade map dialogs: commander, constructor, soldier via the new draw_crusade_frame, gold corners, title strips and status bar; stacked on 6539fbaf in dialog_box.h/.cpp), 099d311a (change-password overlay: kit frame, title, panel and the four field boxes). Separate: e9025a65 HH-0075 magic shop circle, 5cb3d8b1 HH-0076 item creator. Still not converted: warning_msg and the eight Game4 frame 2 overlays (connecting, connection lost, log result, delete character, force login, version mismatch, wait init data, waiting response); plus HH-0073/HH-0074 follow-ups and alchemy/crafting (cauldron, user call)."
     }
   ]
 }

@@ -38,7 +38,7 @@ void DialogBox_Skill::on_draw()
 
 	// A plain kit frame (the original's portrait is dropped, user ruling) with the "Skills" title, else the
 	// original sprite frame and title bar
-	draw_tall_frame(tall_frame::stone, sX, sY, 1);
+	draw_tall_frame(tall_frame::stone, sX, sY, 1, tall_panel::scrollbar);
 
 	switch (m_mode) {
 	case 0:

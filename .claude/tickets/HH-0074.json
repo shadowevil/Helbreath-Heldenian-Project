@@ -1,0 +1,24 @@
+{
+  "id": "HH-0074",
+  "summary": "Kit: stat table on the level-up dialogs from kit pieces",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    12,
+    3
+  ],
+  "author": "pm",
+  "created": "2026-11-25T03:46:52Z",
+  "updated": "2026-11-25T03:46:52Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "relates_to": [
+      "HH-0066"
+    ]
+  },
+  "body": "The level-up and majestic stat dialogs still draw the old stat-table sprite (InterfaceNdGame4 frame 4 at 16,100) over the kit panel. It has its own lighter cloth, so it shows as a box and runs about 4 px past the panel's right edge (measured from a screenshot, build/screenshots/hh0066_b6_level_up.jpg). Replacing it needs kit value boxes and +/- button art.\n\n**Done when:** the stat rows draw from kit pieces with no sprite box, and the buttons and values work as before.\n\nSource: HH-0066 batch 6, 2026-11-24.\n"
+}
