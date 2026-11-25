@@ -35,12 +35,9 @@ void DialogBox_Text::on_draw()
 	short sX = m_x;
 	short sY = m_y;
 
-	m_game->draw_new_dialog_box(InterfaceNdGame2, sX, sY, 0);
+	draw_tall_frame(tall_frame::stone, sX, sY);
 
 	int total_lines = get_total_lines();
-
-	if (total_lines > 17)
-		m_game->draw_new_dialog_box(InterfaceNdGame2, sX, sY, 1);
 
 	// Mouse wheel scrolling
 	if (m_game->get_dialog_box_manager().get_top_id() == DialogBoxId::Text && z != 0)
@@ -63,8 +60,7 @@ void DialogBox_Text::on_draw()
 		double d2 = static_cast<double>(total_lines - 17);
 		double d3 = (274.0 * d1) / d2;
 		pointer_loc = static_cast<int>(d3 + 0.5);
-		m_game->draw_new_dialog_box(InterfaceNdGame2, sX, sY, 1);
-		m_game->draw_new_dialog_box(InterfaceNdGame2, sX + 242, sY + 35 + pointer_loc, 7);
+		draw_tall_scrollbar(sX, sY, static_cast<float>(d1 / d2), pointer_loc, 1);
 	}
 
 	// draw text lines

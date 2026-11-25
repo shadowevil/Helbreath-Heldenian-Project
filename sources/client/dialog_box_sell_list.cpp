@@ -31,7 +31,7 @@ void DialogBox_SellList::on_draw()
 	short sY = m_y;
 	short size_x = m_size_x;
 
-	draw_shop_frame(11, sX, sY);   // "Item for Sale"
+	draw_tall_frame(tall_frame::rivet, sX, sY, 11);   // "Item for Sale"
 
 	int empty_count = 0;
 	draw_item_list(sX, sY, size_x, mouse_x, mouse_y, empty_count);

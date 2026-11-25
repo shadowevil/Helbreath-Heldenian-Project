@@ -34,7 +34,7 @@ void DialogBox_Help::on_draw()
 	short sY = m_y;
 	short size_x = m_size_x;
 
-	draw_new_dialog_box(InterfaceNdGame2, sX, sY, 2);
+	draw_tall_frame(tall_frame::rivet, sX, sY);
 
 	// Help topics list
 	draw_help_item(sX, size_x, sY, 0, DRAW_DIALOGBOX_HELP2, is_mouse_over_item(mouse_x, mouse_y, sX, sY, 0));

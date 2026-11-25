@@ -2,6 +2,7 @@
 
 #include "dialog_box_ids.h"
 #include "common_types.h"
+#include "panel_kit.h"
 #include <cstdint>
 
 // Simple rect for dialog-relative hit-testing
@@ -12,8 +13,33 @@ namespace kit_frame
 {
 	enum type : uint8_t
 	{
-		gold_box   // small message / query boxes: cloth, light wood border, gold corners (Game1 f2, Game2 f5 / f6)
+		gold_box,  // small message / query boxes: cloth, light wood border, gold corners (Game1 f2, Game2 f5 / f6)
+		rivet_box  // silver-ball corners (Game2 f2, Game4 f1 / f2)
 	};
+}
+
+// The tall 258x339 dialogs' frames (IDialogBox::draw_tall_frame): Game2 frame 0 (stone corners) or frame 2
+// (silver-ball corners), both with a sunken list panel
+namespace tall_frame
+{
+	enum type : uint8_t
+	{
+		stone,
+		rivet
+	};
+}
+
+// Kit layout shared by the converted dialogs, dialog-relative (HH-0066)
+namespace kit_layout
+{
+	constexpr hb::shared::render::Color title_fill{148, 24, 16};   // the baked sprite titles' red
+	constexpr hb::client::kit_point tall_size{258, 339};
+	// The tall dialogs' list panel; 220 wide so the scroll groove sits beside it (the originals ran it under
+	// their track overlay)
+	constexpr hb::client::kit_rect tall_panel{16, 31, 220, 288};
+	// The scroll groove: the thumb's top at 30 + 274 * pos, where the sprite thumb drew (frame 7, pivot -6,-5, at
+	// x 242, y 35 + pointer_loc), so the dialogs' 274 px drag maths keeps it under the cursor
+	constexpr hb::client::kit_rect tall_track{236, 30, 15, 274 + 15};
 }
 
 class CGame;
@@ -79,13 +105,15 @@ protected:
 	// A plain panel-kit frame of w x h at (x, y); false when the kit is not loaded, and the caller then draws
 	// its original sprite frame. transparent = the dialog transparency setting's 0.25 opacity
 	bool draw_kit_background(kit_frame::type style, int x, int y, int w, int h, bool transparent = false);
-	// The shop family's 258x339 frame (shop, sell list, sell or repair, repair all, bank: Game2 frame 2) with the
-	// title the Text sprite frame title_frame carries (11 Item for Sale, 10 Repair Item, 21 Items In Storage):
-	// a plain kit frame, title and sunken list panel, else the original sprites
-	void draw_shop_frame(int title_frame, int x, int y);
-	// The shop family's scrollbar at the original 274 px thumb travel: the kit groove and thumb at pos (0..1,
-	// clamped), else the original Game2 track frame (3, or 1 for repair all) and thumb frame 7 at pointer_loc
-	void draw_shop_scrollbar(int x, int y, float pos, int pointer_loc, int track_frame = 3);
+	// The kit part names a kit_frame style stands for (for a kit_dialog built by the dialog itself)
+	static const hb::client::panel_style& kit_frame_style(kit_frame::type style);
+	// A tall 258x339 frame with the title the Text sprite frame title_frame carries (-1 = none; 11 Item for
+	// Sale, 10 Repair Item, 21 Items In Storage, 1 Skills, 4 Quest, 3 Party Menu): a plain kit frame, title and sunken list
+	// panel, else the original Game2 frame and Text title
+	void draw_tall_frame(tall_frame::type style, int x, int y, int title_frame = -1);
+	// A tall dialog's scrollbar at the original 274 px thumb travel: the kit groove and thumb at pos (0..1,
+	// clamped), else the original Game2 track frame (3, or 1 beside a stone frame) and thumb frame 7 at pointer_loc
+	void draw_tall_scrollbar(int x, int y, float pos, int pointer_loc, int track_frame = 3);
 	void put_string(int iX, int iY, const char* string, const hb::shared::render::Color& color);
 	void put_aligned_string(int x1, int x2, int iY, const char* string, const hb::shared::render::Color& color = GameColors::UIBlack);
 	void add_event_list(const char* txt, char color = 0, bool dup_allow = true);

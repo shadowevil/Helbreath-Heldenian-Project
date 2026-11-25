@@ -33,7 +33,7 @@ void DialogBox_Shop::on_draw()
     short sX = m_x;
     short sY = m_y;
 
-    draw_shop_frame(11, sX, sY);   // "Item for Sale"
+    draw_tall_frame(tall_frame::rivet, sX, sY, 11);   // "Item for Sale"
 
     switch (m_mode) {
     case 0:
@@ -66,7 +66,7 @@ void DialogBox_Shop::draw_item_list(short sX, short sY)
         d2 = static_cast<double>(total_lines - 13);
         d3 = (274.0f * d1) / d2;
         pointer_loc = static_cast<int>(d3);
-        draw_shop_scrollbar(sX, sY, static_cast<float>(d1 / d2), pointer_loc);
+        draw_tall_scrollbar(sX, sY, static_cast<float>(d1 / d2), pointer_loc);
     }
     else pointer_loc = 0;
 

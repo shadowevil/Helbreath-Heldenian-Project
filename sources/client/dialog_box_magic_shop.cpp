@@ -26,8 +26,21 @@ void DialogBox_MagicShop::on_draw()
 	short sX = m_x;
 	short sY = m_y;
 
-	m_game->draw_new_dialog_box(InterfaceNdGame4, sX, sY, 1);
-	m_game->draw_new_dialog_box(InterfaceNdText, sX, sY, 14);
+	// A plain kit frame (the original's hexagram is dropped, user ruling) with the title and the sunken panel at
+	// the original sprite's places (HH-0066), else the original sprite frame and title bar
+	if (hb::client::panel_kit* panel_kit = m_game->get_panel_kit())
+	{
+		constexpr hb::client::kit_rect content_panel{16, 36, 272, 271};
+		const hb::client::kit_dialog kit(*panel_kit, hb::client::kit_point{304, 328}, hb::client::kit_point{sX, sY},
+			1.0f, kit_frame_style(kit_frame::rivet_box));
+		kit.title("Spells", 24, kit_layout::title_fill, "divider_wave", 14);
+		kit.inset(content_panel);
+	}
+	else
+	{
+		m_game->draw_new_dialog_box(InterfaceNdGame4, sX, sY, 1);
+		m_game->draw_new_dialog_box(InterfaceNdText, sX, sY, 14);
+	}
 
 	// Mouse wheel scrolling - read and consume input directly
 	if (m_game->get_dialog_box_manager().get_top_id() == DialogBoxId::MagicShop)

@@ -18,7 +18,6 @@ using namespace hb::client::sprite_id;
 namespace
 {
 	// Kit layout, dialog-relative, matched to the original frame (HH-0066)
-	constexpr hb::shared::render::Color title_fill{148, 24, 16};
 	constexpr hb::client::kit_rect content_panel{15, 31, 225, 277};   // the original's sunken panel
 	// The engraved hexagram ring (HH-0071, approved exception to the no-pictures ruling); its 50% opacity is
 	// baked into the frame. Placement as recorded beside the frame in panel_kit.json
@@ -66,7 +65,7 @@ void DialogBox_Magic::on_draw()
 	{
 		const hb::client::kit_dialog kit(*panel_kit, hb::client::kit_point{258, 328}, hb::client::kit_point{sX, sY},
 			hb::client::dialog_alpha(dialogTrans));
-		kit.title("Magic List", 23, title_fill, "divider_wave", 14);
+		kit.title("Magic List", 23, kit_layout::title_fill, "divider_wave", 14);
 		kit.inset(content_panel);
 		kit.piece("magic_circle", magic_circle_at);   // skipped when the kit lacks it
 	}

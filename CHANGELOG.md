@@ -161,3 +161,7 @@ The skill and magic dialogs now draw plain kit frames (HH-0066, batch 2), and th
 The shop, sell list, sell-or-repair, repair-all and warehouse dialogs now draw plain kit frames with silver-ball corners, the red title and the kit scrollbar (HH-0066, batch 3). Two shared helpers, `draw_shop_frame` and `draw_shop_scrollbar`, replace the repeated sprite draws, and the old sprites stay as the fallback.
 
 The tester menu draws a kit frame and the standard red title with black flourishes on every page, and its level readout uses the standard font (HH-0072).
+
+The magic shop, NPC talk, text, quest, help, party and shutdown-notice dialogs now draw plain kit frames, without their old pictures (HH-0066, batch 4).
+- **Shared code:** every tall dialog uses `draw_tall_frame` and `draw_tall_scrollbar`, and the repeated title colour and panel sizes are now shared constants.
+- **NPC talk:** the kit version shows a working scrollbar thumb, where the original drew only the track.

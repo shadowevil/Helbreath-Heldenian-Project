@@ -26,7 +26,7 @@ void DialogBox_RepairAll::on_draw()
 	int total_lines, pointer_loc;
 	double d1, d2, d3;
 
-	draw_shop_frame(10, sX, sY);   // "Repair Item"
+	draw_tall_frame(tall_frame::rivet, sX, sY, 10);   // "Repair Item"
 
 	for (int i = 0; i < 15; i++)
 	{
@@ -57,7 +57,7 @@ void DialogBox_RepairAll::on_draw()
 
 	if (total_lines > 15)
 	{
-		draw_shop_scrollbar(sX, sY, static_cast<float>(m_scroll_offset) / static_cast<float>(total_lines - 15), pointer_loc, 1);
+		draw_tall_scrollbar(sX, sY, static_cast<float>(m_scroll_offset) / static_cast<float>(total_lines - 15), pointer_loc, 1);
 	}
 
 	// Mouse wheel scrolling

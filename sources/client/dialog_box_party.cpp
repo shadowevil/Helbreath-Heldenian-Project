@@ -24,8 +24,7 @@ void DialogBox_Party::on_draw()
 	short sY = m_y;
 	short size_x = m_size_x;
 
-	m_game->draw_new_dialog_box(InterfaceNdGame2, sX, sY, 0);
-	m_game->draw_new_dialog_box(InterfaceNdText, sX, sY, 3);
+	draw_tall_frame(tall_frame::stone, sX, sY, 3);   // "Party Menu"
 
 	switch (m_mode) {
 	case mode::main_menu:

@@ -6,7 +6,6 @@
 #include "misc.h"
 #include "lan_eng.h"
 #include <format>
-#include <optional>
 #include <string>
 #include "screen_on_game.h"
 #include "audio_manager.h"
@@ -14,15 +13,6 @@
 using namespace hb::shared::net;
 using namespace hb::client::sprite_id;
 
-namespace
-{
-	// Kit layout, dialog-relative, matched to the original frame (HH-0066)
-	constexpr hb::shared::render::Color title_fill{148, 24, 16};
-	constexpr hb::client::kit_rect content_panel{16, 31, 220, 288};   // the original's sunken panel
-	// The scroll thumb's travel: its top at 30 + 274 * pos, where the sprite thumb drew (frame 7, pivot -6,-5,
-	// at x 242, y 35 + pointer_loc), so the existing 274 px drag maths still puts it under the cursor
-	constexpr hb::client::kit_rect scroll_track{236, 30, 15, 274 + 15};
-}
 DialogBox_Skill::DialogBox_Skill(CGame* game)
 	: IDialogBox(DialogBoxId::Skill, game)
 {
@@ -46,20 +36,9 @@ void DialogBox_Skill::on_draw()
 	sX = m_x;
 	sY = m_y;
 
-	// The panel kit draws a plain frame (the original's portrait is dropped, user ruling), the title and the
-	// content panel at the original sprite's places; else the original sprite frame and title bar
-	std::optional<hb::client::kit_dialog> kit;
-	if (hb::client::panel_kit* panel_kit = m_game->get_panel_kit())
-	{
-		kit.emplace(*panel_kit, hb::client::kit_point{258, 339}, hb::client::kit_point{sX, sY});
-		kit->title("Skills", 20, title_fill, "divider_wave", 14);
-		kit->inset(content_panel);
-	}
-	else
-	{
-		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 0); // Normal Dialog
-		draw_new_dialog_box(InterfaceNdText, sX, sY, 1); // Skill Dialog Title Bar
-	}
+	// A plain kit frame (the original's portrait is dropped, user ruling) with the "Skills" title, else the
+	// original sprite frame and title bar
+	draw_tall_frame(tall_frame::stone, sX, sY, 1);
 
 	switch (m_mode) {
 	case 0:
@@ -116,15 +95,8 @@ void DialogBox_Skill::on_draw()
 		}
 		else pointer_loc = 0;
 		if (total_lines > 17)
-		{
-			if (kit)
-				kit->scrollbar(scroll_track, static_cast<float>(m_scroll_position) / static_cast<float>(total_lines - 17));
-			else
-			{
-				draw_new_dialog_box(InterfaceNdGame2, sX, sY, 1);
-				draw_new_dialog_box(InterfaceNdGame2, sX + 242, sY + pointer_loc + 35, 7);
-			}
-		}
+			draw_tall_scrollbar(sX, sY, static_cast<float>(m_scroll_position) / static_cast<float>(total_lines - 17),
+				pointer_loc, 1);
 
 		if (lb != 0 && total_lines > 17)
 		{

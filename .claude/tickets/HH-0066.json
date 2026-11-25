@@ -11,7 +11,7 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:14Z",
-  "updated": "2026-11-25T02:50:32Z",
+  "updated": "2026-11-25T03:10:27Z",
   "links": {
     "commits": [],
     "files": [
@@ -64,6 +64,11 @@
       "author": "pm",
       "at": "2026-11-25T02:50:32Z",
       "body": "Batch 3 (shop, sell list, sell-or-repair, repair-all, warehouse) committed in ee8b3f8c after review PASS. Next: magic shop, then npc_talk, text, quest, help, party and notices."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-25T03:10:27Z",
+      "body": "Batch 4 done, uncommitted. Checkpoints: 6fc12de5 (shared: dialog_box.h/.cpp generalised to draw_tall_frame / draw_tall_scrollbar with tall_frame::stone|rivet, kit_layout constants and kit_frame::rivet_box; batch 3 call sites renamed; skill now on the helpers; magic and tester use the shared constants), bad818a8 (npc_talk, text, quest, help, party), 1f297828 (magic shop, noticement). Plain kit frames, no pictures; old sprites remain the fallback. Windows and Linux builds clean. Shots: build/screenshots/hh0066_b4_*.jpg."
     }
   ]
 }

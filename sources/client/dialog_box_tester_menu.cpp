@@ -18,13 +18,6 @@
 using namespace hb::shared::net;
 using namespace hb::client::sprite_id;
 
-namespace
-{
-	// Kit layout, dialog-relative, as the skill dialog's (the same Game2 frame 0; HH-0072)
-	constexpr hb::shared::render::Color title_fill{148, 24, 16};
-	constexpr hb::client::kit_rect content_panel{16, 31, 220, 288};
-}
-
 const DialogBox_TesterMenu::action_entry DialogBox_TesterMenu::actions[action_count] = {
 	{ "Reset stats" },
 	{ "Add 100 contribution" },
@@ -210,9 +203,9 @@ void DialogBox_TesterMenu::on_draw()
 	const char* title = m_page == 0 ? "Tester Menu" : (m_page == 1 ? "Set Level" : "Teleport");
 	if (hb::client::panel_kit* panel_kit = m_game->get_panel_kit())
 	{
-		const hb::client::kit_dialog kit(*panel_kit, hb::client::kit_point{258, 339}, hb::client::kit_point{sX, sY});
-		kit.title(title, 20, title_fill, "divider_wave", 14);
-		kit.inset(content_panel);
+		const hb::client::kit_dialog kit(*panel_kit, kit_layout::tall_size, hb::client::kit_point{sX, sY});
+		kit.title(title, 20, kit_layout::title_fill, "divider_wave", 14);
+		kit.inset(kit_layout::tall_panel);
 	}
 	else
 	{
