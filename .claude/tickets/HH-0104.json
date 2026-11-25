@@ -1,0 +1,24 @@
+{
+  "id": "HH-0104",
+  "summary": "Spell-cast shout text not centred over the caster",
+  "status": "in_progress",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    1
+  ],
+  "author": "pm",
+  "created": "2026-11-25T21:53:34Z",
+  "updated": "2026-11-25T21:53:34Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "relates_to": [
+      "HH-0084"
+    ]
+  },
+  "body": "The spell-cast shout over a caster's head (for example \"Recall!\") sits left of centre. The user, 2026-11-25: \"Spell text is very off compared to the original - not centered?\" (screenshot .claude/scratch/coordinator/font_map/user_recall_offcenter.png).\n\nCause, found by the HH-0090 editor (not measured by the coordinator): \floating_text_manager.cpp:313-325 (HH-0084, commit 097b7a28) draws it in GameFont::Default (the Tahoma TTF), but centres it with the 3.82 width estimate of 4 px per character. For \"Recall!\" the estimate is 28 px, while Tahoma 12 px is about 35 px, so the text lands about 10 px left of centre.\n\n**Done when:** the magic_cast_name branch centres with measure_text(GameFont::Default, text).width / 2, an in-client check shows the text centred over the head, and the build is clean.\n\nSource: user report and HH-0090 editor analysis, 2026-11-25.\n"
+}

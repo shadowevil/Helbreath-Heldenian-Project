@@ -27,6 +27,8 @@ void Overlay_VersionNotMatch::on_initialize()
         m_game->m_g_sock.reset();
     }
 
+	m_backdrop.load(m_game);
+
     int dlgX, dlgY;
     get_centered_dialog_pos(InterfaceNdGame4, 2, dlgX, dlgY);
 
@@ -50,6 +52,11 @@ void Overlay_VersionNotMatch::on_initialize()
 
     discard_pending_controls_input(m_controls);
 }
+void Overlay_VersionNotMatch::on_uninitialize()
+{
+	m_backdrop.release();
+}
+
 void Overlay_VersionNotMatch::close_app()
 {
     m_game->change_game_mode(GameMode::Null);
@@ -70,7 +77,7 @@ void Overlay_VersionNotMatch::on_update()
 
 void Overlay_VersionNotMatch::on_render()
 {
-    draw_new_dialog_box(InterfaceNdQuit, 0, 0, 0, true);
+	m_backdrop.draw(m_game);
 
     int dlgX, dlgY;
     draw_centered_notice_frame(dlgX, dlgY);

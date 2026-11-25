@@ -8,6 +8,7 @@
 
 #include "game_screen.h"
 #include "ccontrols.h"
+#include "screen_quit.h"
 
 class Overlay_VersionNotMatch : public IGameScreen
 {
@@ -18,6 +19,7 @@ public:
     ~Overlay_VersionNotMatch() override = default;
 
     void on_initialize() override;
+	void on_uninitialize() override;
     void on_update() override;
     void on_render() override;
 
@@ -38,4 +40,5 @@ private:
     static constexpr int BTN_OK = 1;
 
     cc::control_collection m_controls;
+	exit_backdrop m_backdrop;
 };

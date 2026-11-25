@@ -1,0 +1,24 @@
+{
+  "id": "HH-0105",
+  "summary": "Remove interface/newmaps; the map dialog draws only from the map kit",
+  "status": "in_progress",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    2
+  ],
+  "author": "pm",
+  "created": "2026-11-25T21:54:15Z",
+  "updated": "2026-11-25T21:54:15Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "relates_to": [
+      "HH-0101"
+    ]
+  },
+  "body": "The user, 2026-11-25, on `staged/client/sprites/interface/newmaps`: \"These can also be removed as we have replaced them with the map kit\".\n\n| fact | value |\n|---|---|\n| loader | `screen_loading.cpp:155-160` loads sprites 0-4 as InterfaceNewMaps1-5 (as of 2026-11-25) |\n| ids | `sprite_id.h:13-17` |\n| only use | `dialog_box_map.cpp:20-39`: the legacy_frames table, a fallback for maps the parchment kit lacks (aresden, elvine, middleland, default, huntzone1-4, arefarm, elvfarm). All 10 maps have mapkit folders (located) |\n\n**Done when:** the legacy fallback is removed (the map dialog opens only for maps in the kit), the newmaps load and ids are gone, the folder is archived byte-identical to working/archive/interface/newmaps/ and git rm'd, and both builds are clean.\n\nSource: user message, 2026-11-25. `screen_loading.cpp` and `sprite_id.h` are shared with HH-0101 and HH-0103 and are waiting on HH-0090's guard.\n"
+}

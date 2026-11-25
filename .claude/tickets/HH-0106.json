@@ -1,0 +1,24 @@
+{
+  "id": "HH-0106",
+  "summary": "Cursor: HD art only; retire game_dialogs sheet 008",
+  "status": "in_progress",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    2
+  ],
+  "author": "pm",
+  "created": "2026-11-25T21:59:07Z",
+  "updated": "2026-11-25T21:59:07Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "relates_to": [
+      "HH-0092"
+    ]
+  },
+  "body": "The user, 2026-11-25: \"Yes the hd cursors should have replaced 008 sd cursors\" (decision d-036, no fallbacks).\n\n| fact | value |\n|---|---|\n| HD path | `interface/cursors_hq.png` + `.json`, frames 0-12, drawn by `m_cursor_art.draw` (`cursor_art.cpp:90-104`) - verified by the audit |\n| fallback | `game.cpp:615-646` draws `m_sprite[MouseCursor]` (game_dialogs sheet 008) when the HQ art fails or a frame is missing; `game.cpp:632-641` holds an item-target special case only on that path |\n| load | `screen_loading.cpp:178` (MouseCursor = sheet 008) |\n\n**Done when:** the cursor draws only from the HQ art; the item-target special case is reproduced on the HQ path (or shown to be obsolete); the 008 load and id are gone; `game_dialogs/008.png` is replaced by an empty placeholder and archived byte-identical; and both builds are clean with an in-client check of the normal and item-target cursors.\n\nSource: user message and fallback audit, 2026-11-25.\n"
+}

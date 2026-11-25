@@ -13,3 +13,10 @@
 - Quotes: "We should also be replacing lower quality versions if we have a hd counterpart"; "Archiving the old versions".
 - Decided: where an HD version of an art asset exists, the game draws the HD version at every scale, and the lower-quality version is retired. The old version is archived byte-identical under `working/archive/` and never deleted. This narrows the earlier "keep the 4:3 version as well" (HUD sheet): the 4:3 layout stays, but not the low-resolution pixels.
 - Recorded in: HH-0100 (HUD HD atlas).
+
+## d-036 No fallbacks to old versions; fallbacks only at the user's discretion
+
+- Date: 2026-11-25.
+- Quote: "We should not have fallbacks if we have created new versions - fall backs are only at my discression".
+- Decided: once a new version of an asset or code path exists, the old one is removed rather than kept as a fallback. A fallback exists only when the user asks for it. Extends d-035.
+- Recorded in: HH-0105 (newmaps fallback removed).
