@@ -185,3 +185,5 @@ The warning box, the shutdown notice and the eight connection and status popups 
 The panel and HUD kits are now required: the client loads them first and stops with an error if either is missing, and every old-art fallback is gone (HH-0067). The old title strips, the old HUD icon bar, the old Game1 frames and the retired minimap art are deleted; their sheet entries stay as empty placeholders so no other sprite moves. Unused frames inside sheets that are still partly used are listed in HH-0079 for later removal.
 
 Copperplate CC Bold (SIL OFL 1.1, a free revival of Copperplate Gothic) now ships with the client fonts, unmodified, with its licence (HH-0081). Nothing draws with it yet.
+
+The connection, login-result and status popups, the warning box and the shutdown notice now draw their headings in the kit title font instead of the old bitmap font (HH-0077).

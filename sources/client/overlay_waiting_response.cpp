@@ -73,10 +73,7 @@ void Overlay_WaitingResponse::on_render()
     uint32_t elapsed = time - m_dwStartTime;
 
     int dlgX, dlgY;
-    draw_centered_notice_frame(dlgX, dlgY);
-
-    // draw status text
-    hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 37, dlgY + 65, "Connected. Waiting for response...", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
+    draw_centered_notice_frame(dlgX, dlgY, "Connected. Waiting for response...", 72);
 
     // Show appropriate message based on elapsed time
     if (elapsed > 7000)

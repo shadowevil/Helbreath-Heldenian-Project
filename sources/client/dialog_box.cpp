@@ -36,11 +36,14 @@ const hb::client::panel_style& kit_frame_style(kit_frame::type style)
 	return style == kit_frame::rivet_box ? rivet_box : gold_box;
 }
 
-void draw_kit_notice_frame(const hb::client::panel_kit& kit, int x, int y)
+void draw_kit_notice_frame(const hb::client::panel_kit& kit, int x, int y, std::string_view title, int title_y)
 {
 	const hb::client::kit_dialog dialog(kit, kit_layout::notice_size, hb::client::kit_point{x, y}, 1.0f,
 		kit_frame_style(kit_frame::rivet_box));
 	dialog.inset(kit_layout::notice_panel);
+	// After the panel: the notice headings sit on it, unlike the tall dialogs' titles above theirs
+	if (!title.empty())
+		dialog.title(title, title_y, kit_layout::title_fill);
 }
 
 void IDialogBox::draw_kit_background(kit_frame::type style, int x, int y, int w, int h, bool transparent)

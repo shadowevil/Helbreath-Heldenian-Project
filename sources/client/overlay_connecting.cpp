@@ -77,12 +77,9 @@ void Overlay_Connecting::on_render()
     uint32_t elapsed = time - m_dwStartTime;
 
     int dlgX, dlgY;
-    draw_centered_notice_frame(dlgX, dlgY);
-
-    // draw countdown text
-    std::string txt;
-    txt = std::format("Connecting to Server... {:3}Sec", elapsed / 1000);
-    hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 45, dlgY + 65, txt.c_str(), hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
+    // countdown heading
+    const std::string txt = std::format("Connecting to Server... {:3}Sec", elapsed / 1000);
+    draw_centered_notice_frame(dlgX, dlgY, txt, 72);
 
     // Show appropriate message based on elapsed time
     if (elapsed > 7000)

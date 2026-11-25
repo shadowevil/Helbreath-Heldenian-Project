@@ -15,6 +15,7 @@
 #include <cstdint>
 #include <span>
 #include <string>
+#include <string_view>
 
 enum class KeyCode : int;
 class CGame;
@@ -128,7 +129,8 @@ protected:
     void draw_centered_dialog_box(char type, int frame, int& out_x, int& out_y,
                                   bool is_no_color_key = false, bool is_trans = false);
     // The notice box centred at the old Game4 frame 2's place: the plain kit frame (HH-0066)
-    void draw_centered_notice_frame(int& out_x, int& out_y);
+    // title (if any) is the kit title, centred, its ink middle title_y px below the frame top
+    void draw_centered_notice_frame(int& out_x, int& out_y, std::string_view title = {}, int title_y = 0);
     void put_string(int iX, int iY, const char* string, const hb::shared::render::Color& color);
     void put_aligned_string(int x1, int x2, int iY, const char* string,
                           const hb::shared::render::Color& color = GameColors::UIBlack);

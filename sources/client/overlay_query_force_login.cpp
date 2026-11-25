@@ -105,10 +105,7 @@ void Overlay_QueryForceLogin::on_render()
     }
 
     int dlgX, dlgY;
-    draw_centered_notice_frame(dlgX, dlgY);
-
-    // Title
-    hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 96, dlgY + 30, "Character on Use", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
+    draw_centered_notice_frame(dlgX, dlgY, "Character on Use", 38);
 
     // Message text
     put_aligned_string(dlgX + 16, dlgX + 291, dlgY + 65, UPDATE_SCREEN_ON_QUERY_FORCE_LOGIN1);

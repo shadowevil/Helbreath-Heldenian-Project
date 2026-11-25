@@ -1,0 +1,24 @@
+{
+  "id": "HH-0080",
+  "summary": "Bitmap fonts 1 and 2 to Black Chancery and AvQest TTFs",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    2
+  ],
+  "author": "pm",
+  "created": "2026-11-25T16:19:23Z",
+  "updated": "2026-11-25T16:19:23Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocked_by": [
+      "HH-0077"
+    ]
+  },
+  "body": "Replace two of the client's bitmap sprite fonts with TTF fonts. The user, 2026-11-25, gave the mapping and notes:\n\n| Sprite font (staged/client/sprites/interface/sprite_fonts/) | Today | Replacement | Notes |\n|---|---|---|---|\n| 000.png (sprite 0, InterfaceFont1) | GameFont::Bitmap1, '!'..'z' (screen_loading.cpp:135, as of 2026-11-25); 67 uses in sources/client (measured) | Black Chancery, Helbreath-SDL working/fonts/black_chancery.ttf | user: \"The numerics will need to be shifted so they are aligned properly instead of however black_chancery does their numerics. But essentially the same.\" |\n| 001.png (sprite 1, InterfaceFont2) | GameFont::Bitmap2, ' '..'~' dynamic spacing (screen_loading.cpp:145); 9 uses (measured) | AvQest, Helbreath-SDL working/fonts/avqest.ttf | user: \"This is a 1:1 font we will use\" |\n\nLicences, read from the font files on 2026-11-25:\n- black_chancery.ttf: \"From Doug Miles' Black Chancery bitmap font. Outlines by Earl Allen & Doug Miles. Public domain.\" fsType 0 (installable). Free to ship.\n- avqest.ttf: \"GemFonts 98 / Imitation Warehouse\", v1.3, fsType 1 (restricted-licence embedding). No licence text in the file, and a web search found none (unverified). Helbreath-SDL ships it already (\"AvQest is not a 1999 font and stays for our titles\", its working/fonts/font_usage.md). The user should confirm it is OK to ship.\n\nPlan:\n- Copy both TTFs into staged/client/fonts/ (copied from the SDL repo, which stays read-only).\n- Render Bitmap1/Bitmap2 text through them, at sizes matching the old glyph heights.\n- For Black Chancery: digits on the cap baseline. Shift its old-style numerals at load or by a glyph offset table.\n- Keep spacing, colours and shadows per call site.\n- Then the old sprites 0 and 1 go: empty placeholder records, as in HH-0067.\n\nHelbreath-SDL's font_usage.md maps each FONT1 use to a display (spellbook, text buttons, status boxes) and is a useful reference.\n\nWaits on HH-0077 (popup headings): it touches the same popup text.\n\n**Done when:** every Bitmap1 and Bitmap2 call draws from the TTFs, the digits sit on the baseline, both builds are clean, screenshots of the spellbook, a text button and a status popup are attached, and sprites 0 and 1 are dropped with 0 references.\n\nSource: user in chat, 2026-11-25; font name tables read with fontTools.\n"
+}

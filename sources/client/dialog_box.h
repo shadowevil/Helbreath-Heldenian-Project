@@ -4,6 +4,7 @@
 #include "common_types.h"
 #include "panel_kit.h"
 #include <cstdint>
+#include <string_view>
 
 // Simple rect for dialog-relative hit-testing
 struct ui_rect { int x, y, w, h; };
@@ -60,8 +61,9 @@ namespace kit_layout
 // The kit part names a kit_frame style stands for (for a kit_dialog a dialog or screen builds itself)
 const hb::client::panel_style& kit_frame_style(kit_frame::type style);
 // The notice box as a plain kit frame (the original's ruined city is dropped, user ruling; HH-0066) with its
-// sunken panel at (x, y)
-void draw_kit_notice_frame(const hb::client::panel_kit& kit, int x, int y);
+// sunken panel at (x, y). A non-empty title is drawn over the panel as the kit title (no flourishes), its ink
+// middle title_y px below the frame top (HH-0077)
+void draw_kit_notice_frame(const hb::client::panel_kit& kit, int x, int y, std::string_view title = {}, int title_y = 0);
 
 class CGame;
 class CPlayer;

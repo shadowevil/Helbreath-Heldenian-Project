@@ -38,10 +38,7 @@ void DialogBox_Noticement::on_draw()
 	m_size_x = size_x;
 	m_size_y = static_cast<short>(rect.height);
 
-	draw_kit_notice_frame(m_game->get_panel_kit(), sX, sY);
-
 	using namespace hb::shared::text;
-	const auto title_style = TextStyle::with_highlight(GameColors::UIDarkRed);
 	constexpr int pad_left = 18;
 	constexpr int pad_right = 18;
 	int text_width = size_x - pad_left - pad_right;
@@ -62,8 +59,7 @@ void DialogBox_Noticement::on_draw()
 		title = std::format("Server shutting down in {} second{}!", m_seconds_remaining, m_seconds_remaining != 1 ? "s" : "");
 	}
 
-	draw_text_aligned(GameFont::Bitmap1, sX + pad_left, sY + 31, text_width, 15,
-		title.c_str(), title_style, Align::TopCenter);
+	draw_kit_notice_frame(m_game->get_panel_kit(), sX, sY, title, 38);
 
 	// Custom message or default warning (word-wrapped)
 	int msg_y = sY + 52;

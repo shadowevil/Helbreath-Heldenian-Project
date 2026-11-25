@@ -1,7 +1,7 @@
 {
   "id": "HH-0077",
   "summary": "Popup headings in the kit title font",
-  "status": "open",
+  "status": "in_review",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,13 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-25T15:24:26Z",
-  "updated": "2026-11-25T15:24:26Z",
+  "updated": "2026-11-25T16:31:01Z",
   "links": {
     "commits": [],
     "files": [],
     "tickets": [],
     "blocked_by": [
       "HH-0067"
+    ],
+    "blocks": [
+      "HH-0080"
     ]
   },
   "body": "The connection and notice popups (overlays drawn with draw_kit_notice_frame / draw_centered_notice_frame, HH-0066 batch 8) still draw their headings, e.g. 'Connection Lost!', in the old bitmap font. Switch them to the kit title font, styled like the other kit dialog titles (HH-0065, HH-0072).\n\nUser, 2026-11-25: 'Yes, switch the popup headings to the kit font'.\n\nWaits on HH-0067, which is editing the same files.\n\n**Done when:** every popup heading draws in the kit title font, both builds are clean, and bridge screenshots of at least two popups are attached.\n"

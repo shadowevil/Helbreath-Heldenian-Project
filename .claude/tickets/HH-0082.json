@@ -1,0 +1,21 @@
+{
+  "id": "HH-0082",
+  "summary": "Wide main menu from the new art, layout A",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-25T16:30:20Z",
+  "updated": "2026-11-25T16:30:20Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": []
+  },
+  "body": "Rebuild the main menu from the user's wide art. Source sheet: working/classic_ui/hd/main_menu.png (1920x1300, the user's; read-only, also main_menu.psd / main_menu_no_text.png). It holds:\n- the 1920x1080 background at (0,0), with logo and title baked in;\n- a hover plate, 296x39, translucent white (alpha about 51), at (16,1100);\n- labels for Log In (x 337-447), New Account (476-721) and Exit (750-821), as black at y 1108 and gold at y 1148, each 24 px tall.\n\nUser, 2026-11-25: picked layout A (\"A, under the title\"). Mockup: .claude/scratch/coordinator/main_menu_wide/menu_a.png, script compose.py beside it.\n\nLayout A, in 1920x1080 art pixels:\n- buttons stacked and centred on x 1408 (the centre of \"THE HELDENIAN PROJECT\"), at y 360, 416 and 472 (56 px apart);\n- normal item: the black label as a 2 px drop shadow, then the label in bone (226, 214, 192);\n- hover: the plate centred behind the label, then the shadow, then the gold label.\n\nThese are guesses the user may correct: black as the shadow, the plate as the hover highlight, and the bone colour for the normal state (not in the sheet).\n\nToday: screen_main_menu.cpp draws InterfaceNdMainMenu frame 0 at (0,0) in the 640x480 view and puts three cc::button controls at x 465 (y 238/276/315, 164x22), as of 2026-11-25.\n\nOpen questions for the plan:\n- how a 16:9 backdrop should fit 4:3, letterbox and stretch outputs (Helbreath-SDL uses a centre-cropped cover fit for front-end backdrops);\n- where the button hit areas sit at each aspect;\n- how the art gets into staged/ (a sprite folder vs a single image) and at what resolution;\n- whether the version text and copyright lines stay.\n\n**Done when:** the main menu shows the wide art with layout A at 16:9 and a sensible crop at 4:3; hover, click and keyboard focus work through CControls; both builds are clean; screenshots at 4:3 and 16:9 are attached.\n\nSource: user in chat, 2026-11-25.\n"
+}

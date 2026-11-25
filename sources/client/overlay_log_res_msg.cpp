@@ -13,6 +13,7 @@
 #include "game_fonts.h"
 #include <format>
 #include <string>
+#include <string_view>
 using namespace hb::client::sprite_id;
 
 Overlay_LogResMsg::Overlay_LogResMsg(CGame* game)
@@ -117,6 +118,36 @@ void Overlay_LogResMsg::on_update()
     }
 }
 
+// The kit title of a message code; empty for the codes that show only body lines
+static std::string_view message_title(char code)
+{
+	switch (code)
+	{
+	case '1': return "Password is not correct!";
+	case '2': return "Not existing account!";
+	case '3': return "Can not connect to game server!";
+	case '4': return "New account created.";
+	case '5': return "Can not create new account!";
+	case '6': return "Can not create new account!";
+	case '7': return "New character created.";
+	case '8': return "Can not create new character!";
+	case '9': return "Can not create new character!";
+	case 'A': return "Character deleted.";
+	case 'B': return "Password changed.";
+	case 'C': return "Can not change password!";
+	case 'D':
+	case 'E':
+	case 'F':
+	case 'G': return "Can not connect to game server!";
+	case 'H': return "Connection Rejected!";
+	case 'I': return "Not Enough Point!";
+	case 'J': return "World Server Full";
+	case 'M': return "Your password expired";
+	case 'U': return "Keycode input Success!";
+	default: return {};
+	}
+}
+
 void Overlay_LogResMsg::render_message(int dlgX, int dlgY)
 {
     std::string txt;
@@ -124,100 +155,83 @@ void Overlay_LogResMsg::render_message(int dlgX, int dlgY)
     switch (m_cMsgCode)
     {
     case '1':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 80, dlgY + 40, "Password is not correct!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG5);
         break;
 
     case '2':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 80, dlgY + 40, "Not existing account!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG6);
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 90, UPDATE_SCREEN_ON_LOG_MSG7);
         break;
 
     case '3':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 54, dlgY + 40, "Can not connect to game server!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG8);
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 85, UPDATE_SCREEN_ON_LOG_MSG9);
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 100, UPDATE_SCREEN_ON_LOG_MSG10);
         break;
 
     case '4':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 68, dlgY + 40, "New account created.", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG11);
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 85, UPDATE_SCREEN_ON_LOG_MSG12);
         break;
 
     case '5':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 68, dlgY + 40, "Can not create new account!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG13);
         break;
 
     case '6':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 46, dlgY + 40, "Can not create new account!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 34, dlgY + 55, "Already existing account name.", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
+        put_aligned_string(dlgX + 16, dlgX + 291, dlgY + 60, "Already existing account name.", GameColors::UIDarkRed);
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 80, UPDATE_SCREEN_ON_LOG_MSG14);
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 95, UPDATE_SCREEN_ON_LOG_MSG15);
         break;
 
     case '7':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 68, dlgY + 40, "New character created.", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG16);
         break;
 
     case '8':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 68, dlgY + 40, "Can not create new character!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG17);
         break;
 
     case '9':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 46, dlgY + 40, "Can not create new character!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 34, dlgY + 55, "Already existing character name.", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
+        put_aligned_string(dlgX + 16, dlgX + 291, dlgY + 60, "Already existing character name.", GameColors::UIDarkRed);
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 80, UPDATE_SCREEN_ON_LOG_MSG18);
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 95, UPDATE_SCREEN_ON_LOG_MSG19);
         break;
 
     case 'A':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 91, dlgY + 40, "Character deleted.", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG20);
         break;
 
     case 'B':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 91, dlgY + 40, "Password changed.", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG21);
         break;
 
     case 'C':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 46, dlgY + 40, "Can not change password!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG22);
         break;
 
     case 'D':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 54, dlgY + 40, "Can not connect to game server!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG23);
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 85, UPDATE_SCREEN_ON_LOG_MSG24);
         break;
 
     case 'E':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 54, dlgY + 40, "Can not connect to game server!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG25);
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 85, UPDATE_SCREEN_ON_LOG_MSG26);
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 100, UPDATE_SCREEN_ON_LOG_MSG27);
         break;
 
     case 'F':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 54, dlgY + 40, "Can not connect to game server!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG28);
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 85, UPDATE_SCREEN_ON_LOG_MSG29);
         break;
 
     case 'G':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 54, dlgY + 40, "Can not connect to game server!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG30);
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 85, UPDATE_SCREEN_ON_LOG_MSG31);
         break;
 
     case 'H':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 78, dlgY + 40, "Connection Rejected!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         if (m_game->m_block_year == 0)
         {
             put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 70, UPDATE_SCREEN_ON_LOG_MSG32);
@@ -232,22 +246,18 @@ void Overlay_LogResMsg::render_message(int dlgX, int dlgY)
         break;
 
     case 'I':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 78, dlgY + 40, "Not Enough Point!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 85, "Not enough points to play.");
         break;
 
     case 'J':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 78, dlgY + 40, "World Server Full", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 85, "Please ! Try Other World Server");
         break;
 
     case 'M':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 78, dlgY + 40, "Your password expired", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 85, "Please! Change password");
         break;
 
     case 'U':
-        hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 78, dlgY + 40, "Keycode input Success!", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
         put_aligned_string(dlgX + 36, dlgX + 291, dlgY + 85, "Keycode Registration successed.");
         break;
 
@@ -271,7 +281,7 @@ void Overlay_LogResMsg::render_message(int dlgX, int dlgY)
 void Overlay_LogResMsg::on_render()
 {
     int dlgX, dlgY;
-    draw_centered_notice_frame(dlgX, dlgY);
+    draw_centered_notice_frame(dlgX, dlgY, message_title(m_cMsgCode), 46);
 
     // render the appropriate message
     render_message(dlgX, dlgY);

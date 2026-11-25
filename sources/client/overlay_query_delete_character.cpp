@@ -99,10 +99,7 @@ void Overlay_QueryDeleteCharacter::on_render()
     }
 
     int dlgX, dlgY;
-    draw_centered_notice_frame(dlgX, dlgY);
-
-    // Title
-    hb::shared::text::draw_text(GameFont::Bitmap1, dlgX + 96, dlgY + 35, "Delete Character", hb::shared::text::TextStyle::with_highlight(GameColors::UIDarkRed));
+    draw_centered_notice_frame(dlgX, dlgY, "Delete Character", 42);
 
     // Character name display
     put_string(dlgX + 53, dlgY + 70, UPDATE_SCREEN_ON_QUERY_DELETE_CHARACTER1, GameColors::UIBlack);
