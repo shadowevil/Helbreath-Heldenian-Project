@@ -15,7 +15,7 @@ CX, CY = 128.5, 162.5     # circle centre in the 258x328 dialog (midway between 
 R_OUT, RING = 90.0, 7.5   # ring outer radius and band width
 BAND = 9.0                # star band width
 R_STAR = 85.0             # star tips reach into the ring, as on the original
-OPACITY = 0.5             # user, 2026-11-24: "I think it had a 50% transparency overall"
+OPACITY = 0.35            # user, 2026-11-24: "I think it had a 50% transparency overall", then "make it slightly less visible - it invades a bit"
 SS = 8                    # supersampling
 
 W, H = 200, 200           # circle canvas, centred on (CX, CY)
