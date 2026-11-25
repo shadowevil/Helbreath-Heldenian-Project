@@ -189,3 +189,5 @@ Copperplate CC Bold (SIL OFL 1.1, a free revival of Copperplate Gothic) now ship
 The connection, login-result and status popups, the warning box and the shutdown notice now draw their headings in the kit title font instead of the old bitmap font (HH-0077).
 
 The main menu and loading screen use the new 1920x1080 art (HH-0082). Wide screens show the whole picture, and 4:3 shows its centre. The menu buttons always sit on their plates, with black labels that turn gold on hover, placed where the original buttons were. "Loading Data ..." is now drawn from Liberation Serif, rendered once at load, and stays on screen even on ultra-wide displays. The magic-circle numerals and HUD digits now come from a 4x high-resolution sheet with refitted frames, so no glyph is clipped (HH-0083). A sprite can now declare an `art_scale` in its manifest to ship art at a higher resolution than it is drawn. The replaced sprites are archived under `working/archive/`.
+
+The spell name a caster shouts now looks as it did in 3.82: dark red in the default font, drawn twice one pixel apart, with no shadow (HH-0084).

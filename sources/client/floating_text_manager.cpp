@@ -290,42 +290,42 @@ void floating_text_manager::draw_message(const floating_text& msg, short sX, sho
 		int font_id = GameFont::SprFont3_0 + params.m_font_offset;
 		int base_y = sY - params.m_start_offset_y - rise;
 
-		// magic_cast_name uses full-string width and red shadow style
-		if (msg.m_category == floating_text::Category::Notify &&
-		    msg.m_notify_type == notify_text_type::magic_cast_name)
-		{
-			int size2 = 0;
-			for (size_t i = 0; i < msg.m_text.size(); i++)
-				if (msg.m_text[i] != 0)
-				{
-					if (static_cast<unsigned char>(msg.m_text[i]) >= 128) { size2 += 5; i++; }
-					else size2 += 4;
-				}
-			hb::shared::text::draw_text(font_id, sX - size2, base_y, msg.m_text.c_str(),
-			                  hb::shared::text::TextStyle::with_two_point_shadow(GameColors::Red4x).with_additive());
-		}
-		else
-		{
-			// Damage/LevelUp/enemy_kill: yellow sprite font with multi-line support
-			auto style = is_trans
-				? hb::shared::text::TextStyle::from_color(GameColors::Yellow2x).with_alpha(0.7f).with_additive()
-				: hb::shared::text::TextStyle::with_two_point_shadow(GameColors::Yellow2x).with_additive();
+		// Damage/LevelUp/enemy_kill: yellow sprite font with multi-line support
+		auto style = is_trans
+			? hb::shared::text::TextStyle::from_color(GameColors::Yellow2x).with_alpha(0.7f).with_additive()
+			: hb::shared::text::TextStyle::with_two_point_shadow(GameColors::Yellow2x).with_additive();
 
-			switch (lines) {
-			case 1:
-				hb::shared::text::draw_text(font_id, sX - size, base_y, msg_a.c_str(), style);
-				break;
-			case 2:
-				hb::shared::text::draw_text(font_id, sX - size, base_y - 16, msg_a.c_str(), style);
-				hb::shared::text::draw_text(font_id, sX - size, base_y, msg_b.c_str(), style);
-				break;
-			case 3:
-				hb::shared::text::draw_text(font_id, sX - size, base_y - 32, msg_a.c_str(), style);
-				hb::shared::text::draw_text(font_id, sX - size, base_y - 16, msg_b.c_str(), style);
-				hb::shared::text::draw_text(font_id, sX - size, base_y, msg_c.c_str(), style);
-				break;
-			}
+		switch (lines) {
+		case 1:
+			hb::shared::text::draw_text(font_id, sX - size, base_y, msg_a.c_str(), style);
+			break;
+		case 2:
+			hb::shared::text::draw_text(font_id, sX - size, base_y - 16, msg_a.c_str(), style);
+			hb::shared::text::draw_text(font_id, sX - size, base_y, msg_b.c_str(), style);
+			break;
+		case 3:
+			hb::shared::text::draw_text(font_id, sX - size, base_y - 32, msg_a.c_str(), style);
+			hb::shared::text::draw_text(font_id, sX - size, base_y - 16, msg_b.c_str(), style);
+			hb::shared::text::draw_text(font_id, sX - size, base_y, msg_c.c_str(), style);
+			break;
 		}
+	}
+	else if (msg.m_category == floating_text::Category::Notify &&
+	         msg.m_notify_type == notify_text_type::magic_cast_name)
+	{
+		// Spell-cast shout as 3.82 drew it (DrawChatMsgBox types 41/42): the default font, centred on the
+		// legacy width estimate, drawn twice 1 px apart in x, no shadow
+		int size = 0;
+		for (size_t i = 0; i < msg.m_text.size(); i++)
+		{
+			if (static_cast<unsigned char>(msg.m_text[i]) >= 128) { size += 5; i++; }
+			else size += 4;
+		}
+		const int x = sX - size;
+		const int y = sY - params.m_start_offset_y - rise;
+		const auto style = hb::shared::text::TextStyle::from_color(params.m_color);
+		hb::shared::text::draw_text(GameFont::Default, x, y, msg.m_text.c_str(), style);
+		hb::shared::text::draw_text(GameFont::Default, x + 1, y, msg.m_text.c_str(), style);
 	}
 	else
 	{

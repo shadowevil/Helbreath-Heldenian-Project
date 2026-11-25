@@ -19,7 +19,7 @@ enum class damage_text_type : uint8_t {
 
 enum class notify_text_type : uint8_t {
 	skill_change,    // "+2% Mining" - yellow, delayed 650ms
-	magic_cast_name,  // "Fire Ball!" - red sprite font
+	magic_cast_name,  // "Fire Ball!" - red default font, as 3.82
 	LevelUp,        // "Level up!" - large sprite font
 	enemy_kill,      // "Enemy Kill!" - large sprite font
 };
@@ -62,8 +62,8 @@ inline constexpr AnimParams Damage[] = {
 inline constexpr AnimParams Notify[] = {
 	// skill_change: yellow renderer text, 4s, delayed 650ms
 	{ 4000, 0, 55, 10, 80, 0, GameColors::UIDmgYellow, false },
-	// magic_cast_name: red sprite font (large), 2s
-	{ 2000, 0, 55, 15, 200, 0, GameColors::UIDmgRed, true },
+	// magic_cast_name: red default font drawn twice 1 px apart, no shadow, 2s (3.82 DrawChatMsgBox types 41/42)
+	{ 2000, 0, 55, 15, 200, 0, GameColors::UISpellNameRed, false },
 	// LevelUp: yellow sprite font (large), 2s, fast rise
 	{ 2000, 0, 55, 10, 80, 0, GameColors::UIDmgYellow, true },
 	// enemy_kill: yellow sprite font (large), 2s, fast rise
