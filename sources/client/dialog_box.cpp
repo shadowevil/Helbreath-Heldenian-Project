@@ -36,28 +36,21 @@ const hb::client::panel_style& kit_frame_style(kit_frame::type style)
 	return style == kit_frame::rivet_box ? rivet_box : gold_box;
 }
 
-bool draw_kit_notice_frame(hb::client::panel_kit* kit, int x, int y)
+void draw_kit_notice_frame(const hb::client::panel_kit& kit, int x, int y)
 {
-	if (!kit)
-		return false;
-	const hb::client::kit_dialog dialog(*kit, kit_layout::notice_size, hb::client::kit_point{x, y}, 1.0f,
+	const hb::client::kit_dialog dialog(kit, kit_layout::notice_size, hb::client::kit_point{x, y}, 1.0f,
 		kit_frame_style(kit_frame::rivet_box));
 	dialog.inset(kit_layout::notice_panel);
-	return true;
 }
 
-bool IDialogBox::draw_kit_background(kit_frame::type style, int x, int y, int w, int h, bool transparent)
+void IDialogBox::draw_kit_background(kit_frame::type style, int x, int y, int w, int h, bool transparent)
 {
-	hb::client::panel_kit* kit = m_game->get_panel_kit();
-	if (!kit)
-		return false;
-	kit->compose(x, y, w, h, kit_frame_style(style), hb::client::dialog_alpha(transparent));
-	return true;
+	m_game->get_panel_kit().compose(x, y, w, h, kit_frame_style(style), hb::client::dialog_alpha(transparent));
 }
 
 namespace
 {
-	// The baked Text sprite titles of the tall dialogs, as kit titles
+	// The tall dialogs' kit titles, keyed by the frame number of the old Text sprite strip they replace
 	struct tall_title
 	{
 		int text_frame;
@@ -91,60 +84,32 @@ namespace
 
 void IDialogBox::draw_tall_frame(tall_frame::type style, int x, int y, int title_frame, tall_panel::type panel)
 {
-	using namespace hb::client::sprite_id;
-	if (hb::client::panel_kit* kit = m_game->get_panel_kit())
-	{
-		// The default panel_style is the stone-cornered frame
-		static const hb::client::panel_style stone{};
-		const hb::client::kit_dialog dialog(*kit, kit_layout::tall_size, hb::client::kit_point{x, y}, 1.0f,
-			style == tall_frame::rivet ? kit_frame_style(kit_frame::rivet_box) : stone);
-		// A title_frame missing from tall_titles draws no kit title: add new callers' titles to the table
-		if (const tall_title* title = find_title(title_frame))
-			dialog.title(title->text, title->y, kit_layout::title_fill, "divider_wave", 14);
-		dialog.inset(panel == tall_panel::scrollbar ? kit_layout::tall_scroll_panel : kit_layout::tall_panel);
-	}
-	else
-	{
-		draw_new_dialog_box(InterfaceNdGame2, x, y, style == tall_frame::rivet ? 2 : 0);
-		if (title_frame >= 0)
-			draw_new_dialog_box(InterfaceNdText, x, y, title_frame);
-	}
+	// The default panel_style is the stone-cornered frame
+	static const hb::client::panel_style stone{};
+	const hb::client::kit_dialog dialog(m_game->get_panel_kit(), kit_layout::tall_size, hb::client::kit_point{x, y}, 1.0f,
+		style == tall_frame::rivet ? kit_frame_style(kit_frame::rivet_box) : stone);
+	// A title_frame missing from tall_titles draws no kit title: add new callers' titles to the table
+	if (const tall_title* title = find_title(title_frame))
+		dialog.title(title->text, title->y, kit_layout::title_fill, "divider_wave", 14);
+	dialog.inset(panel == tall_panel::scrollbar ? kit_layout::tall_scroll_panel : kit_layout::tall_panel);
 }
 
 void IDialogBox::draw_crusade_frame(int title_frame, int x, int y, bool transparent)
 {
-	using namespace hb::client::sprite_id;
-	if (hb::client::panel_kit* kit = m_game->get_panel_kit())
-	{
-		// The original frame (311x373, pivot y 39, drawn 5 px up) hangs under the 34 px title strip: 407 tall in all
-		constexpr hb::client::kit_point crusade_size{311, 407};
-		constexpr hb::client::kit_rect status_strip{15, 34, 281, 21};   // the sunken bar under the title
-		const hb::client::kit_dialog dialog(*kit, crusade_size, hb::client::kit_point{x, y},
-			hb::client::dialog_alpha(transparent), kit_frame_style(kit_frame::gold_box));
-		if (const tall_title* title = find_title(title_frame))
-			dialog.title(title->text, title->y, kit_layout::title_fill, "divider_wave", 14);
-		dialog.inset(status_strip);
-	}
-	else
-	{
-		draw_new_dialog_box(InterfaceNdCrusade, x, y - 5, 0, false, transparent);
-		draw_new_dialog_box(InterfaceNdText, x, y, title_frame, false, transparent);
-	}
+	// The original frame (311x373, pivot y 39, drawn 5 px up) hangs under the 34 px title strip: 407 tall in all
+	constexpr hb::client::kit_point crusade_size{311, 407};
+	constexpr hb::client::kit_rect status_strip{15, 34, 281, 21};   // the sunken bar under the title
+	const hb::client::kit_dialog dialog(m_game->get_panel_kit(), crusade_size, hb::client::kit_point{x, y},
+		hb::client::dialog_alpha(transparent), kit_frame_style(kit_frame::gold_box));
+	if (const tall_title* title = find_title(title_frame))
+		dialog.title(title->text, title->y, kit_layout::title_fill, "divider_wave", 14);
+	dialog.inset(status_strip);
 }
 
-void IDialogBox::draw_tall_scrollbar(int x, int y, float pos, int pointer_loc, int track_frame)
+void IDialogBox::draw_tall_scrollbar(int x, int y, float pos)
 {
-	using namespace hb::client::sprite_id;
-	if (hb::client::panel_kit* kit = m_game->get_panel_kit())
-	{
-		const hb::client::kit_rect& t = kit_layout::tall_track;
-		kit->scrollbar({x + t.x, y + t.y, t.w, t.h}, std::clamp(pos, 0.0f, 1.0f));
-	}
-	else
-	{
-		draw_new_dialog_box(InterfaceNdGame2, x, y, track_frame);
-		draw_new_dialog_box(InterfaceNdGame2, x + 242, y + pointer_loc + 35, 7);
-	}
+	const hb::client::kit_rect& t = kit_layout::tall_track;
+	m_game->get_panel_kit().scrollbar({x + t.x, y + t.y, t.w, t.h}, std::clamp(pos, 0.0f, 1.0f));
 }
 
 void IDialogBox::put_string(int iX, int iY, const char* string, const hb::shared::render::Color& color)

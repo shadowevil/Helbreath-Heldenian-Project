@@ -10,7 +10,6 @@
 #include <string>
 #include "text_input_manager.h"
 #include "text_field_renderer.h"
-using namespace hb::client::sprite_id;
 
 DialogBox_ItemDropAmount::DialogBox_ItemDropAmount(CGame* game)
 	: IDialogBox(DialogBoxId::ItemDropExternal, game)
@@ -25,8 +24,7 @@ void DialogBox_ItemDropAmount::on_draw()
 	std::string txt;
 
 
-	if (!draw_kit_background(kit_frame::gold_box, sX, sY, 215, 87))   // the Game2 frame 5 box's size
-		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 5);
+	draw_kit_background(kit_frame::gold_box, sX, sY, 215, 87);   // the Game2 frame 5 box's size
 
 	switch (m_mode)
 	{

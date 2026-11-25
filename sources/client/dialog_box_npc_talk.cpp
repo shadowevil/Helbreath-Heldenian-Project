@@ -97,17 +97,7 @@ void DialogBox_NpcTalk::draw_text_content(short sX, short sY)
 void DialogBox_NpcTalk::draw_scroll_bar(short sX, short sY, int total_lines)
 {
 	if (total_lines > 17)
-	{
-		double d1 = static_cast<double>(m_scroll_view);
-		double d2 = static_cast<double>(total_lines - 17);
-		double d3 = (274.0 * d1) / d2;
-		int pointer_loc = static_cast<int>(d3);
-		// The kit draws the groove and its thumb; the original sprite path drew the track frame alone
-		if (m_game->get_panel_kit())
-			draw_tall_scrollbar(sX, sY, static_cast<float>(d1 / d2), pointer_loc);
-		else
-			m_game->draw_new_dialog_box(InterfaceNdGame2, sX, sY, 3);
-	}
+		draw_tall_scrollbar(sX, sY, static_cast<float>(m_scroll_view) / static_cast<float>(total_lines - 17));
 }
 
 void DialogBox_NpcTalk::handle_scroll_bar_drag(short sX, short sY, short mouse_x, short mouse_y, int total_lines, char lb)

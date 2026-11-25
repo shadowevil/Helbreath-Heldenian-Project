@@ -16,6 +16,7 @@
 #include "weather_manager.h"
 #include "sprite_loader.h"
 #include "item_sprite_metadata.h"
+#include "renderer_factory.h"
 #include "log.h"
 using namespace hb::client::sprite_id;
 
@@ -80,6 +81,15 @@ void Screen_Loading::on_render()
 //=============================================================================
 void Screen_Loading::LoadStage_Interface()
 {
+    // The panel and HUD kits draw every dialog and the action bar (no sprite fallback): without them the
+    // client cannot run, so a failed load (logged by load_ui_kits) ends it here
+    if (!m_game->load_ui_kits())
+    {
+        hb::shared::render::Window::show_error("ERROR", "Unable to load the interface kits (sprites/panelkit, sprites/hudkit)");
+        m_game->change_game_mode(GameMode::Null);
+        return;
+    }
+
     hb::shared::sprite::SpriteLoader::open("interface/newmaps", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[InterfaceNewMaps1] = loader.get_sprite(0, false);
         m_game->m_sprite[InterfaceNewMaps2] = loader.get_sprite(1, false);
@@ -98,16 +108,16 @@ void Screen_Loading::LoadStage_Interface()
     });
 
     hb::shared::sprite::SpriteLoader::open("interface/game_dialogs", [&](hb::shared::sprite::SpriteLoader& loader) {
-        m_game->m_sprite[InterfaceNdGame1] = loader.get_sprite(0, false);
         m_game->m_sprite[InterfaceNdGame2] = loader.get_sprite(1, false);
         m_game->m_sprite[InterfaceNdGame3] = loader.get_sprite(2, false);
         m_game->m_sprite[InterfaceNdGame4] = loader.get_sprite(3, false);
         m_game->m_sprite[InterfaceNdCrusade] = loader.get_sprite(4, false);
-        m_game->m_sprite[InterfaceNdIconPanel] = loader.get_sprite(5, false);
+        // Sprites 0 (the old Game1 frames), 5 (the old icon panel) and 9 (the old title strips) are empty
+        // placeholders, dropped with the no-kit fallbacks (HH-0067); they stay in the manifest because sprites
+        // are loaded by position
         m_game->m_sprite[InterfaceNdInventory] = loader.get_sprite(6, false);
         m_game->m_sprite[InterfaceNdNewExchange] = loader.get_sprite(7, false);
         m_game->m_sprite[MouseCursor] = loader.get_sprite(8, false);
-        m_game->m_sprite[InterfaceNdText] = loader.get_sprite(9, false);
         m_game->m_sprite[InterfaceNdButton] = loader.get_sprite(10, false);
     });
 

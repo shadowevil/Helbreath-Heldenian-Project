@@ -17,15 +17,14 @@
 #include "audio_manager.h"
 
 using namespace hb::shared::net;
-using namespace hb::client::sprite_id;
 // Static button data shared between draw and click handling
 const DialogBox_HudPanel::ToggleButtonInfo DialogBox_HudPanel::TOGGLE_BUTTONS[] = {
-	{ 410, 447, 412, 6, "Character",   DialogBoxId::CharacterInfo },
-	{ 447, 484, 449, 7, "Inventory",   DialogBoxId::Inventory },
-	{ 484, 521, 486, 8, "Magics",      DialogBoxId::Magic },
-	{ 521, 558, 523, 9, "Skills",      DialogBoxId::Skill },
-	{ 558, 595, 560, 10, "Chat Log",   DialogBoxId::ChatHistory },
-	{ 595, 631, 597, 11, "System Menu", DialogBoxId::SystemMenu }
+	{ 410, 447, "Character",   DialogBoxId::CharacterInfo },
+	{ 447, 484, "Inventory",   DialogBoxId::Inventory },
+	{ 484, 521, "Magics",      DialogBoxId::Magic },
+	{ 521, 558, "Skills",      DialogBoxId::Skill },
+	{ 558, 595, "Chat Log",    DialogBoxId::ChatHistory },
+	{ 595, 631, "System Menu", DialogBoxId::SystemMenu }
 };
 
 DialogBox_HudPanel::DialogBox_HudPanel(CGame* game)
@@ -70,17 +69,12 @@ void DialogBox_HudPanel::toggle_dialog_with_sound(DialogBoxId::Type dialogId)
 
 void DialogBox_HudPanel::draw_gauge_bars()
 {
-	int max_point, bar_width, display_value;
-	auto sprite = m_game->m_sprite[InterfaceNdIconPanel];
-	// The HUD kit draws each gauge as trough -> fill clipped to the value -> caps (the old bar has them baked in
-	// full, with the empty frame drawn over the missing share); EXP and the message frame go first, under the rest
-	const hb::client::hud_kit* kit = m_game->get_hud_kit();
-	const uint32_t next_level_exp = m_game->get_level_exp(player().m_level + 1);
-	if (kit)
-	{
-		kit->exp(m_y, player().m_exp, next_level_exp);
-		kit->message_frame(m_y);
-	}
+	int max_point, display_value;
+	// The HUD kit draws each gauge as trough -> fill clipped to the value -> caps; EXP and the message frame go
+	// first, under the rest
+	const hb::client::hud_kit& kit = m_game->get_hud_kit();
+	kit.exp(m_y, player().m_exp, m_game->get_level_exp(player().m_level + 1));
+	kit.message_frame(m_y);
 
 	// HP bar
 	max_point = hb::shared::calc::max_hp(m_game->m_formula_engine,
@@ -88,15 +82,7 @@ void DialogBox_HudPanel::draw_gauge_bars()
 		hb::shared::calc::str{(double)player().m_str}, hb::shared::calc::angelic_str{(double)player().m_angelic_str});
 	if (max_point <= 0) max_point = 1;
 	display_value = std::min(player().m_hp, max_point);
-	if (kit)
-		kit->tube(hb::client::hud_tube::hp, m_y, display_value, max_point);
-	else
-	{
-		bar_width = HP_MP_BAR_WIDTH - (display_value * HP_MP_BAR_WIDTH) / max_point;
-		if (bar_width < 0) bar_width = 0;
-		if (bar_width > HP_MP_BAR_WIDTH) bar_width = HP_MP_BAR_WIDTH;
-		sprite->DrawWidth(HP_BAR_X(), HP_BAR_Y(), 12, bar_width);
-	}
+	kit.tube(hb::client::hud_tube::hp, m_y, display_value, max_point);
 
 	// HP number
 	std::string statBuf;
@@ -121,15 +107,7 @@ void DialogBox_HudPanel::draw_gauge_bars()
 		hb::shared::calc::angelic_int{(double)player().m_angelic_int});
 	if (max_point <= 0) max_point = 1;
 	display_value = std::min(player().m_mp, max_point);
-	if (kit)
-		kit->tube(hb::client::hud_tube::mp, m_y, display_value, max_point);
-	else
-	{
-		bar_width = HP_MP_BAR_WIDTH - (display_value * HP_MP_BAR_WIDTH) / max_point;
-		if (bar_width < 0) bar_width = 0;
-		if (bar_width > HP_MP_BAR_WIDTH) bar_width = HP_MP_BAR_WIDTH;
-		sprite->DrawWidth(HP_BAR_X(), MP_BAR_Y(), 12, bar_width);
-	}
+	kit.tube(hb::client::hud_tube::mp, m_y, display_value, max_point);
 
 	// MP number
 	statBuf = std::format("{}", display_value);
@@ -142,79 +120,34 @@ void DialogBox_HudPanel::draw_gauge_bars()
 		hb::shared::calc::level{(double)player().m_level});
 	if (max_point <= 0) max_point = 1;
 	display_value = std::min(player().m_sp, max_point);
-	if (kit)
-		kit->stamina(m_y, display_value, max_point);
-	else
-	{
-		bar_width = SP_BAR_WIDTH - (display_value * SP_BAR_WIDTH) / max_point;
-		if (bar_width < 0) bar_width = 0;
-		if (bar_width > SP_BAR_WIDTH) bar_width = SP_BAR_WIDTH;
-		sprite->DrawWidth(SP_BAR_X(), SP_BAR_Y(), 13, bar_width);
-	}
+	kit.stamina(m_y, display_value, max_point);
 
 	// SP number
 	statBuf = std::format("{}", display_value);
 	hb::shared::text::draw_text(GameFont::Numbers, SP_NUM_X() + 1, SP_NUM_Y() + 1, statBuf.c_str(), hb::shared::text::TextStyle::from_color(GameColors::UIBlack));
 	hb::shared::text::draw_text(GameFont::Numbers, SP_NUM_X(), SP_NUM_Y(), statBuf.c_str(), hb::shared::text::TextStyle::from_color(GameColors::UIWhite));
 
-	// Hunger bar (vertical — frame 17 covers missing hunger from top)
-	int hunger = std::clamp(player().m_hunger_status, 0, MAX_HUNGER);
-	if (kit)
-		kit->hunger(m_y, hunger, MAX_HUNGER);   // the kit drew EXP first, under the rest
-	else
-	{
-		int missing_hunger = MAX_HUNGER - hunger;
-		auto hunger_frame = sprite->GetFrameRect(17);
-		int bar_height = (missing_hunger * hunger_frame.height) / MAX_HUNGER;
-		if (bar_height < 0) bar_height = 0;
-		if (bar_height > hunger_frame.height) bar_height = hunger_frame.height;
-		sprite->DrawWidth(HUNGER_BAR_X(), m_y + HUNGER_BAR_Y(), 17, bar_height, true);
-
-		// EXP bar (horizontal — frame 18 fills from empty to full)
-		// m_exp is progress toward next level (0 to threshold), fills left-to-right
-		auto exp_frame = sprite->GetFrameRect(18);
-		int exp_width = 0;
-		if (next_level_exp > 0)
-		{
-			exp_width = (int)((uint64_t)player().m_exp * exp_frame.width / next_level_exp);
-		}
-		if (exp_width < 0) exp_width = 0;
-		if (exp_width > exp_frame.width) exp_width = exp_frame.width;
-		sprite->DrawWidth(EXP_BAR_X(), m_y + EXP_BAR_Y(), 18, exp_width);
-	}
+	// Hunger bar (the kit drew EXP first, under the rest)
+	kit.hunger(m_y, std::clamp(player().m_hunger_status, 0, MAX_HUNGER), MAX_HUNGER);
 }
 
 void DialogBox_HudPanel::draw_status_icons()
 {
 	short mouse_x = hud_mouse_x();
 	short mouse_y = hud_mouse_y();
-	auto sprite = m_game->m_sprite[InterfaceNdIconPanel];   // the old bar's icons (no kit)
 
 	// Level Up / Restart / Tester text moved to DialogBox_StatusOverlay
 
-	const hb::client::hud_kit* kit = m_game->get_hud_kit();
+	const hb::client::hud_kit& kit = m_game->get_hud_kit();
 	const bool combat_hover = is_in_button(BTN_COMBAT_X1(), BTN_COMBAT_X2());
-	if (kit)
-	{
-		// The kit bar is plain: socket and orb in every mode (peace has its own hover orb), ring on hover
-		const hb::client::hud_combat::type mode = !player().m_is_combat_mode ? hb::client::hud_combat::peace
-			: (player().m_is_safe_attack_mode ? hb::client::hud_combat::safe_attack : hb::client::hud_combat::attack);
-		kit->combat(m_y, mode, combat_hover);
-	}
-	else if (player().m_is_combat_mode)
-	{
-		// Combat mode / Safe attack icon (only shown while in attack mode; peace is baked in the bar)
-		if (player().m_is_safe_attack_mode)
-			sprite->draw(COMBAT_ICON_X(), COMBAT_ICON_Y(), 4);
-		else
-			sprite->draw(COMBAT_ICON_X(), COMBAT_ICON_Y(), 5);
-	}
+	// The kit bar is plain: socket and orb in every mode (peace has its own hover orb), ring on hover
+	const hb::client::hud_combat::type mode = !player().m_is_combat_mode ? hb::client::hud_combat::peace
+		: (player().m_is_safe_attack_mode ? hb::client::hud_combat::safe_attack : hb::client::hud_combat::attack);
+	kit.combat(m_y, mode, combat_hover);
 
 	// Combat mode button hover
 	if (combat_hover)
 	{
-		if (!kit)
-			sprite->draw(BTN_COMBAT_X1(), BTN_Y1(), 16);
 		const char* tooltip = player().m_is_combat_mode
 			? (player().m_is_safe_attack_mode ? "Safe Attack" : "Attack")
 			: "Peace";
@@ -224,13 +157,7 @@ void DialogBox_HudPanel::draw_status_icons()
 	// Crusade icon
 	if (m_game->on_game()->m_is_crusade_mode && player().m_crusade_duty != 0)
 	{
-		bool hover = is_in_button(BTN_CRUSADE_X1(), BTN_CRUSADE_X2());
-		if (kit)
-			kit->crusade(m_y, player().m_aresden, hover);
-		else if (player().m_aresden)
-			sprite->draw(BTN_CRUSADE_X1() + (hover ? 1 : 0), BTN_Y1(), hover ? 1 : 2);
-		else
-			sprite->draw(BTN_CRUSADE_X1(), BTN_Y1(), hover ? 0 : 15);
+		kit.crusade(m_y, player().m_aresden, is_in_button(BTN_CRUSADE_X1(), BTN_CRUSADE_X2()));
 	}
 
 	// Map message / coordinates (or remaining EXP when Ctrl pressed)
@@ -272,11 +199,8 @@ void DialogBox_HudPanel::draw_icon_buttons()
 		}
 	}
 
-	// The kit bar is plain, so it draws all six (normal or hover); the old bar has the normal ones baked in
-	if (const hb::client::hud_kit* kit = m_game->get_hud_kit())
-		kit->menu(m_y, hovered);
-	else if (hovered >= 0)
-		m_game->m_sprite[InterfaceNdIconPanel]->draw(TOGGLE_BUTTONS[hovered].spriteX + xOffset, BTN_Y1(), TOGGLE_BUTTONS[hovered].spriteFrame);
+	// The kit bar is plain, so it draws all six (normal or hover)
+	m_game->get_hud_kit().menu(m_y, hovered);
 
 	if (hovered >= 0)
 	{
@@ -290,8 +214,6 @@ void DialogBox_HudPanel::draw_super_attack_overlay()
 {
 	if (player().m_super_attack_left <= 0) return;
 
-	int iconX = COMBAT_ICON_X();
-	int iconY = COMBAT_ICON_Y();
 	int btnX = BTN_COMBAT_X1();
 	int btnY = BTN_Y1();
 	int btnW = 42;
@@ -301,12 +223,7 @@ void DialogBox_HudPanel::draw_super_attack_overlay()
 
 	// draw additive overlay sprite at combat icon position only when ALT is held
 	if (hb::shared::input::is_alt_down() && mastered)
-	{
-		if (const hb::client::hud_kit* kit = m_game->get_hud_kit())
-			kit->super_orb(m_y);
-		else
-			m_game->m_sprite[InterfaceNdIconPanel]->draw(iconX, iconY, 3, hb::shared::sprite::DrawParams::additive(0.7f));
-	}
+		m_game->get_hud_kit().super_orb(m_y);
 
 	// draw super attack count text at bottom-right of combat button area
 	std::string txt = std::format("{}", player().m_super_attack_left);
@@ -321,12 +238,8 @@ void DialogBox_HudPanel::on_draw()
 	// The action bar draws in the world rect: it keeps the share of the window it has at 800x600
 	m_game->m_Renderer->push_world_rect_view();
 
-	// draw main HUD background centered (at xOffset, which is 0 for 640x480, 80 for 800x600): the HUD kit's
-	// plain bar, or the old frame with the gauges, socket and menu buttons baked in
-	if (const hb::client::hud_kit* kit = m_game->get_hud_kit())
-		kit->bar(m_y);
-	else
-		m_game->m_sprite[InterfaceNdIconPanel]->draw(0, m_y, 14);
+	// draw main HUD background: the HUD kit's plain bar
+	m_game->get_hud_kit().bar(m_y);
 
 	draw_gauge_bars();
 	draw_status_icons();

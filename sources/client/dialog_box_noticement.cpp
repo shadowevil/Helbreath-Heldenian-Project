@@ -38,8 +38,7 @@ void DialogBox_Noticement::on_draw()
 	m_size_x = size_x;
 	m_size_y = static_cast<short>(rect.height);
 
-	if (!draw_kit_notice_frame(m_game->get_panel_kit(), sX, sY))
-		draw_new_dialog_box(InterfaceNdGame4, sX, sY, 2);
+	draw_kit_notice_frame(m_game->get_panel_kit(), sX, sY);
 
 	using namespace hb::shared::text;
 	const auto title_style = TextStyle::with_highlight(GameColors::UIDarkRed);

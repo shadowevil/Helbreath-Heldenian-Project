@@ -23,8 +23,7 @@ void DialogBox_RepairAll::on_draw()
 	short sY = m_y;
 	short size_x = m_size_x;
 	std::string txt;
-	int total_lines, pointer_loc;
-	double d1, d2, d3;
+	int total_lines;
 
 	draw_tall_frame(tall_frame::rivet, sX, sY, 10, tall_panel::scrollbar);   // "Repair Item"
 
@@ -45,19 +44,7 @@ void DialogBox_RepairAll::on_draw()
 	total_lines = m_game->totalItemRepair;
 	if (total_lines > 15)
 	{
-		d1 = static_cast<double>(m_scroll_offset);
-		d2 = static_cast<double>(total_lines - 15);
-		d3 = (274.0f * d1) / d2;
-		pointer_loc = static_cast<int>(d3);
-	}
-	else
-	{
-		pointer_loc = 0;
-	}
-
-	if (total_lines > 15)
-	{
-		draw_tall_scrollbar(sX, sY, static_cast<float>(m_scroll_offset) / static_cast<float>(total_lines - 15), pointer_loc, 1);
+		draw_tall_scrollbar(sX, sY, static_cast<float>(m_scroll_offset) / static_cast<float>(total_lines - 15));
 	}
 
 	// Mouse wheel scrolling

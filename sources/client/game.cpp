@@ -27,6 +27,7 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <stdexcept>
 #include <string>
 
 #include "platform_headers.h"
@@ -3028,28 +3029,38 @@ namespace
 	}
 }
 
-hb::client::panel_kit* CGame::get_panel_kit()
+bool CGame::load_ui_kits()
 {
-	if (!m_panel_kit_tried)
+	const std::string sprite_dir = hb::shared::sprite::Sprites::get_sprite_path();
+	auto panel = std::make_unique<hb::client::panel_kit>();
+	if (!panel->load(*m_Renderer, sprite_dir))
 	{
-		m_panel_kit_tried = true;
-		auto kit = std::make_unique<hb::client::panel_kit>();
-		if (kit->load(*m_Renderer, hb::shared::sprite::Sprites::get_sprite_path()))
-			m_panel_kit = std::move(kit);
+		hb::logger::error("Panel kit {}/panelkit failed to load; the client cannot draw its dialogs without it", sprite_dir);
+		return false;
 	}
-	return m_panel_kit.get();
+	auto hud = std::make_unique<hb::client::hud_kit>();
+	if (!hud->load(*m_Renderer, sprite_dir))
+	{
+		hb::logger::error("HUD kit {}/hudkit failed to load; the client cannot draw its action bar without it", sprite_dir);
+		return false;
+	}
+	m_panel_kit = std::move(panel);
+	m_hud_kit = std::move(hud);
+	return true;
 }
 
-hb::client::hud_kit* CGame::get_hud_kit()
+hb::client::panel_kit& CGame::get_panel_kit()
 {
-	if (!m_hud_kit_tried)
-	{
-		m_hud_kit_tried = true;
-		auto kit = std::make_unique<hb::client::hud_kit>();
-		if (kit->load(*m_Renderer, hb::shared::sprite::Sprites::get_sprite_path()))
-			m_hud_kit = std::move(kit);
-	}
-	return m_hud_kit.get();
+	if (!m_panel_kit)
+		throw std::logic_error("panel kit used before Screen_Loading loaded it");
+	return *m_panel_kit;
+}
+
+hb::client::hud_kit& CGame::get_hud_kit()
+{
+	if (!m_hud_kit)
+		throw std::logic_error("HUD kit used before Screen_Loading loaded it");
+	return *m_hud_kit;
 }
 
 void CGame::draw_new_dialog_box(char type, int sX, int sY, int frame, bool is_no_color_key, bool is_trans)
@@ -3057,16 +3068,15 @@ void CGame::draw_new_dialog_box(char type, int sX, int sY, int frame, bool is_no
 	if (m_sprite[type] == 0) return;
 	if (type == InterfaceNdButton)
 	{
-		const baked_button* baked = baked_button_of(frame);
-		hb::client::panel_kit* kit = baked ? get_panel_kit() : nullptr;
-		if (kit)
+		if (const baked_button* baked = baked_button_of(frame))
 		{
 			// The sprite frame's own place and size (its pivot positions the wide buttons), so the drawn button
 			// is exactly the area callers hit-test
+			const hb::client::panel_kit& kit = get_panel_kit();
 			const hb::shared::sprite::SpriteRect r = m_sprite[type]->GetFrameRect(frame);
 			const auto layout = r.width >= 176 ? hb::client::button_layout::wide : hb::client::button_layout::small;
 			// Dialog transparency draws each kit layer at 0.25, so overlaps compound (accepted, HH-0062 review)
-			kit->button(kit->style_of(layout), baked->label, {sX + r.pivotX, sY + r.pivotY, r.width, r.height},
+			kit.button(kit.style_of(layout), baked->label, {sX + r.pivotX, sY + r.pivotY, r.width, r.height},
 				baked->hover, hb::client::dialog_alpha(is_trans));
 			return;
 		}

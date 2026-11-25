@@ -120,16 +120,6 @@
    "manifest": "interface/sprite_fonts/manifest.json",
    "sprite_count": 4
   },
-  "interface/telescope": {
-   "dir": "interface/telescope",
-   "manifest": "interface/telescope/manifest.json",
-   "sprite_count": 32
-  },
-  "interface/telescope2": {
-   "dir": "interface/telescope2",
-   "manifest": "interface/telescope2/manifest.json",
-   "sprite_count": 4
-  },
   "items/aresden_hero_armor": {
    "dir": "items/aresden_hero_armor",
    "manifest": "items/aresden_hero_armor/manifest.json",

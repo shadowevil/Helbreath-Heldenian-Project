@@ -31,31 +31,11 @@ private:
 	// At 640x480: offset = 0, At 800x600: offset = 80 (centered)
 	static int hud_x_offset() { return (LOGICAL_WIDTH() - 640) / 2; }
 
-	// Bar dimensions
-	static constexpr int HP_MP_BAR_WIDTH = 101;
-	static constexpr int SP_BAR_WIDTH = 167;
 	static constexpr int MAX_HUNGER = 100;
 
-	// Bar positions (base values for 640x480, add offsets at runtime)
-	static constexpr int BASE_HP_BAR_X = 23;
+	// The HP bar's top (base value for 640x480; the Poisoned label sits on it)
 	static constexpr int BASE_HP_BAR_Y = 437;
-	static constexpr int BASE_MP_BAR_Y = 459;
-	static constexpr int BASE_SP_BAR_X = 150;
-	static constexpr int BASE_SP_BAR_Y = 435;
-	static constexpr int BASE_HUNGER_BAR_X = 139;
-	static constexpr int BASE_HUNGER_BAR_Y = 11;
-	static constexpr int BASE_EXP_BAR_X = 0;
-	static constexpr int BASE_EXP_BAR_Y = 0;
-	// Runtime positions (X and Y offsets applied)
-	static int HP_BAR_X() { return BASE_HP_BAR_X + hud_x_offset(); }
 	static int HP_BAR_Y() { return BASE_HP_BAR_Y + hud_y_offset(); }
-	static int MP_BAR_Y() { return BASE_MP_BAR_Y + hud_y_offset(); }
-	static int SP_BAR_X() { return BASE_SP_BAR_X + hud_x_offset(); }
-	static int SP_BAR_Y() { return BASE_SP_BAR_Y + hud_y_offset(); }
-	static int HUNGER_BAR_X() { return BASE_HUNGER_BAR_X + hud_x_offset(); }
-	static int HUNGER_BAR_Y() { return BASE_HUNGER_BAR_Y; }
-	static int EXP_BAR_X() { return BASE_EXP_BAR_X; }
-	static int EXP_BAR_Y() { return BASE_EXP_BAR_Y; }
 
 	// HP/MP/SP number positions
 	static constexpr int BASE_HP_NUM_X = 80;
@@ -69,12 +49,6 @@ private:
 	static int MP_NUM_Y() { return BASE_MP_NUM_Y + hud_y_offset(); }
 	static int SP_NUM_X() { return BASE_SP_NUM_X + hud_x_offset(); }
 	static int SP_NUM_Y() { return BASE_SP_NUM_Y + hud_y_offset(); }
-
-	// Combat mode icon position (right side - needs X offset)
-	static constexpr int BASE_COMBAT_ICON_X = 368;
-	static constexpr int BASE_COMBAT_ICON_Y = 440;
-	static int COMBAT_ICON_X() { return BASE_COMBAT_ICON_X + hud_x_offset(); }
-	static int COMBAT_ICON_Y() { return BASE_COMBAT_ICON_Y + hud_y_offset(); }
 
 	// Map message text position
 	static constexpr int BASE_MAP_MSG_X1 = 142;
@@ -103,8 +77,6 @@ private:
 	// toggle button info structure
 	struct ToggleButtonInfo {
 		int x1, x2;
-		int spriteX;
-		int spriteFrame;
 		const char* tooltip;
 		DialogBoxId::Type dialogId;
 	};

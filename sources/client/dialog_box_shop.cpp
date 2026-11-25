@@ -52,7 +52,6 @@ void DialogBox_Shop::draw_item_list(short sX, short sY)
 	short z = static_cast<short>(hb::shared::input::get_mouse_wheel_delta());
 	char lb = hb::shared::input::is_mouse_button_down(hb::shared::input::MouseButton::Left) ? 1 : 0;
     int total_lines = 0;
-    int pointer_loc;
     double d1, d2, d3;
     char temp[255];
     int cost, discount_cost, discount_ratio;
@@ -64,11 +63,8 @@ void DialogBox_Shop::draw_item_list(short sX, short sY)
     if (total_lines > 13) {
         d1 = static_cast<double>(m_scroll_offset);
         d2 = static_cast<double>(total_lines - 13);
-        d3 = (274.0f * d1) / d2;
-        pointer_loc = static_cast<int>(d3);
-        draw_tall_scrollbar(sX, sY, static_cast<float>(d1 / d2), pointer_loc);
+        draw_tall_scrollbar(sX, sY, static_cast<float>(d1 / d2));
     }
-    else pointer_loc = 0;
 
     if (lb != 0 && total_lines > 13) {
         if ((m_game->get_dialog_box_manager().get_top_id() == DialogBoxId::SaleMenu)) {

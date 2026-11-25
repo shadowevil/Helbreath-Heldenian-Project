@@ -60,8 +60,8 @@ namespace kit_layout
 // The kit part names a kit_frame style stands for (for a kit_dialog a dialog or screen builds itself)
 const hb::client::panel_style& kit_frame_style(kit_frame::type style);
 // The notice box as a plain kit frame (the original's ruined city is dropped, user ruling; HH-0066) with its
-// sunken panel at (x, y); false when the kit is not loaded, and the caller then draws Game4 frame 2
-bool draw_kit_notice_frame(hb::client::panel_kit* kit, int x, int y);
+// sunken panel at (x, y)
+void draw_kit_notice_frame(const hb::client::panel_kit& kit, int x, int y);
 
 class CGame;
 class CPlayer;
@@ -123,22 +123,19 @@ protected:
 
 	// Helper methods - delegate to CGame
 	void draw_new_dialog_box(char type, int sX, int sY, int frame, bool is_no_color_key = false, bool is_trans = false);
-	// A plain panel-kit frame of w x h at (x, y); false when the kit is not loaded, and the caller then draws
-	// its original sprite frame. transparent = the dialog transparency setting's 0.25 opacity
-	bool draw_kit_background(kit_frame::type style, int x, int y, int w, int h, bool transparent = false);
-	// A tall 258x339 frame with the title the Text sprite frame title_frame carries (-1 = none; 11 Item for
-	// Sale, 10 Repair Item, 21 Items In Storage, 1 Skills, 4 Quest, 3 Party Menu, 18 Cityhall Menu, 19 Guild
-	// Menu, 2 Level up Setting, 5 Item Upgrade): a plain kit frame, title and sunken list panel, else the original
-	// Game2 frame and Text title
+	// A plain panel-kit frame of w x h at (x, y). transparent = the dialog transparency setting's 0.25 opacity
+	void draw_kit_background(kit_frame::type style, int x, int y, int w, int h, bool transparent = false);
+	// A tall 258x339 kit frame, title and sunken list panel. title_frame names the title by the old Text
+	// sprite strip's frame number (-1 = none; 11 Item for Sale, 10 Repair Item, 21 Items In Storage, 1 Skills,
+	// 4 Quest, 3 Party Menu, 18 Cityhall Menu, 19 Guild Menu, 2 Level up Setting, 5 Item Upgrade)
 	void draw_tall_frame(tall_frame::type style, int x, int y, int title_frame = -1,
 		tall_panel::type panel = tall_panel::full);
-	// The crusade map dialogs' frame (commander, constructor, soldier) with the Text strip title_frame carries
-	// (15 Commander Menu, 16 Constructor Menu, 17 Soldier Menu): a plain gold-cornered kit frame, title and the
-	// sunken status bar, else the original Crusade frame 0 and title strip. transparent = dialog transparency
+	// The crusade map dialogs' frame (commander, constructor, soldier): a plain gold-cornered kit frame, the
+	// title named by the old Text strip's frame number (15 Commander Menu, 16 Constructor Menu, 17 Soldier
+	// Menu) and the sunken status bar. transparent = dialog transparency
 	void draw_crusade_frame(int title_frame, int x, int y, bool transparent);
-	// A tall dialog's scrollbar at the original 274 px thumb travel: the kit groove and thumb at pos (0..1,
-	// clamped), else the original Game2 track frame (3, or 1 beside a stone frame) and thumb frame 7 at pointer_loc
-	void draw_tall_scrollbar(int x, int y, float pos, int pointer_loc, int track_frame = 3);
+	// A tall dialog's scrollbar at the original 274 px thumb travel: the kit groove and thumb at pos (0..1, clamped)
+	void draw_tall_scrollbar(int x, int y, float pos);
 	void put_string(int iX, int iY, const char* string, const hb::shared::render::Color& color);
 	void put_aligned_string(int x1, int x2, int iY, const char* string, const hb::shared::render::Color& color = GameColors::UIBlack);
 	void add_event_list(const char* txt, char color = 0, bool dup_allow = true);

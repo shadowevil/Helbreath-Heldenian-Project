@@ -19,8 +19,7 @@ void DialogBox_ConfirmExchange::on_draw()
 	short sX = m_x;
 	short sY = m_y;
 
-	if (!draw_kit_background(kit_frame::gold_box, sX, sY, 270, 104))   // the Game1 frame 2 box's size
-		draw_new_dialog_box(InterfaceNdGame1, sX, sY, 2);
+	draw_kit_background(kit_frame::gold_box, sX, sY, 270, 104);   // the Game1 frame 2 box's size
 
 	switch (m_mode)
 	{

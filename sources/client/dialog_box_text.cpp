@@ -53,15 +53,8 @@ void DialogBox_Text::on_draw()
 		m_scroll_view = total_lines - 17;
 
 	// draw scroll bar
-	int pointer_loc = 0;
 	if (total_lines > 17)
-	{
-		double d1 = static_cast<double>(m_scroll_view);
-		double d2 = static_cast<double>(total_lines - 17);
-		double d3 = (274.0 * d1) / d2;
-		pointer_loc = static_cast<int>(d3 + 0.5);
-		draw_tall_scrollbar(sX, sY, static_cast<float>(d1 / d2), pointer_loc, 1);
-	}
+		draw_tall_scrollbar(sX, sY, static_cast<float>(m_scroll_view) / static_cast<float>(total_lines - 17));
 
 	// draw text lines
 	short view = m_scroll_view;
@@ -102,7 +95,7 @@ void DialogBox_Text::on_draw()
 				double d1 = static_cast<double>(mouse_y - (sY + 35));
 				double d2 = static_cast<double>(total_lines - 17);
 				double d3 = (d1 * d2) / 274.0;
-				pointer_loc = static_cast<int>(d3);
+				int pointer_loc = static_cast<int>(d3);
 				if (pointer_loc > total_lines - 17)
 					pointer_loc = total_lines - 17;
 				m_scroll_view = pointer_loc;

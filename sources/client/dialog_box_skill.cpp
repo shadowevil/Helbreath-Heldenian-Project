@@ -87,16 +87,7 @@ void DialogBox_Skill::on_draw()
 			if (m_game->m_skill_cfg_list[i] != 0) total_lines++;
 
 		if (total_lines > 17)
-		{
-			d1 = static_cast<double>(m_scroll_position);
-			d2 = static_cast<double>(total_lines - 17);
-			d3 = (274.0f * d1) / d2;
-			pointer_loc = static_cast<int>(d3);
-		}
-		else pointer_loc = 0;
-		if (total_lines > 17)
-			draw_tall_scrollbar(sX, sY, static_cast<float>(m_scroll_position) / static_cast<float>(total_lines - 17),
-				pointer_loc, 1);
+			draw_tall_scrollbar(sX, sY, static_cast<float>(m_scroll_position) / static_cast<float>(total_lines - 17));
 
 		if (lb != 0 && total_lines > 17)
 		{

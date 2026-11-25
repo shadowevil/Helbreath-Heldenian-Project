@@ -26,13 +26,10 @@ constexpr int InterfaceNdQuit               = 55;
 constexpr int InterfaceNdSelectChar         = 57;
 constexpr int InterfaceNdNewChar            = 58;
 constexpr int InterfaceNdNewExchange        = 59;
-constexpr int InterfaceNdGame1              = 60;
 constexpr int InterfaceNdGame2              = 61;
 constexpr int InterfaceNdGame3              = 62;
 constexpr int InterfaceNdGame4              = 63;
-constexpr int InterfaceNdIconPanel          = 64;
 constexpr int InterfaceNdInventory          = 67;
-constexpr int InterfaceNdText               = 70;
 constexpr int InterfaceNdButton             = 71;
 constexpr int InterfaceNdCrusade            = 72;
 

@@ -124,22 +124,13 @@ void DialogBox_Manufacture::on_draw()
 }
 
 // The manufacture frame: a plain kit frame (the original's hammer is dropped, user ruling) with the
-// "Tinkering" title and the sunken panel at the original sprite's places (HH-0066), else the original Game3
-// frame and its title strip (which carries the frame's top edge)
+// "Tinkering" title and the sunken panel at the original sprite's places (HH-0066)
 void DialogBox_Manufacture::draw_frame(short sX, short sY)
 {
-	if (hb::client::panel_kit* panel_kit = m_game->get_panel_kit())
-	{
-		constexpr hb::client::kit_rect content_panel{17, 31, 236, 332};
-		const hb::client::kit_dialog kit(*panel_kit, hb::client::kit_point{270, 381}, hb::client::kit_point{sX, sY});
-		kit.title("Tinkering", 19, kit_layout::title_fill, "divider_wave", 14);
-		kit.inset(content_panel);
-	}
-	else
-	{
-		draw_new_dialog_box(InterfaceNdGame3, sX, sY, 0);
-		draw_new_dialog_box(InterfaceNdText, sX, sY, 8);
-	}
+	constexpr hb::client::kit_rect content_panel{17, 31, 236, 332};
+	const hb::client::kit_dialog kit(m_game->get_panel_kit(), hb::client::kit_point{270, 381}, hb::client::kit_point{sX, sY});
+	kit.title("Tinkering", 19, kit_layout::title_fill, "divider_wave", 14);
+	kit.inset(content_panel);
 }
 
 void DialogBox_Manufacture::draw_alchemy_waiting(short sX, short sY)

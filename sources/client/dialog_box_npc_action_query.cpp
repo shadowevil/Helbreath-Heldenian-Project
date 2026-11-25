@@ -36,8 +36,7 @@ void DialogBox_NpcActionQuery::DrawMode0_NpcMenu(short sX, short sY)
 {
 	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
 	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	if (!draw_kit_background(kit_frame::gold_box, sX, sY, 215, 87))   // the Game2 frame 5 box's size
-		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 5);
+	draw_kit_background(kit_frame::gold_box, sX, sY, 215, 87);   // the Game2 frame 5 box's size
 
 	if (m_action_type == 90) {
 		put_string(sX + 33, sY + 23, "Heldenian staff officer", GameColors::UILabel);
@@ -77,8 +76,7 @@ void DialogBox_NpcActionQuery::DrawMode1_GiveToPlayer(short sX, short sY)
 	std::string txt, txt2;
 
 
-	if (!draw_kit_background(kit_frame::gold_box, sX, sY, 252, 87))   // the Game2 frame 6 box's size
-		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 6);
+	draw_kit_background(kit_frame::gold_box, sX, sY, 252, 87);   // the Game2 frame 6 box's size
 	auto itemInfo = item_name_formatter::get().format(player().m_item_list[m_item_index].get());
 	txt = std::format("{} to", itemInfo.name);
 	txt2 = std::format(DRAW_DIALOGBOX_NPCACTION_QUERY29_1, m_npc_name);
@@ -97,8 +95,7 @@ void DialogBox_NpcActionQuery::DrawMode2_SellToShop(short sX, short sY)
 	std::string txt, txt2;
 
 
-	if (!draw_kit_background(kit_frame::gold_box, sX, sY, 215, 87))   // the Game2 frame 5 box's size
-		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 5);
+	draw_kit_background(kit_frame::gold_box, sX, sY, 215, 87);   // the Game2 frame 5 box's size
 	auto itemInfo2 = item_name_formatter::get().format(player().m_item_list[m_item_index].get());
 
 	txt = std::format("{} to", itemInfo2.name);
@@ -124,8 +121,7 @@ void DialogBox_NpcActionQuery::DrawMode3_DepositToWarehouse(short sX, short sY)
 	std::string txt, txt2;
 
 
-	if (!draw_kit_background(kit_frame::gold_box, sX, sY, 252, 87))   // the Game2 frame 6 box's size
-		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 6);
+	draw_kit_background(kit_frame::gold_box, sX, sY, 252, 87);   // the Game2 frame 6 box's size
 	auto itemInfo3 = item_name_formatter::get().format(player().m_item_list[m_item_index].get());
 
 	txt = std::format("{} to", itemInfo3.name);
@@ -141,8 +137,7 @@ void DialogBox_NpcActionQuery::DrawMode4_TalkToNpcOrUnicorn(short sX, short sY)
 {
 	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
 	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	if (!draw_kit_background(kit_frame::gold_box, sX, sY, 215, 87))   // the Game2 frame 5 box's size
-		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 5);
+	draw_kit_background(kit_frame::gold_box, sX, sY, 215, 87);   // the Game2 frame 5 box's size
 
 	put_string(sX + 35, sY + 25, m_npc_name, GameColors::UILabel);
 	put_string(sX + 35 - 1, sY + 25 - 1, m_npc_name, GameColors::UIWhite);
@@ -156,8 +151,7 @@ void DialogBox_NpcActionQuery::DrawMode5_ShopWithSell(short sX, short sY)
 {
 	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
 	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	if (!draw_kit_background(kit_frame::gold_box, sX, sY, 252, 87))   // the Game2 frame 6 box's size
-		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 6);
+	draw_kit_background(kit_frame::gold_box, sX, sY, 252, 87);   // the Game2 frame 6 box's size
 
 	put_string(sX + 33, sY + 23, m_npc_name, GameColors::UILabel);
 	put_string(sX + 33 - 1, sY + 23 - 1, m_npc_name, GameColors::UIWhite);
@@ -182,8 +176,7 @@ void DialogBox_NpcActionQuery::DrawMode6_Gail(short sX, short sY)
 {
 	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
 	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	if (!draw_kit_background(kit_frame::gold_box, sX, sY, 215, 87))   // the Game2 frame 5 box's size
-		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 5);
+	draw_kit_background(kit_frame::gold_box, sX, sY, 215, 87);   // the Game2 frame 5 box's size
 
 	draw_highlighted_text(sX + 28, sY + 55, DRAW_DIALOGBOX_NPCACTION_QUERY21, mouse_x, mouse_y, sX + 25, sX + 100, sY + 55, sY + 70);
 

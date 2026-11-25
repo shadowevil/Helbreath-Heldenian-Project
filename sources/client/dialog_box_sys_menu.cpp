@@ -14,7 +14,6 @@
 #include <cstring>
 #include <ctime>
 #include <format>
-#include <optional>
 #include <string>
 #include "screen_on_game.h"
 using namespace hb::client::sprite_id;
@@ -157,27 +156,18 @@ void DialogBox_SysMenu::on_draw()
 	short sX = m_x;
 	short sY = m_y;
 
-	// draw dialog background: the panel kit when it is loaded (layout from the approved rebuild), else the sprites
-	std::optional<hb::client::kit_dialog> kit;
-	if (hb::client::panel_kit* panel_kit = m_game->get_panel_kit())
-	{
-		kit.emplace(*panel_kit, hb::client::dialog_size::sys_menu, hb::client::kit_point{sX, sY},
-			hb::client::dialog_alpha(config_manager::get().is_dialog_transparency_enabled()));
-		constexpr std::string_view title = "System Menu";
-		constexpr int title_y = 22;   // the sprite title's cap top (measured, HH-0065)
-		kit->title(title, title_y, {148, 24, 16});
-		// The waves sit at fixed points near the corners (centres 48 and 282), smaller than elsewhere (0.56)
-		const int wave_y = kit->title_cap_middle(title, title_y);
-		kit->flourish("divider_wave", 48, wave_y, false, 0.56f);
-		kit->flourish("divider_wave", 282, wave_y, true, 0.56f);
-		kit->inset({16, 50, 300, 241});
-		m_kit = &*kit;
-	}
-	else
-	{
-		draw_new_dialog_box(InterfaceNdGame1, sX, sY, 0);
-		draw_new_dialog_box(InterfaceNdText, sX, sY, 6);
-	}
+	// draw dialog background: the panel kit (layout from the approved rebuild)
+	const hb::client::kit_dialog kit(m_game->get_panel_kit(), hb::client::dialog_size::sys_menu, hb::client::kit_point{sX, sY},
+		hb::client::dialog_alpha(config_manager::get().is_dialog_transparency_enabled()));
+	constexpr std::string_view title = "System Menu";
+	constexpr int title_y = 22;   // the sprite title's cap top (measured, HH-0065)
+	kit.title(title, title_y, {148, 24, 16});
+	// The waves sit at fixed points near the corners (centres 48 and 282), smaller than elsewhere (0.56)
+	const int wave_y = kit.title_cap_middle(title, title_y);
+	kit.flourish("divider_wave", 48, wave_y, false, 0.56f);
+	kit.flourish("divider_wave", 282, wave_y, true, 0.56f);
+	kit.inset({16, 50, 300, 241});
+	m_kit = &kit;
 
 	// Handle mouse scroll over dialog to cycle tabs (or scroll graphics content)
 	if (m_game->get_dialog_box_manager().get_top_id() == DialogBoxId::SystemMenu && z != 0)
@@ -217,20 +207,8 @@ void DialogBox_SysMenu::on_draw()
 	if (s_bDraggingGraphicsScroll && lb != 0)
 	{
 		int max_scroll = graphics_total_items - GRAPHICS_VISIBLE_ITEMS;
-		if (m_kit)
-		{
-			// The kit thumb's centre follows the cursor (the inverse of its draw placement)
-			m_graphics_scroll_offset = static_cast<int>(std::lround(m_kit->scrollbar_pos_at(kit_graphics_scroll, mouse_y) * max_scroll));
-		}
-		else
-		{
-			hb::shared::sprite::SpriteRect thumb_rect = m_game->m_sprite[InterfaceNdGame1]->GetFrameRect(4);
-			int track_top = sY + CONTENT_Y;
-			int track_height = CONTENT_HEIGHT - thumb_rect.height;
-			if (track_height < 1) track_height = 1;
-			int rel_y = mouse_y - track_top;
-			m_graphics_scroll_offset = (rel_y * max_scroll + track_height / 2) / track_height;
-		}
+		// The kit thumb's centre follows the cursor (the inverse of its draw placement)
+		m_graphics_scroll_offset = static_cast<int>(std::lround(kit.scrollbar_pos_at(kit_graphics_scroll, mouse_y) * max_scroll));
 		if (m_graphics_scroll_offset < 0) m_graphics_scroll_offset = 0;
 		if (m_graphics_scroll_offset > max_scroll) m_graphics_scroll_offset = max_scroll;
 	}
@@ -353,11 +331,6 @@ bool DialogBox_SysMenu::is_in_toggle_area(int x, int y)
 
 void DialogBox_SysMenu::draw_box(int frame, int x, int y)
 {
-	if (!m_kit)
-	{
-		draw_new_dialog_box(InterfaceNdButton, x, y, frame);
-		return;
-	}
 	// The kit's sunken field at the sprite frame's place and size, so the hit areas are unchanged
 	const hb::shared::sprite::SpriteRect r = m_game->m_sprite[InterfaceNdButton]->GetFrameRect(frame);
 	const hb::client::kit_point o = m_kit->origin();
@@ -366,12 +339,6 @@ void DialogBox_SysMenu::draw_box(int frame, int x, int y)
 
 void DialogBox_SysMenu::draw_slider(int x, int y, int value)
 {
-	if (!m_kit)
-	{
-		draw_new_dialog_box(InterfaceNdButton, x, y + 5, 80);
-		draw_new_dialog_box(InterfaceNdGame2, x + value, y, 8);
-		return;
-	}
 	// Track: a kit groove over the sprite track; knob: the kit thumb centred where the sprite knob was
 	const hb::shared::sprite::SpriteRect track = m_game->m_sprite[InterfaceNdButton]->GetFrameRect(80);
 	const hb::shared::sprite::SpriteRect knob = m_game->m_sprite[InterfaceNdGame2]->GetFrameRect(8);
@@ -380,27 +347,9 @@ void DialogBox_SysMenu::draw_slider(int x, int y, int value)
 	m_kit->thumb(x + value + knob.pivotX + knob.width / 2 - o.x, y + knob.pivotY + knob.height / 2 - o.y);
 }
 
-void DialogBox_SysMenu::draw_graphics_scrollbar(short sX, short sY, int max_scroll)
+void DialogBox_SysMenu::draw_graphics_scrollbar(int max_scroll)
 {
-	if (m_kit)
-	{
-		m_kit->scrollbar(kit_graphics_scroll, max_scroll > 0 ? static_cast<float>(m_graphics_scroll_offset) / max_scroll : 0.0f);
-		return;
-	}
-	// InterfaceNdGame1 frame 3 = track background, frame 4 = scrub/thumb (no pivot offsets)
-	hb::shared::sprite::SpriteRect track_rect = m_game->m_sprite[InterfaceNdGame1]->GetFrameRect(3);
-	hb::shared::sprite::SpriteRect thumb_rect = m_game->m_sprite[InterfaceNdGame1]->GetFrameRect(4);
-
-	int scroll_x = sX + CONTENT_X + CONTENT_WIDTH - (track_rect.width / 2);
-	int track_top = sY + CONTENT_Y;
-	int track_height = CONTENT_HEIGHT;
-
-	draw_new_dialog_box(InterfaceNdGame1, scroll_x, track_top, 3);
-
-	int thumb_y = track_top;
-	if (max_scroll > 0)
-		thumb_y = track_top + ((track_height - thumb_rect.height) * m_graphics_scroll_offset) / max_scroll;
-	draw_new_dialog_box(InterfaceNdGame1, scroll_x - ((thumb_rect.width - track_rect.width) / 2), thumb_y, 4);
+	m_kit->scrollbar(kit_graphics_scroll, max_scroll > 0 ? static_cast<float>(m_graphics_scroll_offset) / max_scroll : 0.0f);
 }
 
 // =============================================================================
@@ -783,7 +732,7 @@ void DialogBox_SysMenu::draw_graphics_tab(short sX, short sY)
 
 	// --- Scrollbar ---
 	if (scrollable)
-		draw_graphics_scrollbar(sX, sY, graphics_total_items - GRAPHICS_VISIBLE_ITEMS);
+		draw_graphics_scrollbar(graphics_total_items - GRAPHICS_VISIBLE_ITEMS);
 }
 
 // =============================================================================
@@ -1025,14 +974,9 @@ PressResult DialogBox_SysMenu::on_press()
 	{
 		if (graphics_total_items > GRAPHICS_VISIBLE_ITEMS)
 		{
-			// Hit area = the drawn track: the kit groove (moved with the drawing, by design), or the sprite track
-			int scroll_x = sX + kit_graphics_scroll.x;
-			int scroll_w = kit_graphics_scroll.w;
-			if (!m_game->get_panel_kit())
-			{
-				scroll_w = m_game->m_sprite[InterfaceNdGame1]->GetFrameRect(3).width;
-				scroll_x = sX + CONTENT_X + CONTENT_WIDTH - scroll_w;
-			}
+			// Hit area = the drawn track: the kit groove (moved with the drawing, by design)
+			const int scroll_x = sX + kit_graphics_scroll.x;
+			const int scroll_w = kit_graphics_scroll.w;
 			int track_top = sY + CONTENT_Y;
 			int track_bottom = sY + CONTENT_Y + CONTENT_HEIGHT;
 			if (mouse_x >= scroll_x && mouse_x <= scroll_x + scroll_w &&

@@ -598,21 +598,11 @@ void DialogBox_ItemCreator::on_draw()
 	short size_x = m_size_x;
 
 	// The panel kit frame (as the tester menu's: the same Game2 frame 0, its portrait dropped; HH-0076) with the
-	// standard red title, else the original sprite frame and the bitmap-font title
+	// standard red title
 	const char* title = m_page == 0 ? "Create Item" : "Configure Item";
-	if (hb::client::panel_kit* panel_kit = m_game->get_panel_kit())
-	{
-		const hb::client::kit_dialog kit(*panel_kit, kit_layout::tall_size, hb::client::kit_point{sX, sY});
-		kit.title(title, 20, kit_layout::title_fill, "divider_wave", 14);
-		kit.inset(kit_layout::tall_panel);
-	}
-	else
-	{
-		draw_new_dialog_box(InterfaceNdGame2, sX, sY, 0);
-		hb::shared::text::draw_text_aligned(GameFont::Bitmap1, sX, sY + 8, size_x, 15, title,
-			hb::shared::text::TextStyle::with_integrated_shadow(GameColors::UIWarningRed),
-			hb::shared::text::Align::TopCenter);
-	}
+	const hb::client::kit_dialog kit(m_game->get_panel_kit(), kit_layout::tall_size, hb::client::kit_point{sX, sY});
+	kit.title(title, 20, kit_layout::title_fill, "divider_wave", 14);
+	kit.inset(kit_layout::tall_panel);
 
 	if (m_page == 0)
 		draw_search_page(sX, sY, size_x, mouse_x, mouse_y, z);

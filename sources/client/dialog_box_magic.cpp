@@ -60,19 +60,13 @@ void DialogBox_Magic::on_draw()
 	sY = m_y;
 
 	// The panel kit draws a plain frame (the original's hexagram is dropped, user ruling), the title and the
-	// content panel at the original sprite's places; else the original sprite frame and title bar
-	if (hb::client::panel_kit* panel_kit = m_game->get_panel_kit())
+	// content panel at the original sprite's places
 	{
-		const hb::client::kit_dialog kit(*panel_kit, hb::client::kit_point{258, 328}, hb::client::kit_point{sX, sY},
+		const hb::client::kit_dialog kit(m_game->get_panel_kit(), hb::client::kit_point{258, 328}, hb::client::kit_point{sX, sY},
 			hb::client::dialog_alpha(dialogTrans));
 		kit.title("Magic List", 23, kit_layout::title_fill, "divider_wave", 14);
 		kit.inset(content_panel);
 		kit.piece("magic_circle", magic_circle_at);   // skipped when the kit lacks it
-	}
-	else
-	{
-		draw_new_dialog_box(InterfaceNdGame1, sX, sY, 1, false, dialogTrans);
-		draw_new_dialog_box(InterfaceNdText, sX, sY, 7, false, dialogTrans);
 	}
 
 	// Handle scroll wheel input

@@ -1,0 +1,21 @@
+{
+  "id": "HH-0078",
+  "summary": "Debug console prints raw ANSI codes and broken lines",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    1
+  ],
+  "author": "pm",
+  "created": "2026-11-25T15:49:01Z",
+  "updated": "2026-11-25T15:53:30Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": []
+  },
+  "body": "The client's debug console (DebugConsole::allocate, sources/client/benchmark.h:30, as of 2026-11-25) showed raw ANSI codes and broken fragments after the version line. The user's paste, 2026-11-25 09:46:11: `[0;90m[09:46:11.019][0m [LOG] client 0.2.52-alpha:DEV.44648+27390`, then the line tails `lly`, `s:`, ` GPU`. The user saw them as \"random unicode line separators\". client.log for the same run is clean (measured: no control characters, cat -A).\n\nLikely cause (unverified): allocate() enables virtual-terminal processing on GetStdHandle(STD_OUTPUT_HANDLE). That run was started by an agent (Game_x64_win.exe --agent-bridge-port=8891, its parent shell already gone). If the inherited std handles were redirected, that handle is not the new console. SetConsoleMode then fails silently, and its return value is not checked. stdout is reopened on CONOUT$ with freopen_s, so the logger's colour codes (log_backend.cpp:74, written with std::cout) reach a console that has VT processing off. The printf lines from the GPU listing (sfml_renderer.cpp:90-126) go through the same broken path.\n\nFix: open CONOUT$ directly (CreateFileW) and enable VT on that handle; SetStdHandle it if needed; when VT cannot be enabled, have the client backend drop the colour codes.\n\n**Done when:** started both normally and with redirected std handles, the console shows coloured lines with no raw escape codes, and the GPU lines print whole.\n\nSource: user report in chat, 2026-11-25; game/client/logs/client.log lines 2520+.\n\n**Investigation, 2026-11-25:** User: 'It was working fine before'. Nothing in the console path has changed recently (measured with git log): benchmark.h, wmain.cpp (last ef4cd720), log_backend.cpp (dd0ca011) and client_log.cpp have no recent commits, and no code calls SetStdHandle or setvbuf. The 09:46 run was started by an agent, not the user (Game_x64_win.exe --agent-bridge-port=8891, its parent shell already gone). Working hypothesis: the break depends on how the client is launched (std handles inherited from Git Bash or another redirected shell), not on a code change. Confirm by launching once from Explorer and once from Git Bash, before changing anything.\n"
+}

@@ -156,18 +156,12 @@ void DialogBox_Bank::draw_scrollbar(short sX, short sY, int total_lines)
 	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
 	short z = static_cast<short>(hb::shared::input::get_mouse_wheel_delta());
 	char lb = hb::shared::input::is_mouse_button_down(hb::shared::input::MouseButton::Left) ? 1 : 0;
-	int pointer_loc;
 	double d1, d2, d3;
 
 	if (total_lines > m_item_count) {
 		d1 = static_cast<double>(m_scroll_offset);
 		d2 = static_cast<double>(total_lines - m_item_count);
-		d3 = (274.0f * d1) / d2;
-		pointer_loc = static_cast<int>(d3);
-		draw_tall_scrollbar(sX, sY, static_cast<float>(d1 / d2), pointer_loc);
-	}
-	else {
-		pointer_loc = 0;
+		draw_tall_scrollbar(sX, sY, static_cast<float>(d1 / d2));
 	}
 
 	if (lb != 0 && (m_game->get_dialog_box_manager().get_top_id() == DialogBoxId::Bank) && total_lines > m_item_count) {
