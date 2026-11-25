@@ -183,3 +183,5 @@ The item creator draws a kit frame and the standard titles "Create Item" and "Co
 The warning box, the shutdown notice and the eight connection and status popups now share one kit notice frame, without the ruined-city picture (HH-0066, batch 8). That finishes the dialog conversion; alchemy and crafting keep their cauldron art.
 
 The panel and HUD kits are now required: the client loads them first and stops with an error if either is missing, and every old-art fallback is gone (HH-0067). The old title strips, the old HUD icon bar, the old Game1 frames and the retired minimap art are deleted; their sheet entries stay as empty placeholders so no other sprite moves. Unused frames inside sheets that are still partly used are listed in HH-0079 for later removal.
+
+Copperplate CC Bold (SIL OFL 1.1, a free revival of Copperplate Gothic) now ships with the client fonts, unmodified, with its licence (HH-0081). Nothing draws with it yet.

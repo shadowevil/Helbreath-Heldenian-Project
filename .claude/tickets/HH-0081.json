@@ -1,0 +1,21 @@
+{
+  "id": "HH-0081",
+  "summary": "Ship Copperplate CC Bold with the client fonts",
+  "status": "in_progress",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    2
+  ],
+  "author": "pm",
+  "created": "2026-11-25T16:25:48Z",
+  "updated": "2026-11-25T16:25:48Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": []
+  },
+  "body": "User, 2026-11-25: 'Add Copperplate CC Bold along side the ttf fonts shipped'. Added staged/client/fonts/copperplate_cc_bold.otf (byte-identical to CopperplateCC-Bold.otf from the Cowboy Collective zip on fontsquirrel.com) and copperplate-cc-OFL-1.1.txt (the copyright line and source, then the OFL text from the zip). The font declares no Reserved Font Name. It is an OTF with CFF outlines: the panel kit's font check (panel_kit.cpp:579, as of 2026-11-25) accepts only .ttf names, so using it from the kit needs that check widened. FreeType reads OTF.\n\n**Done when:** both files are committed in staged/client/fonts.\n"
+}
