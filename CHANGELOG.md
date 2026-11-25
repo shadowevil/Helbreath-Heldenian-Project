@@ -151,3 +151,5 @@ Six small message boxes now draw their frame from the kit (HH-0066, batch 1): it
 - **Look:** a cloth fill, light wood border and gold corners, the closest match to the old backgrounds. The old sprite is used if the kit is missing.
 - **Behaviour:** click areas, text and buttons are unchanged.
 - **HUD:** two small cleanups in the action bar code, with no change in behaviour.
+
+The magic dialog's engraved hexagram-in-a-ring is back as a transparent kit piece (HH-0071). It was redrawn from the original art at 50% opacity, and `tools/panel_kit/magic_circle.py` generates it into the panel kit as `magic_circle`. The client does not draw it yet.

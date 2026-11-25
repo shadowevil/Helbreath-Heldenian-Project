@@ -22,7 +22,7 @@
  "frames": {
   "corner_stone_tl": {
    "image": "panel_kit.png",
-   "x": 634,
+   "x": 836,
    "y": 260,
    "w": 40,
    "h": 40,
@@ -32,7 +32,7 @@
   },
   "corner_stone_tr": {
    "image": "panel_kit.png",
-   "x": 676,
+   "x": 878,
    "y": 260,
    "w": 40,
    "h": 40,
@@ -42,7 +42,7 @@
   },
   "corner_stone_bl": {
    "image": "panel_kit.png",
-   "x": 550,
+   "x": 752,
    "y": 260,
    "w": 40,
    "h": 40,
@@ -52,7 +52,7 @@
   },
   "corner_stone_br": {
    "image": "panel_kit.png",
-   "x": 592,
+   "x": 794,
    "y": 260,
    "w": 40,
    "h": 40,
@@ -62,8 +62,8 @@
   },
   "corner_rivet_tl": {
    "image": "panel_kit.png",
-   "x": 802,
-   "y": 260,
+   "x": 2,
+   "y": 518,
    "w": 40,
    "h": 37,
    "group": "corner_rivet",
@@ -72,8 +72,8 @@
   },
   "corner_rivet_tr": {
    "image": "panel_kit.png",
-   "x": 844,
-   "y": 260,
+   "x": 44,
+   "y": 518,
    "w": 40,
    "h": 37,
    "group": "corner_rivet",
@@ -82,7 +82,7 @@
   },
   "corner_rivet_bl": {
    "image": "panel_kit.png",
-   "x": 718,
+   "x": 920,
    "y": 260,
    "w": 40,
    "h": 37,
@@ -92,7 +92,7 @@
   },
   "corner_rivet_br": {
    "image": "panel_kit.png",
-   "x": 760,
+   "x": 962,
    "y": 260,
    "w": 40,
    "h": 37,
@@ -102,7 +102,7 @@
   },
   "corner_gold_tl": {
    "image": "panel_kit.png",
-   "x": 2,
+   "x": 214,
    "y": 518,
    "w": 46,
    "h": 36,
@@ -112,8 +112,8 @@
   },
   "corner_gold_tr": {
    "image": "panel_kit.png",
-   "x": 926,
-   "y": 260,
+   "x": 126,
+   "y": 518,
    "w": 38,
    "h": 37,
    "group": "corner_gold",
@@ -122,8 +122,8 @@
   },
   "corner_gold_bl": {
    "image": "panel_kit.png",
-   "x": 966,
-   "y": 260,
+   "x": 166,
+   "y": 518,
    "w": 46,
    "h": 36,
    "group": "corner_gold",
@@ -132,8 +132,8 @@
   },
   "corner_gold_br": {
    "image": "panel_kit.png",
-   "x": 886,
-   "y": 260,
+   "x": 86,
+   "y": 518,
    "w": 38,
    "h": 37,
    "group": "corner_gold",
@@ -142,7 +142,7 @@
   },
   "bevel_box": {
    "image": "panel_kit.png",
-   "x": 50,
+   "x": 262,
    "y": 518,
    "w": 32,
    "h": 32,
@@ -152,7 +152,7 @@
   },
   "ring_bevel": {
    "image": "panel_kit.png",
-   "x": 152,
+   "x": 364,
    "y": 518,
    "w": 32,
    "h": 32,
@@ -162,7 +162,7 @@
   },
   "divider_wave": {
    "image": "panel_kit.png",
-   "x": 242,
+   "x": 454,
    "y": 518,
    "w": 57,
    "h": 25,
@@ -172,7 +172,7 @@
   },
   "divider_knot": {
    "image": "panel_kit.png",
-   "x": 602,
+   "x": 814,
    "y": 518,
    "w": 48,
    "h": 14,
@@ -182,7 +182,7 @@
   },
   "divider_eye": {
    "image": "panel_kit.png",
-   "x": 462,
+   "x": 674,
    "y": 518,
    "w": 51,
    "h": 17,
@@ -192,8 +192,8 @@
   },
   "wood_light_top": {
    "image": "panel_kit.png",
-   "x": 995,
-   "y": 518,
+   "x": 197,
+   "y": 557,
    "w": 21,
    "h": 9,
    "group": "wood_light",
@@ -202,8 +202,8 @@
   },
   "wood_light_bottom": {
    "image": "panel_kit.png",
-   "x": 972,
-   "y": 518,
+   "x": 174,
+   "y": 557,
    "w": 21,
    "h": 9,
    "group": "wood_light",
@@ -212,7 +212,7 @@
   },
   "wood_light_left": {
    "image": "panel_kit.png",
-   "x": 420,
+   "x": 632,
    "y": 518,
    "w": 9,
    "h": 21,
@@ -222,7 +222,7 @@
   },
   "wood_light_right": {
    "image": "panel_kit.png",
-   "x": 431,
+   "x": 643,
    "y": 518,
    "w": 9,
    "h": 21,
@@ -232,8 +232,8 @@
   },
   "wood_dark_top": {
    "image": "panel_kit.png",
-   "x": 949,
-   "y": 518,
+   "x": 151,
+   "y": 557,
    "w": 21,
    "h": 11,
    "group": "wood_dark",
@@ -242,8 +242,8 @@
   },
   "wood_dark_bottom": {
    "image": "panel_kit.png",
-   "x": 926,
-   "y": 518,
+   "x": 128,
+   "y": 557,
    "w": 21,
    "h": 11,
    "group": "wood_dark",
@@ -252,7 +252,7 @@
   },
   "wood_dark_left": {
    "image": "panel_kit.png",
-   "x": 442,
+   "x": 654,
    "y": 518,
    "w": 8,
    "h": 21,
@@ -262,7 +262,7 @@
   },
   "wood_dark_right": {
    "image": "panel_kit.png",
-   "x": 452,
+   "x": 664,
    "y": 518,
    "w": 8,
    "h": 21,
@@ -292,7 +292,7 @@
   },
   "btn_box_a": {
    "image": "panel_kit.png",
-   "x": 568,
+   "x": 780,
    "y": 518,
    "w": 15,
    "h": 15,
@@ -302,7 +302,7 @@
   },
   "btn_box_b": {
    "image": "panel_kit.png",
-   "x": 585,
+   "x": 797,
    "y": 518,
    "w": 15,
    "h": 15,
@@ -312,7 +312,7 @@
   },
   "btn_round_plus": {
    "image": "panel_kit.png",
-   "x": 758,
+   "x": 970,
    "y": 518,
    "w": 12,
    "h": 12,
@@ -322,7 +322,7 @@
   },
   "btn_round_minus": {
    "image": "panel_kit.png",
-   "x": 730,
+   "x": 942,
    "y": 518,
    "w": 12,
    "h": 12,
@@ -332,7 +332,7 @@
   },
   "btn_round_plus_lit": {
    "image": "panel_kit.png",
-   "x": 772,
+   "x": 984,
    "y": 518,
    "w": 12,
    "h": 12,
@@ -342,7 +342,7 @@
   },
   "btn_round_minus_lit": {
    "image": "panel_kit.png",
-   "x": 744,
+   "x": 956,
    "y": 518,
    "w": 12,
    "h": 12,
@@ -352,8 +352,8 @@
   },
   "btn_sq_up": {
    "image": "panel_kit.png",
-   "x": 898,
-   "y": 518,
+   "x": 100,
+   "y": 557,
    "w": 12,
    "h": 12,
    "group": "small_button",
@@ -362,8 +362,8 @@
   },
   "btn_sq_down": {
    "image": "panel_kit.png",
-   "x": 814,
-   "y": 518,
+   "x": 16,
+   "y": 557,
    "w": 12,
    "h": 12,
    "group": "small_button",
@@ -372,8 +372,8 @@
   },
   "btn_sq_up_dark": {
    "image": "panel_kit.png",
-   "x": 912,
-   "y": 518,
+   "x": 114,
+   "y": 557,
    "w": 12,
    "h": 12,
    "group": "small_button",
@@ -382,8 +382,8 @@
   },
   "btn_sq_down_dark": {
    "image": "panel_kit.png",
-   "x": 828,
-   "y": 518,
+   "x": 30,
+   "y": 557,
    "w": 12,
    "h": 12,
    "group": "small_button",
@@ -392,8 +392,8 @@
   },
   "btn_sq_plus": {
    "image": "panel_kit.png",
-   "x": 870,
-   "y": 518,
+   "x": 72,
+   "y": 557,
    "w": 12,
    "h": 12,
    "group": "small_button",
@@ -402,8 +402,8 @@
   },
   "btn_sq_minus": {
    "image": "panel_kit.png",
-   "x": 842,
-   "y": 518,
+   "x": 44,
+   "y": 557,
    "w": 12,
    "h": 12,
    "group": "small_button",
@@ -412,8 +412,8 @@
   },
   "btn_sq_plus_dark": {
    "image": "panel_kit.png",
-   "x": 884,
-   "y": 518,
+   "x": 86,
+   "y": 557,
    "w": 12,
    "h": 12,
    "group": "small_button",
@@ -422,8 +422,8 @@
   },
   "btn_sq_minus_dark": {
    "image": "panel_kit.png",
-   "x": 856,
-   "y": 518,
+   "x": 58,
+   "y": 557,
    "w": 12,
    "h": 12,
    "group": "small_button",
@@ -432,7 +432,7 @@
   },
   "btn_round_up": {
    "image": "panel_kit.png",
-   "x": 786,
+   "x": 998,
    "y": 518,
    "w": 12,
    "h": 12,
@@ -442,7 +442,7 @@
   },
   "btn_round_down": {
    "image": "panel_kit.png",
-   "x": 702,
+   "x": 914,
    "y": 518,
    "w": 12,
    "h": 12,
@@ -452,8 +452,8 @@
   },
   "btn_round_up_dark": {
    "image": "panel_kit.png",
-   "x": 800,
-   "y": 518,
+   "x": 2,
+   "y": 557,
    "w": 12,
    "h": 12,
    "group": "small_button",
@@ -462,7 +462,7 @@
   },
   "btn_round_down_dark": {
    "image": "panel_kit.png",
-   "x": 716,
+   "x": 928,
    "y": 518,
    "w": 12,
    "h": 12,
@@ -472,8 +472,8 @@
   },
   "arrow_up_small": {
    "image": "panel_kit.png",
-   "x": 12,
-   "y": 556,
+   "x": 230,
+   "y": 557,
    "w": 8,
    "h": 7,
    "group": "small_button",
@@ -482,8 +482,8 @@
   },
   "arrow_down_small": {
    "image": "panel_kit.png",
-   "x": 2,
-   "y": 556,
+   "x": 220,
+   "y": 557,
    "w": 8,
    "h": 7,
    "group": "small_button",
@@ -492,7 +492,7 @@
   },
   "ring": {
    "image": "panel_kit.png",
-   "x": 186,
+   "x": 398,
    "y": 518,
    "w": 26,
    "h": 26,
@@ -502,8 +502,8 @@
   },
   "btn_frame_tl": {
    "image": "panel_kit.png",
-   "x": 236,
-   "y": 556,
+   "x": 454,
+   "y": 557,
    "w": 4,
    "h": 4,
    "group": "btn_frame",
@@ -512,8 +512,8 @@
   },
   "btn_frame_t": {
    "image": "panel_kit.png",
-   "x": 268,
-   "y": 556,
+   "x": 486,
+   "y": 557,
    "w": 6,
    "h": 3,
    "group": "btn_frame",
@@ -522,8 +522,8 @@
   },
   "btn_frame_tr": {
    "image": "panel_kit.png",
-   "x": 242,
-   "y": 556,
+   "x": 460,
+   "y": 557,
    "w": 4,
    "h": 4,
    "group": "btn_frame",
@@ -532,8 +532,8 @@
   },
   "btn_frame_l": {
    "image": "panel_kit.png",
-   "x": 224,
-   "y": 556,
+   "x": 442,
+   "y": 557,
    "w": 4,
    "h": 4,
    "group": "btn_frame",
@@ -542,8 +542,8 @@
   },
   "btn_frame_r": {
    "image": "panel_kit.png",
-   "x": 230,
-   "y": 556,
+   "x": 448,
+   "y": 557,
    "w": 4,
    "h": 4,
    "group": "btn_frame",
@@ -552,8 +552,8 @@
   },
   "btn_frame_bl": {
    "image": "panel_kit.png",
-   "x": 212,
-   "y": 556,
+   "x": 430,
+   "y": 557,
    "w": 4,
    "h": 4,
    "group": "btn_frame",
@@ -562,8 +562,8 @@
   },
   "btn_frame_b": {
    "image": "panel_kit.png",
-   "x": 260,
-   "y": 556,
+   "x": 478,
+   "y": 557,
    "w": 6,
    "h": 3,
    "group": "btn_frame",
@@ -572,8 +572,8 @@
   },
   "btn_frame_br": {
    "image": "panel_kit.png",
-   "x": 218,
-   "y": 556,
+   "x": 436,
+   "y": 557,
    "w": 4,
    "h": 4,
    "group": "btn_frame",
@@ -582,7 +582,7 @@
   },
   "btn_face_normal": {
    "image": "panel_kit.png",
-   "x": 387,
+   "x": 599,
    "y": 518,
    "w": 25,
    "h": 25,
@@ -592,7 +592,7 @@
   },
   "btn_face_hover": {
    "image": "panel_kit.png",
-   "x": 360,
+   "x": 572,
    "y": 518,
    "w": 25,
    "h": 25,
@@ -602,8 +602,8 @@
   },
   "btn_cap_left": {
    "image": "panel_kit.png",
-   "x": 22,
-   "y": 556,
+   "x": 240,
+   "y": 557,
    "w": 5,
    "h": 7,
    "group": "btn_cap",
@@ -612,8 +612,8 @@
   },
   "btn_cap_right": {
    "image": "panel_kit.png",
-   "x": 29,
-   "y": 556,
+   "x": 247,
+   "y": 557,
    "w": 5,
    "h": 7,
    "group": "btn_cap",
@@ -622,7 +622,7 @@
   },
   "bevel_box_g3": {
    "image": "panel_kit.png",
-   "x": 84,
+   "x": 296,
    "y": 518,
    "w": 32,
    "h": 32,
@@ -632,7 +632,7 @@
   },
   "bevel_box_g3_raised": {
    "image": "panel_kit.png",
-   "x": 118,
+   "x": 330,
    "y": 518,
    "w": 32,
    "h": 32,
@@ -642,8 +642,8 @@
   },
   "rule_dark": {
    "image": "panel_kit.png",
-   "x": 276,
-   "y": 556,
+   "x": 494,
+   "y": 557,
    "w": 24,
    "h": 1,
    "group": "bevel",
@@ -652,8 +652,8 @@
   },
   "rule_light": {
    "image": "panel_kit.png",
-   "x": 302,
-   "y": 556,
+   "x": 520,
+   "y": 557,
    "w": 24,
    "h": 1,
    "group": "bevel",
@@ -662,7 +662,7 @@
   },
   "vrule_dark": {
    "image": "panel_kit.png",
-   "x": 414,
+   "x": 626,
    "y": 518,
    "w": 1,
    "h": 24,
@@ -672,7 +672,7 @@
   },
   "vrule_light": {
    "image": "panel_kit.png",
-   "x": 417,
+   "x": 629,
    "y": 518,
    "w": 1,
    "h": 24,
@@ -682,7 +682,7 @@
   },
   "ring_bevel_26": {
    "image": "panel_kit.png",
-   "x": 214,
+   "x": 426,
    "y": 518,
    "w": 26,
    "h": 26,
@@ -692,8 +692,8 @@
   },
   "wood_light_top_t6": {
    "image": "panel_kit.png",
-   "x": 168,
-   "y": 556,
+   "x": 386,
+   "y": 557,
    "w": 42,
    "h": 6,
    "group": "border_wood_light",
@@ -702,8 +702,8 @@
   },
   "wood_light_bottom_t6": {
    "image": "panel_kit.png",
-   "x": 124,
-   "y": 556,
+   "x": 342,
+   "y": 557,
    "w": 42,
    "h": 6,
    "group": "border_wood_light",
@@ -712,7 +712,7 @@
   },
   "wood_light_left_t6": {
    "image": "panel_kit.png",
-   "x": 534,
+   "x": 736,
    "y": 260,
    "w": 6,
    "h": 42,
@@ -722,7 +722,7 @@
   },
   "wood_light_right_t6": {
    "image": "panel_kit.png",
-   "x": 542,
+   "x": 744,
    "y": 260,
    "w": 6,
    "h": 42,
@@ -732,8 +732,8 @@
   },
   "wood_dark_top_t6": {
    "image": "panel_kit.png",
-   "x": 80,
-   "y": 556,
+   "x": 298,
+   "y": 557,
    "w": 42,
    "h": 6,
    "group": "border_wood_dark",
@@ -742,8 +742,8 @@
   },
   "wood_dark_bottom_t6": {
    "image": "panel_kit.png",
-   "x": 36,
-   "y": 556,
+   "x": 254,
+   "y": 557,
    "w": 42,
    "h": 6,
    "group": "border_wood_dark",
@@ -752,7 +752,7 @@
   },
   "wood_dark_left_t6": {
    "image": "panel_kit.png",
-   "x": 518,
+   "x": 720,
    "y": 260,
    "w": 6,
    "h": 42,
@@ -762,7 +762,7 @@
   },
   "wood_dark_right_t6": {
    "image": "panel_kit.png",
-   "x": 526,
+   "x": 728,
    "y": 260,
    "w": 6,
    "h": 42,
@@ -802,7 +802,7 @@
   },
   "divider_wave_white": {
    "image": "panel_kit.png",
-   "x": 301,
+   "x": 513,
    "y": 518,
    "w": 57,
    "h": 25,
@@ -812,7 +812,7 @@
   },
   "divider_knot_white": {
    "image": "panel_kit.png",
-   "x": 652,
+   "x": 864,
    "y": 518,
    "w": 48,
    "h": 14,
@@ -822,7 +822,7 @@
   },
   "divider_eye_white": {
    "image": "panel_kit.png",
-   "x": 515,
+   "x": 727,
    "y": 518,
    "w": 51,
    "h": 17,
@@ -830,10 +830,29 @@
    "use": "white copy of divider_eye: vertex colour = the tint",
    "source": "divider_eye"
   },
+  "magic_circle": {
+   "image": "panel_kit.png",
+   "x": 518,
+   "y": 260,
+   "w": 200,
+   "h": 200,
+   "group": "decor",
+   "use": "magic dialog hexagram-in-ring, engraved bevel, 50% overall; draw 1:1 at dialog offset 28,62 (258x328 dialog)",
+   "source": "generated by magic_circle.py (HH-0071)",
+   "placement": {
+    "dialog": "magic",
+    "dialog_size": [
+     258,
+     328
+    ],
+    "x": 28,
+    "y": 62
+   }
+  },
   "px_black": {
    "image": "panel_kit.png",
-   "x": 248,
-   "y": 556,
+   "x": 466,
+   "y": 557,
    "w": 4,
    "h": 4,
    "group": "util",
@@ -842,8 +861,8 @@
   },
   "px_white": {
    "image": "panel_kit.png",
-   "x": 254,
-   "y": 556,
+   "x": 472,
+   "y": 557,
    "w": 4,
    "h": 4,
    "group": "util",

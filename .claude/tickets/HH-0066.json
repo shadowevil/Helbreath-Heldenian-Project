@@ -1,7 +1,7 @@
 {
   "id": "HH-0066",
   "summary": "Panel kit 7: remaining dialogs with Game1-4 / Text backgrounds",
-  "status": "in_review",
+  "status": "in_progress",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "client",
   "created": "2026-11-24T20:30:14Z",
-  "updated": "2026-11-25T01:41:45Z",
+  "updated": "2026-11-25T01:57:54Z",
   "links": {
     "commits": [],
     "files": [
@@ -22,6 +22,9 @@
     ],
     "blocks": [
       "HH-0059"
+    ],
+    "blocked_by": [
+      "HH-0071"
     ]
   },
   "body": "Spec step 7. Same pattern, one dialog per cycle; the census in spec step 8 lists the users.\n\nDone when: no dialog draws a Game1-4 or Text frame as its background.",
@@ -35,6 +38,11 @@
       "author": "pm",
       "at": "2026-11-25T01:41:45Z",
       "body": "User ruling, 2026-11-24, in chat: \"Drop the pictures\". The illustrated backgrounds (portrait, horned figure, hexagram, hammer, ruined city) are not carried into the kit; the remaining dialogs convert to plain kit frames."
+    },
+    {
+      "author": "pm",
+      "at": "2026-11-25T01:42:56Z",
+      "body": "Batch 1 committed in 3df92c77 after a read-only review passed (one comment nit fixed). Next: magic and skill dialogs."
     }
   ]
 }

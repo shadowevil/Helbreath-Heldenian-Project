@@ -4,6 +4,8 @@ Builds the runtime dialog and button kit the client composes panels from (HH-005
 
 - `build_panel_kit.py` slices the art sheets and writes `staged/client/sprites/panelkit/panel_kit.png` and `panel_kit.json`.
   The PNG is the atlas; the JSON holds the frames and the recipes.
+- `magic_circle.py` generates the `magic_circle` frame (200x200 RGBA hexagram-in-ring bevel for the magic dialog, HH-0071;
+  needs numpy and scipy). The json frame carries a `placement` (dialog `magic`, top-left 28,62 in the 258x328 dialog).
 - `compose.py` is the reference composer: what the client's `panel_kit` class must draw. It reads only the staged kit.
 - `text_fx.py` draws the multi-pass button text used by `compose.py`.
 - `build_hud_kit.py` slices the HUD action-bar sheet (`working/sprite_work/GameDialog/gamedialog_sprite_6.png`) into
@@ -41,4 +43,4 @@ python tools/panel_kit/compose.py                    # preview to build/panel_ki
 
 ## Needs
 
-Python 3 with Pillow (both tools) and numpy (`compose.py`, `text_fx.py`). Console output is ASCII.
+Python 3 with Pillow (both tools), numpy (`compose.py`, `text_fx.py`, `magic_circle.py`) and scipy (`magic_circle.py`). Console output is ASCII.
