@@ -414,6 +414,7 @@ void CGame::on_uninitialize()
 	m_effect_sprites.clear();
 	m_cursor_art.unload();
 	m_panel_kit.reset();
+	m_copyright_notice.reset();
 	m_hud_kit.reset();
 	hb::shared::sprite::Sprites::set_factory(nullptr);
 	m_sprite_factory.reset();
@@ -3047,6 +3048,13 @@ bool CGame::load_ui_kits()
 	m_panel_kit = std::move(panel);
 	m_hud_kit = std::move(hud);
 	return true;
+}
+
+hb::client::copyright_notice& CGame::get_copyright_notice()
+{
+	if (!m_copyright_notice)
+		m_copyright_notice = std::make_unique<hb::client::copyright_notice>();
+	return *m_copyright_notice;
 }
 
 hb::client::panel_kit& CGame::get_panel_kit()

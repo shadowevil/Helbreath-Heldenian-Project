@@ -56,6 +56,13 @@ void IGameScreen::draw_version()
     m_game->draw_version();
 }
 
+void IGameScreen::draw_copyright(bool show_company)
+{
+    // The lines are baked sprites (the copyright sign needs UTF-8, which the text path does not read); CGame
+    // owns them
+    m_game->get_copyright_notice().draw(*m_game->m_Renderer, show_company);
+}
+
 
 // ============== Event/Message Helpers ==============
 

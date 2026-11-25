@@ -78,4 +78,5 @@ void Screen_Quit::on_render()
     }
 
     draw_version();
+    draw_copyright();
 }

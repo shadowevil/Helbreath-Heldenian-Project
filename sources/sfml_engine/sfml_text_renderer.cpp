@@ -15,6 +15,7 @@
 #include <cstring>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace hb::shared::text {
 
@@ -254,7 +255,7 @@ const sf::Font* SFMLTextRenderer::face_font(int face_id) const
     return m_faces[static_cast<std::size_t>(face_id - 1)].font.get();
 }
 
-sf::Text SFMLTextRenderer::make_run(const sf::Font& font, const char* text, const text_run& run) const
+sf::Text SFMLTextRenderer::make_run(const sf::Font& font, const sf::String& text, const text_run& run) const
 {
     const unsigned int size = static_cast<unsigned int>((std::max)(run.pixel_size, 1));
     sf::Text sf_text(font, text, size);
@@ -294,14 +295,14 @@ void SFMLTextRenderer::draw_run(float x, float y, const char* text, const text_r
                               {x - base_x, y - base_y});
 }
 
-hb::shared::render::ITexture* SFMLTextRenderer::bake_run(const char* text, const text_run& run,
-                                                         const hb::shared::render::Color& color, int pad)
+namespace
 {
-    const sf::Font* font = face_font(run.face);
-    if (!text || *text == '\0' || !font)
-        return nullptr;
 
-    sf::Text sf_text = make_run(*font, text, run);
+// The glyph coverage of a UTF-8 text as the alpha of an image: the ink box plus pad pixels on every side,
+// white glyphs onto transparent black at whole pixels (the union of the glyphs' coverage). False when the
+// text has no ink or the canvas cannot be made.
+bool rasterize_coverage(sf::Text& sf_text, int pad, sf::Image& image)
+{
     sf_text.setFillColor(sf::Color::White);
     const sf::FloatRect ink = sf_text.getLocalBounds();
     pad = (std::max)(pad, 0);
@@ -309,23 +310,123 @@ hb::shared::render::ITexture* SFMLTextRenderer::bake_run(const char* text, const
                             static_cast<unsigned int>(std::ceil(ink.size.y)) + 2u * static_cast<unsigned int>(pad));
     sf::RenderTexture canvas;
     if (ink.size.x <= 0.0f || ink.size.y <= 0.0f || !canvas.resize(size))
-        return nullptr;
+        return false;
 
-    // Coverage only: white glyphs onto transparent black at whole pixels give the union of glyph
-    // coverage in alpha; every pixel's colour is then set to the run's colour (straight alpha)
     canvas.clear(sf::Color::Transparent);
     sf_text.setPosition({std::round(static_cast<float>(pad) - ink.position.x),
                          std::round(static_cast<float>(pad) - ink.position.y)});
     canvas.draw(sf_text, sf::RenderStates(sf::BlendAlpha));
     canvas.display();
+    image = canvas.getTexture().copyToImage();
+    return true;
+}
 
-    sf::Image image = canvas.getTexture().copyToImage();
+sf::String utf8_string(const char* text)
+{
+    return sf::String::fromUtf8(text, text + std::strlen(text));
+}
+
+// One separable pass over a width x height plane of alpha: each sample becomes the maximum (dilate) or the
+// weighted sum (blur) of its neighbours along one axis; horizontal or vertical
+template <typename Combine>
+void filter_plane(std::vector<float>& plane, unsigned int width, unsigned int height, bool horizontal, int radius, Combine combine)
+{
+    std::vector<float> out(plane.size());
+    for (unsigned int y = 0; y < height; y++)
+    {
+        for (unsigned int x = 0; x < width; x++)
+        {
+            float result = 0.0f;
+            for (int k = -radius; k <= radius; k++)
+            {
+                const int sx = static_cast<int>(x) + (horizontal ? k : 0);
+                const int sy = static_cast<int>(y) + (horizontal ? 0 : k);
+                const bool inside = sx >= 0 && sy >= 0 && sx < static_cast<int>(width) && sy < static_cast<int>(height);
+                result = combine(result, inside ? plane[static_cast<size_t>(sy) * width + static_cast<size_t>(sx)] : 0.0f, k);
+            }
+            out[static_cast<size_t>(y) * width + x] = result;
+        }
+    }
+    plane.swap(out);
+}
+
+} // namespace
+
+hb::shared::render::ITexture* SFMLTextRenderer::bake_run(const char* text, const text_run& run,
+                                                         const hb::shared::render::Color& color, int pad)
+{
+    const sf::Font* font = face_font(run.face);
+    if (!text || *text == '\0' || !font)
+        return nullptr;
+
+    sf::Text sf_text = make_run(*font, utf8_string(text), run);
+    sf::Image image;
+    if (!rasterize_coverage(sf_text, pad, image))
+        return nullptr;
+
+    // Every pixel's colour is set to the run's colour (straight alpha), the coverage kept as its alpha
+    const sf::Vector2u size = image.getSize();
     for (unsigned int y = 0; y < size.y; y++)
     {
         for (unsigned int x = 0; x < size.x; x++)
         {
             const std::uint8_t coverage = image.getPixel({x, y}).a;
             image.setPixel({x, y}, sf::Color(color.r, color.g, color.b, static_cast<std::uint8_t>(coverage * color.a / 255)));
+        }
+    }
+    return new SFMLTexture(image, true);
+}
+
+hb::shared::render::ITexture* SFMLTextRenderer::bake_glow(const char* text, const text_run& run,
+                                                          const hb::shared::render::Color& color, int dilate, float blur)
+{
+    const sf::Font* font = face_font(run.face);
+    if (!text || *text == '\0' || !font)
+        return nullptr;
+
+    sf::Text sf_text = make_run(*font, utf8_string(text), run);
+    sf::Image image;
+    if (!rasterize_coverage(sf_text, glow_pad(dilate, blur), image))
+        return nullptr;
+
+    const sf::Vector2u size = image.getSize();
+    std::vector<float> plane(static_cast<size_t>(size.x) * size.y);
+    for (unsigned int y = 0; y < size.y; y++)
+    {
+        for (unsigned int x = 0; x < size.x; x++)
+            plane[static_cast<size_t>(y) * size.x + x] = static_cast<float>(image.getPixel({x, y}).a) / 255.0f;
+    }
+
+    // Dilate by a square window, then blur with a Gaussian; the pad leaves room for both
+    const auto maximum = [](float best, float sample, int) { return (std::max)(best, sample); };
+    dilate = (std::max)(dilate, 0);
+    filter_plane(plane, size.x, size.y, true, dilate, maximum);
+    filter_plane(plane, size.x, size.y, false, dilate, maximum);
+    if (blur > 0.0f)
+    {
+        const int radius = static_cast<int>(std::ceil(blur * 3.0f));
+        std::vector<float> weights(static_cast<size_t>(2 * radius + 1));
+        float sum = 0.0f;
+        for (int k = -radius; k <= radius; k++)
+        {
+            const float w = std::exp(-static_cast<float>(k * k) / (2.0f * blur * blur));
+            weights[static_cast<size_t>(k + radius)] = w;
+            sum += w;
+        }
+        const auto gaussian = [&weights, radius, sum](float total, float sample, int k)
+        {
+            return total + sample * weights[static_cast<size_t>(k + radius)] / sum;
+        };
+        filter_plane(plane, size.x, size.y, true, radius, gaussian);
+        filter_plane(plane, size.x, size.y, false, radius, gaussian);
+    }
+
+    for (unsigned int y = 0; y < size.y; y++)
+    {
+        for (unsigned int x = 0; x < size.x; x++)
+        {
+            const float coverage = (std::min)(plane[static_cast<size_t>(y) * size.x + x], 1.0f);
+            image.setPixel({x, y}, sf::Color(color.r, color.g, color.b, static_cast<std::uint8_t>(coverage * static_cast<float>(color.a))));
         }
     }
     return new SFMLTexture(image, true);

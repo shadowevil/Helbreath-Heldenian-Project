@@ -66,6 +66,7 @@
 #include "formula_engine.h"
 #include "agent_bridge_config.h"
 #include "panel_kit.h"
+#include "copyright_notice.h"
 #include "hud_kit.h"
 #ifdef DEF_CLAUDE_TESTING
 namespace hb::client { class agent_bridge; }
@@ -166,6 +167,7 @@ public:
 	bool load_ui_kits();
 	// The required kits, loaded by load_ui_kits before any screen draws; std::logic_error if used before that
 	hb::client::panel_kit& get_panel_kit();
+	hb::client::copyright_notice& get_copyright_notice();   // the front-end screens' copyright lines (HH-0088)
 	hb::client::hud_kit& get_hud_kit();
 	void add_map_status_info(const char* data, bool is_last_data);
 	void request_map_status(const char* map_name, int mode);
@@ -373,7 +375,8 @@ std::array<bool, hb::shared::limits::MaxItems> m_is_item_equipped{};
 	cursor_art m_cursor_art;          // High-resolution cursor art; falls back to m_sprite[MouseCursor]
 	bool m_cursor_art_tried = false;  // Load is attempted once, on the first cursor draw
 	std::unique_ptr<hb::client::panel_kit> m_panel_kit;   // Dialog panels and text buttons (get_panel_kit)
-	std::unique_ptr<hb::client::hud_kit> m_hud_kit;       // The HUD action bar (get_hud_kit)
+	std::unique_ptr<hb::client::copyright_notice> m_copyright_notice;   // baked textures: released before the renderer (get_copyright_notice)
+	std::unique_ptr<hb::client::hud_kit> m_hud_kit;      // The HUD action bar (get_hud_kit)
 
 	bool m_force_disconn;
 

@@ -261,4 +261,5 @@ void Screen_Login::on_render()
     m_controls.render();
 
     draw_version();
+    draw_copyright(true);   // false: only the recreation line (the art carries the Siementech notice)
 }

@@ -314,6 +314,7 @@
     <ClInclude Include="minimap.h" />
     <ClInclude Include="parchment_kit.h" />
     <ClInclude Include="panel_kit.h" />
+    <ClInclude Include="copyright_notice.h" />
     <ClInclude Include="hud_kit.h" />
     <ClInclude Include="client_messages.h" />
     <ClInclude Include="resource.h" />
@@ -589,6 +590,7 @@
     <ClCompile Include="minimap.cpp" />
     <ClCompile Include="parchment_kit.cpp" />
     <ClCompile Include="panel_kit.cpp" />
+    <ClCompile Include="copyright_notice.cpp" />
     <ClCompile Include="hud_kit.cpp" />
     <ClCompile Include="miniaudio_impl.cpp" />
     <ClCompile Include="weather_manager.cpp" />

@@ -57,6 +57,8 @@ public:
                   hb::shared::render::BlendMode blend) override;
     hb::shared::render::ITexture* bake_run(const char* text, const text_run& run,
                                            const hb::shared::render::Color& color, int pad = 2) override;
+    hb::shared::render::ITexture* bake_glow(const char* text, const text_run& run,
+                                            const hb::shared::render::Color& color, int dilate, float blur) override;
 
     // Batching (no-op for SFML, no DC acquisition needed)
     void begin_batch() override;
@@ -74,7 +76,7 @@ private:
     const sf::Font* face_font(int face_id) const;
 
     // A run laid out at its logical pixel size, tracking applied
-    sf::Text make_run(const sf::Font& font, const char* text, const text_run& run) const;
+    sf::Text make_run(const sf::Font& font, const sf::String& text, const text_run& run) const;
 
     // (dx, dy) logical px as a logical shift of whole output pixels, added after the origin is snapped
     sf::Vector2f output_shift(int dx, int dy) const;

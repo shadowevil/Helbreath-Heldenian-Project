@@ -512,6 +512,7 @@ void Screen_CreateNewCharacter::on_render()
     hb::shared::text::draw_text(GameFont::Default, 550 + OX, 192 + OY + 16 * row++, txt.c_str(), hb::shared::text::TextStyle::from_color(GameColors::UILabel));
 
     m_game->draw_version();
+    draw_copyright();
 
     // === Tooltips ===
     render_tooltips();

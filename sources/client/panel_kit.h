@@ -22,6 +22,7 @@
 #pragma once
 
 #include "primitive_types.h"
+#include "text_renderer.h"   // text_run
 #include "types.h"   // cc::render_handler
 
 #include <cstdint>
@@ -183,6 +184,12 @@ namespace hb::client
 		// y of the cap-height centre (cap top to baseline) of text drawn at y with anchor: where
 		// side flourishes centre so they line up with the letters
 		int cap_middle(std::string_view recipe, std::string_view text, int y, text_anchor::type anchor) const;
+		// A recipe's face, pixel size and tracking (px and tracking in UI units; {} when the recipe is missing),
+		// for baking its text elsewhere
+		hb::shared::text::text_run recipe_run(std::string_view recipe) const;
+		// The ink box (absolute) that text drawn at (x, y) with anchor covers; {} for a per-word recipe or
+		// before the text renderer is up
+		kit_rect text_ink(std::string_view recipe, std::string_view text, int x, int y, text_anchor::type anchor) const;
 		// Gap between a field label's right edge and its value box (field_label recipe)
 		int label_gap() const;
 

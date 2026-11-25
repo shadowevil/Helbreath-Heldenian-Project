@@ -135,6 +135,7 @@ void Screen_Loading::on_render()
         renderer->draw_texture_region(m_label_gold.get(), 0.0f, 0.0f, filled, h, x, y, filled * fit.scale, h * fit.scale);
     }
     draw_version();
+    draw_copyright();
 }
 
 //=============================================================================
@@ -161,7 +162,6 @@ void Screen_Loading::LoadStage_Interface()
 
     hb::shared::sprite::SpriteLoader::open("interface/intermediate_screens", [&](hb::shared::sprite::SpriteLoader& loader) {
         m_game->m_sprite[InterfaceNdQuit] = loader.get_sprite(2, false);
-        m_game->m_sprite[InterfaceNdNewAccount] = loader.get_sprite(2, false);
         m_game->m_sprite[InterfaceNdLogin] = loader.get_sprite(4, false);
         m_game->m_sprite[InterfaceNdSelectChar] = loader.get_sprite(5, false);
         m_game->m_sprite[InterfaceNdNewChar] = loader.get_sprite(6, false);

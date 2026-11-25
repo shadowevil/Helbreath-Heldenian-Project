@@ -886,6 +886,27 @@ namespace hb::client
 		return kit_data::origin_y(*r, m_data->ink(*r, text).second, y, anchor) + r->cap_mid;
 	}
 
+	hb::shared::text::text_run panel_kit::recipe_run(std::string_view recipe) const
+	{
+		const kit_data::text_recipe* r = m_data ? m_data->recipe(recipe) : nullptr;
+		if (!r)
+			return {};
+		return {r->face, r->px, r->tracking};
+	}
+
+	kit_rect panel_kit::text_ink(std::string_view recipe, std::string_view text, int x, int y, text_anchor::type anchor) const
+	{
+		const kit_data::text_recipe* r = m_data ? m_data->recipe(recipe) : nullptr;
+		if (!r || !m_data->text || r->per_word || text.empty())
+			return {};
+		// The origin draw_text uses for a single run
+		const kit_data::ink_rect& i = m_data->ink(*r, text).second;
+		const int ox = anchor == text_anchor::lcap ? x - i.left
+			: anchor == text_anchor::rcap ? x - i.right : x - floor_div(i.left + i.right, 2);
+		const int oy = kit_data::origin_y(*r, i, y, anchor);
+		return {ox + i.left, oy + i.top, i.right - i.left, i.bottom - i.top};
+	}
+
 	// ------------------------------------------------------------------ kit_button
 
 	kit_button::kit_button(button_layout::type layout, std::string text, kit_point position)

@@ -164,4 +164,5 @@ void Screen_MainMenu::on_render()
 	}
 	m_controls.render();
 	draw_version();
+	draw_copyright();
 }

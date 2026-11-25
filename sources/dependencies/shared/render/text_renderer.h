@@ -137,11 +137,30 @@ public:
     // in texture pixels, the texture is the ink box plus pad pixels on every side, every pixel is color
     // with the glyph coverage as alpha, sampled smooth with mipmaps. nullptr when the face or text is
     // unusable; the caller owns the texture.
+    // text is UTF-8 here (unlike draw_text and the other runs, whose const char* is read as ANSI, so
+    // legacy server bytes keep working): a baked label can carry any glyph its face has, e.g. the
+    // copyright sign as "\xC2\xA9".
     virtual hb::shared::render::ITexture* bake_run(const char* text, const text_run& run,
                                                    const hb::shared::render::Color& color, int pad = 2)
     {
         (void)text; (void)run; (void)color; (void)pad;
         return nullptr;
+    }
+    // A soft glow for a run: its glyph coverage dilated by dilate px (a square window), blurred with a
+    // Gaussian of sigma blur px, drawn as color (color.a is the glow's peak opacity) with that coverage as
+    // alpha. run.pixel_size, dilate and blur are in texture pixels. The texture is the ink box plus
+    // glow_pad(dilate, blur) pixels on every side, so it lines up with a bake_run of the same run at
+    // that pad. text is UTF-8, as for bake_run. nullptr when the face or text is unusable; the caller
+    // owns the texture.
+    virtual hb::shared::render::ITexture* bake_glow(const char* text, const text_run& run,
+                                                    const hb::shared::render::Color& color, int dilate, float blur)
+    {
+        (void)text; (void)run; (void)color; (void)dilate; (void)blur;
+        return nullptr;
+    }
+    static int glow_pad(int dilate, float blur)
+    {
+        return dilate + static_cast<int>(blur * 3.0f + 0.999f) + 1;
     }
 
     // Batching for performance (DDraw needs DC acquisition)

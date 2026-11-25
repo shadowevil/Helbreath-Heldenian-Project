@@ -2,7 +2,11 @@
 
 #include "game_screen.h"
 #include "ccontrols.h"
+#include "panel_kit.h"
+#include "primitive_types.h"
+#include "texture.h"
 #include <cstdint>
+#include <memory>
 
 class Screen_CreateAccount : public IGameScreen {
 public:
@@ -14,6 +18,7 @@ public:
     ~Screen_CreateAccount() override = default;
 
     void on_initialize() override;
+    void on_uninitialize() override;
     void on_update() override;
     void on_render() override;
     bool on_net_response(uint16_t response_type, char* data) override;
@@ -37,6 +42,9 @@ public:
 
 private:
     void submit_create_account();
+    void update_layout();   // the form on the art's tablet, from this frame's fit (HH-0087)
+    void bake_title_glow();   // the title's glow, at the window's resolution
+    void draw_title(const hb::client::panel_kit& kit, int cx, int cy) const;
 
     enum control_id
     {
@@ -50,4 +58,14 @@ private:
     };
 
     cc::control_collection m_controls;
+    std::unique_ptr<hb::shared::render::ITexture> m_art;   // staged interface/front_end/create_new_account.png
+    hb::shared::render::art_fit m_fit;
+    int m_form_x = 0;   // the form's top-left in UI units
+    int m_form_y = 0;
+    std::unique_ptr<hb::shared::render::ITexture> m_title_glow;   // baked; redone when the UI scale changes
+    float m_glow_scale = 0.0f;   // the UI scale it was baked for; 0 = not yet
+    float m_glow_x = 0.0f;       // its rect relative to the title's centre, in UI units
+    float m_glow_y = 0.0f;
+    float m_glow_w = 0.0f;
+    float m_glow_h = 0.0f;
 };

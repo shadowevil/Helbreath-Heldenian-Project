@@ -376,6 +376,7 @@ void Screen_SelectCharacter::on_render()
     hb::shared::text::draw_text_aligned(GameFont::Default, 122 + OX, 456 + OY, (315) - (122), 15, UPDATE_SCREEN_ON_SELECT_CHARACTER36, hb::shared::text::TextStyle::from_color(GameColors::UIBlack), hb::shared::text::Align::TopCenter);
 
     m_game->draw_version();
+    draw_copyright();
 
     // Debug: draw control bounds in fuchsia
     if (m_controls.debug_draw_enabled())

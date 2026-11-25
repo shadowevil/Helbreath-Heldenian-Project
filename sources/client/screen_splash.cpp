@@ -145,5 +145,4 @@ void Screen_Splash::on_render()
 {
     m_game->m_sprite[SplashScreen]->draw(0, 0, 0);
     m_controls.render();
-    draw_version();
 }

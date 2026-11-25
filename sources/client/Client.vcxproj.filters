@@ -147,6 +147,9 @@
     <ClInclude Include="panel_kit.h">
       <Filter>Managers</Filter>
     </ClInclude>
+    <ClInclude Include="copyright_notice.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
     <ClInclude Include="hud_kit.h">
       <Filter>Managers</Filter>
     </ClInclude>
@@ -767,6 +770,9 @@
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="panel_kit.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="copyright_notice.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="hud_kit.cpp">

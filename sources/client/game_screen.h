@@ -136,6 +136,10 @@ protected:
                           const hb::shared::render::Color& color = GameColors::UIBlack);
     void put_string_spr_font(int iX, int iY, const char* str, uint8_t r, uint8_t g, uint8_t b);
     void draw_version();
+    // The copyright lines, bottom-centre of the visible area; each front-end screen calls it once in on_render
+    // (HH-0088). show_company false draws only the recreation line, for a screen whose art already carries
+    // the company's notice
+    void draw_copyright(bool show_company = true);
 
     // Event/message helpers
     void add_event_list(const char* txt, char color = 0, bool dup_allow = true);

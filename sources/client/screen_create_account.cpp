@@ -11,9 +11,65 @@
 #include "text_field_renderer.h"
 #include "packet/shared_packets.h"
 #include "audio_manager.h"
+#include "panel_kit.h"
+#include "renderer.h"
+#include "sprite_factory.h"
+#include "text_renderer.h"
+#include "log.h"
+#include <algorithm>
+#include <cmath>
+#include <string>
 
 using namespace hb::shared::net;
-using namespace hb::client::sprite_id;
+
+namespace
+{
+
+// interface/front_end/create_new_account.png (HH-0087): the main menu backdrop with a blank stone tablet. The
+// original 800x600 screen maps onto the art's centre 4:3 region (x 240-1680, 1.8 art px per UI unit); the form
+// is laid out in UI units on the tablet, whose top-left is UI (403,194), and drawn at the kit's own size
+constexpr float art_width = 1920.0f;
+constexpr float art_height = 1080.0f;
+constexpr float classic_art_x = 240.0f;
+constexpr float classic_art_scale = 1.8f;
+constexpr float tablet_x = 403.0f;
+constexpr float tablet_y = 194.0f;
+constexpr int form_w = 340;
+constexpr int form_h = 296;
+
+// Form-relative layout (UI units)
+constexpr int title_y = 24;
+constexpr int label_x = 30;
+constexpr int field_x = 102;
+constexpr int field_y = 66;
+constexpr int field_step = 30;
+constexpr int field_w = 208;
+constexpr int field_h = 18;
+constexpr int field_pad_x = 5;   // the text starts inside the inset's bevel
+constexpr int field_pad_y = 2;
+constexpr int rule_y = 192;
+constexpr int help_y = 208;
+constexpr int help_step = 15;
+constexpr int button_x = 40;
+constexpr int button_step = 90;
+constexpr int button_y = 250;
+constexpr int button_w = 78;
+constexpr int button_h = 20;
+
+constexpr hb::shared::render::Color label_color{222, 206, 180};   // light parchment
+constexpr hb::shared::render::Color title_fill{240, 228, 204};
+constexpr hb::shared::render::Color title_glow{10, 6, 4};
+constexpr hb::shared::render::Color help_color{255, 181, 0};
+constexpr float field_darken = 0.55f;
+
+constexpr const char* title_text = "New Account";
+
+// The glow's look at 1x (a 5 px square dilate, a 2.5 px blur, 85% opaque); baked at the window's resolution
+constexpr int glow_dilate_px = 2;
+constexpr float glow_blur_px = 2.5f;
+constexpr float glow_alpha = 0.85f;
+
+} // namespace
 
 Screen_CreateAccount::Screen_CreateAccount(CGame* game)
     : IGameScreen(game)
@@ -23,6 +79,11 @@ Screen_CreateAccount::Screen_CreateAccount(CGame* game)
 void Screen_CreateAccount::on_initialize()
 {
     m_game->m_arrow_pressed = 0;
+
+    const std::string art_path = hb::shared::sprite::Sprites::get_sprite_path() + "/interface/front_end/create_new_account.png";
+    m_art.reset(m_game->m_Renderer->create_texture_from_file(art_path.c_str()));
+    if (!m_art)
+        hb::logger::error("Create account art not loaded: {}", art_path);
 
     m_controls.set_screen_size(LOGICAL_WIDTH(), LOGICAL_HEIGHT());
     m_controls.set_hover_focus(false);
@@ -44,14 +105,14 @@ void Screen_CreateAccount::on_initialize()
     };
 
     // === Textboxes ===
-    auto* tb_account = m_controls.add<cc::textbox>(TXT_ACCOUNT, cc::rect{340, 210, 250, 18}, 11);
+    auto* tb_account = m_controls.add<cc::textbox>(TXT_ACCOUNT, cc::rect{0, 0, 1, 1}, 11);
     tb_account->set_character_filter(hb::client::username_allowed_chars);
     tb_account->set_validator([](const std::string& s) {
         return !s.empty() && CMisc::check_valid_name(s.c_str());
     });
     tb_account->set_render_handler(textbox_renderer);
 
-    auto* tb_password = m_controls.add<cc::textbox>(TXT_PASSWORD, cc::rect{340, 232, 250, 18}, 11);
+    auto* tb_password = m_controls.add<cc::textbox>(TXT_PASSWORD, cc::rect{0, 0, 1, 1}, 11);
     tb_password->set_hidden(true);
     tb_password->set_character_filter(hb::client::password_allowed_chars);
     tb_password->set_validator([](const std::string& s) {
@@ -59,7 +120,7 @@ void Screen_CreateAccount::on_initialize()
     });
     tb_password->set_render_handler(textbox_renderer);
 
-    auto* tb_confirm = m_controls.add<cc::textbox>(TXT_CONFIRM, cc::rect{340, 254, 250, 18}, 11);
+    auto* tb_confirm = m_controls.add<cc::textbox>(TXT_CONFIRM, cc::rect{0, 0, 1, 1}, 11);
     tb_confirm->set_hidden(true);
     tb_confirm->set_character_filter(hb::client::password_allowed_chars);
     tb_confirm->set_validator([this](const std::string& s) {
@@ -68,7 +129,7 @@ void Screen_CreateAccount::on_initialize()
     });
     tb_confirm->set_render_handler(textbox_renderer);
 
-    auto* tb_email = m_controls.add<cc::textbox>(TXT_EMAIL, cc::rect{340, 276, 250, 18}, 49);
+    auto* tb_email = m_controls.add<cc::textbox>(TXT_EMAIL, cc::rect{0, 0, 1, 1}, 49);
     tb_email->set_character_filter(hb::client::email_allowed_chars);
     tb_email->set_validator([](const std::string& s) {
         return !s.empty() && CMisc::is_valid_email(s.c_str());
@@ -76,11 +137,19 @@ void Screen_CreateAccount::on_initialize()
     tb_email->set_render_handler(textbox_renderer);
 
     // === Buttons ===
-    auto* btn_create = m_controls.add<cc::button>(BTN_CREATE, cc::rect{297, 398, 72, 20});
+    // Kit buttons (the small layout, 78 wide) at the control's bounds
+    auto draw_button = [this](const cc::control& c, const char* label, bool lit) {
+        const auto sb = c.screen_bounds();
+        const hb::client::panel_kit& kit = m_game->get_panel_kit();
+        hb::client::button_style style = kit.style_of(hb::client::button_layout::small);
+        style.w = button_w;
+        kit.button(style, label, {sb.x, sb.y, sb.w, sb.h}, lit);
+    };
+
+    auto* btn_create = m_controls.add<cc::button>(BTN_CREATE, cc::rect{0, 0, 1, 1});
     btn_create->set_on_click([this](int) { submit_create_account(); });
     btn_create->set_click_sound([this] { audio_manager::get().play_game_sound(sound_type::effect, 14, 5); });
-    btn_create->set_render_handler([this](const cc::control& c) {
-        auto sb = c.screen_bounds();
+    btn_create->set_render_handler([this, draw_button](const cc::control& c) {
         // Only highlight when all fields are valid
         bool all_valid = true;
         for (int id = TXT_ACCOUNT; id <= TXT_EMAIL; id++)
@@ -88,11 +157,10 @@ void Screen_CreateAccount::on_initialize()
             auto* tb = m_controls.find_as<cc::textbox>(id);
             if (tb && !tb->is_valid()) { all_valid = false; break; }
         }
-        int frame = (all_valid && c.is_highlighted()) ? 25 : 24;
-        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, frame);
+        draw_button(c, "Create", all_valid && c.is_highlighted());
     });
 
-    auto* btn_clear = m_controls.add<cc::button>(BTN_CLEAR, cc::rect{392, 398, 72, 20});
+    auto* btn_clear = m_controls.add<cc::button>(BTN_CLEAR, cc::rect{0, 0, 1, 1});
     btn_clear->set_click_sound([this] { audio_manager::get().play_game_sound(sound_type::effect, 14, 5); });
     btn_clear->set_on_click([this](int) {
         for (int id = TXT_ACCOUNT; id <= TXT_EMAIL; id++)
@@ -102,27 +170,112 @@ void Screen_CreateAccount::on_initialize()
         }
         m_controls.set_focus(TXT_ACCOUNT);
     });
-    btn_clear->set_render_handler([this](const cc::control& c) {
-        auto sb = c.screen_bounds();
-        int frame = c.is_highlighted() ? 27 : 26;
-        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, frame);
+    btn_clear->set_render_handler([draw_button](const cc::control& c) {
+        draw_button(c, "Clear", c.is_highlighted());
     });
 
-    auto* btn_cancel = m_controls.add<cc::button>(BTN_CANCEL, cc::rect{488, 398, 72, 20});
+    auto* btn_cancel = m_controls.add<cc::button>(BTN_CANCEL, cc::rect{0, 0, 1, 1});
     btn_cancel->set_on_click([this](int) { m_game->change_game_mode(GameMode::MainMenu); });
     btn_cancel->set_click_sound([this] { audio_manager::get().play_game_sound(sound_type::effect, 14, 5); });
-    btn_cancel->set_render_handler([this](const cc::control& c) {
-        auto sb = c.screen_bounds();
-        int frame = c.is_highlighted() ? 17 : 16;
-        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, frame);
+    btn_cancel->set_render_handler([draw_button](const cc::control& c) {
+        draw_button(c, "Cancel", c.is_highlighted());
     });
 
     m_controls.set_focus_order({TXT_ACCOUNT, TXT_PASSWORD, TXT_CONFIRM, TXT_EMAIL,
                                 BTN_CREATE, BTN_CLEAR, BTN_CANCEL});
     m_controls.set_focus(TXT_ACCOUNT);
+    update_layout();
 }
+
+void Screen_CreateAccount::bake_title_glow()
+{
+    // Baked from the kit's title_red recipe (face, size, tracking) at the window's resolution, so the glow sits
+    // exactly behind the kit's title; redone when the UI scale changes
+    m_title_glow.reset();
+    const float scale = m_game->m_Renderer->ui_scale();
+    m_glow_scale = scale;
+    hb::shared::text::ITextRenderer* text = hb::shared::text::GetTextRenderer();
+    if (!text)
+        return;
+    const hb::client::panel_kit& kit = m_game->get_panel_kit();
+    hb::shared::text::text_run run = kit.recipe_run("title_red");
+    if (run.face <= 0)
+        return;
+    const hb::client::kit_rect ink = kit.text_ink("title_red", title_text, 0, 0, hb::client::text_anchor::middle);
+    run.pixel_size = static_cast<int>(std::lround(static_cast<float>(run.pixel_size) * scale));
+    run.tracking *= scale;
+    const int dilate = (std::max)(1, static_cast<int>(std::lround(static_cast<float>(glow_dilate_px) * scale)));
+    const float blur = glow_blur_px * scale;
+    hb::shared::render::Color color = title_glow;
+    color.a = static_cast<uint8_t>(glow_alpha * 255.0f);
+    m_title_glow.reset(text->bake_glow(title_text, run, color, dilate, blur));
+    if (!m_title_glow)
+    {
+        hb::logger::error("Create account title glow not rendered");
+        return;
+    }
+
+    // Placement from the title's centre: the ink box and the pad around it, in UI units
+    const float pad = static_cast<float>(hb::shared::text::ITextRenderer::glow_pad(dilate, blur)) / scale;
+    m_glow_x = static_cast<float>(ink.x) - pad;
+    m_glow_y = static_cast<float>(ink.y) - pad;
+    m_glow_w = static_cast<float>(m_title_glow->get_width()) / scale;
+    m_glow_h = static_cast<float>(m_title_glow->get_height()) / scale;
+}
+
+void Screen_CreateAccount::draw_title(const hb::client::panel_kit& kit, int cx, int cy) const
+{
+    // "New Account" in the kit serif title with a soft dark glow behind it (user, 2026-11-25: variant D), the
+    // wave flourishes either side as the kit's titles have
+    if (m_title_glow)
+    {
+        m_game->m_Renderer->draw_texture_region(m_title_glow.get(), 0.0f, 0.0f,
+            static_cast<float>(m_title_glow->get_width()), static_cast<float>(m_title_glow->get_height()),
+            static_cast<float>(cx) + m_glow_x, static_cast<float>(cy) + m_glow_y, m_glow_w, m_glow_h);
+    }
+    kit.text("title_red", title_text, cx, cy, hb::client::text_anchor::middle, title_fill);
+    const int reach = kit.text_width("title_red", title_text) / 2 + 14 + kit.flourish_size("divider_wave", 0.56f).x / 2;
+    const int fy = kit.cap_middle("title_red", title_text, cy, hb::client::text_anchor::middle);
+    kit.flourish("divider_wave", cx - reach, fy, false, 0.56f);
+    kit.flourish("divider_wave", cx + reach, fy, true, 0.56f);
+}
+
+void Screen_CreateAccount::on_uninitialize()
+{
+    m_art.reset();
+    m_title_glow.reset();
+    m_glow_scale = 0.0f;
+}
+
+void Screen_CreateAccount::update_layout()
+{
+    m_fit = hb::shared::render::cover_fit(m_game->m_Renderer->get_screen_extent(), art_width, art_height);
+    if (m_glow_scale == 0.0f || std::fabs(m_game->m_Renderer->ui_scale() - m_glow_scale) > 0.001f)
+        bake_title_glow();
+
+    // The form is centred on the tablet, which the fit places; it is drawn at the kit's own size
+    const float centre_x = classic_art_x + (tablet_x + static_cast<float>(form_w) / 2.0f) * classic_art_scale;
+    const float centre_y = (tablet_y + static_cast<float>(form_h) / 2.0f) * classic_art_scale;
+    m_form_x = static_cast<int>(std::lround(m_fit.x(centre_x) - static_cast<float>(form_w) / 2.0f));
+    m_form_y = static_cast<int>(std::lround(m_fit.y(centre_y) - static_cast<float>(form_h) / 2.0f));
+
+    // The textbox controls cover the text inside each inset, so the caret and clicks line up with the text
+    for (int i = 0; i < 4; i++)
+    {
+        if (cc::control* field = m_controls.find(TXT_ACCOUNT + i))
+            field->set_local_bounds(cc::rect{m_form_x + field_x + field_pad_x, m_form_y + field_y + field_step * i + field_pad_y,
+                field_w - 2 * field_pad_x, field_h - 2 * field_pad_y});
+    }
+    for (int i = 0; i < 3; i++)
+    {
+        if (cc::control* button = m_controls.find(BTN_CREATE + i))
+            button->set_local_bounds(cc::rect{m_form_x + button_x + button_step * i, m_form_y + button_y, button_w, button_h});
+    }
+}
+
 void Screen_CreateAccount::on_update()
 {
+    update_layout();
     update_controls(m_controls);
 
     if (m_controls.escape_pressed())
@@ -192,50 +345,54 @@ bool Screen_CreateAccount::on_net_response(uint16_t response_type, char* data)
 
 void Screen_CreateAccount::on_render()
 {
-    auto label_style = hb::shared::text::TextStyle::from_color(GameColors::UINearWhite).with_bold();
-    auto help_style = hb::shared::text::TextStyle::from_color(hb::shared::render::Color(255, 181, 0));
+    auto label_style = hb::shared::text::TextStyle::with_shadow(label_color).with_bold();
+    auto help_style = hb::shared::text::TextStyle::from_color(help_color);
 
-    // Background
-    draw_new_dialog_box(InterfaceNdNewAccount, 0, 0, 0, true);
+    // m_fit and the form's place are from this frame's on_update (or on_initialize on the frame the screen is switched in)
+    if (m_art)
+    {
+        m_game->m_Renderer->draw_texture_region(m_art.get(), 0.0f, 0.0f, art_width, art_height,
+            m_fit.origin_x, m_fit.origin_y, art_width * m_fit.scale, art_height * m_fit.scale);
+    }
 
-    // Backdrop panel behind input fields
-    m_game->m_Renderer->draw_rounded_rect_filled(258, 198, 344, 108, 8,
-        hb::shared::render::Color::Black(200));
-
-    // Field labels
-    hb::shared::text::draw_text(GameFont::Default, 270, 210, "Account:", label_style);
-    hb::shared::text::draw_text(GameFont::Default, 270, 232, "Password:", label_style);
-    hb::shared::text::draw_text(GameFont::Default, 270, 254, "Confirm:", label_style);
-    hb::shared::text::draw_text(GameFont::Default, 270, 276, "Email:", label_style);
+    // The form on the tablet: kit title, labels, inset fields and rule; the controls draw the text and buttons
+    const hb::client::panel_kit& kit = m_game->get_panel_kit();
+    draw_title(kit, m_form_x + form_w / 2, m_form_y + title_y);
+    static constexpr const char* labels[] = {"Account", "Password", "Confirm", "Email"};
+    for (int i = 0; i < 4; i++)
+    {
+        const int y = m_form_y + field_y + field_step * i;
+        hb::shared::text::draw_text(GameFont::Default, m_form_x + label_x, y + field_pad_y, labels[i], label_style);
+        kit.inset({m_form_x + field_x, y, field_w, field_h}, {}, field_darken);
+    }
+    kit.rule(m_form_x + label_x, m_form_y + rule_y, form_w - 2 * label_x);
 
     // Controls (textbox values + buttons)
     m_controls.render();
 
-    // Help text based on focused control
+    // Help text based on focused control: up to three lines under the rule, centred on the form
     int focused = m_controls.focused_id();
-    constexpr int hx = 290;
-    constexpr int hw = 575 - 290;
-    auto help = [&](int y, const char* text) {
-        hb::shared::text::draw_text_aligned(GameFont::Default, hx, y, hw, 15,
+    auto help = [&](int line, const char* text) {
+        hb::shared::text::draw_text_aligned(GameFont::Default, m_form_x, m_form_y + help_y + help_step * line, form_w, help_step,
             text, help_style, hb::shared::text::Align::TopCenter);
     };
 
     switch (focused)
     {
     case TXT_ACCOUNT:
-        help(330, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT1);
-        help(345, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT2);
+        help(0, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT1);
+        help(1, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT2);
         break;
     case TXT_PASSWORD:
-        help(330, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT4);
+        help(0, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT4);
         break;
     case TXT_CONFIRM:
-        help(330, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT8);
+        help(0, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT8);
         break;
     case TXT_EMAIL:
-        help(330, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT21);
-        help(345, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT22);
-        help(360, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT23);
+        help(0, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT21);
+        help(1, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT22);
+        help(2, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT23);
         break;
     case BTN_CREATE:
     {
@@ -256,34 +413,35 @@ void Screen_CreateAccount::on_render()
 
         switch (flag)
         {
-        case 0: help(330, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT33); break;
-        case 1: help(330, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT35); break;
-        case 2: help(330, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT38); break;
-        case 3: help(330, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT42); break;
-        case 5: help(330, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT50); break;
+        case 0: help(0, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT33); break;
+        case 1: help(0, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT35); break;
+        case 2: help(0, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT38); break;
+        case 3: help(0, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT42); break;
+        case 5: help(0, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT50); break;
         case 6:
-            help(330, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT52);
-            help(345, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT53);
+            help(0, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT52);
+            help(1, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT53);
             break;
         case 7:
-            help(330, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT56);
-            help(345, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT57);
+            help(0, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT56);
+            help(1, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT57);
             break;
         case 9:
-            help(330, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT63);
-            help(345, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT64);
-            help(360, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT65);
+            help(0, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT63);
+            help(1, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT64);
+            help(2, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT65);
             break;
         }
         break;
     }
     case BTN_CLEAR:
-        help(330, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT80);
+        help(0, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT80);
         break;
     case BTN_CANCEL:
-        help(330, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT81);
+        help(0, UPDATE_SCREEN_ON_CREATE_NEW_ACCOUNT81);
         break;
     }
 
     draw_version();
+    draw_copyright();
 }
