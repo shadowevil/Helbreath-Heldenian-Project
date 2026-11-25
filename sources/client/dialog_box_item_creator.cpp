@@ -335,9 +335,9 @@ void DialogBox_ItemCreator::draw_search_page(short sX, short sY, short size_x, s
 	// Close button (sprite)
 	if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) &&
 		(mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+		draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
 	else
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+		draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -473,9 +473,9 @@ void DialogBox_ItemCreator::draw_configure_page(short sX, short sY, short size_x
 	// Close button (sprite)
 	if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) &&
 		(mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+		draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
 	else
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+		draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 
 	// --- DROPDOWN OVERLAY (drawn last, on top of everything) ---
 	if (m_open_dropdown != dropdown_id::none)

@@ -235,9 +235,9 @@ void DialogBox_Magic::on_draw()
 
 	// Alchemy button
 	if (mouse_in(btn_alchemy))
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + 285, 49, false, dialogTrans);
+		draw_text_button(sX + ui_layout::right_btn_x, sY + 285, 49, dialogTrans);
 	else
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + 285, 48, false, dialogTrans);
+		draw_text_button(sX + ui_layout::right_btn_x, sY + 285, 48, dialogTrans);
 }
 
 bool DialogBox_Magic::on_click()

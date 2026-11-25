@@ -98,7 +98,7 @@ void Overlay_ChangePassword::on_initialize()
                       && tb_conf && tb_conf->is_valid()
                       && tb_old->text() != tb_new->text();
         int frame = (all_valid && c.is_highlighted()) ? 21 : 20;
-        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, frame);
+        m_game->draw_text_button(sb.x, sb.y, frame);
     });
 
     auto* btn_cancel = m_controls.add<cc::button>(BTN_CANCEL, cc::rect{dlgX + 217, dlgY + 208, ui_layout::btn_size_x, ui_layout::btn_size_y});
@@ -109,7 +109,7 @@ void Overlay_ChangePassword::on_initialize()
     btn_cancel->set_render_handler([this](const cc::control& c) {
         auto sb = c.screen_bounds();
         int frame = c.is_highlighted() ? 17 : 16;
-        m_game->draw_new_dialog_box(InterfaceNdButton, sb.x, sb.y, frame);
+        m_game->draw_text_button(sb.x, sb.y, frame);
     });
 
     m_controls.set_focus_order({TXT_OLD_PW, TXT_NEW_PW, TXT_CONFIRM_PW, BTN_OK, BTN_CANCEL});

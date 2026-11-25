@@ -315,6 +315,7 @@
     <ClInclude Include="parchment_kit.h" />
     <ClInclude Include="panel_kit.h" />
     <ClInclude Include="copyright_notice.h" />
+    <ClInclude Include="button_frames.h" />
     <ClInclude Include="bake_debounce.h" />
     <ClInclude Include="small_caps_label.h" />
     <ClInclude Include="hud_kit.h" />

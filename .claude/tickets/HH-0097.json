@@ -1,7 +1,7 @@
 {
   "id": "HH-0097",
   "summary": "game_dialogs 010 (Button): remove; the kit covers it",
-  "status": "in_progress",
+  "status": "in_review",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-25T20:24:12Z",
-  "updated": "2026-11-25T20:42:26Z",
+  "updated": "2026-11-25T20:58:00Z",
   "links": {
     "commits": [],
     "files": [],

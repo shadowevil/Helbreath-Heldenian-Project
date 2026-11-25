@@ -63,8 +63,8 @@ private:
 	bool is_in_toggle_area(int x, int y);
 
 	// Panel kit parts at the old sprite parts' positions and sizes (screen coordinates); only while on_draw runs
-	void draw_box(int frame, int x, int y);              // InterfaceNdButton value box 78 / 79 / 81
-	void draw_slider(int x, int y, int value);           // track (Button 80) + knob (Game2 8)
+	void draw_box(int frame, int x, int y);              // value box (button_frame 78 / 79 / 81)
+	void draw_slider(int x, int y, int value);           // track (button_frame 80) + knob (kit btn_box_b)
 	void draw_graphics_scrollbar(int max_scroll);
 
 	// The kit frame while on_draw runs (it lives on on_draw's stack), else nullptr

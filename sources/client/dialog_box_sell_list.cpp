@@ -160,16 +160,16 @@ void DialogBox_SellList::draw_buttons(short sX, short sY, short mouse_x, short m
 	// Sell button (only enabled when there are items)
 	if ((mouse_x >= sX + ui_layout::left_btn_x) && (mouse_x <= sX + ui_layout::left_btn_x + ui_layout::btn_size_x) &&
 		(mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y) && has_items)
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 39);
+		draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 39);
 	else
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 38);
+		draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 38);
 
 	// Cancel button
 	if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) &&
 		(mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
+		draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
 	else
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
+		draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
 }
 
 bool DialogBox_SellList::on_click()

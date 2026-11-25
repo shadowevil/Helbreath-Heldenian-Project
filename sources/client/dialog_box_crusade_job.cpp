@@ -67,9 +67,9 @@ void DialogBox_CrusadeJob::draw_mode_confirm(short sX, short sY)
 
 	// OK button
 	if (mouse_in(btn_ok))
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+		draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
 	else
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+		draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 }
 
 void DialogBox_CrusadeJob::on_draw()

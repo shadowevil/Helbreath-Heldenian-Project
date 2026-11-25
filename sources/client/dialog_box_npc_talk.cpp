@@ -53,21 +53,21 @@ void DialogBox_NpcTalk::draw_buttons(short sX, short sY)
 	{
 	case mode::ok_only:
 		if (mouse_in(btn_right))
-			m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+			m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
 		else
-			m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+			m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 		break;
 
 	case mode::accept_decline:
 		if (mouse_in(btn_left))
-			m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 33);
+			m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 33);
 		else
-			m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 32);
+			m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 32);
 
 		if (mouse_in(btn_right))
-			m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 41);
+			m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 41);
 		else
-			m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 40);
+			m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 40);
 		break;
 
 	case mode::next:

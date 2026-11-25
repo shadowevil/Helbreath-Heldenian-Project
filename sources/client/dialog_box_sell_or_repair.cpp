@@ -77,12 +77,12 @@ void DialogBox_SellOrRepair::on_draw()
 		put_string(sX + 55, sY + 190, DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM4, GameColors::UILabel);
 
 		if (mouse_in(btn_confirm))
-			draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 39);
-		else draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 38);
+			draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 39);
+		else draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 38);
 
 		if (mouse_in(btn_cancel))
-			draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
-		else draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
+			draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
+		else draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
 		break;
 	}
 
@@ -121,12 +121,12 @@ void DialogBox_SellOrRepair::on_draw()
 		put_string(sX + 55, sY + 190, DRAW_DIALOGBOX_SELLOR_REPAIR_ITEM7, GameColors::UILabel);
 
 		if (mouse_in(btn_confirm))
-			draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 43);
-		else draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 42);
+			draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 43);
+		else draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 42);
 
 		if (mouse_in(btn_cancel))
-			draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
-		else draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
+			draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
+		else draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
 		break;
 	}
 

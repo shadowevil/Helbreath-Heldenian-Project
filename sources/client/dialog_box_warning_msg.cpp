@@ -26,9 +26,9 @@ void DialogBox_WarningMsg::on_draw()
 
 	// OK button
 	if (mouse_in(btn_ok))
-		draw_new_dialog_box(InterfaceNdButton, sX + 122, sY + 127, 1);
+		draw_text_button(sX + 122, sY + 127, 1);
 	else
-		draw_new_dialog_box(InterfaceNdButton, sX + 122, sY + 127, 0);
+		draw_text_button(sX + 122, sY + 127, 0);
 }
 
 bool DialogBox_WarningMsg::on_click()

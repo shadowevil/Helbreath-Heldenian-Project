@@ -117,16 +117,16 @@ void DialogBox_ChangeStatsMajestic::on_draw()
 
 	// Cancel button (left)
 	if (mouse_in(btn_cancel))
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 17);
-	else draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 16);
+		draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 17);
+	else draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 16);
 
 	// Confirm button (right) — show as active only when there are pending changes
 	if (pending_cost > 0)
 	{
 		if (mouse_in(btn_confirm))
-			draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+			draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
 		else
-			draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+			draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 	}
 }
 

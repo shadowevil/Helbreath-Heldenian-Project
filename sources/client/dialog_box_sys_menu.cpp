@@ -1,4 +1,5 @@
 #include "dialog_box_sys_menu.h"
+#include "button_frames.h"
 #include "game.h"
 #include "chat_manager.h"
 #include "global_def.h"
@@ -126,12 +127,13 @@ DialogBox_SysMenu::DialogBox_SysMenu(CGame* game)
 
 void DialogBox_SysMenu::on_update()
 {
-	// Cache frame dimensions on first update (sprites loaded by now)
-	if (!m_bFrameSizesInitialized && m_game->m_sprite[InterfaceNdButton] != nullptr)
+	// Cache the value boxes' dimensions on first update
+	if (!m_bFrameSizesInitialized)
 	{
-		hb::shared::sprite::SpriteRect wideRect = m_game->m_sprite[InterfaceNdButton]->GetFrameRect(78);
-		hb::shared::sprite::SpriteRect smallRect = m_game->m_sprite[InterfaceNdButton]->GetFrameRect(79);
-		hb::shared::sprite::SpriteRect largeRect = m_game->m_sprite[InterfaceNdButton]->GetFrameRect(81);
+		namespace frame = hb::client::button_frame;
+		const frame::rect wideRect = frame::rect_of(frame::box_wide);
+		const frame::rect smallRect = frame::rect_of(frame::box_small);
+		const frame::rect largeRect = frame::rect_of(frame::box_large);
 
 		// Only use if we got valid dimensions (not from NullSprite)
 		if (wideRect.width > 0 && wideRect.height > 0 && smallRect.width > 0 && smallRect.height > 0)
@@ -257,7 +259,7 @@ void DialogBox_SysMenu::draw_tabs(short sX, short sY)
 {
 	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
 	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	hb::shared::sprite::SpriteRect button_rect = m_game->m_sprite[InterfaceNdButton]->GetFrameRect(70);
+	const hb::client::button_frame::rect button_rect = hb::client::button_frame::rect_of(hb::client::button_frame::tab);
 	int btnY = sY + 33;
 
 	const int tabFrames[TAB_COUNT][2] = {
@@ -274,7 +276,7 @@ void DialogBox_SysMenu::draw_tabs(short sX, short sY)
 		bool active = (m_iActiveTab == i);
 
 		int frameIndex = (active || hovered) ? tabFrames[i][1] : tabFrames[i][0];
-		draw_new_dialog_box(InterfaceNdButton, btnX, btnY, frameIndex);
+		draw_text_button(btnX, btnY, frameIndex);
 	}
 }
 
@@ -331,8 +333,8 @@ bool DialogBox_SysMenu::is_in_toggle_area(int x, int y)
 
 void DialogBox_SysMenu::draw_box(int frame, int x, int y)
 {
-	// The kit's sunken field at the sprite frame's place and size, so the hit areas are unchanged
-	const hb::shared::sprite::SpriteRect r = m_game->m_sprite[InterfaceNdButton]->GetFrameRect(frame);
+	// The kit's sunken field at the old value box's place and size, so the hit areas are unchanged
+	const hb::client::button_frame::rect r = hb::client::button_frame::rect_of(frame);
 	const hb::client::kit_point o = m_kit->origin();
 	m_kit->inset({x + r.pivotX - o.x, y + r.pivotY - o.y, r.width, r.height});
 }
@@ -340,15 +342,15 @@ void DialogBox_SysMenu::draw_box(int frame, int x, int y)
 void DialogBox_SysMenu::draw_slider(int x, int y, int value)
 {
 	// Track: a kit groove over the sprite track; knob: a kit box button
-	const hb::shared::sprite::SpriteRect track = m_game->m_sprite[InterfaceNdButton]->GetFrameRect(80);
-	// The old knob frame's pivot (Game2 frame 8, 15x15)
-	constexpr int knob_pivot_x = -6;
-	constexpr int knob_pivot_y = -5;
+	const hb::client::button_frame::rect track = hb::client::button_frame::rect_of(hb::client::button_frame::slider_track);
+	// The knob's placement offset from the slider's position
+	constexpr int knob_offset_x = -6;
+	constexpr int knob_offset_y = -5;
 	const hb::client::kit_point o = m_kit->origin();
 	m_kit->groove({x + track.pivotX - o.x, y + 5 + track.pivotY - o.y, track.width, track.height});
 	// The knob is the kit's framed orange down-arrow box (btn_box_b, 15x15 like the old frame; user, 2026-11-25), where the
 	// old frame was. The scrollbar thumb is the left-arrow box (btn_box_a), which vertical scrollbars keep.
-	m_kit->piece("btn_box_b", {x + value + knob_pivot_x - o.x, y + knob_pivot_y - o.y});
+	m_kit->piece("btn_box_b", {x + value + knob_offset_x - o.x, y + knob_offset_y - o.y});
 }
 
 void DialogBox_SysMenu::draw_graphics_scrollbar(int max_scroll)
@@ -401,12 +403,12 @@ void DialogBox_SysMenu::draw_general_tab(short sX, short sY)
 	if (m_game->on_game()->m_logout_count == -1) {
 		bool hover = (mouse_x >= sX + ui_layout::left_btn_x && mouse_x <= sX + ui_layout::left_btn_x + ui_layout::btn_size_x &&
 			mouse_y >= buttonY && mouse_y <= buttonY + ui_layout::btn_size_y);
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, buttonY, hover ? 9 : 8);
+		draw_text_button(sX + ui_layout::left_btn_x, buttonY, hover ? 9 : 8);
 	}
 	else {
 		bool hover = (mouse_x >= sX + ui_layout::left_btn_x && mouse_x <= sX + ui_layout::left_btn_x + ui_layout::btn_size_x &&
 			mouse_y >= buttonY && mouse_y <= buttonY + ui_layout::btn_size_y);
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, buttonY, hover ? 7 : 6);
+		draw_text_button(sX + ui_layout::left_btn_x, buttonY, hover ? 7 : 6);
 	}
 
 	// Restart button (right side, only when dead)
@@ -414,7 +416,7 @@ void DialogBox_SysMenu::draw_general_tab(short sX, short sY)
 	{
 		bool hover = (mouse_x >= sX + ui_layout::right_btn_x && mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x &&
 			mouse_y >= buttonY && mouse_y <= buttonY + ui_layout::btn_size_y);
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, buttonY, hover ? 37 : 36);
+		draw_text_button(sX + ui_layout::right_btn_x, buttonY, hover ? 37 : 36);
 	}
 }
 
@@ -935,7 +937,7 @@ bool DialogBox_SysMenu::on_click()
 	short sY = m_y;
 
 	// Check tab button clicks
-	hb::shared::sprite::SpriteRect button_rect = m_game->m_sprite[InterfaceNdButton]->GetFrameRect(70);
+	const hb::client::button_frame::rect button_rect = hb::client::button_frame::rect_of(hb::client::button_frame::tab);
 	int btnY = sY + 33;
 
 	for (int i = 0; i < TAB_COUNT; i++)

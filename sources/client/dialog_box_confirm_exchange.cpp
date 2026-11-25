@@ -29,15 +29,15 @@ void DialogBox_ConfirmExchange::on_draw()
 
 		// Yes button
 		if (mouse_in(btn_yes))
-			draw_new_dialog_box(InterfaceNdButton, sX + 30, sY + 55, 19);
+			draw_text_button(sX + 30, sY + 55, 19);
 		else
-			draw_new_dialog_box(InterfaceNdButton, sX + 30, sY + 55, 18);
+			draw_text_button(sX + 30, sY + 55, 18);
 
 		// No button
 		if (mouse_in(btn_no))
-			draw_new_dialog_box(InterfaceNdButton, sX + 170, sY + 55, 3);
+			draw_text_button(sX + 170, sY + 55, 3);
 		else
-			draw_new_dialog_box(InterfaceNdButton, sX + 170, sY + 55, 2);
+			draw_text_button(sX + 170, sY + 55, 2);
 		break;
 
 	case mode::waiting:

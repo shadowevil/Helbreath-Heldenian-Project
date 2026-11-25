@@ -217,12 +217,12 @@ void DialogBox_Shop::draw_item_details(short sX, short sY, short mouse_x, short 
 
     // draw buttons
     if (mouse_in(btn_buy))
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 31);
-    else m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 30);
+        m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 31);
+    else m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 30);
 
     if (mouse_in(btn_cancel))
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
-    else m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
+    else m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
 }
 
 void DialogBox_Shop::draw_weapon_stats(short sX, short sY, int item_index, bool& flag_red_shown)
@@ -423,15 +423,17 @@ void DialogBox_Shop::draw_quantity_selector(short sX, short sY, short mouse_x, s
     char temp[16];
     int max_qty = get_max_quantity();
 
-    // The kit's square + / - at the old frames' places (their pivot is -6, -5)
+    // The kit's square + / - at the old frames' places (their placement offset is -6, -5)
     const hb::client::panel_kit& kit = m_game->get_panel_kit();
-    constexpr int pivot_x = -6;
-    constexpr int pivot_y = -5;
+    constexpr int offset_x = -6;
+    constexpr int offset_y = -5;
     constexpr int button_x[] = {128, 142, 156, 170};
 
     // 4 up buttons
     for (int x : button_x)
-        kit.piece("btn_sq_plus", sX + x + pivot_x, sY + 219 + pivot_y);
+    {
+        kit.piece("btn_sq_plus", sX + x + offset_x, sY + 219 + offset_y);
+    }
 
     // "Quantity:" label
     hb::shared::text::draw_text(GameFont::Default, sX + 80, sY + 227, DRAW_DIALOGBOX_SHOP27, hb::shared::text::TextStyle::from_color(GameColors::UILabel));
@@ -459,7 +461,9 @@ void DialogBox_Shop::draw_quantity_selector(short sX, short sY, short mouse_x, s
 
     // 4 down buttons
     for (int x : button_x)
-        kit.piece("btn_sq_minus", sX + x + pivot_x, sY + 244 + pivot_y);
+    {
+        kit.piece("btn_sq_minus", sX + x + offset_x, sY + 244 + offset_y);
+    }
 }
 
 bool DialogBox_Shop::on_click()

@@ -109,9 +109,9 @@ void DialogBox_Text::on_draw()
 
 	// Close button hover highlight
 	if (mouse_in(btn_close))
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
 	else
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 }
 
 bool DialogBox_Text::on_click()

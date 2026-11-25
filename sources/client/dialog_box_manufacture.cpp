@@ -304,7 +304,7 @@ void DialogBox_Manufacture::draw_manufacture_list(short sX, short sY)
 			loc++;
 		}
 
-	// The kit's round up / down at the old frames' places (their pivot is -6, -5), the dark pieces when disabled
+	// The kit's round up / down at the old frames' places (their placement offset is -6, -5), the dark pieces when disabled
 	{
 		const hb::client::panel_kit& scroll_kit = m_game->get_panel_kit();
 		const bool can_up = (m_scroll_view >= 1) && (build_item_manager::get().get_display_list()[m_scroll_view - 1] != 0);

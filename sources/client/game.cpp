@@ -1,4 +1,5 @@
 #include "game.h"
+#include "button_frames.h"
 #include "game_constants.h"
 #include "object_id_range.h"
 #include "common_types.h"
@@ -2975,8 +2976,8 @@ void CGame::add_map_status_info(const char* data, bool is_last_data)
 
 namespace
 {
-	// The text buttons baked into InterfaceNdButton (game_dialogs sprite 10), by frame: their label and
-	// whether the frame is the hover state. Size comes from the frame (74x20 small, 176x24 wide).
+	// The text buttons of the old Button sheet, by frame: their label and whether the frame is the hover state.
+	// Size comes from button_frame::rect_of (74x20 small, 176x24 wide).
 	struct baked_button
 	{
 		const char* label = nullptr;   // nullptr = not a text button (cards, plates, boxes)
@@ -3071,24 +3072,24 @@ hb::client::hud_kit& CGame::get_hud_kit()
 	return *m_hud_kit;
 }
 
+void CGame::draw_text_button(int sX, int sY, int frame, bool is_trans)
+{
+	const baked_button* baked = baked_button_of(frame);
+	if (!baked)
+		return;
+	// The old frame's own place and size (its offset positions the wide buttons), so the drawn button is exactly
+	// the area callers hit-test
+	const hb::client::panel_kit& kit = get_panel_kit();
+	const hb::client::button_frame::rect r = hb::client::button_frame::rect_of(frame);
+	const auto layout = r.width >= 176 ? hb::client::button_layout::wide : hb::client::button_layout::small;
+	// Dialog transparency draws each kit layer at 0.25, so overlaps compound (accepted, HH-0062 review)
+	kit.button(kit.style_of(layout), baked->label, {sX + r.pivotX, sY + r.pivotY, r.width, r.height},
+		baked->hover, hb::client::dialog_alpha(is_trans));
+}
+
 void CGame::draw_new_dialog_box(char type, int sX, int sY, int frame, bool is_no_color_key, bool is_trans)
 {
 	if (m_sprite[type] == 0) return;
-	if (type == InterfaceNdButton)
-	{
-		if (const baked_button* baked = baked_button_of(frame))
-		{
-			// The sprite frame's own place and size (its pivot positions the wide buttons), so the drawn button
-			// is exactly the area callers hit-test
-			const hb::client::panel_kit& kit = get_panel_kit();
-			const hb::shared::sprite::SpriteRect r = m_sprite[type]->GetFrameRect(frame);
-			const auto layout = r.width >= 176 ? hb::client::button_layout::wide : hb::client::button_layout::small;
-			// Dialog transparency draws each kit layer at 0.25, so overlaps compound (accepted, HH-0062 review)
-			kit.button(kit.style_of(layout), baked->label, {sX + r.pivotX, sY + r.pivotY, r.width, r.height},
-				baked->hover, hb::client::dialog_alpha(is_trans));
-			return;
-		}
-	}
 	if (is_no_color_key == false)
 	{
 		if (is_trans == true)

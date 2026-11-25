@@ -96,9 +96,9 @@ void DialogBox_LevelUpSetting::on_draw()
 	// Close button
 	if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) &&
 	    (mouse_y > sY + ui_layout::btn_y) && (mouse_y < sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+		draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
 	else
-		draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+		draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 
 	// Majestic button (only if no pending changes and no points left)
 	if ((player().m_lu_str == 0) && (player().m_lu_vit == 0) && (player().m_lu_dex == 0) &&
@@ -108,12 +108,12 @@ void DialogBox_LevelUpSetting::on_draw()
 		    (mouse_y > sY + ui_layout::btn_y) && (mouse_y < sY + ui_layout::btn_y + ui_layout::btn_size_y))
 		{
 			if (player().m_lu_point <= 0)
-				draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 21);
+				draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 21);
 		}
 		else
 		{
 			if (player().m_lu_point <= 0)
-				draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 20);
+				draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 20);
 		}
 	}
 }

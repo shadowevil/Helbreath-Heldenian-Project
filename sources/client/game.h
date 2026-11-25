@@ -159,8 +159,9 @@ public:
 	void grand_magic_result(const char* map_name, int ares_crusade_points, int elv_crusade_points, int ares_industry_points, int elv_industry_points, int ares_crusade_casualties, int ares_industry_casualties, int elv_crusade_casualties, int elv_industry_casualties);
 	void meteor_strike_coming(int code);
 
-	// InterfaceNdButton text-button frames draw from the panel kit (the frame picks the label, size and
-	// hover state); every other frame draws the sprite
+	// A text button of the old Button sheet from the panel kit: the frame picks the label, size, placement offset
+	// and hover state (button_frames.h), (sX, sY) is where the old frame was drawn. Not a sprite draw.
+	void draw_text_button(int sX, int sY, int frame, bool is_trans = false);
 	void draw_new_dialog_box(char type, int sX, int sY, int frame, bool is_no_color_key = false, bool is_trans = false);
 	// Loads the panel kit (<sprites>/panelkit) and the HUD kit (<sprites>/hudkit); false, logged, when either is
 	// missing or bad. Screen_Loading calls it once and treats false as a fatal load error.

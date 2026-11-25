@@ -117,7 +117,7 @@ void DialogBox_ItemUpgrade::DrawMode1_GizonUpgrade(int sX, int sY)
     hb::shared::text::draw_text_aligned(GameFont::Default, sX + 24, sY + 20 + 30, (sX + 248) - (sX + 24), 15, DRAW_DIALOGBOX_ITEMUPGRADE1, hb::shared::text::TextStyle::from_color(GameColors::UIBlack), hb::shared::text::Align::TopCenter);
     hb::shared::text::draw_text_aligned(GameFont::Default, sX + 24, sY + 20 + 45, (sX + 248) - (sX + 24), 15, DRAW_DIALOGBOX_ITEMUPGRADE2, hb::shared::text::TextStyle::from_color(GameColors::UIBlack), hb::shared::text::Align::TopCenter);
     hb::shared::text::draw_text_aligned(GameFont::Default, sX + 24, sY + 20 + 60, (sX + 248) - (sX + 24), 15, DRAW_DIALOGBOX_ITEMUPGRADE3, hb::shared::text::TextStyle::from_color(GameColors::UIBlack), hb::shared::text::Align::TopCenter);
-    m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 46);
+    m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 46);
 
     txt = std::format(DRAW_DIALOGBOX_ITEMUPGRADE11, m_game->on_game()->m_gizon_item_upgrade_left);
     hb::shared::text::draw_text_aligned(GameFont::Default, sX + 24, sY + 100, (sX + 248) - (sX + 24), 15, txt.c_str(), hb::shared::text::TextStyle::from_color(GameColors::UIBlack), hb::shared::text::Align::TopCenter);
@@ -136,23 +136,23 @@ void DialogBox_ItemUpgrade::DrawMode1_GizonUpgrade(int sX, int sY)
         draw_item_preview(sX, sY, item_index);
 
         if (m_game->on_game()->m_gizon_item_upgrade_left < value)
-            m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 46);
+            m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 46);
         else
         {
             if ((mouse_x >= sX + ui_layout::left_btn_x) && (mouse_x <= sX + ui_layout::left_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-                m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 47);
+                m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 47);
             else
-                m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 46);
+                m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 46);
         }
     }
     else
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 46);
+        m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 46);
 
     // Cancel button
     if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
     else
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
 }
 
 void DialogBox_ItemUpgrade::DrawMode2_InProgress(int sX, int sY)
@@ -227,9 +227,9 @@ void DialogBox_ItemUpgrade::DrawMode3_Success(int sX, int sY)
 
     // OK button
     if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y > sY + ui_layout::btn_y) && (mouse_y < sY + ui_layout::btn_y + ui_layout::btn_size_y))
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
     else
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 }
 
 void DialogBox_ItemUpgrade::DrawMode4_Failed(int sX, int sY)
@@ -256,9 +256,9 @@ void DialogBox_ItemUpgrade::DrawMode4_Failed(int sX, int sY)
 
     // OK button
     if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y > sY + ui_layout::btn_y) && (mouse_y < sY + ui_layout::btn_y + ui_layout::btn_size_y))
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
     else
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 }
 
 void DialogBox_ItemUpgrade::DrawMode5_SelectUpgradeType(int sX, int sY)
@@ -299,9 +299,9 @@ void DialogBox_ItemUpgrade::DrawMode5_SelectUpgradeType(int sX, int sY)
 
     // Cancel button
     if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
     else
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
 }
 
 void DialogBox_ItemUpgrade::DrawMode6_StoneUpgrade(int sX, int sY)
@@ -338,7 +338,7 @@ void DialogBox_ItemUpgrade::DrawMode6_StoneUpgrade(int sX, int sY)
         hb::shared::text::draw_text_aligned(GameFont::Default, sX + 24, sY + 20 + 95, (sX + 248) - (sX + 24), 15, txt.c_str(), hb::shared::text::TextStyle::from_color(GameColors::UIBlack), hb::shared::text::Align::TopCenter);
     }
 
-    m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 46);
+    m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 46);
 
     if (item_index != -1)
     {
@@ -346,16 +346,16 @@ void DialogBox_ItemUpgrade::DrawMode6_StoneUpgrade(int sX, int sY)
         draw_item_preview(sX, sY, item_index);
 
         if ((mouse_x >= sX + ui_layout::left_btn_x) && (mouse_x <= sX + ui_layout::left_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-            m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 47);
+            m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 47);
         else
-            m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 46);
+            m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 46);
     }
 
     // Cancel button
     if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
     else
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
 }
 
 void DialogBox_ItemUpgrade::DrawMode7_ItemLost(int sX, int sY)
@@ -367,9 +367,9 @@ void DialogBox_ItemUpgrade::DrawMode7_ItemLost(int sX, int sY)
 
     // OK button
     if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y > sY + ui_layout::btn_y) && (mouse_y < sY + ui_layout::btn_y + ui_layout::btn_size_y))
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
     else
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 }
 
 void DialogBox_ItemUpgrade::DrawMode8_MaxUpgrade(int sX, int sY)
@@ -380,9 +380,9 @@ void DialogBox_ItemUpgrade::DrawMode8_MaxUpgrade(int sX, int sY)
 
     // OK button
     if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y > sY + ui_layout::btn_y) && (mouse_y < sY + ui_layout::btn_y + ui_layout::btn_size_y))
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
     else
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 }
 
 void DialogBox_ItemUpgrade::DrawMode9_CannotUpgrade(int sX, int sY)
@@ -393,9 +393,9 @@ void DialogBox_ItemUpgrade::DrawMode9_CannotUpgrade(int sX, int sY)
 
     // OK button
     if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y > sY + ui_layout::btn_y) && (mouse_y < sY + ui_layout::btn_y + ui_layout::btn_size_y))
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
     else
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 }
 
 void DialogBox_ItemUpgrade::DrawMode10_NoPoints(int sX, int sY)
@@ -406,9 +406,9 @@ void DialogBox_ItemUpgrade::DrawMode10_NoPoints(int sX, int sY)
 
     // OK button
     if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y > sY + ui_layout::btn_y) && (mouse_y < sY + ui_layout::btn_y + ui_layout::btn_size_y))
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
     else
-        m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+        m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 }
 
 bool DialogBox_ItemUpgrade::on_click()

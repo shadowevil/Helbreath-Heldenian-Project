@@ -27,6 +27,11 @@ void IGameScreen::draw_new_dialog_box(char type, int sX, int sY, int frame,
     m_game->draw_new_dialog_box(type, sX, sY, frame, is_no_color_key, is_trans);
 }
 
+void IGameScreen::draw_text_button(int sX, int sY, int frame, bool is_trans)
+{
+    m_game->draw_text_button(sX, sY, frame, is_trans);
+}
+
 void IGameScreen::get_centered_dialog_pos(char type, int frame, int& outX, int& outY)
 {
     auto rect = m_game->m_sprite[type]->GetFrameRect(frame);

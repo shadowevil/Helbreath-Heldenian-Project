@@ -156,14 +156,14 @@ void DialogBox_CityHallMenu::DrawMode1_CitizenshipWarning(short sX, short sY, sh
 	hb::shared::text::draw_text_aligned(GameFont::Default, sX, sY + 230, (sX + size_x) - (sX), 15, DRAW_DIALOGBOX_CITYHALL_MENU27, hb::shared::text::TextStyle::from_color(GameColors::UILabel), hb::shared::text::Align::TopCenter);
 
 	if ((mouse_x >= sX + ui_layout::left_btn_x) && (mouse_x <= sX + ui_layout::left_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 19);
+		m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 19);
 	else
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 18);
+		m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 18);
 
 	if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 3);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 3);
 	else
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 2);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 2);
 }
 
 void DialogBox_CityHallMenu::DrawMode2_OfferingCitizenship(short sX, short sY, short size_x)
@@ -178,9 +178,9 @@ void DialogBox_CityHallMenu::DrawMode3_CitizenshipSuccess(short sX, short sY, sh
 	hb::shared::text::draw_text_aligned(GameFont::Default, sX, sY + 140, (sX + size_x) - (sX), 15, DRAW_DIALOGBOX_CITYHALL_MENU29, hb::shared::text::TextStyle::from_color(GameColors::UILabel), hb::shared::text::Align::TopCenter);
 
 	if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y > sY + ui_layout::btn_y) && (mouse_y < sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
 	else
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 }
 
 void DialogBox_CityHallMenu::DrawMode4_CitizenshipFailed(short sX, short sY, short size_x)
@@ -192,9 +192,9 @@ void DialogBox_CityHallMenu::DrawMode4_CitizenshipFailed(short sX, short sY, sho
 	hb::shared::text::draw_text_aligned(GameFont::Default, sX, sY + 115, (sX + size_x) - (sX), 15, DRAW_DIALOGBOX_CITYHALL_MENU32, hb::shared::text::TextStyle::from_color(GameColors::UILabel), hb::shared::text::Align::TopCenter);
 
 	if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y > sY + ui_layout::btn_y) && (mouse_y < sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 1);
 	else
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 0);
 }
 
 void DialogBox_CityHallMenu::DrawMode5_RewardGold(short sX, short sY, short size_x)
@@ -209,14 +209,14 @@ void DialogBox_CityHallMenu::DrawMode5_RewardGold(short sX, short sY, short size
 	hb::shared::text::draw_text_aligned(GameFont::Default, sX, sY + 155, (sX + size_x) - (sX), 15, DRAW_DIALOGBOX_CITYHALL_MENU35, hb::shared::text::TextStyle::from_color(GameColors::UILabel), hb::shared::text::Align::TopCenter);
 
 	if ((mouse_x >= sX + ui_layout::left_btn_x) && (mouse_x <= sX + ui_layout::left_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 19);
+		m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 19);
 	else
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 18);
+		m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 18);
 
 	if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 3);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 3);
 	else
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 2);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 2);
 }
 
 void DialogBox_CityHallMenu::DrawMode7_HeroItems(short sX, short sY, short size_x)
@@ -311,14 +311,14 @@ void DialogBox_CityHallMenu::DrawMode8_CancelQuest(short sX, short sY, short siz
 	hb::shared::text::draw_text_aligned(GameFont::Default, sX, sY + 140, (sX + size_x) - (sX), 15, DRAW_DIALOGBOX_CITYHALL_MENU55, hb::shared::text::TextStyle::from_color(GameColors::UILabel), hb::shared::text::Align::TopCenter);
 
 	if ((mouse_x >= sX + ui_layout::left_btn_x) && (mouse_x <= sX + ui_layout::left_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 19);
+		m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 19);
 	else
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 18);
+		m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 18);
 
 	if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 3);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 3);
 	else
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 2);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 2);
 }
 
 void DialogBox_CityHallMenu::DrawMode9_ChangePlayMode(short sX, short sY, short size_x)
@@ -342,14 +342,14 @@ void DialogBox_CityHallMenu::DrawMode9_ChangePlayMode(short sX, short sY, short 
 	hb::shared::text::draw_text_aligned(GameFont::Default, sX, sY + 252, (sX + size_x) - (sX), 15, DRAW_DIALOGBOX_CITYHALL_MENU68, hb::shared::text::TextStyle::from_color(GameColors::UILabel), hb::shared::text::Align::TopCenter);
 
 	if ((mouse_x >= sX + ui_layout::left_btn_x) && (mouse_x <= sX + ui_layout::left_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 19);
+		m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 19);
 	else
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 18);
+		m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 18);
 
 	if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 3);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 3);
 	else
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 2);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 2);
 }
 
 void DialogBox_CityHallMenu::DrawMode10_TeleportMenu(short sX, short sY, short size_x)
@@ -400,14 +400,14 @@ void DialogBox_CityHallMenu::DrawMode11_HeroItemConfirm(short sX, short sY, shor
 	hb::shared::text::draw_text_aligned(GameFont::Default, sX, sY + 260, (sX + size_x) - (sX), 15, DRAW_DIALOGBOX_CITYHALL_MENU46A, hb::shared::text::TextStyle::from_color(GameColors::UILabel), hb::shared::text::Align::TopCenter);
 
 	if ((mouse_x >= sX + ui_layout::left_btn_x) && (mouse_x <= sX + ui_layout::left_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 19);
+		m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 19);
 	else
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 18);
+		m_game->draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 18);
 
 	if ((mouse_x >= sX + ui_layout::right_btn_x) && (mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 3);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 3);
 	else
-		m_game->draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 2);
+		m_game->draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 2);
 }
 
 bool DialogBox_CityHallMenu::on_click()

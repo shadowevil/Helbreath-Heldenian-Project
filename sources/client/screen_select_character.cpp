@@ -341,11 +341,11 @@ void Screen_SelectCharacter::on_render()
     render_character_previews();
 
     // Menu button base sprites
-    m_game->draw_new_dialog_box(InterfaceNdButton, OX, OY, 51);
-    m_game->draw_new_dialog_box(InterfaceNdButton, OX, OY, 52);
-    m_game->draw_new_dialog_box(InterfaceNdButton, OX, OY, 53);
-    m_game->draw_new_dialog_box(InterfaceNdButton, OX, OY, 54);
-    m_game->draw_new_dialog_box(InterfaceNdButton, OX, OY, 55);
+    m_game->draw_text_button(OX, OY, 51);
+    m_game->draw_text_button(OX, OY, 52);
+    m_game->draw_text_button(OX, OY, 53);
+    m_game->draw_text_button(OX, OY, 54);
+    m_game->draw_text_button(OX, OY, 55);
 
     // Menu button hover highlights
     auto* btn_enter = m_controls.find_as<cc::button>(BTN_ENTER);
@@ -355,15 +355,15 @@ void Screen_SelectCharacter::on_render()
     auto* btn_exit = m_controls.find_as<cc::button>(BTN_EXIT);
 
     if (btn_enter && btn_enter->is_hovered())
-        m_game->draw_new_dialog_box(InterfaceNdButton, OX, OY, 56);
+        m_game->draw_text_button(OX, OY, 56);
     else if (btn_new && btn_new->is_hovered())
-        m_game->draw_new_dialog_box(InterfaceNdButton, OX, OY, 57);
+        m_game->draw_text_button(OX, OY, 57);
     else if (btn_delete && btn_delete->is_hovered())
-        m_game->draw_new_dialog_box(InterfaceNdButton, OX, OY, 58);
+        m_game->draw_text_button(OX, OY, 58);
     else if (btn_change_pw && btn_change_pw->is_hovered())
-        m_game->draw_new_dialog_box(InterfaceNdButton, OX, OY, 59);
+        m_game->draw_text_button(OX, OY, 59);
     else if (btn_exit && btn_exit->is_hovered())
-        m_game->draw_new_dialog_box(InterfaceNdButton, OX, OY, 60);
+        m_game->draw_text_button(OX, OY, 60);
 
     // Tooltip text
     render_tooltip_text();

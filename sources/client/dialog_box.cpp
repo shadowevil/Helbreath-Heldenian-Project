@@ -23,6 +23,11 @@ bool IDialogBox::mouse_in(const ui_rect& r) const
 		&& my >= m_y + r.y && my < m_y + r.y + r.h;
 }
 
+void IDialogBox::draw_text_button(int sX, int sY, int frame, bool is_trans)
+{
+	m_game->draw_text_button(sX, sY, frame, is_trans);
+}
+
 void IDialogBox::draw_new_dialog_box(char type, int sX, int sY, int frame, bool is_no_color_key, bool is_trans)
 {
 	m_game->draw_new_dialog_box(type, sX, sY, frame, is_no_color_key, is_trans);

@@ -150,6 +150,9 @@
     <ClInclude Include="copyright_notice.h">
       <Filter>Managers</Filter>
     </ClInclude>
+    <ClInclude Include="button_frames.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
     <ClInclude Include="bake_debounce.h">
       <Filter>Managers</Filter>
     </ClInclude>

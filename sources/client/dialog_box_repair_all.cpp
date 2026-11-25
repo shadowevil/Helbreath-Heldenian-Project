@@ -67,15 +67,15 @@ void DialogBox_RepairAll::on_draw()
 	{
 		// Repair button
 		if (mouse_in(btn_repair))
-			draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 43);
+			draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 43);
 		else
-			draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 42);
+			draw_text_button(sX + ui_layout::left_btn_x, sY + ui_layout::btn_y, 42);
 
 		// Cancel button
 		if (mouse_in(btn_cancel))
-			draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
+			draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
 		else
-			draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
+			draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
 
 		// Total cost
 		txt = std::format("Total cost : {}", m_game->totalPrice);
@@ -88,9 +88,9 @@ void DialogBox_RepairAll::on_draw()
 
 		// Cancel button only
 		if (mouse_in(btn_cancel))
-			draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
+			draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 17);
 		else
-			draw_new_dialog_box(InterfaceNdButton, sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
+			draw_text_button(sX + ui_layout::right_btn_x, sY + ui_layout::btn_y, 16);
 	}
 }
 

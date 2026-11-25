@@ -125,6 +125,7 @@ protected:
 
 	// Helper methods - delegate to CGame
 	void draw_new_dialog_box(char type, int sX, int sY, int frame, bool is_no_color_key = false, bool is_trans = false);
+	void draw_text_button(int sX, int sY, int frame, bool is_trans = false);   // CGame::draw_text_button
 	// A plain panel-kit frame of w x h at (x, y). transparent = the dialog transparency setting's 0.25 opacity
 	void draw_kit_background(kit_frame::type style, int x, int y, int w, int h, bool transparent = false);
 	// A tall 258x339 kit frame, title and sunken list panel. title_frame names the title by the old Text

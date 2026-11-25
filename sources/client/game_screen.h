@@ -123,6 +123,7 @@ protected:
     // Drawing helpers
     void draw_new_dialog_box(char type, int sX, int sY, int frame,
                           bool is_no_color_key = false, bool is_trans = false);
+    void draw_text_button(int sX, int sY, int frame, bool is_trans = false);   // CGame::draw_text_button
     // Computes centered position for a dialog sprite frame within the logical resolution
     void get_centered_dialog_pos(char type, int frame, int& outX, int& outY);
     // Computes centered position AND draws the dialog box in one call
