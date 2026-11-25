@@ -201,3 +201,5 @@ The shop's +/- buttons, the manufacture dialog's round arrow buttons and slot ri
 The old text buttons in dialogs and login overlays are now drawn from the panel kit instead of game_dialogs sheet 010, and their sizes come from fixed constants rather than the sheet (HH-0097). The sheet still loads for the character-select screen's banner and cards and the create-character header while those are retired.
 
 The character-select and create-character screens no longer draw a second copy of their "Character List" and "Create New Character" banners over the background, which already shows them (HH-0097).
+
+The HD numeral glyphs on sprite font sheet 002 are cleaned up: the stray mark on the 3 is gone, and the 6, 7 and 9 are tidier. The previous sheet is archived.
