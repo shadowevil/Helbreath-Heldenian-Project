@@ -6,10 +6,7 @@
 class DialogBox_Map : public IDialogBox
 {
 public:
-	// v2 passed to on_enable when the server has no frame for the map; on_enable ignores it and
-	// refuses (the dialog stays closed) when the kit has no map or fails to load
-	static constexpr int no_legacy_frame = -1;
-
+	// on_enable refuses (the dialog stays closed) when the kit has no map or fails to load
 	DialogBox_Map(CGame* game);
 	~DialogBox_Map() override = default;
 

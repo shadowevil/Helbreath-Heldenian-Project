@@ -31,46 +31,8 @@
   },
   {
    "index": 2,
-   "offset": 1356135,
-   "size": 324893,
-   "rect_count": 2,
-   "frames": [
-    [
-     0,
-     0,
-     800,
-     600,
-     0,
-     0
-    ],
-    [
-     336,
-     609,
-     356,
-     102,
-     0,
-     0
-    ]
-   ],
-   "color_key_u32": 0,
-   "color_key_hex": "00000000",
-   "color_key_rgb": [
-    0,
-    0,
-    0
-   ],
-   "image": {
-    "size": 324761,
-    "format": "png",
-    "width": 800,
-    "height": 716,
-    "bit_depth": 8,
-    "png_color_type": 6,
-    "png_interlace": 0,
-    "has_plte": false,
-    "has_trns": false,
-    "file": "002.png"
-   }
+   "rect_count": 0,
+   "empty": true
   },
   {
    "index": 3,

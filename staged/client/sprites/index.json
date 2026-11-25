@@ -105,16 +105,6 @@
    "manifest": "interface/intermediate_screens/manifest.json",
    "sprite_count": 7
   },
-  "interface/monster": {
-   "dir": "interface/monster",
-   "manifest": "interface/monster/manifest.json",
-   "sprite_count": 1
-  },
-  "interface/newmaps": {
-   "dir": "interface/newmaps",
-   "manifest": "interface/newmaps/manifest.json",
-   "sprite_count": 5
-  },
   "interface/sprite_fonts": {
    "dir": "interface/sprite_fonts",
    "manifest": "interface/sprite_fonts/manifest.json",

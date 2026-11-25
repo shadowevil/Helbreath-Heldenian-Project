@@ -50,13 +50,13 @@ namespace NetworkMessageHandlers {
 		auto& dialogs = game->get_dialog_box_manager();
 		if (w2 != 0)
 		{
-			dialogs.enable_dialog_box(DialogBoxId::Map, 0, w1, w2 - 1);
+			dialogs.enable_dialog_box(DialogBoxId::Map, 0, w1, 0);
 			return;
 		}
 		// map_type 0: the server has no frame for this map; the client's map kit may still have it. Check
 		// first: an already open dialog stays enabled when on_enable refuses, hiding the no-map message.
 		if (DialogBox_Map::kit_has_map(game->m_map_name))
-			dialogs.enable_dialog_box(DialogBoxId::Map, 0, w1, DialogBox_Map::no_legacy_frame);
+			dialogs.enable_dialog_box(DialogBoxId::Map, 0, w1, 0);
 		if (!dialogs.is_enabled(DialogBoxId::Map))
 			game->add_event_list(NOTIFYMSG_SHOW_MAP1, 10);
 	}

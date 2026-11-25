@@ -6,7 +6,8 @@ Usage:
   python tools/parchment_map/build_assets.py icons [newmaps]      icon cut-outs (rects listed in ICONS below)
 
 [newmaps] is the interface/newmaps sprite folder: a folder path holding manifest.json, or an asset name
-in staged/client/sprites (default interface/newmaps); read through tools/sprite_folder/sprite_folder.py.
+in staged/client/sprites (default: the archived copy in working/archive/interface/newmaps, since HH-0105);
+read through tools/sprite_folder/sprite_folder.py.
 
 Outputs go to tools/parchment_map/data/. ASCII console output only.
 """
@@ -22,7 +23,8 @@ REPO = HERE.parents[1]
 sys.path.insert(0, str(REPO / "tools" / "sprite_folder"))
 import sprite_folder  # noqa: E402
 
-NEWMAPS_ASSET = "interface/newmaps"
+# The newmaps sheets left the game in HH-0105; the paper and icon sources now live in the archive
+NEWMAPS_DIR = REPO / "working" / "archive" / "interface" / "newmaps"
 DATA = HERE / "data"
 PATCH = 24
 
@@ -56,10 +58,12 @@ def build_palette():
 
 
 def open_newmaps(arg=None):
-	"""The newmaps sprite folder: arg is a folder path, an asset name, or None for interface/newmaps."""
+	"""The newmaps sprite folder: arg is a folder path, an asset name, or None for the archived copy."""
 	if arg and (Path(arg) / "manifest.json").is_file():
 		return sprite_folder.open_folder(Path(arg))
-	return sprite_folder.open_asset(arg or NEWMAPS_ASSET)
+	if arg:
+		return sprite_folder.open_asset(arg)
+	return sprite_folder.open_folder(NEWMAPS_DIR)
 
 
 def frames(newmaps):

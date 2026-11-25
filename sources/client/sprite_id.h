@@ -3,21 +3,11 @@
 namespace hb::client::sprite_id
 {
 
-constexpr int MouseCursor                   = 0;
-
 // Interface sprite IDs
 constexpr int InterfaceSprFonts             = 22;
 constexpr int InterfaceFont1                = 30;
 constexpr int InterfaceFont2                = 31;
 
-constexpr int InterfaceNewMaps1             = 35;
-constexpr int InterfaceNewMaps2             = 36;
-constexpr int InterfaceNewMaps3             = 37;
-constexpr int InterfaceNewMaps4             = 38;
-constexpr int InterfaceNewMaps5             = 39;
-
-constexpr int InterfaceMonster              = 50;
-constexpr int InterfaceNdQuit               = 55;
 constexpr int InterfaceNdSelectChar         = 57;
 constexpr int InterfaceNdNewChar            = 58;
 constexpr int InterfaceNdNewExchange        = 59;
@@ -45,9 +35,6 @@ constexpr int TutelaryAngelsPivotPoint      = 10800;
 
 // Holiday tile variants (stored at offset from normal tile index)
 constexpr int HolidayTileOffset             = 10000;
-
-// Splash screen
-constexpr int SplashScreen                  = 18491;
 
 } // namespace hb::client::sprite_id
 

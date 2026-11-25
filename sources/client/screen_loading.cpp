@@ -152,16 +152,9 @@ void Screen_Loading::LoadStage_Interface()
         return;
     }
 
-    hb::shared::sprite::SpriteLoader::open("interface/newmaps", [&](hb::shared::sprite::SpriteLoader& loader) {
-        m_game->m_sprite[InterfaceNewMaps1] = loader.get_sprite(0, false);
-        m_game->m_sprite[InterfaceNewMaps2] = loader.get_sprite(1, false);
-        m_game->m_sprite[InterfaceNewMaps3] = loader.get_sprite(2, false);
-        m_game->m_sprite[InterfaceNewMaps4] = loader.get_sprite(3, false);
-        m_game->m_sprite[InterfaceNewMaps5] = loader.get_sprite(4, false);
-    });
-
     hb::shared::sprite::SpriteLoader::open("interface/intermediate_screens", [&](hb::shared::sprite::SpriteLoader& loader) {
-        m_game->m_sprite[InterfaceNdQuit] = loader.get_sprite(2, false);
+        // Sprites 0, 1, 3 and 4 (the old screens) and 2 (the old quit screen) are empty placeholders; they
+        // stay in the manifest because sprites are loaded by position
         m_game->m_sprite[InterfaceNdSelectChar] = loader.get_sprite(5, false);
         m_game->m_sprite[InterfaceNdNewChar] = loader.get_sprite(6, false);
     });
@@ -170,16 +163,13 @@ void Screen_Loading::LoadStage_Interface()
         m_game->m_sprite[InterfaceNdGame3] = loader.get_sprite(2, false);
         m_game->m_sprite[InterfaceNdGame4] = loader.get_sprite(3, false);
         m_game->m_sprite[InterfaceNdCrusade] = loader.get_sprite(4, false);
-        // Sprites 0 (the old Game1 frames), 5 (the old icon panel) and 9 (the old title strips) are empty
-        // placeholders, dropped with the no-kit fallbacks (HH-0067); they stay in the manifest because sprites
-        // are loaded by position
+        // Sprites 0 (the old Game1 frames), 5 (the old icon panel), 8 (the old cursors, now cursors_hq) and
+        // 9 (the old title strips) are empty placeholders; they stay in the manifest because sprites are
+        // loaded by position
         m_game->m_sprite[InterfaceNdInventory] = loader.get_sprite(6, false);
         m_game->m_sprite[InterfaceNdNewExchange] = loader.get_sprite(7, false);
-        m_game->m_sprite[MouseCursor] = loader.get_sprite(8, false);
         m_game->m_sprite[InterfaceNdButton] = loader.get_sprite(10, false);
     });
-
-    make_sprite("interface/monster", InterfaceMonster, 1, false);
 
     // load sprite_fonts sprites (font1, font2, sprfonts + number font). Sprite 3 is an empty placeholder: its
     // fonts became the TTF pixel fonts below (HH-0090)

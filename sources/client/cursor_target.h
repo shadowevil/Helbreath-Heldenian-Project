@@ -16,7 +16,7 @@
 using hb::shared::direction::direction;
 
 //=============================================================================
-// Cursor Types — maps 1:1 to sprite frames in MouseCursor sprite sheet
+// Cursor Types — maps 1:1 to frames in interface/cursors_hq.json
 //=============================================================================
 enum class cursor_type : int
 {
