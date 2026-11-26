@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-26T04:29:39Z",
-  "updated": "2026-11-26T04:29:39Z",
+  "updated": "2026-11-26T04:32:25Z",
   "links": {
     "commits": [],
     "files": [],
@@ -20,5 +20,5 @@
       "HH-0114"
     ]
   },
-  "body": "One window_mode key migrated from fullscreen/borderless booleans; SDL-style curated resolution list with aspect labels capped at the desktop; refresh list; one apply path for menu, start-up and Alt-Enter.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n"
+  "body": "One window_mode key migrated from fullscreen/borderless booleans; SDL-style curated resolution list with aspect labels capped at the desktop; refresh list; one apply path for menu, start-up and Alt-Enter.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n\n**Decision, 2026-11-25 (d-038):** real refresh rate, specified in the engine-neutral graphics protocol (renderer/window interfaces) and implemented per backend; sfml_engine implements it. The whole display model goes through the protocol.\n"
 }

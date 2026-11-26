@@ -1,7 +1,7 @@
 {
   "id": "HH-0115",
   "summary": "Sysmenu 1: kit dropdown pieces (btn_sq_left, field, list)",
-  "status": "open",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-26T04:29:39Z",
-  "updated": "2026-11-26T04:29:39Z",
+  "updated": "2026-11-26T04:31:30Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "3a3c150b"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0114"
     ]
   },
-  "body": "Add btn_sq_left (+ dark) and dropdown field/list pieces to build_panel_kit.py; --check passes.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n"
+  "body": "Add btn_sq_left (+ dark) and dropdown field/list pieces to build_panel_kit.py; --check passes.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n\n**Verified, 2026-11-25:** build_panel_kit.py --check identical (88 pieces); the 84 old pieces are pixel-identical by name (reviewer); the client reads pieces by name only (panel_kit.cpp:473-485). Review PASS.\n"
 }
