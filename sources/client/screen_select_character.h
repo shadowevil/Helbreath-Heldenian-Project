@@ -2,14 +2,22 @@
 //
 // Handles character selection, navigation to creation/password screens.
 //
+// The art is the HD sheet (HH-0108): interface/front_end/character_select.png, a 1920x1080 backdrop cover-fit
+// like the other front-end screens, plus the normal and selected slot cards beside it.
+//
 //////////////////////////////////////////////////////////////////////
 
 #pragma once
 
 #include "game_screen.h"
 #include "control_collection.h"
+#include "primitive_types.h"
+#include "texture.h"
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <span>
 
 class Screen_SelectCharacter : public IGameScreen
 {
@@ -22,6 +30,7 @@ public:
     ~Screen_SelectCharacter() override = default;
 
     void on_initialize() override;
+    void on_uninitialize() override;
     void on_update() override;
     void on_render() override;
     bool on_net_response(uint16_t response_type, char* data) override;
@@ -49,6 +58,15 @@ public:
 
 private:
     void activate_slot(int slot_id);
+    void update_layout();   // this frame's fit; places the cards, the plank group and their controls
+    float slot_x(int slot, float card_px) const;   // window position of a card-local art px
+    float slot_y(float card_px) const;
+    // Window position of a point in 800x600 UI coords (the original screen's), through this frame's fit
+    float classic_x(float ui) const;
+    float classic_y(float ui) const;
+    // Plank text lines centred both ways in a box given in UI coords
+    void draw_box_lines(float box_x0, float box_y0, float box_x1, float box_y1, std::span<const char* const> lines) const;
+    void draw_menu_button(std::size_t index, int frame);   // frame 51-60 into that button's face
     void render_character_previews();
     void render_tooltip_text();
     void render_account_info();
@@ -67,9 +85,12 @@ private:
     // Animation timer
     uint32_t m_dwSelCharCTime;
 
-    // Offset for centering 640x480 content in 800x600 base resolution
-    static constexpr short OX = 80;
-    static constexpr short OY = 60;
+    // HD art and this frame's cover fit
+    std::unique_ptr<hb::shared::render::ITexture> m_art;   // staged interface/front_end/character_select.png
+    hb::shared::render::art_fit m_fit;
+
+    // Top-left of each menu button's face (UI), placed on the HD plank by update_layout
+    std::array<cc::point, 5> m_button_face{};
 
     // Control IDs
     static constexpr int SLOT_1 = 1;

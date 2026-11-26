@@ -153,9 +153,9 @@ void Screen_Loading::LoadStage_Interface()
     }
 
     hb::shared::sprite::SpriteLoader::open("interface/intermediate_screens", [&](hb::shared::sprite::SpriteLoader& loader) {
-        // Sprites 0, 1, 3 and 4 (the old screens) and 2 (the old quit screen) are empty placeholders; they
-        // stay in the manifest because sprites are loaded by position
-        m_game->m_sprite[InterfaceNdSelectChar] = loader.get_sprite(5, false);
+        // Sprites 0, 1, 3 and 4 (the old screens), 2 (the old quit screen) and 5 (the old character select,
+        // now the HD sheet, HH-0108) are empty placeholders; they stay in the manifest because sprites are
+        // loaded by position
         m_game->m_sprite[InterfaceNdNewChar] = loader.get_sprite(6, false);
     });
 

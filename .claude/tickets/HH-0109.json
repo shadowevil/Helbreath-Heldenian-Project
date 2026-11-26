@@ -1,0 +1,24 @@
+{
+  "id": "HH-0109",
+  "summary": "Panel-kit button labels 14 px -> 15 px on all screens",
+  "status": "in_progress",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-26T01:44:23Z",
+  "updated": "2026-11-26T01:47:24Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "relates_to": [
+      "HH-0108"
+    ]
+  },
+  "body": "User, 2026-11-25: \"Can we increase the button text by 1px\", applying to all panel-kit buttons (chosen over character select only).\n\nPanel-kit button labels use a fixed 14 px text style (reported by the HH-0108 editor; kit styles have one fixed size each, built by `tools/panel_kit`). Raise the button label style to 15 px for every screen that uses kit buttons.\n\n**Done when:** the kit is rebuilt with a 15 px button label, buttons on character select and at least one other screen are captured in the client with labels that still fit, the build is clean and the review has passed.\n\nSource: user message, 2026-11-25.\n"
+}

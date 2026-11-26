@@ -3053,17 +3053,22 @@ hb::client::hud_kit& CGame::get_hud_kit()
 
 void CGame::draw_text_button(int sX, int sY, int frame, bool is_trans)
 {
+	// The old frame's own place and size (its offset positions the wide buttons), so the drawn button is exactly
+	// the area callers hit-test
+	const hb::client::button_frame::rect r = hb::client::button_frame::rect_of(frame);
+	draw_text_button_in(frame, {sX + r.pivotX, sY + r.pivotY, r.width, r.height}, is_trans);
+}
+
+void CGame::draw_text_button_in(int frame, const hb::client::kit_rect& r, bool is_trans)
+{
 	const baked_button* baked = baked_button_of(frame);
 	if (!baked)
 		return;
-	// The old frame's own place and size (its offset positions the wide buttons), so the drawn button is exactly
-	// the area callers hit-test
 	const hb::client::panel_kit& kit = get_panel_kit();
-	const hb::client::button_frame::rect r = hb::client::button_frame::rect_of(frame);
-	const auto layout = r.width >= 176 ? hb::client::button_layout::wide : hb::client::button_layout::small;
+	const auto layout = hb::client::button_frame::rect_of(frame).width >= 176 ? hb::client::button_layout::wide
+		: hb::client::button_layout::small;
 	// Dialog transparency draws each kit layer at 0.25, so overlaps compound (accepted, HH-0062 review)
-	kit.button(kit.style_of(layout), baked->label, {sX + r.pivotX, sY + r.pivotY, r.width, r.height},
-		baked->hover, hb::client::dialog_alpha(is_trans));
+	kit.button(kit.style_of(layout), baked->label, r, baked->hover, hb::client::dialog_alpha(is_trans));
 }
 
 void CGame::draw_new_dialog_box(char type, int sX, int sY, int frame, bool is_no_color_key, bool is_trans)
