@@ -219,3 +219,5 @@ Sprite font 003 is replaced by the three TrueType recreations, Deathblow, Woundc
 The client no longer loads the retired monster, newmaps, old exit-screen and old cursor sprite sheets. Their images are archived, and the folders and sheets are removed from the game data (HH-0101, HH-0103, HH-0105, HH-0106). The parchment-map tool now reads the old newmaps from the archive.
 
 The character selection screen uses the user's new HD art (HH-0108). The four character cards are full size, grey normally and gold when selected. The help, account and footer boxes from the original are recreated on the HD panel, with the text and buttons scaled to fit them. The old background is archived.
+
+The character-select buttons' labels are larger, 18 px instead of 14, closer to the original's (HH-0109). Small panel buttons such as Ok and Cancel are unchanged. The panel-kit builder now reads its art from the HD folder.

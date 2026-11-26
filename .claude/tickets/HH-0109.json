@@ -1,7 +1,7 @@
 {
   "id": "HH-0109",
   "summary": "Panel-kit button labels 14 px -> 15 px on all screens",
-  "status": "in_progress",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-26T01:44:23Z",
-  "updated": "2026-11-26T01:47:24Z",
+  "updated": "2026-11-26T01:59:28Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "718c89f4"
+    ],
     "files": [],
     "tickets": [],
     "relates_to": [
       "HH-0108"
     ]
   },
-  "body": "User, 2026-11-25: \"Can we increase the button text by 1px\", applying to all panel-kit buttons (chosen over character select only).\n\nPanel-kit button labels use a fixed 14 px text style (reported by the HH-0108 editor; kit styles have one fixed size each, built by `tools/panel_kit`). Raise the button label style to 15 px for every screen that uses kit buttons.\n\n**Done when:** the kit is rebuilt with a 15 px button label, buttons on character select and at least one other screen are captured in the client with labels that still fit, the build is clean and the review has passed.\n\nSource: user message, 2026-11-25.\n"
+  "body": "User, 2026-11-25: \"Can we increase the button text by 1px\", applying to all panel-kit buttons (chosen over character select only).\n\nPanel-kit button labels use a fixed 14 px text style (reported by the HH-0108 editor; kit styles have one fixed size each, built by `tools/panel_kit`). Raise the button label style to 15 px for every screen that uses kit buttons.\n\n**Done when:** the kit is rebuilt with a 15 px button label, buttons on character select and at least one other screen are captured in the client with labels that still fit, the build is clean and the review has passed.\n\nSource: user message, 2026-11-25.\n\n**Closed, 2026-11-25:** the user approved 18 px after previews at 15, 16 and 18 (no clipping; the small style stays at 11 px). Committed 718c89f4. The diff is one size constant and the builder's input-path fix; the PM reviewed it as trivial.\n"
 }
