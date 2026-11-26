@@ -148,7 +148,7 @@ void GameModeManager::update_screens_impl()
     bool transitioning = (m_transitionState != TransitionState::None);
 
     // Suppress input for base screen during transitions or when overlay is active
-    if (transitioning || m_pActiveOverlay)
+    if (transitioning || m_pActiveOverlay || m_input_swallowed)
     {
         hb::shared::input::set_suppressed(true);
     }
@@ -165,7 +165,9 @@ void GameModeManager::update_screens_impl()
     // update overlay (receives input only when not transitioning)
     if (m_pActiveOverlay && !transitioning)
     {
+        hb::shared::input::set_suppressed(m_input_swallowed);
         m_pActiveOverlay->on_update();
+        hb::shared::input::set_suppressed(false);
     }
 
     // Destroy overlay that was cleared during this frame's update.

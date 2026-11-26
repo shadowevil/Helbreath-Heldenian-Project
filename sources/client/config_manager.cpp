@@ -82,6 +82,7 @@ void config_manager::set_defaults()
 	m_display.vsync = false;
 	m_display.refresh_rate = 60;
 	m_display.aspect = render::aspect_mode::letterbox;
+	m_last_fullscreen_mode = render::window_mode::borderless_fullscreen;
 
 	// Display/Detail defaults
 	m_show_fps = false;
@@ -239,6 +240,17 @@ bool config_manager::load(const char* filename)
 				m_display.mode = display["fullscreen"].get<bool>() ? render::window_mode::borderless_fullscreen
 					: render::window_mode::windowed;
 			}
+			// The mode Alt+Enter returns to; a fullscreen window mode in the file counts as the last one used
+			if (render::is_fullscreen(m_display.mode))
+			{
+				m_last_fullscreen_mode = m_display.mode;
+			}
+			if (display.contains("lastFullscreenMode") && display["lastFullscreenMode"].is_string())
+			{
+				render::window_mode::type last = m_last_fullscreen_mode;
+				if (render::parse_window_mode(display["lastFullscreenMode"].get<std::string>(), last) && render::is_fullscreen(last))
+					m_last_fullscreen_mode = last;
+			}
 			if (display.contains("windowedBorderless"))
 			{
 				m_display.windowed_borderless = display["windowedBorderless"].get<bool>();
@@ -358,6 +370,7 @@ bool config_manager::save(const char* filename)
 	j["display"]["dialogTransparency"] = m_dialog_trans;
 	j["display"]["runningMode"] = m_running_mode;
 	j["display"]["windowMode"] = std::string(render::window_mode_key(m_display.mode));
+	j["display"]["lastFullscreenMode"] = std::string(render::window_mode_key(m_last_fullscreen_mode));
 	j["display"]["windowedBorderless"] = m_display.windowed_borderless;
 	j["display"]["captureMouse"] = m_capture_mouse;
 	j["display"]["tileGrid"] = m_tile_grid;
@@ -541,7 +554,12 @@ void config_manager::set_display_settings(const render::display_settings& settin
 	next.width = clamp(next.width, 1, max_window_width);
 	next.height = clamp(next.height, 1, max_window_height);
 	next.refresh_rate = (std::max)(next.refresh_rate, 0);
-	if (m_display != next)
+	if (render::is_fullscreen(next.mode) && m_last_fullscreen_mode != next.mode)
+	{
+		m_last_fullscreen_mode = next.mode;
+		m_dirty = true;
+	}
+	if (m_display != next || m_dirty)
 	{
 		m_display = next;
 		m_dirty = true;

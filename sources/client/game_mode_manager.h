@@ -96,6 +96,8 @@ public:
 
     static void update() { get().update_impl(); }
     static void update_screens() { get().update_screens_impl(); }
+    // While set, the screens and overlay see no input (Alt+Enter swallows the Enter that goes with it)
+    static void set_input_swallowed(bool swallowed) { get().m_input_swallowed = swallowed; }
     static void render() { get().render_impl(); }
 
     // ============== Transition State Queries (Static API) ==============
@@ -157,6 +159,7 @@ private:
     void shutdown_impl();
     void update_impl();
     void update_screens_impl();
+    bool m_input_swallowed = false;
     void render_impl();
     float get_fade_alpha_impl() const;
     ScreenTypeId get_current_screen_type_impl() const;

@@ -98,6 +98,7 @@
 
 // Dialog boxes
 #include "dialog_box_city_hall_menu.h"
+#include "dialog_box_sys_menu.h"
 #include "dialog_box_guide_map.h"
 #include "dialog_box_npc_talk.h"
 #include "dialog_box_skill.h"
@@ -564,6 +565,11 @@ bool CGame::on_text_input(hb::shared::types::NativeWindowHandle hwnd,
 
 	uint32_t codepoint = static_cast<uint32_t>(wparam);
 
+	// Alt-Enter toggles the window (update_alt_enter); its Enter, which some platforms also deliver as a '\r'
+	// character, must not reach a screen or a text field
+	if (m_alt_enter_latched && codepoint == '\r')
+		return true;
+
 	// Let the active screen handle screen-specific text input behavior
 	IGameScreen* screen = GameModeManager::get_active_screen();
 	if (screen) screen->on_text_input(codepoint);
@@ -672,10 +678,67 @@ void CGame::on_update()
 	update_holiday_tiles();
 
 	// update game screens/overlays
+	update_alt_enter();
 	FrameTiming::begin_profile(ProfileStage::update);
 	GameModeManager::update_screens();
 	FrameTiming::end_profile(ProfileStage::update);
 
+}
+
+// Alt+Enter flips windowed <-> the last fullscreen mode (borderless when none). It is the player's own act, so
+// nothing is kept-or-reverted: the result is saved at once. Not while the system menu's keep-or-revert popup
+// asks. The Enter is hidden from the screens until it is released so it opens no chat and submits no form
+void CGame::update_alt_enter()
+{
+	namespace render = hb::shared::render;
+	auto* input = hb::shared::input::get();
+	auto* window = render::Window::get();
+	if (!input || !window)
+		return;
+
+	if (m_alt_enter_latched)
+	{
+		if (!input->is_key_down(KeyCode::Enter))
+		{
+			m_alt_enter_latched = false;
+			GameModeManager::set_input_swallowed(false);
+		}
+		return;
+	}
+	if (!input->is_key_pressed(KeyCode::Enter) || !input->is_alt_down())
+		return;
+
+	m_alt_enter_latched = true;
+	GameModeManager::set_input_swallowed(true);
+
+	// the dialog boxes live in the in-game screen only
+	auto* game_screen = GameModeManager::get_active_screen_as<Screen_OnGame>();
+	const auto* sys_menu = game_screen ? game_screen->get_dialog_box_manager().get_dialog_as<DialogBox_SysMenu>(DialogBoxId::SystemMenu) : nullptr;
+	if (sys_menu && sys_menu->is_display_confirm_active())
+		return;
+
+	const render::display_settings saved = config_manager::get().get_display_settings();
+	render::display_settings request = window->get_display_settings();
+	if (render::is_fullscreen(request.mode))
+	{
+		request.mode = render::window_mode::windowed;
+	}
+	else
+	{
+		request.mode = config_manager::get().get_last_fullscreen_mode();
+		if (!window->is_window_mode_supported(request.mode))
+			request.mode = render::window_mode::borderless_fullscreen;
+	}
+	// the saved size is the one a windowed or exclusive window opens at
+	request.width = saved.width;
+	request.height = saved.height;
+	window->apply_display_settings(request);
+	input->set_window_active(true);
+
+	render::display_settings effective = window->get_display_settings();
+	effective.width = saved.width;
+	effective.height = saved.height;
+	config_manager::get().set_display_settings(effective);
 }
 
 void CGame::update_holiday_tiles()

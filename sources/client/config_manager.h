@@ -64,6 +64,8 @@ public:
 	// The window applies it (IWindow::apply_display_settings); this only persists it.
 	const hb::shared::render::display_settings& get_display_settings() const { return m_display; }
 	void set_display_settings(const hb::shared::render::display_settings& settings);
+	// The last fullscreen mode used (borderless when none): where Alt+Enter goes from windowed
+	hb::shared::render::window_mode::type get_last_fullscreen_mode() const { return m_last_fullscreen_mode; }
 
 	// Display/Detail settings
 	bool is_show_fps_enabled() const { return m_show_fps; }
@@ -149,6 +151,7 @@ private:
 
 	// Display model
 	hb::shared::render::display_settings m_display;
+	hb::shared::render::window_mode::type m_last_fullscreen_mode = hb::shared::render::window_mode::borderless_fullscreen;
 
 	// Display/Detail
 	bool m_show_fps;

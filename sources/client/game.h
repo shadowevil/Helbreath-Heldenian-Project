@@ -190,6 +190,8 @@ public:
 	void use_shortcut( int num );
 	void draw_cursor();
 	void on_update();   // Logic update: audio, timers, network, game state
+	void update_alt_enter();   // Alt+Enter: windowed <-> the saved fullscreen mode, on every screen
+	bool m_alt_enter_latched = false;   // the chord is held: its Enter stays hidden from the screens
 	void on_render();   // render only: clear backbuffer -> draw -> flip
 	void update_holiday_tiles();  // Swap holiday tile variants based on current month
 

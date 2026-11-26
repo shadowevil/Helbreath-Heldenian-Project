@@ -34,6 +34,8 @@ public:
 	bool on_disable() override;
 	// Leaving the game or a map reset is not a Keep: an applied, unconfirmed display change goes back
 	void discard_unconfirmed_display() { revert_display(); }
+	// The keep-or-revert popup is up: the display is not the player's to change meanwhile
+	bool is_display_confirm_active() const { return m_confirm.active; }
 
 private:
 	struct tab
