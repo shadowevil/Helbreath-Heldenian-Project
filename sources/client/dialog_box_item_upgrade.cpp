@@ -17,7 +17,16 @@
 
 using namespace hb::shared::net;
 using namespace hb::shared::item;
-using namespace hb::client::sprite_id;
+
+namespace
+{
+	// The sunken leather box the item sits in: the old Game3 sprite frame 3's place and size (81x115 at its
+	// pivot 94,132), built from the panel kit (HH-0093)
+	void draw_item_slot(const hb::client::panel_kit& kit, int sX, int sY)
+	{
+		kit.inset({sX + 94, sY + 132, 81, 115}, "leather");
+	}
+}
 
 DialogBox_ItemUpgrade::DialogBox_ItemUpgrade(CGame* game)
 	: IDialogBox(DialogBoxId::ItemUpgrade, game)
@@ -113,7 +122,7 @@ void DialogBox_ItemUpgrade::DrawMode1_GizonUpgrade(int sX, int sY)
     int item_index = m_selected_item_index;
     std::string txt;
 
-    m_game->draw_new_dialog_box(InterfaceNdGame3, sX, sY, 3);
+    draw_item_slot(m_game->get_panel_kit(), sX, sY);
     hb::shared::text::draw_text_aligned(GameFont::Default, sX + 24, sY + 20 + 30, (sX + 248) - (sX + 24), 15, DRAW_DIALOGBOX_ITEMUPGRADE1, hb::shared::text::TextStyle::from_color(GameColors::UIBlack), hb::shared::text::Align::TopCenter);
     hb::shared::text::draw_text_aligned(GameFont::Default, sX + 24, sY + 20 + 45, (sX + 248) - (sX + 24), 15, DRAW_DIALOGBOX_ITEMUPGRADE2, hb::shared::text::TextStyle::from_color(GameColors::UIBlack), hb::shared::text::Align::TopCenter);
     hb::shared::text::draw_text_aligned(GameFont::Default, sX + 24, sY + 20 + 60, (sX + 248) - (sX + 24), 15, DRAW_DIALOGBOX_ITEMUPGRADE3, hb::shared::text::TextStyle::from_color(GameColors::UIBlack), hb::shared::text::Align::TopCenter);
@@ -124,7 +133,6 @@ void DialogBox_ItemUpgrade::DrawMode1_GizonUpgrade(int sX, int sY)
 
     if (item_index != -1)
     {
-        m_game->draw_new_dialog_box(InterfaceNdGame3, sX, sY, 3);
         int value = calculate_upgrade_cost(item_index);
 
         txt = std::format(DRAW_DIALOGBOX_ITEMUPGRADE12, value);
@@ -167,7 +175,7 @@ void DialogBox_ItemUpgrade::DrawMode2_InProgress(int sX, int sY)
 
     if (item_index != -1)
     {
-        m_game->draw_new_dialog_box(InterfaceNdGame3, sX, sY, 3);
+        draw_item_slot(m_game->get_panel_kit(), sX, sY);
         char item_color = player().m_item_list[item_index]->m_instance.item_color;
         CItem* cfg = m_game->get_item_config(player().m_item_list[item_index]->m_id_num);
 
@@ -221,7 +229,7 @@ void DialogBox_ItemUpgrade::DrawMode3_Success(int sX, int sY)
 
     if (item_index != -1)
     {
-        m_game->draw_new_dialog_box(InterfaceNdGame3, sX, sY, 3);
+        draw_item_slot(m_game->get_panel_kit(), sX, sY);
         draw_item_preview(sX, sY, item_index);
     }
 
@@ -250,7 +258,7 @@ void DialogBox_ItemUpgrade::DrawMode4_Failed(int sX, int sY)
 
     if (item_index != -1)
     {
-        m_game->draw_new_dialog_box(InterfaceNdGame3, sX, sY, 3);
+        draw_item_slot(m_game->get_panel_kit(), sX, sY);
         draw_item_preview(sX, sY, item_index);
     }
 
@@ -313,7 +321,7 @@ void DialogBox_ItemUpgrade::DrawMode6_StoneUpgrade(int sX, int sY)
     int so_m = m_stone_merien_count;
     std::string txt;
 
-    m_game->draw_new_dialog_box(InterfaceNdGame3, sX, sY, 3);
+    draw_item_slot(m_game->get_panel_kit(), sX, sY);
     hb::shared::text::draw_text_aligned(GameFont::Default, sX + 24, sY + 20 + 30, (sX + 248) - (sX + 24), 15, DRAW_DIALOGBOX_ITEMUPGRADE31, hb::shared::text::TextStyle::from_color(GameColors::UIBlack), hb::shared::text::Align::TopCenter);
     hb::shared::text::draw_text_aligned(GameFont::Default, sX + 24, sY + 20 + 45, (sX + 248) - (sX + 24), 15, DRAW_DIALOGBOX_ITEMUPGRADE32, hb::shared::text::TextStyle::from_color(GameColors::UIBlack), hb::shared::text::Align::TopCenter);
     hb::shared::text::draw_text_aligned(GameFont::Default, sX + 24, sY + 20 + 60, (sX + 248) - (sX + 24), 15, DRAW_DIALOGBOX_ITEMUPGRADE33, hb::shared::text::TextStyle::from_color(GameColors::UIBlack), hb::shared::text::Align::TopCenter);
@@ -342,7 +350,6 @@ void DialogBox_ItemUpgrade::DrawMode6_StoneUpgrade(int sX, int sY)
 
     if (item_index != -1)
     {
-        m_game->draw_new_dialog_box(InterfaceNdGame3, sX, sY, 3);
         draw_item_preview(sX, sY, item_index);
 
         if ((mouse_x >= sX + ui_layout::left_btn_x) && (mouse_x <= sX + ui_layout::left_btn_x + ui_layout::btn_size_x) && (mouse_y >= sY + ui_layout::btn_y) && (mouse_y <= sY + ui_layout::btn_y + ui_layout::btn_size_y))
