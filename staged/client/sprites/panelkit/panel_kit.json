@@ -9,7 +9,7 @@
   },
   "button_panel": {
    "path": "working/classic_ui/hd/button_panel.png",
-   "sha256": "6cd9a5a4918fcfbffaf982d33587802a58ac7c134c54be705cd6c729e78982e6"
+   "sha256": "69280c9a37ab872a32760c64bb6d965691280c3bda5e89d1dd2066a70bbcd5c5"
   }
  },
  "compose_order": [
@@ -192,7 +192,7 @@
   },
   "wood_light_top": {
    "image": "panel_kit.png",
-   "x": 197,
+   "x": 253,
    "y": 557,
    "w": 21,
    "h": 9,
@@ -202,7 +202,7 @@
   },
   "wood_light_bottom": {
    "image": "panel_kit.png",
-   "x": 174,
+   "x": 230,
    "y": 557,
    "w": 21,
    "h": 9,
@@ -232,7 +232,7 @@
   },
   "wood_dark_top": {
    "image": "panel_kit.png",
-   "x": 151,
+   "x": 207,
    "y": 557,
    "w": 21,
    "h": 11,
@@ -242,7 +242,7 @@
   },
   "wood_dark_bottom": {
    "image": "panel_kit.png",
-   "x": 128,
+   "x": 184,
    "y": 557,
    "w": 21,
    "h": 11,
@@ -352,7 +352,7 @@
   },
   "btn_sq_up": {
    "image": "panel_kit.png",
-   "x": 100,
+   "x": 156,
    "y": 557,
    "w": 12,
    "h": 12,
@@ -372,7 +372,7 @@
   },
   "btn_sq_up_dark": {
    "image": "panel_kit.png",
-   "x": 114,
+   "x": 170,
    "y": 557,
    "w": 12,
    "h": 12,
@@ -392,7 +392,7 @@
   },
   "btn_sq_plus": {
    "image": "panel_kit.png",
-   "x": 72,
+   "x": 100,
    "y": 557,
    "w": 12,
    "h": 12,
@@ -402,7 +402,7 @@
   },
   "btn_sq_minus": {
    "image": "panel_kit.png",
-   "x": 44,
+   "x": 72,
    "y": 557,
    "w": 12,
    "h": 12,
@@ -412,7 +412,7 @@
   },
   "btn_sq_plus_dark": {
    "image": "panel_kit.png",
-   "x": 86,
+   "x": 114,
    "y": 557,
    "w": 12,
    "h": 12,
@@ -422,7 +422,7 @@
   },
   "btn_sq_minus_dark": {
    "image": "panel_kit.png",
-   "x": 58,
+   "x": 86,
    "y": 557,
    "w": 12,
    "h": 12,
@@ -472,7 +472,7 @@
   },
   "arrow_up_small": {
    "image": "panel_kit.png",
-   "x": 230,
+   "x": 286,
    "y": 557,
    "w": 8,
    "h": 7,
@@ -482,7 +482,7 @@
   },
   "arrow_down_small": {
    "image": "panel_kit.png",
-   "x": 220,
+   "x": 276,
    "y": 557,
    "w": 8,
    "h": 7,
@@ -502,7 +502,7 @@
   },
   "btn_frame_tl": {
    "image": "panel_kit.png",
-   "x": 454,
+   "x": 510,
    "y": 557,
    "w": 4,
    "h": 4,
@@ -512,7 +512,7 @@
   },
   "btn_frame_t": {
    "image": "panel_kit.png",
-   "x": 486,
+   "x": 542,
    "y": 557,
    "w": 6,
    "h": 3,
@@ -522,7 +522,7 @@
   },
   "btn_frame_tr": {
    "image": "panel_kit.png",
-   "x": 460,
+   "x": 516,
    "y": 557,
    "w": 4,
    "h": 4,
@@ -532,7 +532,7 @@
   },
   "btn_frame_l": {
    "image": "panel_kit.png",
-   "x": 442,
+   "x": 498,
    "y": 557,
    "w": 4,
    "h": 4,
@@ -542,7 +542,7 @@
   },
   "btn_frame_r": {
    "image": "panel_kit.png",
-   "x": 448,
+   "x": 504,
    "y": 557,
    "w": 4,
    "h": 4,
@@ -552,7 +552,7 @@
   },
   "btn_frame_bl": {
    "image": "panel_kit.png",
-   "x": 430,
+   "x": 486,
    "y": 557,
    "w": 4,
    "h": 4,
@@ -562,7 +562,7 @@
   },
   "btn_frame_b": {
    "image": "panel_kit.png",
-   "x": 478,
+   "x": 534,
    "y": 557,
    "w": 6,
    "h": 3,
@@ -572,7 +572,7 @@
   },
   "btn_frame_br": {
    "image": "panel_kit.png",
-   "x": 436,
+   "x": 492,
    "y": 557,
    "w": 4,
    "h": 4,
@@ -602,7 +602,7 @@
   },
   "btn_cap_left": {
    "image": "panel_kit.png",
-   "x": 240,
+   "x": 296,
    "y": 557,
    "w": 5,
    "h": 7,
@@ -612,7 +612,7 @@
   },
   "btn_cap_right": {
    "image": "panel_kit.png",
-   "x": 247,
+   "x": 303,
    "y": 557,
    "w": 5,
    "h": 7,
@@ -642,7 +642,7 @@
   },
   "rule_dark": {
    "image": "panel_kit.png",
-   "x": 494,
+   "x": 550,
    "y": 557,
    "w": 24,
    "h": 1,
@@ -652,7 +652,7 @@
   },
   "rule_light": {
    "image": "panel_kit.png",
-   "x": 520,
+   "x": 576,
    "y": 557,
    "w": 24,
    "h": 1,
@@ -692,7 +692,7 @@
   },
   "wood_light_top_t6": {
    "image": "panel_kit.png",
-   "x": 386,
+   "x": 442,
    "y": 557,
    "w": 42,
    "h": 6,
@@ -702,7 +702,7 @@
   },
   "wood_light_bottom_t6": {
    "image": "panel_kit.png",
-   "x": 342,
+   "x": 398,
    "y": 557,
    "w": 42,
    "h": 6,
@@ -732,7 +732,7 @@
   },
   "wood_dark_top_t6": {
    "image": "panel_kit.png",
-   "x": 298,
+   "x": 354,
    "y": 557,
    "w": 42,
    "h": 6,
@@ -742,7 +742,7 @@
   },
   "wood_dark_bottom_t6": {
    "image": "panel_kit.png",
-   "x": 254,
+   "x": 310,
    "y": 557,
    "w": 42,
    "h": 6,
@@ -849,9 +849,49 @@
     "y": 62
    }
   },
+  "btn_sq_left": {
+   "image": "panel_kit.png",
+   "x": 44,
+   "y": 557,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "tan square, light left arrow (btn_sq_down face turned, bevel kept)",
+   "source": "btn_sq_down"
+  },
+  "btn_sq_right": {
+   "image": "panel_kit.png",
+   "x": 128,
+   "y": 557,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "tan square, light right arrow (btn_sq_down face turned, bevel kept)",
+   "source": "btn_sq_down"
+  },
+  "btn_sq_left_dark": {
+   "image": "panel_kit.png",
+   "x": 58,
+   "y": 557,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "tan square, dark left arrow (btn_sq_down face turned, bevel kept)",
+   "source": "btn_sq_down_dark"
+  },
+  "btn_sq_right_dark": {
+   "image": "panel_kit.png",
+   "x": 142,
+   "y": 557,
+   "w": 12,
+   "h": 12,
+   "group": "small_button",
+   "use": "tan square, dark right arrow (btn_sq_down face turned, bevel kept)",
+   "source": "btn_sq_down_dark"
+  },
   "px_black": {
    "image": "panel_kit.png",
-   "x": 466,
+   "x": 522,
    "y": 557,
    "w": 4,
    "h": 4,
@@ -861,7 +901,7 @@
   },
   "px_white": {
    "image": "panel_kit.png",
-   "x": 472,
+   "x": 528,
    "y": 557,
    "w": 4,
    "h": 4,
