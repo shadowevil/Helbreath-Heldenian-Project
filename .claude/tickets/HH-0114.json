@@ -1,0 +1,30 @@
+{
+  "id": "HH-0114",
+  "summary": "System menu and display handling overhaul, SDL model on our mockup (task)",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-26T04:29:39Z",
+  "updated": "2026-11-26T04:29:41Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocked_by": [
+      "HH-0115",
+      "HH-0116",
+      "HH-0117",
+      "HH-0118",
+      "HH-0119",
+      "HH-0120",
+      "HH-0121"
+    ]
+  },
+  "body": "Goal (user, 2026-11-25): \"start the system menu and window handling overhaul to match that of SDL but with our system menu mockup\". Mockup .claude/scratch/coordinator/sysmenu_mockup/b2.png (dropdowns point left collapsed, down open).\n\nPlan, research and decisions: .claude/design/plans/system-menu-display-overhaul.md. Refresh-rate decision still open.\n\n**Done when:** every sub-task is done and the menu, staging and window modes work in game on Windows, with Linux built and checked.\n"
+}

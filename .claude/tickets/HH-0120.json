@@ -1,0 +1,24 @@
+{
+  "id": "HH-0120",
+  "summary": "Sysmenu 6: Alt-Enter toggles fullscreen",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-26T04:29:40Z",
+  "updated": "2026-11-26T04:29:40Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0114"
+    ]
+  },
+  "body": "Alt-Enter switches between windowed and the saved fullscreen mode outside staging.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n"
+}

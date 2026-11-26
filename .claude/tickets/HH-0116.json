@@ -1,0 +1,24 @@
+{
+  "id": "HH-0116",
+  "summary": "Sysmenu 2: cc::dropdown and check box controls",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-26T04:29:39Z",
+  "updated": "2026-11-26T04:29:39Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0114"
+    ]
+  },
+  "body": "A CControls dropdown: collapsed field with left arrow, open list with down arrow, hover, current mark, scroll when long, closes on outside click or Esc; a check box if missing.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n"
+}

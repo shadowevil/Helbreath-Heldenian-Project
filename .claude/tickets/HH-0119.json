@@ -1,0 +1,24 @@
+{
+  "id": "HH-0119",
+  "summary": "Sysmenu 5: rebuild the system menu to the mockup",
+  "status": "open",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-26T04:29:40Z",
+  "updated": "2026-11-26T04:29:40Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "blocks": [
+      "HH-0114"
+    ]
+  },
+  "body": "Left tab column and Log Out, settings pane with Display and Quality sections, dropdowns and check boxes; every existing setting kept; General opens by default.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n"
+}
