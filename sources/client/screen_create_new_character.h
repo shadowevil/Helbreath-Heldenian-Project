@@ -2,13 +2,23 @@
 //
 // Handles character creation UI including appearance customization and stat allocation.
 //
+// The art is the HD sheet (HH-0122): interface/front_end/character_create.png, a 1920x1080 backdrop cover-fit
+// like the other front-end screens, with the arrow and +/- buttons in a strip beside it. The original layout is
+// mapped onto the HD panels keeping every element's place; tools/front_end/make_create_backdrop.py bakes the
+// value-box recesses from the same numbers.
+//
 //////////////////////////////////////////////////////////////////////
 
 #pragma once
 
 #include "game_screen.h"
 #include "control_collection.h"
+#include "primitive_types.h"
+#include "text_lib.h"
+#include "texture.h"
 #include <cstdint>
+#include <memory>
+#include <span>
 
 class Screen_CreateNewCharacter : public IGameScreen
 {
@@ -21,6 +31,7 @@ public:
     ~Screen_CreateNewCharacter() override = default;
 
     void on_initialize() override;
+    void on_uninitialize() override;
     void on_update() override;
     void on_render() override;
     bool on_net_response(uint16_t response_type, char* data) override;
@@ -31,28 +42,29 @@ public:
     {
         static constexpr agent_control_name names[] = {
             {TXT_NAME, "create_character.name"},
-            {TOG_GENDER, "create_character.gender.minus", 0, 21},
-            {TOG_GENDER, "create_character.gender.plus", 22, 21},
-            {TOG_SKIN, "create_character.skin.minus", 0, 21},
-            {TOG_SKIN, "create_character.skin.plus", 22, 21},
-            {TOG_HAIR_STYLE, "create_character.hair_style.minus", 0, 21},
-            {TOG_HAIR_STYLE, "create_character.hair_style.plus", 22, 21},
-            {TOG_HAIR_COLOR, "create_character.hair_color.minus", 0, 21},
-            {TOG_HAIR_COLOR, "create_character.hair_color.plus", 22, 21},
-            {TOG_UNDERWEAR, "create_character.underwear.minus", 0, 21},
-            {TOG_UNDERWEAR, "create_character.underwear.plus", 22, 21},
-            {TOG_STR, "create_character.str.minus", 22, 21},
-            {TOG_STR, "create_character.str.plus", 0, 21},
-            {TOG_VIT, "create_character.vit.minus", 22, 21},
-            {TOG_VIT, "create_character.vit.plus", 0, 21},
-            {TOG_DEX, "create_character.dex.minus", 22, 21},
-            {TOG_DEX, "create_character.dex.plus", 0, 21},
-            {TOG_INT, "create_character.int.minus", 22, 21},
-            {TOG_INT, "create_character.int.plus", 0, 21},
-            {TOG_MAG, "create_character.mag.minus", 22, 21},
-            {TOG_MAG, "create_character.mag.plus", 0, 21},
-            {TOG_CHR, "create_character.chr.minus", 22, 21},
-            {TOG_CHR, "create_character.chr.plus", 0, 21},
+            {BTN_ROW_LEFT + 0, "create_character.gender.minus"},
+            {BTN_ROW_RIGHT + 0, "create_character.gender.plus"},
+            {BTN_ROW_LEFT + 1, "create_character.skin.minus"},
+            {BTN_ROW_RIGHT + 1, "create_character.skin.plus"},
+            {BTN_ROW_LEFT + 2, "create_character.hair_style.minus"},
+            {BTN_ROW_RIGHT + 2, "create_character.hair_style.plus"},
+            {BTN_ROW_LEFT + 3, "create_character.hair_color.minus"},
+            {BTN_ROW_RIGHT + 3, "create_character.hair_color.plus"},
+            {BTN_ROW_LEFT + 4, "create_character.underwear.minus"},
+            {BTN_ROW_RIGHT + 4, "create_character.underwear.plus"},
+            // Stats: plus on the left, minus on the right (the original's order)
+            {BTN_ROW_RIGHT + 5, "create_character.str.minus"},
+            {BTN_ROW_LEFT + 5, "create_character.str.plus"},
+            {BTN_ROW_RIGHT + 6, "create_character.vit.minus"},
+            {BTN_ROW_LEFT + 6, "create_character.vit.plus"},
+            {BTN_ROW_RIGHT + 7, "create_character.dex.minus"},
+            {BTN_ROW_LEFT + 7, "create_character.dex.plus"},
+            {BTN_ROW_RIGHT + 8, "create_character.int.minus"},
+            {BTN_ROW_LEFT + 8, "create_character.int.plus"},
+            {BTN_ROW_RIGHT + 9, "create_character.mag.minus"},
+            {BTN_ROW_LEFT + 9, "create_character.mag.plus"},
+            {BTN_ROW_RIGHT + 10, "create_character.chr.minus"},
+            {BTN_ROW_LEFT + 10, "create_character.chr.plus"},
             {BTN_CREATE, "create_character.create"},
             {BTN_CANCEL, "create_character.cancel"},
             {BTN_WARRIOR, "create_character.warrior"},
@@ -65,7 +77,12 @@ public:
 
 private:
     void submit_create_character();
-    void render_tooltips();
+    void apply_class_preset(int class_button);
+    void update_layout();   // this frame's fit; places every control on the HD panels
+    void render_help_text();
+    // Text through this frame's fit: a box in art px, the text aligned in it
+    void draw_art_text(float x0, float y0, float x1, float y1, const char* text, const hb::shared::render::Color& color,
+        int font_size, hb::shared::text::Align align) const;
 
     // CControls
     cc::control_collection m_controls;
@@ -78,25 +95,21 @@ private:
     uint32_t m_dwNewCharMTime;
     bool m_bNewCharFlag;
 
-    // Offset for centering 640x480 content in 800x600 base resolution
-    static constexpr short OX = 80;
-    static constexpr short OY = 60;
+    // HD art and this frame's cover fit
+    std::unique_ptr<hb::shared::render::ITexture> m_art;   // staged interface/front_end/character_create.png
+    hb::shared::render::art_fit m_fit;
+
+    // Rows: 0-4 appearance (gender, skin, hair style, hair colour, underwear), 5-10 stats (str, vit, dex, int,
+    // mag, chr)
+    static constexpr int row_count = 11;
+    static constexpr int appearance_rows = 5;
 
     // Control IDs
     static constexpr int TXT_NAME = 1;
-    // Appearance toggles
-    static constexpr int TOG_GENDER = 10;
-    static constexpr int TOG_SKIN = 11;
-    static constexpr int TOG_HAIR_STYLE = 12;
-    static constexpr int TOG_HAIR_COLOR = 13;
-    static constexpr int TOG_UNDERWEAR = 14;
-    // Stat toggles
-    static constexpr int TOG_STR = 20;
-    static constexpr int TOG_VIT = 21;
-    static constexpr int TOG_DEX = 22;
-    static constexpr int TOG_INT = 23;
-    static constexpr int TOG_MAG = 24;
-    static constexpr int TOG_CHR = 25;
+    static constexpr int BTN_ROW_LEFT = 100;    // + row: the row's left strip button
+    static constexpr int BTN_ROW_RIGHT = 120;   // + row: the row's right strip button
+    static constexpr int ZONE_NAME = 140;       // help-text hover zones (cc::panel, drawn by nothing)
+    static constexpr int ZONE_ROW = 141;        // + row
     // Action buttons
     static constexpr int BTN_CREATE = 30;
     static constexpr int BTN_CANCEL = 31;

@@ -8,7 +8,6 @@ constexpr int InterfaceSprFonts             = 22;
 constexpr int InterfaceFont1                = 30;
 constexpr int InterfaceFont2                = 31;
 
-constexpr int InterfaceNdNewChar            = 58;
 constexpr int InterfaceNdNewExchange        = 59;
 constexpr int InterfaceNdInventory          = 67;
 constexpr int InterfaceNdCrusade            = 72;

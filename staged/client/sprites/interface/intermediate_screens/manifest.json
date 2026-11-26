@@ -51,38 +51,8 @@
   },
   {
    "index": 6,
-   "offset": 3016459,
-   "size": 1020000,
-   "rect_count": 1,
-   "frames": [
-    [
-     0,
-     0,
-     800,
-     600,
-     0,
-     0
-    ]
-   ],
-   "color_key_u32": 0,
-   "color_key_hex": "00000000",
-   "color_key_rgb": [
-    0,
-    0,
-    0
-   ],
-   "image": {
-    "size": 1019880,
-    "format": "png",
-    "width": 800,
-    "height": 600,
-    "bit_depth": 8,
-    "png_color_type": 6,
-    "png_interlace": 0,
-    "has_plte": false,
-    "has_trns": false,
-    "file": "006.png"
-   }
+   "rect_count": 0,
+   "empty": true
   }
  ],
  "unknown_gaps": [],
