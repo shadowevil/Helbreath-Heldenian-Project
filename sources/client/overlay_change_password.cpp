@@ -19,7 +19,6 @@
 #include <string>
 
 using namespace hb::shared::net;
-using namespace hb::client::sprite_id;
 
 Overlay_ChangePassword::Overlay_ChangePassword(CGame* game)
     : IGameScreen(game)
@@ -32,7 +31,7 @@ void Overlay_ChangePassword::on_initialize()
     m_game->m_arrow_pressed = 0;
 
     int dlgX, dlgY;
-    get_centered_dialog_pos(InterfaceNdGame4, 0, dlgX, dlgY);
+    get_centered_pos(kit_layout::change_password_size.x, kit_layout::change_password_size.y, dlgX, dlgY);
 
     m_controls.set_screen_size(LOGICAL_WIDTH(), LOGICAL_HEIGHT());
     m_controls.set_hover_focus(false);
@@ -208,9 +207,9 @@ void Overlay_ChangePassword::on_render()
     {
         // A plain kit frame at the original's place and size (its axe picture is dropped, user ruling; HH-0066),
         // with the title, the sunken panel and the four field boxes the sprite carried (the fourth was frame 7)
-        get_centered_dialog_pos(InterfaceNdGame4, 0, dlgX, dlgY);
+        get_centered_pos(kit_layout::change_password_size.x, kit_layout::change_password_size.y, dlgX, dlgY);
         constexpr hb::client::kit_rect content_panel{16, 31, 302, 207};
-        const hb::client::kit_dialog kit(m_game->get_panel_kit(), hb::client::kit_point{334, 256}, hb::client::kit_point{dlgX, dlgY},
+        const hb::client::kit_dialog kit(m_game->get_panel_kit(), kit_layout::change_password_size, hb::client::kit_point{dlgX, dlgY},
             1.0f, kit_frame_style(kit_frame::rivet_box));
         kit.title("Change Password", 21, kit_layout::title_fill, "divider_wave", 14);
         kit.inset(content_panel);

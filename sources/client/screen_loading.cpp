@@ -160,13 +160,14 @@ void Screen_Loading::LoadStage_Interface()
     });
 
     hb::shared::sprite::SpriteLoader::open("interface/game_dialogs", [&](hb::shared::sprite::SpriteLoader& loader) {
-        m_game->m_sprite[InterfaceNdGame4] = loader.get_sprite(3, false);
         m_game->m_sprite[InterfaceNdCrusade] = loader.get_sprite(4, false);
-        // Sprites 0 (the old Game1 frames), 2 (the old Game3 sheet; the item-upgrade slot is now a panel kit
-        // inset, HH-0093), 5 (the old icon panel), 8 (the old cursors, now cursors_hq), 9 (the old title
-        // strips) and 10 (the old buttons and character cards, now the panel kit and the
-        // HD select screen; their geometry lives in button_frames.h) are empty placeholders; they stay in
-        // the manifest because sprites are loaded by position
+        // Sprites 0 (the old Game1 frames), 1 (the old Game2 sheet, now kit pieces, HH-0091), 2 (the old Game3
+        // sheet; the item-upgrade slot is now a panel kit inset, HH-0093), 3 (the old Game4 sheet; the stat
+        // table, +/- buttons and notice sizes are now the panel kit and kit_layout, HH-0094), 5 (the old icon
+        // panel), 8 (the old cursors, now cursors_hq), 9 (the old title strips) and 10 (the old buttons and
+        // character cards, now the panel kit and the HD select screen; their geometry lives in
+        // button_frames.h) are empty placeholders; they stay in the manifest because sprites are loaded by
+        // position
         m_game->m_sprite[InterfaceNdInventory] = loader.get_sprite(6, false);
         m_game->m_sprite[InterfaceNdNewExchange] = loader.get_sprite(7, false);
     });

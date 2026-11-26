@@ -3,13 +3,10 @@
 #include "game_fonts.h"
 #include "lan_eng.h"
 #include "text_lib.h"
-#include "sprite_collection.h"
-#include "sprite.h"
 #include <format>
 #include <string>
 #include "input.h"
 #include "audio_manager.h"
-using namespace hb::client::sprite_id;
 
 DialogBox_Noticement::DialogBox_Noticement(CGame* game)
 	: IDialogBox(DialogBoxId::Noticement, game)
@@ -26,17 +23,17 @@ void DialogBox_Noticement::set_shutdown_info(uint16_t seconds, const char* messa
 
 void DialogBox_Noticement::on_draw()
 {
-	// Center the dialog on screen (same method as Connecting overlay)
-	auto rect = m_game->m_sprite[InterfaceNdGame4]->GetFrameRect(2);
-	short sX = static_cast<short>((LOGICAL_WIDTH() - rect.width) / 2);
-	short sY = static_cast<short>((LOGICAL_HEIGHT() - rect.height) / 2);
-	short size_x = static_cast<short>(rect.width);
+	// Center the notice box on screen (same method as Connecting overlay)
+	const hb::client::kit_point size = kit_layout::notice_size;
+	short sX = static_cast<short>((LOGICAL_WIDTH() - size.x) / 2);
+	short sY = static_cast<short>((LOGICAL_HEIGHT() - size.y) / 2);
+	short size_x = static_cast<short>(size.x);
 
 	// Update stored position for click handling
 	m_x = sX;
 	m_y = sY;
 	m_size_x = size_x;
-	m_size_y = static_cast<short>(rect.height);
+	m_size_y = static_cast<short>(size.y);
 
 	using namespace hb::shared::text;
 	constexpr int pad_left = 18;

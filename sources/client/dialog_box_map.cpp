@@ -59,7 +59,6 @@ bool DialogBox_Map::on_disable()
 
 void DialogBox_Map::draw_marker(short sX, short sY, int tX, int tY)
 {
-	draw_new_dialog_box(InterfaceNdGame4, sX + tX, sY + tY, 43);
 	const std::string coords = std::format("{},{}", player().m_player_x, player().m_player_y);
 	hb::shared::text::draw_text(GameFont::SprFont3_2, sX + 10 + tX - 5, sY + 10 + tY - 6, coords.c_str(), hb::shared::text::TextStyle::with_two_point_shadow(GameColors::Yellow4x));
 }
@@ -90,8 +89,8 @@ void DialogBox_Map::on_draw()
 	{
 		const int mx = static_cast<int>(std::lround(marker_x));
 		const int my = static_cast<int>(std::lround(marker_y));
-		// the shipped interface/game_dialogs sprites have no frame 43 in InterfaceNdGame4, so the legacy marker draws only
-		// its coordinates; the kit adds the guide map's player dot (centred by its pivot) on the tile
+		// the legacy marker draws only its coordinates (its old Game4 frame 43 never existed in the shipped sheet; the
+		// draw was dropped with the sheet, HH-0094); the kit adds the guide map's player dot (centred by its pivot)
 		m_game->m_sprite[InterfaceNdCrusade]->draw(mx, my, 37);
 		draw_marker(sX, sY, mx - sX, my - sY);
 	}

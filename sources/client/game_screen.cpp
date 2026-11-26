@@ -3,14 +3,13 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "game_screen.h"
-#include "dialog_box.h"   // draw_kit_notice_frame
+#include "dialog_box.h"   // draw_kit_notice_frame, kit_layout
 #include "event_list_manager.h"
 #include "game.h"
 #include "game_mode_manager.h"
 #include "game_fonts.h"
 #include "text_lib_ext.h"
 #include "global_def.h"
-#include "sprite_id.h"
 #include "ccontrols.h"
 #include "input_state_helper.h"
 
@@ -32,11 +31,15 @@ void IGameScreen::draw_text_button(int sX, int sY, int frame, bool is_trans)
     m_game->draw_text_button(sX, sY, frame, is_trans);
 }
 
-void IGameScreen::get_centered_dialog_pos(char type, int frame, int& outX, int& outY)
+void IGameScreen::get_centered_pos(int width, int height, int& out_x, int& out_y)
 {
-    auto rect = m_game->m_sprite[type]->GetFrameRect(frame);
-    outX = (LOGICAL_WIDTH() - rect.width) / 2;
-    outY = (LOGICAL_HEIGHT() - rect.height) / 2;
+    out_x = (LOGICAL_WIDTH() - width) / 2;
+    out_y = (LOGICAL_HEIGHT() - height) / 2;
+}
+
+void IGameScreen::get_centered_notice_pos(int& out_x, int& out_y)
+{
+    get_centered_pos(kit_layout::notice_size.x, kit_layout::notice_size.y, out_x, out_y);
 }
 
 void IGameScreen::put_string(int iX, int iY, const char* string, const hb::shared::render::Color& color)
@@ -94,17 +97,9 @@ void IGameScreen::discard_pending_controls_input(cc::control_collection& control
 
 // ============== Drawing Helpers (Centered) ==============
 
-void IGameScreen::draw_centered_dialog_box(char type, int frame, int& out_x, int& out_y,
-                                           bool is_no_color_key, bool is_trans)
-{
-	get_centered_dialog_pos(type, frame, out_x, out_y);
-	draw_new_dialog_box(type, out_x, out_y, frame, is_no_color_key, is_trans);
-}
-
 void IGameScreen::draw_centered_notice_frame(int& out_x, int& out_y, std::string_view title, int title_y)
 {
-	using namespace hb::client::sprite_id;
-	get_centered_dialog_pos(InterfaceNdGame4, 2, out_x, out_y);   // the old notice frame's place and size
+	get_centered_notice_pos(out_x, out_y);
 	draw_kit_notice_frame(m_game->get_panel_kit(), out_x, out_y, title, title_y);
 }
 

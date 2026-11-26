@@ -114,6 +114,69 @@ void IDialogBox::draw_crusade_frame(int title_frame, int x, int y, bool transpar
 	dialog.inset(status_strip);
 }
 
+void IDialogBox::draw_stat_table(int x, int y)
+{
+	const hb::client::panel_kit& kit = m_game->get_panel_kit();
+	constexpr int row_count = 6;
+	constexpr int row_step = 19;
+	for (int row = 0; row < row_count; row++)
+	{
+		const int row_y = y + 127 + row_step * row;
+		kit.piece("btn_sq_plus_dark", x + 195, row_y);
+		kit.piece("btn_sq_minus_dark", x + 210, row_y);
+	}
+}
+
+namespace
+{
+	// A stat-table value box, dialog-relative: the old frame 4's box (measured, HH-0094), where its value text
+	// starts, and how far a long value may widen it
+	struct stat_box_layout
+	{
+		int x;
+		int w;
+		int text_x;
+		int min_x;       // leftmost edge: clear of the label or the box to the left
+		int max_right;   // rightmost edge: clear of the box or the +/- buttons to the right
+		bool centred;    // grows both ways (free space on both sides), else leftwards only
+	};
+	constexpr stat_box_layout stat_boxes[] = {
+		{74, 18, 73, 20, 146, true},      // points: nothing beside it; up to 126 wide
+		{104, 34, 109, 90, 138, false},   // current: the widest label ("Intelligence") ends at 84; up to 48 wide
+		{155, 34, 162, 142, 189, false},  // next: 4 px right of the current box, 6 px left of +; up to 47 wide
+	};
+}
+
+void IDialogBox::draw_stat_value(int x, int y, stat_box::type box, int text_y, const char* text,
+	const hb::shared::render::Color& color)
+{
+	// Comfortable space between the value's ink and the box's bevel, each side
+	constexpr int text_pad = 3;
+	const stat_box_layout& b = stat_boxes[box];
+	const int text_w = hb::shared::text::measure_text(GameFont::Default, text).width;
+	int box_x = b.x;
+	int box_w = b.w;
+	const bool fits = b.text_x + text_w + text_pad <= b.x + b.w;
+	if (!fits)
+	{
+		const int need = std::max(b.w, text_w + 2 * text_pad);
+		if (b.centred)
+			box_x = b.x - (need - b.w) / 2;
+		else
+			box_x = b.x + b.w - need;
+		box_x = std::max(box_x, b.min_x);
+		box_w = std::min(need, b.max_right - box_x);
+	}
+	// A standard inset on the frame's cloth grid (d-037)
+	m_game->get_panel_kit().inset({x + box_x, y + text_y - 1, box_w, 17}, "stone_field", 0.0f, 1.0f,
+		hb::client::kit_point{x + 1, y + 1});
+	// A value at its base box keeps the old text place; a widened box centres it
+	if (fits)
+		put_string(x + b.text_x, y + text_y, text, color);
+	else
+		put_aligned_string(x + box_x, x + box_x + box_w, y + text_y, text, color);
+}
+
 void IDialogBox::draw_tall_scrollbar(int x, int y, float pos)
 {
 	const hb::client::kit_rect& t = kit_layout::tall_track;

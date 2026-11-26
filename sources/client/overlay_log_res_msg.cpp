@@ -14,7 +14,6 @@
 #include <format>
 #include <string>
 #include <string_view>
-using namespace hb::client::sprite_id;
 
 Overlay_LogResMsg::Overlay_LogResMsg(CGame* game)
     : IGameScreen(game)
@@ -33,7 +32,7 @@ void Overlay_LogResMsg::on_initialize()
     audio_manager::get().stop_sound(sound_type::effect, 38);
 
     int dlgX, dlgY;
-    get_centered_dialog_pos(InterfaceNdGame4, 2, dlgX, dlgY);
+    get_centered_notice_pos(dlgX, dlgY);
 
     m_controls.set_screen_size(LOGICAL_WIDTH(), LOGICAL_HEIGHT());
     m_controls.set_hover_focus(false);

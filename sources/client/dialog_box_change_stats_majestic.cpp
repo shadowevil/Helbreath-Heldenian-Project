@@ -2,7 +2,6 @@
 #include "game.h"
 #include "lan_eng.h"
 #include "global_def.h"
-#include "sprite_id.h"
 #include "net_messages.h"
 #include <format>
 #include <string>
@@ -12,7 +11,6 @@
 #include "audio_manager.h"
 
 using namespace hb::shared::net;
-using namespace hb::client::sprite_id;
 static constexpr int POINTS_PER_MAJESTIC = 3;
 // m_game->m_base_stat_value is read from m_game->m_base_stat_value at runtime
 
@@ -39,22 +37,20 @@ void DialogBox_ChangeStatsMajestic::draw_stat_row(short sX, short sY, int y_offs
 	put_string(sX + 24, sY + y_offset, (char*)label, GameColors::UIBlack);
 
 	txt = std::format("{}", current_stat);
-	put_string(sX + 109, sY + y_offset, txt.c_str(), GameColors::UILabel);
+	draw_stat_value(sX, sY, stat_box::current, y_offset, txt.c_str(), GameColors::UILabel);
 
 	int new_stat = current_stat + pending_change;
 	txt = std::format("{}", new_stat);
-	if (new_stat != current_stat)
-		put_string(sX + 162, sY + y_offset, txt.c_str(), GameColors::UIRed);
-	else
-		put_string(sX + 162, sY + y_offset, txt.c_str(), GameColors::UILabel);
+	draw_stat_value(sX, sY, stat_box::next, y_offset, txt.c_str(),
+		new_stat != current_stat ? GameColors::UIRed : GameColors::UILabel);
 
 	// UP arrow highlight (undo reduction)
 	if ((mouse_x >= sX + 195) && (mouse_x <= sX + 205) && (mouse_y >= sY + arrow_y_offset) && (mouse_y <= sY + arrow_y_offset + 6) && can_undo)
-		m_game->m_sprite[InterfaceNdGame4]->draw(sX + 195, sY + arrow_y_offset, 5);
+		m_game->get_panel_kit().piece("btn_sq_plus", sX + 195, sY + arrow_y_offset);
 
 	// DOWN arrow highlight (reduce stat)
 	if ((mouse_x >= sX + 210) && (mouse_x <= sX + 220) && (mouse_y >= sY + arrow_y_offset) && (mouse_y <= sY + arrow_y_offset + 6) && can_reduce)
-		m_game->m_sprite[InterfaceNdGame4]->draw(sX + 210, sY + arrow_y_offset, 6);
+		m_game->get_panel_kit().piece("btn_sq_minus", sX + 210, sY + arrow_y_offset);
 }
 
 void DialogBox_ChangeStatsMajestic::on_draw()
@@ -67,7 +63,7 @@ void DialogBox_ChangeStatsMajestic::on_draw()
 	std::string txt;
 
 	draw_tall_frame(tall_frame::stone, sX, sY, 2);   // "Level up Setting"
-	draw_new_dialog_box(InterfaceNdGame4, sX + 16, sY + 100, 4);   // the stat table
+	draw_stat_table(sX, sY);
 
 	put_aligned_string(sX, sX + size_x, sY + 50, DRAW_DIALOGBOX_LEVELUP_SETTING14);
 	put_aligned_string(sX, sX + size_x, sY + 65, DRAW_DIALOGBOX_LEVELUP_SETTING15);
@@ -78,10 +74,7 @@ void DialogBox_ChangeStatsMajestic::on_draw()
 
 	put_string(sX + 20, sY + 85, DRAW_DIALOGBOX_LEVELUP_SETTING16, GameColors::UIBlack);
 	txt = std::format("{}", remaining);
-	if (remaining > 0)
-		put_string(sX + 73, sY + 102, txt.c_str(), GameColors::UIGreen);
-	else
-		put_string(sX + 73, sY + 102, txt.c_str(), GameColors::UIBlack);
+	draw_stat_value(sX, sY, stat_box::points, 102, txt.c_str(), remaining > 0 ? GameColors::UIGreen : GameColors::UIBlack);
 
 	bool can_afford = (remaining > 0);
 

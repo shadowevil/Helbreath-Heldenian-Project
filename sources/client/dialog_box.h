@@ -40,6 +40,17 @@ namespace tall_panel
 	};
 }
 
+// The stat table's value boxes (IDialogBox::draw_stat_value)
+namespace stat_box
+{
+	enum type : uint8_t
+	{
+		points,    // points left, above the rows
+		current,   // a row's current value
+		next       // a row's value with the pending change
+	};
+}
+
 // Kit layout shared by the converted dialogs, dialog-relative (HH-0066)
 namespace kit_layout
 {
@@ -56,6 +67,8 @@ namespace kit_layout
 	// The notice box (Game4 frame 2: noticement, warning message and the connection / query overlays)
 	constexpr hb::client::kit_point notice_size{315, 171};
 	constexpr hb::client::kit_rect notice_panel{16, 18, 284, 134};
+	// The change-password box (Game4 frame 0's size; the overlay centres it)
+	constexpr hb::client::kit_point change_password_size{334, 256};
 }
 
 // The kit part names a kit_frame style stands for (for a kit_dialog a dialog or screen builds itself)
@@ -137,6 +150,13 @@ protected:
 	// title named by the old Text strip's frame number (15 Commander Menu, 16 Constructor Menu, 17 Soldier
 	// Menu) and the sunken status bar. transparent = dialog transparency
 	void draw_crusade_frame(int title_frame, int x, int y, bool transparent);
+	// The level-up and majestic dialogs' stat table on a tall frame at (x, y): the unlit +/- buttons at
+	// (195, 127 + 19 * row) (the old Game4 frame 4, HH-0094); its value boxes come with their values below
+	void draw_stat_table(int x, int y);
+	// One stat-table value: its sunken box (the old frame 4's, one px above text_y) and the text in the default
+	// font. A value too long for the box widens it, never past the neighbours (dialog at x, y; text_y relative)
+	void draw_stat_value(int x, int y, stat_box::type box, int text_y, const char* text,
+		const hb::shared::render::Color& color);
 	// A tall dialog's scrollbar at the original 274 px thumb travel: the kit groove and thumb at pos (0..1, clamped)
 	void draw_tall_scrollbar(int x, int y, float pos);
 	void put_string(int iX, int iY, const char* string, const hb::shared::render::Color& color);

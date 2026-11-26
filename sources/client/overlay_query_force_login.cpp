@@ -16,7 +16,6 @@
 #include "audio_manager.h"
 
 using namespace hb::shared::net;
-using namespace hb::client::sprite_id;
 
 Overlay_QueryForceLogin::Overlay_QueryForceLogin(CGame* game)
     : IGameScreen(game)
@@ -31,7 +30,7 @@ void Overlay_QueryForceLogin::on_initialize()
     audio_manager::get().play_game_sound(sound_type::effect, 25, 0);
 
     int dlgX, dlgY;
-    get_centered_dialog_pos(InterfaceNdGame4, 2, dlgX, dlgY);
+    get_centered_notice_pos(dlgX, dlgY);
 
     m_controls.set_screen_size(LOGICAL_WIDTH(), LOGICAL_HEIGHT());
     m_controls.set_hover_focus(false);

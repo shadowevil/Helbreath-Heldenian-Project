@@ -124,11 +124,10 @@ protected:
     void draw_new_dialog_box(char type, int sX, int sY, int frame,
                           bool is_no_color_key = false, bool is_trans = false);
     void draw_text_button(int sX, int sY, int frame, bool is_trans = false);   // CGame::draw_text_button
-    // Computes centered position for a dialog sprite frame within the logical resolution
-    void get_centered_dialog_pos(char type, int frame, int& outX, int& outY);
-    // Computes centered position AND draws the dialog box in one call
-    void draw_centered_dialog_box(char type, int frame, int& out_x, int& out_y,
-                                  bool is_no_color_key = false, bool is_trans = false);
+    // The top-left that centres a width x height box within the logical resolution
+    void get_centered_pos(int width, int height, int& out_x, int& out_y);
+    // The centred notice box's top-left (kit_layout::notice_size, the old Game4 frame 2's size)
+    void get_centered_notice_pos(int& out_x, int& out_y);
     // The notice box centred at the old Game4 frame 2's place: the plain kit frame (HH-0066)
     // title (if any) is the kit title, centred, its ink middle title_y px below the frame top
     void draw_centered_notice_frame(int& out_x, int& out_y, std::string_view title = {}, int title_y = 0);
