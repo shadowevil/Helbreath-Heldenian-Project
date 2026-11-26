@@ -163,12 +163,12 @@ void Screen_Loading::LoadStage_Interface()
         m_game->m_sprite[InterfaceNdGame3] = loader.get_sprite(2, false);
         m_game->m_sprite[InterfaceNdGame4] = loader.get_sprite(3, false);
         m_game->m_sprite[InterfaceNdCrusade] = loader.get_sprite(4, false);
-        // Sprites 0 (the old Game1 frames), 5 (the old icon panel), 8 (the old cursors, now cursors_hq) and
-        // 9 (the old title strips) are empty placeholders; they stay in the manifest because sprites are
-        // loaded by position
+        // Sprites 0 (the old Game1 frames), 5 (the old icon panel), 8 (the old cursors, now cursors_hq),
+        // 9 (the old title strips) and 10 (the old buttons and character cards, now the panel kit and the
+        // HD select screen; their geometry lives in button_frames.h) are empty placeholders; they stay in
+        // the manifest because sprites are loaded by position
         m_game->m_sprite[InterfaceNdInventory] = loader.get_sprite(6, false);
         m_game->m_sprite[InterfaceNdNewExchange] = loader.get_sprite(7, false);
-        m_game->m_sprite[InterfaceNdButton] = loader.get_sprite(10, false);
     });
 
     // load sprite_fonts sprites (font1, font2, sprfonts + number font). Sprite 3 is an empty placeholder: its

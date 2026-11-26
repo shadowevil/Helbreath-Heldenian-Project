@@ -13,7 +13,6 @@ constexpr int InterfaceNdNewExchange        = 59;
 constexpr int InterfaceNdGame3              = 62;
 constexpr int InterfaceNdGame4              = 63;
 constexpr int InterfaceNdInventory          = 67;
-constexpr int InterfaceNdButton             = 71;
 constexpr int InterfaceNdCrusade            = 72;
 
 // Item pivot points
