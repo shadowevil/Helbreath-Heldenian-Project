@@ -223,3 +223,5 @@ The character selection screen uses the user's new HD art (HH-0108). The four ch
 The character-select buttons' labels are larger, 18 px instead of 14, closer to the original's (HH-0109). Small panel buttons such as Ok and Cancel are unchanged. The panel-kit builder now reads its art from the HD folder.
 
 The client no longer loads the old button and character-card sheet (game_dialogs sprite 10). Its buttons come from the panel kit and its cards from the HD character select screen, so nothing drew from it (HH-0099). The sheet is archived.
+
+The item-upgrade dialog's item slot is drawn from the panel kit instead of the old game_dialogs sheet 002, which is archived (HH-0093).

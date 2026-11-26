@@ -1,7 +1,7 @@
 {
   "id": "HH-0093",
   "summary": "game_dialogs 002 (Game3): recreate the item-upgrade art in the kit",
-  "status": "open",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,28 @@
   ],
   "author": "pm",
   "created": "2026-11-25T20:24:09Z",
-  "updated": "2026-11-25T20:24:09Z",
+  "updated": "2026-11-26T02:27:25Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "8d76a6b2"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0092"
     ]
   },
-  "body": "The user, 2026-11-25, sheet by sheet: \"001 - The kit should have all of these\" (HH-0091); \"002 - We can recreate those too\"; \"003 - Should already exist minus the glowing + - buttons - which we can add to the kit and recreate the rest\"; \"004 - The dialog can go as we can recreate it - but the rest can stay.\"; \"005 - that's fine\"; \"006 - We can recreate that as well\"; \"010 - we can remove this entirely since the kit already includes that too\".\n\nSheet 002 (InterfaceNdGame3) is used only by dialog_box_item_upgrade.cpp (frame 3 and others, as of 2026-11-25). User: \"002 - We can recreate those too\". Recreate its pieces with kit parts (or new kit pieces), move every use, then empty sprite 2 and archive 002.png.\n\n**Done when:** every live use draws from the kit at the same place and with the same look, the sheet's retired frames are no longer loaded, retired images are archived byte-identical to working/archive/interface/game_dialogs/ with empty manifest placeholders, both builds are clean, and in-client screenshots of each affected dialog are attached.\n"
+  "body": "The user, 2026-11-25, sheet by sheet: \"001 - The kit should have all of these\" (HH-0091); \"002 - We can recreate those too\"; \"003 - Should already exist minus the glowing + - buttons - which we can add to the kit and recreate the rest\"; \"004 - The dialog can go as we can recreate it - but the rest can stay.\"; \"005 - that's fine\"; \"006 - We can recreate that as well\"; \"010 - we can remove this entirely since the kit already includes that too\".\n\nSheet 002 (InterfaceNdGame3) is used only by dialog_box_item_upgrade.cpp (frame 3 and others, as of 2026-11-25). User: \"002 - We can recreate those too\". Recreate its pieces with kit parts (or new kit pieces), move every use, then empty sprite 2 and archive 002.png.\n\n**Done when:** every live use draws from the kit at the same place and with the same look, the sheet's retired frames are no longer loaded, retired images are archived byte-identical to working/archive/interface/game_dialogs/ with empty manifest placeholders, both builds are clean, and in-client screenshots of each affected dialog are attached.\n\n**Closed, 2026-11-25:** the user approved the before/after captures (\"Both look good\"). Review passed with no defects. Committed 8d76a6b2.\n",
+  "comments": [
+    {
+      "author": "pm",
+      "at": "2026-11-26T02:12:18Z",
+      "body": "User, 2026-11-25: \"Those all can be runtime generated on the base form - the buttons just need added to the kit\". So: the item-upgrade slot panel (002 frame 3), the sheet 003 pieces and the crusade dialog background are built at runtime from the kit's base form. The glowing +/- (003 frames 5/6) become new panel-kit pieces."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-26T02:24:32Z",
+      "body": "Editor, 2026-11-25: done, awaiting PM review (guard dc245052).\n\n- The item-upgrade slot panel (old Game3 frame 3, 81x115 at its pivot 94,132) is now a runtime panel-kit inset with the `leather` background, at the same place and size: `draw_item_slot()` in dialog_box_item_upgrade.cpp. The kit has no plain wood background; `leather` is the closest hue. Measured mean RGB of the interior: old 124,102,77; leather 110,90,64 (about 13 darker per channel, same hue). No kit art added or changed.\n- The two redundant second draws (modes 1 and 6, the same opaque rect repainted) are dropped; the draw conditions per mode are unchanged.\n- Sheet 002 retired: archived byte-identical to working/archive/interface/game_dialogs/002_2026-11-25.png (sha256 d9c1cc889e78139fa49fc93da5f992199194e8aff977eda374e7a91f461d52fc, source and copy match), manifest entry 2 replaced by the empty placeholder, 002.png git rm'd, index.json regenerated (`--check` ok, no change), load removed from screen_loading.cpp, InterfaceNdGame3 removed from sprite_id.h.\n- Build: `-Target Game -Config Debug` clean (0 errors); client deployed (002.png removed from game/client). Server not rebuilt: no server or shared code changed, and the server was running.\n- Captures (in-client, build/screenshots/): hh0093_before_full.png (old sheet, stone upgrade, empty slot); hh0093_after_full.png (same state, kit); hh0093_after_item.png (stone upgrade with an item); hh0093_after_in_progress.png (mode 2); hh0093_after_result.png (mode 3 success).\n- Unverified: mode 1 (majestic/gizon upgrade) and mode 4 (failed) not shown in-client; they use the same helper call."
+    }
+  ]
 }

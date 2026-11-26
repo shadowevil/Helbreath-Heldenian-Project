@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-25T20:24:10Z",
-  "updated": "2026-11-25T20:24:10Z",
+  "updated": "2026-11-26T02:12:18Z",
   "links": {
     "commits": [],
     "files": [],
@@ -20,5 +20,12 @@
       "HH-0092"
     ]
   },
-  "body": "The user, 2026-11-25, sheet by sheet: \"001 - The kit should have all of these\" (HH-0091); \"002 - We can recreate those too\"; \"003 - Should already exist minus the glowing + - buttons - which we can add to the kit and recreate the rest\"; \"004 - The dialog can go as we can recreate it - but the rest can stay.\"; \"005 - that's fine\"; \"006 - We can recreate that as well\"; \"010 - we can remove this entirely since the kit already includes that too\".\n\nSheet 003 (InterfaceNdGame4) is used in about 10 dialogs (stat arrows 5/6, the majestic stat table, map and notice pieces, as of 2026-11-25). User: \"003 - Should already exist minus the glowing + - buttons - which we can add to the kit and recreate the rest\". Map each live frame to its existing kit piece; add the glowing +/- buttons to the panel kit (kit change goes through tools/panel_kit and its build); recreate anything else. Then empty sprite 3 and archive 003.png.\n\n**Done when:** every live use draws from the kit at the same place and with the same look, the sheet's retired frames are no longer loaded, retired images are archived byte-identical to working/archive/interface/game_dialogs/ with empty manifest placeholders, both builds are clean, and in-client screenshots of each affected dialog are attached.\n"
+  "body": "The user, 2026-11-25, sheet by sheet: \"001 - The kit should have all of these\" (HH-0091); \"002 - We can recreate those too\"; \"003 - Should already exist minus the glowing + - buttons - which we can add to the kit and recreate the rest\"; \"004 - The dialog can go as we can recreate it - but the rest can stay.\"; \"005 - that's fine\"; \"006 - We can recreate that as well\"; \"010 - we can remove this entirely since the kit already includes that too\".\n\nSheet 003 (InterfaceNdGame4) is used in about 10 dialogs (stat arrows 5/6, the majestic stat table, map and notice pieces, as of 2026-11-25). User: \"003 - Should already exist minus the glowing + - buttons - which we can add to the kit and recreate the rest\". Map each live frame to its existing kit piece; add the glowing +/- buttons to the panel kit (kit change goes through tools/panel_kit and its build); recreate anything else. Then empty sprite 3 and archive 003.png.\n\n**Done when:** every live use draws from the kit at the same place and with the same look, the sheet's retired frames are no longer loaded, retired images are archived byte-identical to working/archive/interface/game_dialogs/ with empty manifest placeholders, both builds are clean, and in-client screenshots of each affected dialog are attached.\n",
+  "comments": [
+    {
+      "author": "pm",
+      "at": "2026-11-26T02:12:18Z",
+      "body": "User, 2026-11-25: \"Those all can be runtime generated on the base form - the buttons just need added to the kit\". So: the item-upgrade slot panel (002 frame 3), the sheet 003 pieces and the crusade dialog background are built at runtime from the kit's base form. The glowing +/- (003 frames 5/6) become new panel-kit pieces."
+    }
+  ]
 }
