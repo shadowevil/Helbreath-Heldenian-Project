@@ -32,6 +32,7 @@
 #include "dialog_box_skill.h"
 #include "dialog_box_exchange.h"
 #include "dialog_box_npc_action_query.h"
+#include "dialog_box_sys_menu.h"
 #include "log.h"
 #include "input_state_helper.h"
 #ifdef TESTER_ONLY
@@ -234,6 +235,13 @@ void Screen_OnGame::on_uninitialize()
 {
     text_input_manager::get().end_input();
     audio_manager::get().stop_music();
+    // Every way out of the game (Log Out's countdown, a lost connection) ends here: an applied but unconfirmed
+    // display change goes back before the system menu is destroyed
+    if (m_dialog_box_manager)
+    {
+        if (auto* sys_menu = m_dialog_box_manager->get_dialog_as<DialogBox_SysMenu>(DialogBoxId::SystemMenu))
+            sys_menu->discard_unconfirmed_display();
+    }
     m_network_message_manager.reset();
     m_dialog_box_manager.reset();
     m_game->m_player = nullptr;

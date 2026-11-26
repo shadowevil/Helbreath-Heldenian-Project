@@ -1,7 +1,7 @@
 #include "dialog_box_sys_menu.h"
-#include "button_frames.h"
 #include "game.h"
 #include "chat_manager.h"
+#include "dialog_box_manager.h"
 #include "global_def.h"
 #include "lan_eng.h"
 #include "audio_manager.h"
@@ -10,1545 +10,940 @@
 #include "renderer_factory.h"
 #include "text_renderer.h"
 #include "panel_kit.h"
+#include "ccontrols.h"
+#include "screen_on_game.h"
+#include <algorithm>
 #include <chrono>
 #include <cmath>
-#include <cstring>
+#include <cstdlib>
 #include <ctime>
 #include <format>
 #include <string>
-#include "screen_on_game.h"
-using namespace hb::client::sprite_id;
-
-// Content area constants
-static const int CONTENT_X = 21;
-static const int CONTENT_Y = 57;
-static const int CONTENT_WIDTH = 297;
-static const int CONTENT_HEIGHT = 234;
-
-// Graphics tab scroll
-static constexpr int GRAPHICS_LINE_HEIGHT = 18;
-static constexpr int GRAPHICS_VISIBLE_ITEMS = 12;
-#ifdef _DEBUG
-static constexpr int graphics_total_items = 16; // 14 rows + 2 debug-only grid toggles
-#else
-static constexpr int graphics_total_items = 14;
-#endif
-static bool s_bDraggingGraphicsScroll = false;
-// Kit scrollbar for the graphics list (dialog coordinates): centred on the content's right edge like the
-// sprite track, the full content height. It is also the hit area while the kit draws (intended: the hit area
-// is what is drawn, as in chat history), so it differs slightly from the sprite track's
-static constexpr hb::client::kit_rect kit_graphics_scroll{CONTENT_X + CONTENT_WIDTH - 7, CONTENT_Y, 15, CONTENT_HEIGHT};
-
-// Slider tracking
-static bool s_bDraggingMasterSlider = false;
-static bool s_bDraggingEffectsSlider = false;
-static bool s_bDraggingAmbientSlider = false;
-static bool s_bDraggingUISlider = false;
-static bool s_bDraggingMusicSlider = false;
 
 namespace render = hb::shared::render;
+using hb::client::kit_rect;
+using hb::shared::render::Color;
 
-// The display model in effect (the window's, which config_manager mirrors)
-static const render::display_settings& current_display()
+namespace
 {
-	return render::Window::get()->get_display_settings();
-}
+	// ---- Layout (mockup b2, dialog-relative)
+	constexpr int dlg_w = 420;
+	constexpr int dlg_h = 303;
+	constexpr kit_rect tab_column{14, 42, 96, 247};
+	constexpr kit_rect pane{116, 42, 290, 220};
+	constexpr int tab_x = 20;
+	constexpr int tab_y = 50;
+	constexpr int tab_w = 84;
+	constexpr int tab_h = 22;
+	constexpr int tab_step = 26;
+	constexpr int logout_y = 259;
+	constexpr int restart_y = logout_y - tab_step;
+	constexpr int head_x = pane.x + 10;
+	constexpr int head_w = pane.w - 30;
+	constexpr int label_x = pane.x + 14;
+	constexpr int ctl_x = 248;
+	constexpr int ctl_w = 140;
+	constexpr int row_h = 19;
+	constexpr int head_h = 16;
+	constexpr int first_row_y = pane.y + 12;   // a row's y is its text's cap middle; controls sit 8 px above it
+	constexpr int clip_top = pane.y + 4;
+	constexpr int clip_bottom = pane.y + pane.h - 4;
+	constexpr kit_rect scroll_rect{pane.x + pane.w - 17, pane.y + 4, 15, pane.h - 8};
+	constexpr int slider_x = ctl_x + 20;   // after the row's on/off box
+	constexpr int slider_w = 116;          // 100 px of travel; the knob centre is 8 px in at volume 0
+	constexpr int slider_knob_x = 8;
+	constexpr int footer_y = 276;
+	constexpr int footer_button_y = 266;
+	constexpr int title_y = 22;   // the sprite title's cap top (measured, HH-0065)
+	constexpr int list_rows = 8;
 
-// Apply a display change through the graphics protocol and persist what took effect
-static void apply_display(const render::display_settings& settings)
-{
-	render::IWindow* window = render::Window::get();
-	if (!window)
-		return;
-	window->apply_display_settings(settings);
-	config_manager::get().set_display_settings(window->get_display_settings());
-	if (hb::shared::input::get())
-		hb::shared::input::get()->set_window_active(true);
-}
+	// ---- The keep-or-revert popup (mockup b2 panel 3), centred on the menu
+	constexpr int popup_w = 315;
+	constexpr int popup_h = 120;
+	constexpr uint32_t confirm_ms = 15000;
 
-// The next window mode this platform supports (Windowed -> Borderless -> Exclusive -> Windowed)
-static render::window_mode::type next_window_mode(render::window_mode::type mode)
-{
-	const render::IWindow* window = render::Window::get();
-	render::window_mode::type next = mode;
-	do
+	// ---- Text colours (mockup b2)
+	constexpr Color label_color{28, 22, 16};
+	constexpr Color label_disabled{78, 66, 52};
+	constexpr Color heading_color{60, 40, 24};
+	constexpr Color value_color{60, 40, 24};
+	constexpr Color pending_color{120, 40, 24};
+
+	namespace control_id
 	{
-		next = static_cast<render::window_mode::type>((next + 1) % (render::window_mode::exclusive_fullscreen + 1));
-	} while (next != mode && !window->is_window_mode_supported(next));
-	return next;
-}
-
-static const char* window_mode_text(render::window_mode::type mode)
-{
-	switch (mode)
-	{
-	case render::window_mode::borderless_fullscreen: return "Borderless";
-	case render::window_mode::exclusive_fullscreen: return "Exclusive";
-	default: return "Windowed";
-	}
-}
-
-void DialogBox_SysMenu::cycle_resolution()
-{
-	const std::vector<render::resolution_option> options = render::Window::get()->get_resolution_options();
-	if (options.empty())
-		return;
-
-	// In exclusive the monitor can answer a request with a nearby mode (1366x768 -> 1360x768). Step from
-	// what was last requested while that answer is still in effect, or the next click asks for the same
-	// size again and the row never moves on
-	struct size_request { int requested_w, requested_h, effective_w, effective_h; };
-	static size_request s_last{0, 0, 0, 0};
-
-	render::display_settings settings = current_display();
-	int from_w = settings.width;
-	int from_h = settings.height;
-	if (s_last.effective_w == from_w && s_last.effective_h == from_h)
-	{
-		from_w = s_last.requested_w;
-		from_h = s_last.requested_h;
-	}
-
-	// The first option past that size (options ascend); wraps to the smallest
-	size_t next = 0;
-	for (size_t i = 0; i < options.size(); i++)
-	{
-		const bool past = options[i].width != from_w ? options[i].width > from_w : options[i].height > from_h;
-		if (past)
+		enum type
 		{
-			next = i;
-			break;
+			frame = 1,
+			main,
+			popup,
+			keep,
+			revert_popup,
+			pane_area,
+			tab_area,
+			tab_first,                          // one per tab
+			logout = tab_first + 8,
+			restart,
+			scrollbar,
+			apply,
+			revert,
+			page_first,                         // one per tab
+		};
+	}
+
+	// The display model in effect (the window's, which config_manager mirrors)
+	const render::display_settings& current_display()
+	{
+		return render::Window::get()->get_display_settings();
+	}
+
+	// Apply a display change through the graphics protocol (nothing saved); false when the window had to fall back
+	bool apply_to_window(const render::display_settings& settings)
+	{
+		render::IWindow* window = render::Window::get();
+		if (!window)
+			return false;
+		const bool exact = window->apply_display_settings(settings);
+		if (hb::shared::input::get())
+			hb::shared::input::get()->set_window_active(true);
+		return exact;
+	}
+
+	// Save what took effect. The saved size stays unless the player picked another resolution: the window's size
+	// may be the start-up snap to a smaller desktop, which is for this session only. After a resolution change
+	// the size in effect is saved (a mode the monitor answered with a nearby size)
+	void persist_display(const render::display_settings& requested, const render::display_settings& before)
+	{
+		render::display_settings saved = current_display();
+		const bool resized = requested.width != before.width || requested.height != before.height;
+		if (!resized)
+		{
+			const render::display_settings& config = config_manager::get().get_display_settings();
+			saved.width = config.width;
+			saved.height = config.height;
+		}
+		config_manager::get().set_display_settings(saved);
+	}
+
+	// A change that applies at once (VSync, window border): applied and saved
+	void apply_display_now(const render::display_settings& request)
+	{
+		const render::display_settings before = current_display();   // a copy: the apply replaces it
+		apply_to_window(request);
+		persist_display(request, before);
+	}
+
+	const char* window_mode_text(render::window_mode::type mode)
+	{
+		switch (mode)
+		{
+		case render::window_mode::borderless_fullscreen: return "Borderless Fullscreen";
+		case render::window_mode::exclusive_fullscreen: return "Exclusive Fullscreen";
+		default: return "Windowed";
 		}
 	}
-	settings.width = options[next].width;
-	settings.height = options[next].height;
-	apply_display(settings);
 
-	const render::display_settings& effective = current_display();
-	s_last = {settings.width, settings.height, effective.width, effective.height};
+	std::string date_time_text()
+	{
+		const std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		std::tm local_time{};
+#ifdef _WIN32
+		localtime_s(&local_time, &t);
+#else
+		localtime_r(&t, &local_time);
+#endif
+		const int hour12 = local_time.tm_hour % 12 == 0 ? 12 : local_time.tm_hour % 12;
+		return std::format("{:02}/{:02}/{:04} {}:{:02} {}", local_time.tm_mon + 1, local_time.tm_mday,
+			local_time.tm_year + 1900, hour12, local_time.tm_min, local_time.tm_hour < 12 ? "AM" : "PM");
+	}
+
+	// Hide or grey a control without leaving it a stale click. CControls stops updating a hidden or disabled
+	// control (and its children), but the collection still fires any button whose last update saw a click, so
+	// that click would fire again on the next mouse release anywhere (Apply re-applying when Keep was clicked).
+	// One idle update first clears it.
+	void quiesce(cc::control& c)
+	{
+		cc::input_state idle;
+		idle.mouse_x = -10000;
+		idle.mouse_y = -10000;
+		c.update(idle, idle);
+	}
+
+	void show(cc::control& c, bool visible)
+	{
+		if (!visible && c.is_visible())
+			quiesce(c);
+		c.set_visible(visible);
+	}
+
+	void enable(cc::control& c, bool enabled)
+	{
+		if (!enabled && c.is_enabled())
+			quiesce(c);
+		c.set_enabled(enabled);
+	}
+
+	void play_click()
+	{
+		audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
+	}
+
+	// A kit small button drawn at the control, lit while highlighted or when lit() says so
+	cc::render_handler kit_button_handler(const hb::client::panel_kit& kit, std::function<std::string()> text,
+		std::function<bool()> lit, const float* alpha)
+	{
+		return [&kit, text = std::move(text), lit = std::move(lit), alpha](const cc::control& c)
+		{
+			const cc::rect sb = c.screen_bounds();
+			kit.button(kit.style_of(hb::client::button_layout::small), text(), {sb.x, sb.y, sb.w, sb.h},
+				c.is_highlighted() || (lit && lit()), alpha ? *alpha : 1.0f);
+		};
+	}
 }
 
 DialogBox_SysMenu::DialogBox_SysMenu(CGame* game)
 	: IDialogBox(DialogBoxId::SystemMenu, game)
-	, m_iActiveTab(TAB_GENERAL)
-	, m_bFrameSizesInitialized(false)
-	, m_iWideBoxWidth(0)
-	, m_iWideBoxHeight(0)
-	, m_iSmallBoxWidth(0)
-	, m_iSmallBoxHeight(0)
-	, m_iLargeBoxWidth(0)
-	, m_iLargeBoxHeight(0)
 {
-	set_default_rect(237 , 67 , 331, 303);
+	set_default_rect(192, 67, dlg_w, dlg_h);
+	build_controls();
+}
+
+// =============================================================================
+// BUILDING
+// =============================================================================
+void DialogBox_SysMenu::build_controls()
+{
+	const hb::client::panel_kit& kit = m_game->get_panel_kit();
+	m_controls.set_click_sound(play_click);
+	m_frame = m_controls.add<cc::panel>(control_id::frame, cc::rect{0, 0, dlg_w, dlg_h});
+	m_main = m_frame->add<cc::panel>(control_id::main, cc::rect{0, 0, dlg_w, dlg_h});
+	m_pane_area = m_main->add<cc::panel>(control_id::pane_area, cc::rect{pane.x, pane.y, pane.w, pane.h});
+	m_tab_area = m_main->add<cc::panel>(control_id::tab_area, cc::rect{tab_column.x, tab_column.y, tab_column.w, tab_column.h});
+
+	// Tab column: the active tab stays lit; Restart (when dead) above Log Out / Continue at its foot
+	static constexpr const char* tab_names[tab::count] = {"General", "Graphics", "Audio", "Gameplay"};
+	for (int i = 0; i < tab::count; i++)
+	{
+		m_tabs[i] = m_main->add<cc::button>(control_id::tab_first + i, cc::rect{tab_x, tab_y + i * tab_step, tab_w, tab_h});
+		m_tabs[i]->set_render_handler(kit_button_handler(kit, [i] { return std::string(tab_names[i]); },
+			[this, i] { return m_active_tab == i; }, &m_alpha));
+		m_tabs[i]->set_on_click([this, i](int) { m_active_tab = i; });
+	}
+
+	m_logout = m_main->add<cc::button>(control_id::logout, cc::rect{tab_x, logout_y, tab_w, tab_h});
+	m_logout->set_render_handler(kit_button_handler(kit,
+		[this] { return std::string(m_game->on_game()->m_logout_count == -1 ? "Log Out" : "Continue"); }, nullptr, &m_alpha));
+	m_logout->set_on_click([this](int)
+	{
+		if (m_game->m_force_disconn)
+			return;
+		if (m_game->on_game()->m_logout_count == -1)
+		{
+			m_game->on_game()->m_logout_count = 11;
+			m_game->on_game()->m_logout_count_time = GameClock::get_time_ms();
+		}
+		else
+		{
+			m_game->on_game()->m_logout_count = -1;
+			add_event_list(DLGBOX_CLICK_SYSMENU2, 10);
+			disable_this_dialog();
+		}
+	});
+
+	m_restart = m_main->add<cc::button>(control_id::restart, cc::rect{tab_x, restart_y, tab_w, tab_h});
+	m_restart->set_render_handler(kit_button_handler(kit, [] { return std::string("Restart"); }, nullptr, &m_alpha));
+	m_restart->set_on_click([this](int)
+	{
+		m_game->m_restart_count = 5;
+		m_game->m_restart_count_time = GameClock::get_time_ms();
+		disable_this_dialog();
+		add_event_list(std::format(DLGBOX_CLICK_SYSMENU1, m_game->m_restart_count).c_str(), 10);
+	});
+
+	// The pages, then the scrollbar over them
+	for (int i = 0; i < tab::count; i++)
+	{
+		m_pages[i].panel = m_main->add<cc::panel>(control_id::page_first + i, cc::rect{0, 0, dlg_w, dlg_h});
+		m_row_y = first_row_y;
+		switch (i)
+		{
+		case tab::general: build_general(m_pages[i].panel); break;
+		case tab::graphics: build_graphics(m_pages[i].panel); break;
+		case tab::audio: build_audio(m_pages[i].panel); break;
+		default: build_gameplay(m_pages[i].panel); break;
+		}
+		m_pages[i].content_bottom = m_row_y - row_h + 8;
+	}
+
+	m_scrollbar = m_main->add<cc::button>(control_id::scrollbar, cc::rect{scroll_rect.x, scroll_rect.y, scroll_rect.w, scroll_rect.h});
+	m_scrollbar->set_click_sound(nullptr);
+	m_scrollbar->set_render_handler([this, &kit](const cc::control& c)
+	{
+		const pane_page& p = m_pages[m_active_tab];
+		const int max_scroll = max_scroll_of(p);
+		const cc::rect sb = c.screen_bounds();
+		kit.scrollbar({sb.x, sb.y, sb.w, sb.h}, max_scroll > 0 ? static_cast<float>(p.scroll) / max_scroll : 0.0f, m_alpha);
+	});
+
+	// Footer: Revert and Apply while a display change is staged
+	m_revert = m_main->add<cc::button>(control_id::revert, cc::rect{dlg_w - 14 - 74 - 80, footer_button_y, 74, 20});
+	m_revert->set_render_handler(kit_button_handler(kit, [] { return std::string("Revert"); }, nullptr, &m_alpha));
+	m_revert->set_on_click([this](int) { m_staged = current_display(); });
+	m_apply = m_main->add<cc::button>(control_id::apply, cc::rect{dlg_w - 14 - 74, footer_button_y, 74, 20});
+	m_apply->set_render_handler(kit_button_handler(kit, [] { return std::string("Apply"); }, [] { return true; }, &m_alpha));
+	m_apply->set_on_click([this](int) { apply_pending(); });
+
+	build_popup();
+}
+
+void DialogBox_SysMenu::build_popup()
+{
+	const hb::client::panel_kit& kit = m_game->get_panel_kit();
+	m_popup = m_frame->add<cc::panel>(control_id::popup, cc::rect{(dlg_w - popup_w) / 2, (dlg_h - popup_h) / 2, popup_w, popup_h});
+	m_popup->set_visible(false);
+	// A rivet-cornered notice with the question and the countdown; opaque whatever the transparency setting
+	m_popup->set_render_handler([this, &kit](const cc::control& c)
+	{
+		const cc::rect sb = c.screen_bounds();
+		const hb::client::kit_dialog popup(kit, hb::client::kit_point{popup_w, popup_h}, hb::client::kit_point{sb.x, sb.y}, 1.0f,
+			hb::client::panel_style{"stone_cloth", "wood_light", "rivet"});
+		popup.inset({14, 14, 287, 58});
+		const int cx = sb.x + popup_w / 2;
+		kit.text_recolored("field_label", "Keep these display settings?", cx, sb.y + 32, hb::client::text_anchor::cap, heading_color);
+		const uint32_t now = GameClock::get_time_ms();
+		const uint32_t left_ms = m_confirm.deadline_ms > now ? m_confirm.deadline_ms - now : 0;
+		kit.text_recolored("field_label", std::format("Reverting in {} seconds", (left_ms + 999) / 1000), cx, sb.y + 54,
+			hb::client::text_anchor::cap, label_color);
+	});
+	auto* keep = m_popup->add<cc::button>(control_id::keep, cc::rect{popup_w / 2 - 80, 84, 74, 20});
+	keep->set_render_handler(kit_button_handler(kit, [] { return std::string("Keep"); }, [] { return true; }, nullptr));
+	keep->set_on_click([this](int) { keep_display(); });
+	auto* revert = m_popup->add<cc::button>(control_id::revert_popup, cc::rect{popup_w / 2 + 6, 84, 74, 20});
+	revert->set_render_handler(kit_button_handler(kit, [] { return std::string("Revert"); }, nullptr, nullptr));
+	revert->set_on_click([this](int) { revert_display(); });
+}
+
+void DialogBox_SysMenu::add_heading(cc::panel* page, const char* text)
+{
+	const hb::client::panel_kit& kit = m_game->get_panel_kit();
+	auto* head = page->add<cc::label>(m_next_id++, cc::rect{head_x, m_row_y - 8, head_w, 16}, text);
+	// Small heading at the left, a groove rule from its ink to the row's end
+	head->set_render_handler([this, &kit](const cc::control& c)
+	{
+		const auto& l = static_cast<const cc::label&>(c);
+		const cc::rect sb = c.screen_bounds();
+		const int cy = sb.y + 8;
+		kit.text_recolored("field_label", l.text(), sb.x, cy, hb::client::text_anchor::lcap, heading_color);
+		const int rule_x = sb.x + kit.text_width("field_label", l.text()) + 6;
+		kit.rule(rule_x, cy, sb.x + sb.w - rule_x, m_alpha);
+	});
+	m_row_y += head_h;
+}
+
+cc::label* DialogBox_SysMenu::add_label(cc::panel* page, const char* text)
+{
+	const hb::client::panel_kit& kit = m_game->get_panel_kit();
+	auto* label = page->add<cc::label>(m_next_id++, cc::rect{label_x, m_row_y - 8, ctl_x - label_x - 4, 16}, text);
+	label->set_render_handler([this, &kit](const cc::control& c)
+	{
+		const cc::rect sb = c.screen_bounds();
+		kit.text_recolored("field_label", static_cast<const cc::label&>(c).text(), sb.x, sb.y + 8, hb::client::text_anchor::lcap,
+			c.is_effectively_enabled() ? label_color : label_disabled);
+	});
+	return label;
+}
+
+cc::check_box* DialogBox_SysMenu::add_check(cc::panel* page, const char* text, std::function<void(bool)> on_change)
+{
+	cc::label* label = add_label(page, text);
+	auto* box = page->add<cc::check_box>(m_next_id++, cc::rect{ctl_x, m_row_y - 7, 13, 13});
+	box->set_on_change([on_change = std::move(on_change)](int, bool checked) { on_change(checked); });
+	hb::client::skin_check_box(*box, m_game->get_panel_kit());
+	m_label_links.emplace_back(label, box);
+	m_row_y += row_h;
+	return box;
+}
+
+cc::dropdown* DialogBox_SysMenu::add_dropdown(cc::panel* page, const char* text, std::function<void(int)> on_change)
+{
+	cc::label* label = add_label(page, text);
+	auto* list = page->add<cc::dropdown>(m_next_id++, cc::rect{ctl_x, m_row_y - 8, ctl_w, 16});
+	list->set_max_visible_rows(list_rows);
+	list->set_on_change([on_change = std::move(on_change)](int, int index) { on_change(index); });
+	hb::client::skin_dropdown(*list, m_game->get_panel_kit());
+	m_label_links.emplace_back(label, list);
+	m_row_y += row_h;
+	return list;
+}
+
+void DialogBox_SysMenu::add_info(cc::panel* page, const char* text, std::function<std::string()> value)
+{
+	const hb::client::panel_kit& kit = m_game->get_panel_kit();
+	add_label(page, text);
+	auto* field = page->add<cc::label>(m_next_id++, cc::rect{ctl_x + 2, m_row_y - 8, ctl_w - 2, 16});
+	field->set_render_handler([this, &kit, value = std::move(value)](const cc::control& c)
+	{
+		const cc::rect sb = c.screen_bounds();
+		kit.text_recolored("field_label", value(), sb.x, sb.y + 8, hb::client::text_anchor::lcap, value_color);
+	});
+	m_row_y += row_h;
+}
+
+void DialogBox_SysMenu::add_volume(cc::panel* page, const char* text, volume_row row)
+{
+	const hb::client::panel_kit& kit = m_game->get_panel_kit();
+	const int index = static_cast<int>(m_volumes.size());
+	cc::label* label = add_label(page, text);
+	row.enabled = page->add<cc::check_box>(m_next_id++, cc::rect{ctl_x, m_row_y - 7, 13, 13});
+	hb::client::skin_check_box(*row.enabled, kit);
+	m_label_links.emplace_back(label, row.enabled);
+
+	// The slider is a button: a press on it drags the knob (handle_drags) until the mouse button is up
+	row.slider = page->add<cc::button>(m_next_id++, cc::rect{slider_x, m_row_y - 8, slider_w, 16});
+	row.slider->set_click_sound(nullptr);
+	row.slider->set_render_handler([this, &kit, index](const cc::control& c)
+	{
+		const cc::rect sb = c.screen_bounds();
+		// A groove for the track and the kit's framed box (btn_box_b, user 2026-11-25) for the knob
+		kit.groove({sb.x + 2, sb.y + 6, sb.w - 4, 5}, m_alpha);
+		kit.piece("btn_box_b", sb.x + slider_knob_x + m_volumes[index].get() - 7, sb.y, m_alpha);
+	});
+	m_volumes.push_back(std::move(row));
+	m_row_y += row_h;
+}
+
+void DialogBox_SysMenu::build_general(cc::panel* page)
+{
+	// Information only (user, 2026-11-25): room for more later
+	add_heading(page, "Information");
+	add_info(page, "Server", [] { return std::string(UPDATE_SCREEN_ON_SELECT_CHARACTER36); });
+	add_info(page, "Date / Time", [] { return date_time_text(); });
+	add_info(page, "Ping", [this] { return m_game->m_latency_ms > 0 ? std::format("{} ms", m_game->m_latency_ms) : std::string("-"); });
+}
+
+void DialogBox_SysMenu::build_graphics(cc::panel* page)
+{
+	auto check = [this, page](const char* text, std::function<bool()> get, std::function<void(bool)> set)
+	{
+		m_checks.emplace_back(add_check(page, text, std::move(set)), std::move(get));
+	};
+
+	// Display: staged, except VSync and the window border, which apply at once
+	add_heading(page, "Display");
+	m_window_mode = add_dropdown(page, "Window Mode", [this](int i) { m_staged.mode = m_modes[i]; });
+	m_resolution = add_dropdown(page, "Resolution", [this](int i)
+	{
+		m_staged.width = m_resolutions[i].width;
+		m_staged.height = m_resolutions[i].height;
+	});
+	m_refresh = add_dropdown(page, "Refresh Rate", [this](int i) { m_staged.refresh_rate = m_refresh_rates[i].rate; });
+	m_vsync = add_check(page, "VSync", [](bool on)
+	{
+		render::display_settings request = current_display();
+		request.vsync = on;
+		apply_display_now(request);
+	});
+	m_aspect = add_dropdown(page, "Aspect", [this](int i)
+	{
+		m_staged.aspect = i == 1 ? render::aspect_mode::stretch : render::aspect_mode::letterbox;
+	});
+	m_aspect->set_options({"Letterbox", "Stretch"});
+	m_window_border = add_check(page, "Borderless Window", [](bool on)
+	{
+		render::display_settings request = current_display();
+		request.windowed_borderless = on;
+		apply_display_now(request);
+	});
+
+	add_heading(page, "Quality");
+	m_detail = add_dropdown(page, "Detail Level", [this](int i)
+	{
+		config_manager::get().set_detail_level(i);
+		static constexpr const char* messages[] = {NOTIFY_MSG_DETAIL_LEVEL_LOW, NOTIFY_MSG_DETAIL_LEVEL_MEDIUM, NOTIFY_MSG_DETAIL_LEVEL_HIGH};
+		add_event_list(messages[std::clamp(i, 0, 2)], 10);
+	});
+	m_detail->set_options({"Low", "Normal", "High"});
+	check("Transparency", [] { return config_manager::get().is_dialog_transparency_enabled(); },
+		[](bool on) { config_manager::get().set_dialog_transparency_enabled(on); });
+	check("Antialias Font", [] { return config_manager::get().is_font_smoothing_enabled(); }, [](bool on)
+	{
+		config_manager::get().set_font_smoothing_enabled(on);
+		if (hb::shared::text::GetTextRenderer())
+			hb::shared::text::GetTextRenderer()->set_font_smoothing(on);
+	});
+	check("Antialias Buffer", [] { return config_manager::get().is_upscale_smoothing_enabled(); }, [](bool on)
+	{
+		config_manager::get().set_upscale_smoothing_enabled(on);
+		if (render::Renderer::get())
+			render::Renderer::get()->set_upscale_smoothing(on);
+	});
+	// On = a zoomed tier (mid or in), off = the whole map
+	check("Map Zoom", [] { return config_manager::get().get_minimap_zoom_level() > 0; },
+		[](bool on) { config_manager::get().set_minimap_zoom_level(on ? 1 : 0); });
+
+	add_heading(page, "Interface");
+	check("Show FPS", [] { return config_manager::get().is_show_fps_enabled(); },
+		[](bool on) { config_manager::get().set_show_fps_enabled(on); });
+	check("Show Latency", [] { return config_manager::get().is_show_latency_enabled(); },
+		[](bool on) { config_manager::get().set_show_latency_enabled(on); });
+	check("Power Saving", [] { return config_manager::get().is_background_fps_throttle_enabled(); }, [](bool on)
+	{
+		config_manager::get().set_background_fps_throttle_enabled(on);
+		render::Window::get()->set_background_fps_limit(on ? 5 : 0);
+	});
+#ifdef _DEBUG
+	check("Tile Grid", [] { return config_manager::get().is_tile_grid_enabled(); },
+		[](bool on) { config_manager::get().set_tile_grid_enabled(on); });
+	check("Patching Grid", [] { return config_manager::get().is_patching_grid_enabled(); },
+		[](bool on) { config_manager::get().set_patching_grid_enabled(on); });
+#endif
+}
+
+void DialogBox_SysMenu::build_audio(cc::panel* page)
+{
+	// A row: its on/off box (is_on / set_on, saved at once) and its slider (get / set live, save on release)
+	auto volume = [this, page](const char* text, std::function<bool()> is_on, std::function<void(bool)> set_on,
+		std::function<int()> get, std::function<void(int)> set, std::function<void(int)> save)
+	{
+		volume_row row;
+		row.get = get;
+		row.set = std::move(set);
+		row.save = [get, save = std::move(save)] { save(get()); };
+		add_volume(page, text, std::move(row));
+		cc::check_box* box = m_volumes.back().enabled;
+		box->set_on_change([set_on = std::move(set_on)](int, bool on)
+		{
+			set_on(on);
+			config_manager::get().save();
+		});
+		m_checks.emplace_back(box, std::move(is_on));
+	};
+	audio_manager& audio = audio_manager::get();
+	config_manager& config = config_manager::get();
+	add_heading(page, "Volume");
+	volume("Master", [&audio] { return audio.is_master_enabled(); },
+		[&audio, &config](bool on) { audio.set_master_enabled(on); config.set_master_enabled(on); },
+		[&audio] { return audio.get_master_volume(); }, [&audio](int v) { audio.set_master_volume(v); },
+		[&config](int v) { config.set_master_volume(v); });
+	volume("Effects", [&audio] { return audio.is_sound_enabled(); },
+		[&audio, &config](bool on) { audio.set_sound_enabled(on); config.set_sound_enabled(on); },
+		[&audio] { return audio.get_sound_volume(); }, [&audio](int v) { audio.set_sound_volume(v); },
+		[&config](int v) { config.set_sound_volume(v); });
+	volume("Ambient", [&audio] { return audio.is_ambient_enabled(); },
+		[&audio, &config](bool on) { audio.set_ambient_enabled(on); config.set_ambient_enabled(on); },
+		[&audio] { return audio.get_ambient_volume(); }, [&audio](int v) { audio.set_ambient_volume(v); },
+		[&config](int v) { config.set_ambient_volume(v); });
+	volume("UI", [&audio] { return audio.is_ui_enabled(); },
+		[&audio, &config](bool on) { audio.set_ui_enabled(on); config.set_ui_enabled(on); },
+		[&audio] { return audio.get_ui_volume(); }, [&audio](int v) { audio.set_ui_volume(v); },
+		[&config](int v) { config.set_ui_volume(v); });
+	volume("Music", [&audio] { return audio.is_music_enabled(); },
+		[this, &audio, &config](bool on)
+		{
+			audio.set_music_enabled(on);
+			config.set_music_enabled(on);
+			if (on)
+				m_game->start_bgm();
+			else
+				audio.stop_music();
+		},
+		[&audio] { return audio.get_music_volume(); }, [&audio](int v) { audio.set_music_volume(v); },
+		[&config](int v) { config.set_music_volume(v); });
+}
+
+void DialogBox_SysMenu::build_gameplay(cc::panel* page)
+{
+	auto check = [this, page](const char* text, std::function<bool()> get, std::function<void(bool)> set)
+	{
+		m_checks.emplace_back(add_check(page, text, std::move(set)), std::move(get));
+	};
+	add_heading(page, "Gameplay");
+	check("Running Mode", [] { return config_manager::get().is_running_mode_enabled(); },
+		[](bool on) { config_manager::get().set_running_mode_enabled(on); });
+	check("Capture Mouse", [] { return config_manager::get().is_mouse_capture_enabled(); }, [](bool on)
+	{
+		config_manager::get().set_mouse_capture_enabled(on);
+		render::Window::get()->set_mouse_capture_enabled(on);
+	});
+	check("Reduced Motion", [] { return config_manager::get().is_reduced_motion_enabled(); },
+		[](bool on) { config_manager::get().set_reduced_motion_enabled(on); });
+	check("Toggle to Chat", [] { return config_manager::get().is_toggle_to_chat_enabled(); },
+		[](bool on) { config_manager::get().set_toggle_to_chat_enabled(on); });
+
+	add_heading(page, "Chat and Map");
+	check("Whisper", [] { return ChatManager::get().is_whisper_enabled(); }, [this](bool on)
+	{
+		ChatManager::get().set_whisper_enabled(on);
+		add_event_list(on ? BCHECK_LOCAL_CHAT_COMMAND6 : BCHECK_LOCAL_CHAT_COMMAND7, 10);
+	});
+	check("Shout", [] { return ChatManager::get().is_shout_enabled(); }, [this](bool on)
+	{
+		ChatManager::get().set_shout_enabled(on);
+		add_event_list(on ? BCHECK_LOCAL_CHAT_COMMAND8 : BCHECK_LOCAL_CHAT_COMMAND9, 10);
+	});
+	check("Guide Map", [this] { return m_game->get_dialog_box_manager().is_enabled(DialogBoxId::GuideMap); }, [this](bool on)
+	{
+		if (on)
+			enable_dialog_box(DialogBoxId::GuideMap, 0, 0, 0);
+		else
+			disable_dialog_box(DialogBoxId::GuideMap);
+	});
+}
+
+// =============================================================================
+// PER FRAME
+// =============================================================================
+int DialogBox_SysMenu::max_scroll_of(const pane_page& p)
+{
+	const int over = p.content_bottom - clip_bottom;
+	return over > 0 ? (over + row_h - 1) / row_h * row_h : 0;
+}
+
+bool DialogBox_SysMenu::any_list_open() const
+{
+	for (const cc::dropdown* list : {m_window_mode, m_resolution, m_refresh, m_aspect, m_detail})
+	{
+		if (list->is_open())
+			return true;
+	}
+	return false;
+}
+
+cc::input_state DialogBox_SysMenu::controls_input()
+{
+	namespace input = hb::shared::input;
+	cc::input_state state;
+	// The wheel as a level: the deltas this dialog has seen (update_all runs once per presented frame)
+	m_wheel_delta = input::get_mouse_wheel_delta();
+	m_wheel_total += m_wheel_delta;
+	state.mouse_wheel = m_wheel_total;
+
+	const bool left = input::is_mouse_button_down(input::MouseButton::Left);
+	// An open list sees every press, so a click anywhere (off the menu too) closes it
+	const bool ours = !input::is_suppressed() && (any_list_open() || manager().dialog_at_mouse() == DialogBoxId::SystemMenu);
+	if (left && !m_prev_left)
+		m_press_ours = ours;
+	m_prev_left = left;
+	if (left ? m_press_ours : ours)
+	{
+		state.mouse_x = input::get_mouse_x();
+		state.mouse_y = input::get_mouse_y();
+		state.mouse_left_down = left;
+	}
+	else
+	{
+		state.mouse_x = -10000;
+		state.mouse_y = -10000;
+	}
+	return state;
+}
+
+void DialogBox_SysMenu::sync_controls()
+{
+	const bool confirming = m_confirm.active;
+	show(*m_popup, confirming);
+	enable(*m_main, !confirming);
+	show(*m_restart, player().m_hp <= 0 && m_game->m_restart_count == -1);
+	const bool pending = is_display_pending();
+	show(*m_apply, pending);
+	show(*m_revert, pending);
+
+	for (auto& [box, get] : m_checks)
+		box->set_checked(get());
+	const bool sound = audio_manager::get().is_sound_available();
+	for (volume_row& row : m_volumes)
+		enable(*row.enabled, sound);
+
+	// Display rows: the staged picks, greyed by the staged mode (Resolution under borderless shows the desktop,
+	// Aspect is for the fullscreen modes); Refresh Rate is the frame cap, so VSync greys it outside exclusive
+	const render::display_settings& current = current_display();
+	const auto mode_row = std::find(m_modes.begin(), m_modes.end(), m_staged.mode);
+	m_window_mode->set_selected(mode_row != m_modes.end() ? static_cast<int>(mode_row - m_modes.begin()) : 0);
+
+	const bool borderless = m_staged.mode == render::window_mode::borderless_fullscreen;
+	int resolution_row = 0;
+	if (borderless)
+	{
+		const auto desktop = std::find_if(m_resolutions.begin(), m_resolutions.end(),
+			[](const render::resolution_option& r) { return r.desktop; });
+		resolution_row = desktop != m_resolutions.end() ? static_cast<int>(desktop - m_resolutions.begin()) : 0;
+	}
+	else if (const render::resolution_option* nearest = render::nearest_resolution(m_resolutions, m_staged.width, m_staged.height))
+		resolution_row = static_cast<int>(nearest - m_resolutions.data());
+	m_resolution->set_selected(resolution_row);
+	enable(*m_resolution, !borderless);
+
+	int refresh_row = 0;
+	for (size_t i = 0; i < m_refresh_rates.size(); i++)
+	{
+		if (std::abs(m_refresh_rates[i].rate - m_staged.refresh_rate) < std::abs(m_refresh_rates[refresh_row].rate - m_staged.refresh_rate))
+			refresh_row = static_cast<int>(i);
+	}
+	m_refresh->set_selected(refresh_row);
+	enable(*m_refresh, !current.vsync || m_staged.mode == render::window_mode::exclusive_fullscreen);
+
+	m_vsync->set_checked(current.vsync);
+	m_aspect->set_selected(m_staged.aspect == render::aspect_mode::stretch ? 1 : 0);
+	enable(*m_aspect, m_staged.mode != render::window_mode::windowed);
+	m_window_border->set_checked(current.windowed_borderless);
+	enable(*m_window_border, current.mode == render::window_mode::windowed && m_staged.mode == render::window_mode::windowed);
+	m_detail->set_selected(config_manager::get().get_detail_level());
+
+	for (auto& [label, control] : m_label_links)
+		label->set_enabled(control->is_enabled());
+	// The kit skins draw at the control's opacity: the dialog transparency setting
+	m_main->walk([this](cc::control& c) { c.set_opacity(m_alpha); });
+}
+
+void DialogBox_SysMenu::layout_page()
+{
+	for (int i = 0; i < tab::count; i++)
+		show(*m_pages[i].panel, i == m_active_tab);
+
+	// Rows move by the scroll; a row not wholly inside the pane is hidden (CControls does not clip)
+	pane_page& p = m_pages[m_active_tab];
+	p.scroll = std::clamp(p.scroll, 0, max_scroll_of(p));
+	p.panel->set_local_bounds({0, -p.scroll, dlg_w, dlg_h});
+	for (const auto& child : p.panel->children())
+	{
+		const int top = child->local_bounds().y - p.scroll;
+		show(*child, top >= clip_top && top + child->local_bounds().h <= clip_bottom);
+	}
+	show(*m_scrollbar, max_scroll_of(p) > 0);
+}
+
+void DialogBox_SysMenu::handle_wheel(int notches)
+{
+	// Over the pane the wheel scrolls a page that does not fit; over the tab column it steps the tabs
+	pane_page& p = m_pages[m_active_tab];
+	if (m_pane_area->is_hovered() && max_scroll_of(p) > 0)
+		p.scroll = std::clamp(p.scroll - notches * row_h, 0, max_scroll_of(p));
+	else if (m_tab_area->is_hovered())
+	{
+		m_active_tab = (m_active_tab - notches + tab::count * 4) % tab::count;
+		play_click();
+	}
+}
+
+void DialogBox_SysMenu::handle_drags()
+{
+	// A held control keeps its hold while the mouse button is down, wherever the mouse goes
+	if (m_scrollbar->is_held())
+	{
+		pane_page& p = m_pages[m_active_tab];
+		const cc::rect sb = m_scrollbar->screen_bounds();
+		const float pos = m_game->get_panel_kit().scrollbar_pos_at({sb.x, sb.y, sb.w, sb.h}, m_input.mouse_y);
+		p.scroll = static_cast<int>(std::lround(pos * (max_scroll_of(p) / row_h))) * row_h;
+	}
+	for (int i = 0; i < static_cast<int>(m_volumes.size()); i++)
+	{
+		volume_row& row = m_volumes[i];
+		if (row.slider->is_held())
+		{
+			const int knob_x = row.slider->screen_bounds().x + slider_knob_x;
+			row.set(std::clamp(m_input.mouse_x - knob_x, 0, 100));
+			m_dragged_volume = i;
+		}
+		else if (m_dragged_volume == i)
+		{
+			row.save();   // saved once, when the drag ends
+			m_dragged_volume = -1;
+		}
+	}
+}
+
+void DialogBox_SysMenu::update_controls()
+{
+	m_frame->set_local_bounds({m_x, m_y, dlg_w, dlg_h});
+	// A list opens upward rather than past the dialog's bottom, so it never hangs over the world
+	m_controls.set_screen_size(m_x + dlg_w, m_y + dlg_h);
+	m_alpha = hb::client::dialog_alpha(config_manager::get().is_dialog_transparency_enabled());
+
+	// Nothing staged: the rows follow what is in effect (a change made elsewhere, an exclusive mode's answer)
+	if (!m_confirm.active && !is_display_pending())
+		m_staged = current_display();
+	sync_controls();
+	layout_page();
+
+	m_input = controls_input();
+	if (!m_input.mouse_left_down)
+		m_is_scroll_selected = false;
+	// The wheel: an open list scrolls itself (the collection hands it the wheel); otherwise this dialog's own
+	const bool list_open = any_list_open();
+	const int wheel = m_wheel_delta;
+	m_controls.update(m_input, GameClock::get_time_ms());
+	handle_drags();
+	if (wheel != 0 && !list_open && !any_list_open() && !m_confirm.active)
+		handle_wheel(wheel > 0 ? 1 : -1);
+}
+
+// =============================================================================
+// DISPLAY STAGING
+// =============================================================================
+void DialogBox_SysMenu::rebuild_display_options()
+{
+	const render::IWindow* window = render::Window::get();
+	if (!window)
+		return;
+	m_modes.clear();
+	std::vector<std::string> labels;
+	for (const render::window_mode::type mode : {render::window_mode::windowed, render::window_mode::borderless_fullscreen,
+		render::window_mode::exclusive_fullscreen})
+	{
+		if (window->is_window_mode_supported(mode))
+		{
+			m_modes.push_back(mode);
+			labels.emplace_back(window_mode_text(mode));
+		}
+	}
+	m_window_mode->set_options(std::move(labels));
+
+	m_resolutions = window->get_resolution_options();
+	labels.clear();
+	for (const render::resolution_option& option : m_resolutions)
+		labels.push_back(option.label);
+	m_resolution->set_options(std::move(labels));
+
+	m_refresh_rates = window->get_refresh_options();
+	labels.clear();
+	for (const render::refresh_option& option : m_refresh_rates)
+		labels.push_back(option.label);
+	m_refresh->set_options(std::move(labels));
+}
+
+bool DialogBox_SysMenu::is_display_pending() const
+{
+	if (m_confirm.active)
+		return false;
+	const render::display_settings& current = current_display();
+	// Borderless always uses the desktop, so its size is not a pick
+	const bool resized = m_staged.mode != render::window_mode::borderless_fullscreen &&
+		(m_staged.width != current.width || m_staged.height != current.height);
+	return m_staged.mode != current.mode || m_staged.refresh_rate != current.refresh_rate ||
+		m_staged.aspect != current.aspect || resized;
+}
+
+void DialogBox_SysMenu::apply_pending()
+{
+	render::display_settings request = current_display();
+	request.mode = m_staged.mode;
+	request.refresh_rate = m_staged.refresh_rate;
+	request.aspect = m_staged.aspect;
+	if (m_staged.mode != render::window_mode::borderless_fullscreen)
+	{
+		request.width = m_staged.width;
+		request.height = m_staged.height;
+	}
+	apply_staged(request);
+	m_staged = current_display();   // what took effect (an exclusive mode can answer with a nearby size)
+}
+
+void DialogBox_SysMenu::apply_staged(const render::display_settings& request)
+{
+	m_confirm.before = current_display();   // a copy: the apply replaces it
+	m_confirm.requested = request;
+	if (!apply_to_window(request))
+		add_event_list("The display could not be set exactly; the closest setting is shown.", 10);
+	m_confirm.deadline_ms = GameClock::get_time_ms() + confirm_ms;
+	m_confirm.active = true;
+}
+
+void DialogBox_SysMenu::keep_display()
+{
+	if (!m_confirm.active)
+		return;
+	m_confirm.active = false;
+	persist_display(m_confirm.requested, m_confirm.before);
+}
+
+void DialogBox_SysMenu::revert_display()
+{
+	if (!m_confirm.active)
+		return;
+	m_confirm.active = false;
+	// What was in effect before Apply: the saved settings never changed, so there is nothing to save. The staged
+	// rows go back with it, or they would show the reverted change as pending
+	if (!apply_to_window(m_confirm.before))
+		add_event_list("The display could not be restored exactly; the closest setting is shown.", 10);
+	// Teardown can reach here (on_uninitialize) after the window is gone
+	if (render::Window::get())
+		m_staged = current_display();
+}
+
+// =============================================================================
+// DIALOG HOOKS
+// =============================================================================
+bool DialogBox_SysMenu::on_enable(int, int64_t, int, const char*)
+{
+	// Every way out without Keep reverts, so a confirm still marked active on a reopen is stale: drop it, never
+	// revert. (enable_dialog_box also calls this on an open menu; its popup stays.)
+	if (!is_enabled())
+		m_confirm = {};
+	rebuild_display_options();
+	m_staged = current_display();
+	// The click that opened the menu is not a click on its controls
+	m_controls.discard_pending_input(controls_input());
+	return true;
+}
+
+bool DialogBox_SysMenu::on_disable()
+{
+	// Closing the menu while the popup asks is not a Keep
+	revert_display();
+	for (cc::dropdown* list : {m_window_mode, m_resolution, m_refresh, m_aspect, m_detail})
+		list->close();
+	return true;
 }
 
 void DialogBox_SysMenu::on_update()
 {
-	// Cache the value boxes' dimensions on first update
-	if (!m_bFrameSizesInitialized)
-	{
-		namespace frame = hb::client::button_frame;
-		const frame::rect wideRect = frame::rect_of(frame::box_wide);
-		const frame::rect smallRect = frame::rect_of(frame::box_small);
-		const frame::rect largeRect = frame::rect_of(frame::box_large);
-
-		// Only use if we got valid dimensions (not from NullSprite)
-		if (wideRect.width > 0 && wideRect.height > 0 && smallRect.width > 0 && smallRect.height > 0)
-		{
-			m_iWideBoxWidth = wideRect.width;
-			m_iWideBoxHeight = wideRect.height;
-			m_iSmallBoxWidth = smallRect.width;
-			m_iSmallBoxHeight = smallRect.height;
-			m_iLargeBoxWidth = largeRect.width > 0 ? largeRect.width : 280;
-			m_iLargeBoxHeight = largeRect.height > 0 ? largeRect.height : 16;
-			m_bFrameSizesInitialized = true;
-		}
-	}
+	if (m_confirm.active && static_cast<int32_t>(GameClock::get_time_ms() - m_confirm.deadline_ms) >= 0)
+		revert_display();
+	update_controls();
 }
 
 void DialogBox_SysMenu::on_draw()
 {
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	short z = static_cast<short>(hb::shared::input::get_mouse_wheel_delta());
-	char lb = hb::shared::input::is_mouse_button_down(hb::shared::input::MouseButton::Left) ? 1 : 0;
-	short sX = m_x;
-	short sY = m_y;
-
-	// draw dialog background: the panel kit (layout from the approved rebuild)
-	const hb::client::kit_dialog kit(m_game->get_panel_kit(), hb::client::dialog_size::sys_menu, hb::client::kit_point{sX, sY},
-		hb::client::dialog_alpha(config_manager::get().is_dialog_transparency_enabled()));
+	const hb::client::panel_kit& kit = m_game->get_panel_kit();
+	const hb::client::kit_dialog frame(kit, hb::client::kit_point{dlg_w, dlg_h}, hb::client::kit_point{m_x, m_y}, m_alpha,
+		hb::client::panel_style{"stone_cloth", "wood_light", "gold"});
 	constexpr std::string_view title = "System Menu";
-	constexpr int title_y = 22;   // the sprite title's cap top (measured, HH-0065)
-	kit.title(title, title_y, {148, 24, 16});
-	// The waves sit at fixed points near the corners (centres 48 and 282), smaller than elsewhere (0.56)
-	const int wave_y = kit.title_cap_middle(title, title_y);
-	kit.flourish("divider_wave", 48, wave_y, false, 0.56f);
-	kit.flourish("divider_wave", 282, wave_y, true, 0.56f);
-	kit.inset({16, 50, 300, 241});
-	m_kit = &kit;
+	frame.title(title, title_y, kit_layout::title_fill);
+	// The waves 22 px from the title's ink each side, smaller than elsewhere (0.56)
+	const int wave_y = frame.title_cap_middle(title, title_y);
+	const int reach = kit.text_width("title_red", title) / 2 + 22;
+	frame.flourish("divider_wave", dlg_w / 2 - reach, wave_y, false, 0.56f);
+	frame.flourish("divider_wave", dlg_w / 2 + reach, wave_y, true, 0.56f);
+	frame.text_area(tab_column, 0.8f);
+	frame.inset(pane);
 
-	// Handle mouse scroll over dialog to cycle tabs (or scroll graphics content)
-	if (m_game->get_dialog_box_manager().get_top_id() == DialogBoxId::SystemMenu && z != 0)
-	{
-		if (m_iActiveTab == TAB_GRAPHICS)
-		{
-			int max_scroll = graphics_total_items - GRAPHICS_VISIBLE_ITEMS;
+	// Footer: a staged display change, else (outside the information page) that changes apply at once. Text stays
+	// opaque under dialog transparency, as the sprite menu's did
+	if (is_display_pending())
+		kit.text_recolored("field_label", "Display change pending", m_x + label_x, m_y + footer_y, hb::client::text_anchor::lcap, pending_color);
+	else if (m_active_tab != tab::general && !m_confirm.active)
+		kit.text_recolored("field_label", "Changes apply at once", m_x + label_x, m_y + footer_y, hb::client::text_anchor::lcap, label_disabled);
 
-			bool in_content = (mouse_x >= sX + CONTENT_X &&
-				mouse_x <= sX + CONTENT_X + CONTENT_WIDTH &&
-				mouse_y >= sY + CONTENT_Y &&
-				mouse_y <= sY + CONTENT_Y + CONTENT_HEIGHT);
-
-			if (max_scroll > 0 && in_content)
-			{
-				if (z > 0) m_graphics_scroll_offset--;
-				if (z < 0) m_graphics_scroll_offset++;
-				if (m_graphics_scroll_offset < 0) m_graphics_scroll_offset = 0;
-				if (m_graphics_scroll_offset > max_scroll) m_graphics_scroll_offset = max_scroll;
-			}
-			else
-			{
-				int prev_tab = m_iActiveTab;
-				if (z > 0) m_iActiveTab = (m_iActiveTab - 1 + TAB_COUNT) % TAB_COUNT;
-				else m_iActiveTab = (m_iActiveTab + 1) % TAB_COUNT;
-				if (m_iActiveTab != prev_tab) m_graphics_scroll_offset = 0;
-			}
-		}
-		else
-		{
-			if (z > 0) m_iActiveTab = (m_iActiveTab - 1 + TAB_COUNT) % TAB_COUNT;
-			else m_iActiveTab = (m_iActiveTab + 1) % TAB_COUNT;
-		}
-	}
-
-	// Update graphics scrollbar drag while mouse is held
-	if (s_bDraggingGraphicsScroll && lb != 0)
-	{
-		int max_scroll = graphics_total_items - GRAPHICS_VISIBLE_ITEMS;
-		// The kit thumb's centre follows the cursor (the inverse of its draw placement)
-		m_graphics_scroll_offset = static_cast<int>(std::lround(kit.scrollbar_pos_at(kit_graphics_scroll, mouse_y) * max_scroll));
-		if (m_graphics_scroll_offset < 0) m_graphics_scroll_offset = 0;
-		if (m_graphics_scroll_offset > max_scroll) m_graphics_scroll_offset = max_scroll;
-	}
-
-	draw_tabs(sX, sY);
-	draw_tab_content(sX, sY, mouse_x, mouse_y, lb);
-
-	// save slider values to config_manager when drag ends (mouse released)
-	if (lb == 0)
-	{
-		if (s_bDraggingGraphicsScroll)
-		{
-			s_bDraggingGraphicsScroll = false;
-		}
-		if (s_bDraggingMasterSlider)
-		{
-			config_manager::get().set_master_volume(audio_manager::get().get_master_volume());
-		}
-		if (s_bDraggingEffectsSlider)
-		{
-			config_manager::get().set_sound_volume(audio_manager::get().get_sound_volume());
-		}
-		if (s_bDraggingAmbientSlider)
-		{
-			config_manager::get().set_ambient_volume(audio_manager::get().get_ambient_volume());
-		}
-		if (s_bDraggingUISlider)
-		{
-			config_manager::get().set_ui_volume(audio_manager::get().get_ui_volume());
-		}
-		if (s_bDraggingMusicSlider)
-		{
-			config_manager::get().set_music_volume(audio_manager::get().get_music_volume());
-		}
-		s_bDraggingMasterSlider = false;
-		s_bDraggingEffectsSlider = false;
-		s_bDraggingAmbientSlider = false;
-		s_bDraggingUISlider = false;
-		s_bDraggingMusicSlider = false;
-		m_is_scroll_selected = false;
-	}
-	m_kit = nullptr;   // the frame dies with this scope
+	m_controls.render();
 }
 
-void DialogBox_SysMenu::draw_tabs(short sX, short sY)
-{
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	const hb::client::button_frame::rect button_rect = hb::client::button_frame::rect_of(hb::client::button_frame::tab);
-	int btnY = sY + 33;
-
-	const int tabFrames[TAB_COUNT][2] = {
-		{70, 71},  // General
-		{72, 73},  // Graphics
-		{74, 76},  // Audio
-		{75, 77}   // System
-	};
-
-	for (int i = 0; i < TAB_COUNT; i++)
-	{
-		int btnX = sX + 17 + (button_rect.width * i);
-		bool hovered = (mouse_x >= btnX && mouse_x < btnX + button_rect.width && mouse_y >= btnY && mouse_y < btnY + button_rect.height);
-		bool active = (m_iActiveTab == i);
-
-		int frameIndex = (active || hovered) ? tabFrames[i][1] : tabFrames[i][0];
-		draw_text_button(btnX, btnY, frameIndex);
-	}
-}
-
-void DialogBox_SysMenu::draw_tab_content(short sX, short sY, short mouse_x, short mouse_y, char lb)
-{
-	switch (m_iActiveTab)
-	{
-	case TAB_GENERAL:
-		draw_general_tab(sX, sY);
-		break;
-	case TAB_GRAPHICS:
-		draw_graphics_tab(sX, sY);
-		break;
-	case TAB_AUDIO:
-		draw_audio_tab(sX, sY, mouse_x, mouse_y, lb);
-		break;
-	case TAB_SYSTEM:
-		draw_system_tab(sX, sY);
-		break;
-	}
-}
-
-void DialogBox_SysMenu::draw_toggle(int x, int y, bool enabled)
-{
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	// draw toggle background box at y-2
-	const int boxY = y - 2;
-	draw_box(79, x, boxY);
-
-	// Use cached dimensions or fallback values
-	const int boxWidth = m_bFrameSizesInitialized ? m_iSmallBoxWidth : 36;
-	const int boxHeight = m_bFrameSizesInitialized ? m_iSmallBoxHeight : 16;
-
-	bool hover = (mouse_x >= x && mouse_x <= x + boxWidth && mouse_y >= boxY && mouse_y <= boxY + boxHeight);
-	const hb::shared::render::Color& color = (enabled || hover) ? GameColors::UIWhite : GameColors::UIDisabled;
-
-	// Center text horizontally and vertically in the box
-	const char* text = enabled ? DRAW_DIALOGBOX_SYSMENU_ON : DRAW_DIALOGBOX_SYSMENU_OFF;
-	hb::shared::text::TextMetrics metrics = hb::shared::text::GetTextRenderer()->measure_text(text);
-	int textX = x + (boxWidth - metrics.width) / 2;
-	int textY = boxY + (boxHeight - metrics.height) / 2;
-	put_string(textX, textY, text, color);
-}
-
-bool DialogBox_SysMenu::is_in_toggle_area(int x, int y)
-{
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	const int boxWidth = m_bFrameSizesInitialized ? m_iSmallBoxWidth : 36;
-	const int boxHeight = m_bFrameSizesInitialized ? m_iSmallBoxHeight : 16;
-	return (mouse_x >= x && mouse_x <= x + boxWidth && mouse_y >= y - 2 && mouse_y <= y - 2 + boxHeight);
-}
-
-void DialogBox_SysMenu::draw_box(int frame, int x, int y)
-{
-	// The kit's sunken field at the old value box's place and size, so the hit areas are unchanged
-	const hb::client::button_frame::rect r = hb::client::button_frame::rect_of(frame);
-	const hb::client::kit_point o = m_kit->origin();
-	m_kit->inset({x + r.pivotX - o.x, y + r.pivotY - o.y, r.width, r.height});
-}
-
-void DialogBox_SysMenu::draw_slider(int x, int y, int value)
-{
-	// Track: a kit groove over the sprite track; knob: a kit box button
-	const hb::client::button_frame::rect track = hb::client::button_frame::rect_of(hb::client::button_frame::slider_track);
-	// The knob's placement offset from the slider's position
-	constexpr int knob_offset_x = -6;
-	constexpr int knob_offset_y = -5;
-	const hb::client::kit_point o = m_kit->origin();
-	m_kit->groove({x + track.pivotX - o.x, y + 5 + track.pivotY - o.y, track.width, track.height});
-	// The knob is the kit's framed orange down-arrow box (btn_box_b, 15x15 like the old frame; user, 2026-11-25), where the
-	// old frame was. The scrollbar thumb is the left-arrow box (btn_box_a), which vertical scrollbars keep.
-	m_kit->piece("btn_box_b", {x + value + knob_offset_x - o.x, y + knob_offset_y - o.y});
-}
-
-void DialogBox_SysMenu::draw_graphics_scrollbar(int max_scroll)
-{
-	m_kit->scrollbar(kit_graphics_scroll, max_scroll > 0 ? static_cast<float>(m_graphics_scroll_offset) / max_scroll : 0.0f);
-}
-
-// =============================================================================
-// GENERAL TAB
-// =============================================================================
-void DialogBox_SysMenu::draw_general_tab(short sX, short sY)
-{
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	const int contentX = sX + CONTENT_X;
-	const int contentY = sY + CONTENT_Y;
-	const int contentBottom = contentY + CONTENT_HEIGHT;
-	const int centerX = contentX + (CONTENT_WIDTH / 2);
-
-	// Server name at top left
-	put_string(contentX + 5, contentY + 5, UPDATE_SCREEN_ON_SELECT_CHARACTER36, GameColors::UILabel);
-	put_string(contentX + 6, contentY + 5, UPDATE_SCREEN_ON_SELECT_CHARACTER36, GameColors::UILabel);
-
-	// Current time centered below server name (MM/DD/YYYY HH:MM AM/PM)
-	auto now = std::chrono::system_clock::now();
-	std::time_t t = std::chrono::system_clock::to_time_t(now);
-	std::tm local_time{};
-#ifdef _WIN32
-	localtime_s(&local_time, &t);
-#else
-	localtime_r(&t, &local_time);
-#endif
-	std::string timeBuf;
-	int hour12 = local_time.tm_hour % 12;
-	if (hour12 == 0) hour12 = 12;
-	const char* ampm = (local_time.tm_hour < 12) ? "AM" : "PM";
-	timeBuf = std::format("{:02}/{:02}/{:04} {}:{:02} {}",
-		local_time.tm_mon + 1, local_time.tm_mday, local_time.tm_year + 1900,
-		hour12, local_time.tm_min, ampm);
-
-	int textWidth = hb::shared::text::GetTextRenderer()->measure_text(timeBuf.c_str()).width;
-	int timeX = centerX - (textWidth / 2);
-	put_string(timeX, contentY + 25, timeBuf.c_str(), GameColors::UILabel);
-	put_string(timeX + 1, contentY + 25, timeBuf.c_str(), GameColors::UILabel);
-
-	// Buttons at bottom of content area
-	int buttonY = contentBottom - 30;
-
-	// Log-Out / Continue button (left side)
-	if (m_game->on_game()->m_logout_count == -1) {
-		bool hover = (mouse_x >= sX + ui_layout::left_btn_x && mouse_x <= sX + ui_layout::left_btn_x + ui_layout::btn_size_x &&
-			mouse_y >= buttonY && mouse_y <= buttonY + ui_layout::btn_size_y);
-		draw_text_button(sX + ui_layout::left_btn_x, buttonY, hover ? 9 : 8);
-	}
-	else {
-		bool hover = (mouse_x >= sX + ui_layout::left_btn_x && mouse_x <= sX + ui_layout::left_btn_x + ui_layout::btn_size_x &&
-			mouse_y >= buttonY && mouse_y <= buttonY + ui_layout::btn_size_y);
-		draw_text_button(sX + ui_layout::left_btn_x, buttonY, hover ? 7 : 6);
-	}
-
-	// Restart button (right side, only when dead)
-	if ((player().m_hp <= 0) && (m_game->m_restart_count == -1))
-	{
-		bool hover = (mouse_x >= sX + ui_layout::right_btn_x && mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x &&
-			mouse_y >= buttonY && mouse_y <= buttonY + ui_layout::btn_size_y);
-		draw_text_button(sX + ui_layout::right_btn_x, buttonY, hover ? 37 : 36);
-	}
-}
-
-// =============================================================================
-// GRAPHICS TAB
-// =============================================================================
-void DialogBox_SysMenu::draw_graphics_tab(short sX, short sY)
-{
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	const int contentX = sX + CONTENT_X;
-	const int contentY = sY + CONTENT_Y;
-	const int contentRight = contentX + CONTENT_WIDTH;
-	const int labelX = contentX + 5;
-
-	// Right margin for box alignment
-	const int rightMargin = 8;
-	const int boxRightEdge = contentRight - rightMargin;
-
-	// Use cached dimensions or fallback values
-	const int largeBoxWidth = m_bFrameSizesInitialized ? m_iLargeBoxWidth : 280;
-	const int largeBoxHeight = m_bFrameSizesInitialized ? m_iLargeBoxHeight : 16;
-	const int wideBoxWidth = m_bFrameSizesInitialized ? m_iWideBoxWidth : 175;
-	const int wideBoxHeight = m_bFrameSizesInitialized ? m_iWideBoxHeight : 16;
-
-	// Right-align the large box, then left-align all smaller boxes to its left edge
-	const int largeBoxX = boxRightEdge - largeBoxWidth;
-	const int wideBoxX = largeBoxX;
-	const int smallBoxX = largeBoxX;
-
-	const render::display_settings& display = current_display();
-	const bool fullscreen = render::is_fullscreen(display.mode);
-	// The refresh rate is the frame cap unless vsync paces frames; exclusive also switches the monitor to it
-	const bool rate_locked = display.vsync && display.mode != render::window_mode::exclusive_fullscreen;
-
-	// Scroll support
-	bool scrollable = graphics_total_items > GRAPHICS_VISIBLE_ITEMS;
-
-	int lineY = contentY + 5 - (m_graphics_scroll_offset * GRAPHICS_LINE_HEIGHT);
-
-	auto is_item_visible = [&](int ly) {
-		return (ly >= contentY - 2) && (ly + 16 <= contentY + CONTENT_HEIGHT);
-	};
-
-	// --- FPS Limit (the refresh rate) --- large box (frame 81) with 5 options (disabled when VSync paces frames)
-	if (is_item_visible(lineY))
-	{
-		const bool v_sync_on = rate_locked;
-		put_string(labelX, lineY, "FPS Limit:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "FPS Limit:", GameColors::UILabel);
-
-		const int fpsBoxY = lineY - 2;
-		draw_box(81, largeBoxX, fpsBoxY);
-
-		static const int s_FpsOptions[] = { 60, 100, 144, 240, 0 };
-		static const char* s_FpsLabels[] = { "60", "100", "144", "240", "Max" };
-		static const int s_NumFpsOptions = 5;
-		const int fpsRegionWidth = largeBoxWidth / s_NumFpsOptions;
-		const int currentFps = display.refresh_rate;
-
-		for (int i = 0; i < s_NumFpsOptions; i++)
-		{
-			int regionX = largeBoxX + (fpsRegionWidth * i);
-			bool selected = (currentFps == s_FpsOptions[i]);
-			bool hover = !v_sync_on && (mouse_x >= regionX && mouse_x < regionX + fpsRegionWidth && mouse_y >= fpsBoxY && mouse_y <= fpsBoxY + largeBoxHeight);
-
-			hb::shared::text::TextMetrics fm = hb::shared::text::GetTextRenderer()->measure_text(s_FpsLabels[i]);
-			int tx = regionX + (fpsRegionWidth - fm.width) / 2;
-			int ty = fpsBoxY + (largeBoxHeight - fm.height) / 2;
-			put_string(tx, ty, s_FpsLabels[i], v_sync_on ? GameColors::UIDisabled : (selected || hover) ? GameColors::UIWhite : GameColors::UIDisabled);
-		}
-	}
-
-	lineY += 18;
-
-	// --- Aspect Ratio --- wide box (Letterbox / Widescreen), only enabled in fullscreen
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, "Aspect Ratio:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "Aspect Ratio:", GameColors::UILabel);
-
-		const int aspectBoxY = lineY - 2;
-		draw_box(78, wideBoxX, aspectBoxY);
-
-		const bool stretch = display.aspect == render::aspect_mode::stretch;
-		const int aspectRegionWidth = wideBoxWidth / 2;
-
-		const char* letterboxText = "Letterbox";
-		const char* widescreenText = "Widescreen";
-
-		int leftRegion = wideBoxX;
-		int rightRegion = wideBoxX + aspectRegionWidth;
-		bool letterHover = fullscreen && (mouse_x >= leftRegion && mouse_x < rightRegion && mouse_y >= aspectBoxY && mouse_y <= aspectBoxY + wideBoxHeight);
-		bool wideHover = fullscreen && (mouse_x >= rightRegion && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= aspectBoxY && mouse_y <= aspectBoxY + wideBoxHeight);
-
-		hb::shared::text::TextMetrics lbm = hb::shared::text::GetTextRenderer()->measure_text(letterboxText);
-		hb::shared::text::TextMetrics wsm = hb::shared::text::GetTextRenderer()->measure_text(widescreenText);
-		int lbx = leftRegion + (aspectRegionWidth - lbm.width) / 2;
-		int wsx = rightRegion + (aspectRegionWidth - wsm.width) / 2;
-		int aty = aspectBoxY + (wideBoxHeight - lbm.height) / 2;
-
-		if (!fullscreen) {
-			put_string(lbx, aty, letterboxText, GameColors::UIDisabled);
-			put_string(wsx, aty, widescreenText, GameColors::UIDisabled);
-		} else {
-			put_string(lbx, aty, letterboxText, (!stretch || letterHover) ? GameColors::UIWhite : GameColors::UIDisabled);
-			put_string(wsx, aty, widescreenText, (stretch || wideHover) ? GameColors::UIWhite : GameColors::UIDisabled);
-		}
-	}
-
-	lineY += 18;
-
-	// --- VSync ---
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, "VSync:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "VSync:", GameColors::UILabel);
-		draw_toggle(smallBoxX, lineY, display.vsync);
-	}
-
-	lineY += 18;
-
-	// --- Detail Level --- wide box with Low/Normal/High
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, DRAW_DIALOGBOX_SYSMENU_DETAILLEVEL, GameColors::UILabel);
-		put_string(labelX + 1, lineY, DRAW_DIALOGBOX_SYSMENU_DETAILLEVEL, GameColors::UILabel);
-
-		const int detailLevel = config_manager::get().get_detail_level();
-		const int boxY = lineY - 2;
-
-		draw_box(78, wideBoxX, boxY);
-
-		const int regionWidth = wideBoxWidth / 3;
-
-		hb::shared::text::TextMetrics lowMetrics = hb::shared::text::GetTextRenderer()->measure_text(DRAW_DIALOGBOX_SYSMENU_LOW);
-		int textY = boxY + (wideBoxHeight - lowMetrics.height) / 2;
-
-		hb::shared::text::TextMetrics normMetrics = hb::shared::text::GetTextRenderer()->measure_text(DRAW_DIALOGBOX_SYSMENU_NORMAL);
-		hb::shared::text::TextMetrics highMetrics = hb::shared::text::GetTextRenderer()->measure_text(DRAW_DIALOGBOX_SYSMENU_HIGH);
-
-		int lowX = wideBoxX + (regionWidth - lowMetrics.width) / 2;
-		int normX = wideBoxX + regionWidth + (regionWidth - normMetrics.width) / 2;
-		int highX = wideBoxX + (regionWidth * 2) + (regionWidth - highMetrics.width) / 2;
-
-		bool lowHover = (mouse_x >= wideBoxX && mouse_x < wideBoxX + regionWidth && mouse_y >= boxY && mouse_y <= boxY + wideBoxHeight);
-		bool normHover = (mouse_x >= wideBoxX + regionWidth && mouse_x < wideBoxX + (regionWidth * 2) && mouse_y >= boxY && mouse_y <= boxY + wideBoxHeight);
-		bool highHover = (mouse_x >= wideBoxX + (regionWidth * 2) && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= boxY && mouse_y <= boxY + wideBoxHeight);
-
-		put_string(lowX, textY, DRAW_DIALOGBOX_SYSMENU_LOW, (detailLevel == 0 || lowHover) ? GameColors::UIWhite : GameColors::UIDisabled);
-		put_string(normX, textY, DRAW_DIALOGBOX_SYSMENU_NORMAL, (detailLevel == 1 || normHover) ? GameColors::UIWhite : GameColors::UIDisabled);
-		put_string(highX, textY, DRAW_DIALOGBOX_SYSMENU_HIGH, (detailLevel == 2 || highHover) ? GameColors::UIWhite : GameColors::UIDisabled);
-	}
-
-	lineY += 18;
-
-	// --- Dialog Transparency ---
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, "Transparency:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "Transparency:", GameColors::UILabel);
-		draw_toggle(smallBoxX, lineY, config_manager::get().is_dialog_transparency_enabled());
-	}
-
-	lineY += 18;
-
-	// --- Show FPS ---
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, "Show FPS:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "Show FPS:", GameColors::UILabel);
-		draw_toggle(smallBoxX, lineY, config_manager::get().is_show_fps_enabled());
-	}
-
-	lineY += 18;
-
-	// --- Show Latency ---
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, "Show Latency:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "Show Latency:", GameColors::UILabel);
-		draw_toggle(smallBoxX, lineY, config_manager::get().is_show_latency_enabled());
-	}
-
-	lineY += 18;
-
-	// --- Background FPS Throttle ---
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, "Power Saving:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "Power Saving:", GameColors::UILabel);
-		draw_toggle(smallBoxX, lineY, config_manager::get().is_background_fps_throttle_enabled());
-	}
-
-	lineY += 18;
-
-	// --- Map Zoom ---
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, "Map Zoom:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "Map Zoom:", GameColors::UILabel);
-		draw_toggle(smallBoxX, lineY, config_manager::get().get_minimap_zoom_level() > 0);
-	}
-
-	lineY += 18;
-
-	// --- Antialias Font ---
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, "Antialias Font:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "Antialias Font:", GameColors::UILabel);
-		draw_toggle(smallBoxX, lineY, config_manager::get().is_font_smoothing_enabled());
-	}
-
-	lineY += 18;
-
-	// --- Antialias Buffer ---
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, "Antialias Buffer:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "Antialias Buffer:", GameColors::UILabel);
-		draw_toggle(smallBoxX, lineY, config_manager::get().is_upscale_smoothing_enabled());
-	}
-
-	lineY += 18;
-
-#ifdef _DEBUG
-	// Tile Grid (simple dark lines) - DEBUG ONLY
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, "Tile Grid:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "Tile Grid:", GameColors::UILabel);
-		draw_toggle(smallBoxX, lineY, config_manager::get().is_tile_grid_enabled());
-	}
-
-	lineY += 18;
-
-	// Patching Grid (debug with zone colors) - DEBUG ONLY
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, "Patching Grid:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "Patching Grid:", GameColors::UILabel);
-		draw_toggle(smallBoxX, lineY, config_manager::get().is_patching_grid_enabled());
-	}
-
-	lineY += 18;
-#endif
-
-	// --- Display Mode --- wide box (Windowed / Borderless / Exclusive, the modes this platform supports)
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, "Display Mode:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "Display Mode:", GameColors::UILabel);
-
-		const int modeBoxY = lineY - 2;
-		draw_box(78, wideBoxX, modeBoxY);
-
-		bool modeHover = (mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= modeBoxY && mouse_y <= modeBoxY + wideBoxHeight);
-		const hb::shared::render::Color& modeColor = modeHover ? GameColors::UIWhite : GameColors::UIDisabled;
-
-		const char* modeText = window_mode_text(display.mode);
-		hb::shared::text::TextMetrics modeMetrics = hb::shared::text::GetTextRenderer()->measure_text(modeText);
-		int modeTextX = wideBoxX + (wideBoxWidth - modeMetrics.width) / 2;
-		int modeTextY = modeBoxY + (wideBoxHeight - modeMetrics.height) / 2;
-		put_string(modeTextX, modeTextY, modeText, modeColor);
-	}
-
-	lineY += 18;
-
-	// --- hb::shared::render::Window Style --- wide box (Borderless / Bordered, disabled when fullscreen)
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, "Window Style:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "Window Style:", GameColors::UILabel);
-
-		const int styleBoxY = lineY - 2;
-		draw_box(78, wideBoxX, styleBoxY);
-
-		bool styleHover = !fullscreen && (mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= styleBoxY && mouse_y <= styleBoxY + wideBoxHeight);
-		const hb::shared::render::Color& styleColor = fullscreen ? GameColors::UIDisabled : (styleHover ? GameColors::UIWhite : GameColors::UIDisabled);
-
-		const char* styleText = display.windowed_borderless ? "Borderless" : "Bordered";
-		hb::shared::text::TextMetrics styleMetrics = hb::shared::text::GetTextRenderer()->measure_text(styleText);
-		int styleTextX = wideBoxX + (wideBoxWidth - styleMetrics.width) / 2;
-		int styleTextY = styleBoxY + (wideBoxHeight - styleMetrics.height) / 2;
-		put_string(styleTextX, styleTextY, styleText, styleColor);
-	}
-
-	lineY += 18;
-
-	// --- Resolution --- wide box with centered text (disabled under borderless, which uses the desktop)
-	if (is_item_visible(lineY))
-	{
-		put_string(labelX, lineY, "Resolution:", GameColors::UILabel);
-		put_string(labelX + 1, lineY, "Resolution:", GameColors::UILabel);
-
-		const bool res_locked = display.mode == render::window_mode::borderless_fullscreen;
-		int resWidth = display.width;
-		int resHeight = display.height;
-		if (res_locked) {
-			const render::display_mode desktop = render::Window::get()->get_desktop_mode();
-			resWidth = desktop.width;
-			resHeight = desktop.height;
-		}
-
-		std::string resBuf;
-		resBuf = std::format("{}x{}", resWidth, resHeight);
-
-		const int resBoxY = lineY - 2;
-		draw_box(78, wideBoxX, resBoxY);
-
-		bool resHover = !res_locked && (mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= resBoxY && mouse_y <= resBoxY + wideBoxHeight);
-		const hb::shared::render::Color& resColor = res_locked ? GameColors::UIDisabled : (resHover ? GameColors::UIWhite : GameColors::UIDisabled);
-
-		hb::shared::text::TextMetrics resMetrics = hb::shared::text::GetTextRenderer()->measure_text(resBuf.c_str());
-		int resTextX = wideBoxX + (wideBoxWidth - resMetrics.width) / 2;
-		int resTextY = resBoxY + (wideBoxHeight - resMetrics.height) / 2;
-		put_string(resTextX, resTextY, resBuf.c_str(), resColor);
-	}
-
-	// --- Scrollbar ---
-	if (scrollable)
-		draw_graphics_scrollbar(graphics_total_items - GRAPHICS_VISIBLE_ITEMS);
-}
-
-// =============================================================================
-// AUDIO TAB
-// =============================================================================
-void DialogBox_SysMenu::draw_audio_tab(short sX, short sY, short mouse_x, short mouse_y, char lb)
-{
-	const int contentX = sX + CONTENT_X;
-	const int contentY = sY + CONTENT_Y;
-	const int labelX = contentX + 5;
-	const int toggleX = contentX + 68;
-	const int sliderX = contentX + 110;
-
-	bool available = audio_manager::get().is_sound_available();
-
-	// --- Master: [On/Off] ---slider--- ---
-	int lineY = contentY + 8;
-
-	put_string(labelX, lineY, "Master:", GameColors::UILabel);
-	put_string(labelX + 1, lineY, "Master:", GameColors::UILabel);
-
-	if (available)
-		draw_toggle(toggleX, lineY, audio_manager::get().is_master_enabled());
-	else
-		put_string(toggleX, lineY, DRAW_DIALOGBOX_SYSMENU_DISABLED, GameColors::UIDisabled);
-
-	int masterVol = audio_manager::get().get_master_volume();
-	draw_slider(sliderX, lineY, masterVol);
-
-	if (s_bDraggingMasterSlider && lb != 0)
-	{
-		int volume = mouse_x - sliderX;
-		if (volume > 100) volume = 100;
-		if (volume < 0) volume = 0;
-		audio_manager::get().set_master_volume(volume);
-	}
-
-	// --- Effects: [On/Off] ---slider--- ---
-	lineY = contentY + 52;
-
-	put_string(labelX, lineY, "Effects:", GameColors::UILabel);
-	put_string(labelX + 1, lineY, "Effects:", GameColors::UILabel);
-
-	if (available)
-		draw_toggle(toggleX, lineY, audio_manager::get().is_sound_enabled());
-	else
-		put_string(toggleX, lineY, DRAW_DIALOGBOX_SYSMENU_DISABLED, GameColors::UIDisabled);
-
-	int effectsVol = audio_manager::get().get_sound_volume();
-	draw_slider(sliderX, lineY, effectsVol);
-
-	if (s_bDraggingEffectsSlider && lb != 0)
-	{
-		int volume = mouse_x - sliderX;
-		if (volume > 100) volume = 100;
-		if (volume < 0) volume = 0;
-		audio_manager::get().set_sound_volume(volume);
-	}
-
-	// --- Ambient: [On/Off] ---slider--- ---
-	lineY = contentY + 92;
-
-	put_string(labelX, lineY, "Ambient:", GameColors::UILabel);
-	put_string(labelX + 1, lineY, "Ambient:", GameColors::UILabel);
-
-	if (available)
-		draw_toggle(toggleX, lineY, audio_manager::get().is_ambient_enabled());
-	else
-		put_string(toggleX, lineY, DRAW_DIALOGBOX_SYSMENU_DISABLED, GameColors::UIDisabled);
-
-	int ambientVol = audio_manager::get().get_ambient_volume();
-	draw_slider(sliderX, lineY, ambientVol);
-
-	if (s_bDraggingAmbientSlider && lb != 0)
-	{
-		int volume = mouse_x - sliderX;
-		if (volume > 100) volume = 100;
-		if (volume < 0) volume = 0;
-		audio_manager::get().set_ambient_volume(volume);
-	}
-
-	// --- UI: [On/Off] ---slider--- ---
-	lineY = contentY + 132;
-
-	put_string(labelX, lineY, "UI:", GameColors::UILabel);
-	put_string(labelX + 1, lineY, "UI:", GameColors::UILabel);
-
-	if (available)
-		draw_toggle(toggleX, lineY, audio_manager::get().is_ui_enabled());
-	else
-		put_string(toggleX, lineY, DRAW_DIALOGBOX_SYSMENU_DISABLED, GameColors::UIDisabled);
-
-	int uiVol = audio_manager::get().get_ui_volume();
-	draw_slider(sliderX, lineY, uiVol);
-
-	if (s_bDraggingUISlider && lb != 0)
-	{
-		int volume = mouse_x - sliderX;
-		if (volume > 100) volume = 100;
-		if (volume < 0) volume = 0;
-		audio_manager::get().set_ui_volume(volume);
-	}
-
-	// --- Music: [On/Off] ---slider--- ---
-	lineY = contentY + 172;
-
-	put_string(labelX, lineY, DRAW_DIALOGBOX_SYSMENU_MUSIC, GameColors::UILabel);
-	put_string(labelX + 1, lineY, DRAW_DIALOGBOX_SYSMENU_MUSIC, GameColors::UILabel);
-
-	if (available)
-		draw_toggle(toggleX, lineY, audio_manager::get().is_music_enabled());
-	else
-		put_string(toggleX, lineY, DRAW_DIALOGBOX_SYSMENU_DISABLED, GameColors::UIDisabled);
-
-	int musicVol = audio_manager::get().get_music_volume();
-	draw_slider(sliderX, lineY, musicVol);
-
-	if (s_bDraggingMusicSlider && lb != 0)
-	{
-		int volume = mouse_x - sliderX;
-		if (volume > 100) volume = 100;
-		if (volume < 0) volume = 0;
-		audio_manager::get().set_music_volume(volume);
-	}
-}
-
-// =============================================================================
-// SYSTEM TAB
-// =============================================================================
-void DialogBox_SysMenu::draw_system_tab(short sX, short sY)
-{
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	const int contentX = sX + CONTENT_X;
-	const int contentY = sY + CONTENT_Y;
-	int lineY = contentY + 5;
-	const int labelX = contentX + 5;
-	const int valueX = contentX + 140;
-
-	// Whisper toggle
-	put_string(labelX, lineY, DRAW_DIALOGBOX_SYSMENU_WHISPER, GameColors::UILabel);
-	put_string(labelX + 1, lineY, DRAW_DIALOGBOX_SYSMENU_WHISPER, GameColors::UILabel);
-	draw_toggle(valueX, lineY, ChatManager::get().is_whisper_enabled());
-
-	lineY += 20;
-
-	// Shout toggle
-	put_string(labelX, lineY, DRAW_DIALOGBOX_SYSMENU_SHOUT, GameColors::UILabel);
-	put_string(labelX + 1, lineY, DRAW_DIALOGBOX_SYSMENU_SHOUT, GameColors::UILabel);
-	draw_toggle(valueX, lineY, ChatManager::get().is_shout_enabled());
-
-	lineY += 20;
-
-	// Running Mode toggle
-	put_string(labelX, lineY, "Running Mode:", GameColors::UILabel);
-	put_string(labelX + 1, lineY, "Running Mode:", GameColors::UILabel);
-	draw_toggle(valueX, lineY, config_manager::get().is_running_mode_enabled());
-
-	lineY += 20;
-
-	// Capture Mouse toggle
-	put_string(labelX, lineY, "Capture Mouse:", GameColors::UILabel);
-	put_string(labelX + 1, lineY, "Capture Mouse:", GameColors::UILabel);
-	draw_toggle(valueX, lineY, config_manager::get().is_mouse_capture_enabled());
-
-	lineY += 20;
-
-	// Guide Map toggle
-	put_string(labelX, lineY, DRAW_DIALOGBOX_SYSMENU_GUIDEMAP, GameColors::UILabel);
-	put_string(labelX + 1, lineY, DRAW_DIALOGBOX_SYSMENU_GUIDEMAP, GameColors::UILabel);
-	draw_toggle(valueX, lineY, m_game->get_dialog_box_manager().is_enabled(DialogBoxId::GuideMap));
-
-	lineY += 20;
-
-	// Reduced Motion toggle
-	put_string(labelX, lineY, "Reduced Motion:", GameColors::UILabel);
-	put_string(labelX + 1, lineY, "Reduced Motion:", GameColors::UILabel);
-	draw_toggle(valueX, lineY, config_manager::get().is_reduced_motion_enabled());
-
-	lineY += 20;
-
-	// Toggle to Chat toggle
-	put_string(labelX, lineY, "Toggle to Chat:", GameColors::UILabel);
-	put_string(labelX + 1, lineY, "Toggle to Chat:", GameColors::UILabel);
-	draw_toggle(valueX, lineY, config_manager::get().is_toggle_to_chat_enabled());
-}
-
-// =============================================================================
-// CLICK HANDLERS
-// =============================================================================
 bool DialogBox_SysMenu::on_click()
 {
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	short sX = m_x;
-	short sY = m_y;
-
-	// Check tab button clicks
-	const hb::client::button_frame::rect button_rect = hb::client::button_frame::rect_of(hb::client::button_frame::tab);
-	int btnY = sY + 33;
-
-	for (int i = 0; i < TAB_COUNT; i++)
-	{
-		int btnX = sX + 17 + (button_rect.width * i);
-		if (mouse_x >= btnX && mouse_x < btnX + button_rect.width && mouse_y >= btnY && mouse_y < btnY + button_rect.height)
-		{
-			if (m_iActiveTab != i) m_graphics_scroll_offset = 0;
-			m_iActiveTab = i;
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	// Handle clicks for active tab content
-	switch (m_iActiveTab)
-	{
-	case TAB_GENERAL:
-		return on_click_general(sX, sY);
-	case TAB_GRAPHICS:
-		return on_click_graphics(sX, sY);
-	case TAB_AUDIO:
-		return on_click_audio(sX, sY);
-	case TAB_SYSTEM:
-		return on_click_system(sX, sY);
-	}
-
-	return false;
+	// The controls act on the release themselves (update_controls); the click stays with the menu
+	return true;
 }
 
 PressResult DialogBox_SysMenu::on_press()
 {
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	short sX = m_x;
-	short sY = m_y;
-
-	// Graphics tab scrollbar drag
-	if (m_iActiveTab == TAB_GRAPHICS)
-	{
-		if (graphics_total_items > GRAPHICS_VISIBLE_ITEMS)
-		{
-			// Hit area = the drawn track: the kit groove (moved with the drawing, by design)
-			const int scroll_x = sX + kit_graphics_scroll.x;
-			const int scroll_w = kit_graphics_scroll.w;
-			int track_top = sY + CONTENT_Y;
-			int track_bottom = sY + CONTENT_Y + CONTENT_HEIGHT;
-			if (mouse_x >= scroll_x && mouse_x <= scroll_x + scroll_w &&
-				mouse_y >= track_top && mouse_y <= track_bottom)
-			{
-				s_bDraggingGraphicsScroll = true;
-				m_is_scroll_selected = true;
-				return PressResult::ScrollClaimed;
-			}
-		}
-	}
-
-	// Only claim scroll for Audio tab slider areas
-	if (m_iActiveTab != TAB_AUDIO)
-		return PressResult::Normal;
-
-	const int contentX = sX + CONTENT_X;
-	const int contentY = sY + CONTENT_Y;
-	const int sliderX = contentX + 110;
-	const int sliderWidth = 100;
-
-	// Helper lambda for slider hit detection
-	auto checkSlider = [&](int sliderY, bool& dragFlag) -> bool {
-		if ((mouse_x >= sliderX) && (mouse_x <= sliderX + sliderWidth + 10) &&
-			(mouse_y >= sliderY - 5) && (mouse_y <= sliderY + 15))
-		{
-			dragFlag = true;
-			m_is_scroll_selected = true;
-			return true;
-		}
-		return false;
-	};
-
-	// Master slider at contentY + 8
-	if (checkSlider(contentY + 8, s_bDraggingMasterSlider))
+	// A press on a control, an open list or the popup is not the start of a dialog drag
+	if (m_confirm.active || any_list_open())
 		return PressResult::ScrollClaimed;
-
-	// Effects slider at contentY + 52
-	if (checkSlider(contentY + 52, s_bDraggingEffectsSlider))
-		return PressResult::ScrollClaimed;
-
-	// Ambient slider at contentY + 92
-	if (checkSlider(contentY + 92, s_bDraggingAmbientSlider))
-		return PressResult::ScrollClaimed;
-
-	// UI slider at contentY + 132
-	if (checkSlider(contentY + 132, s_bDraggingUISlider))
-		return PressResult::ScrollClaimed;
-
-	// Music slider at contentY + 172
-	if (checkSlider(contentY + 172, s_bDraggingMusicSlider))
-		return PressResult::ScrollClaimed;
-
-	return PressResult::Normal;
-}
-
-bool DialogBox_SysMenu::on_click_general(short sX, short sY)
-{
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	const int contentY = sY + CONTENT_Y;
-	const int contentBottom = contentY + CONTENT_HEIGHT;
-	int buttonY = contentBottom - 30;
-
-	// Log-Out / Continue button
-	if (mouse_x >= sX + ui_layout::left_btn_x && mouse_x <= sX + ui_layout::left_btn_x + ui_layout::btn_size_x &&
-		mouse_y >= buttonY && mouse_y <= buttonY + ui_layout::btn_size_y)
+	const int mx = hb::shared::input::get_mouse_x();
+	const int my = hb::shared::input::get_mouse_y();
+	bool on_control = false;
+	m_main->walk([&](const cc::control& c)
 	{
-		if (!m_game->m_force_disconn)
-		{
-			if (m_game->on_game()->m_logout_count == -1) {
-				m_game->on_game()->m_logout_count = 11;
-				m_game->on_game()->m_logout_count_time = GameClock::get_time_ms();
-			}
-			else {
-				m_game->on_game()->m_logout_count = -1;
-				add_event_list(DLGBOX_CLICK_SYSMENU2, 10);
-				disable_this_dialog();
-			}
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	// Restart button (only when dead)
-	if ((player().m_hp <= 0) && (m_game->m_restart_count == -1))
-	{
-		if (mouse_x >= sX + ui_layout::right_btn_x && mouse_x <= sX + ui_layout::right_btn_x + ui_layout::btn_size_x &&
-			mouse_y >= buttonY && mouse_y <= buttonY + ui_layout::btn_size_y)
-		{
-			m_game->m_restart_count = 5;
-			m_game->m_restart_count_time = GameClock::get_time_ms();
-			disable_this_dialog();
-			std::string restartBuf;
-			restartBuf = std::format(DLGBOX_CLICK_SYSMENU1, m_game->m_restart_count);
-			add_event_list(restartBuf.c_str(), 10);
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	return false;
-}
-
-bool DialogBox_SysMenu::on_click_graphics(short sX, short sY)
-{
-	short mouse_x = static_cast<short>(hb::shared::input::get_mouse_x());
-	short mouse_y = static_cast<short>(hb::shared::input::get_mouse_y());
-	const int contentX = sX + CONTENT_X;
-	const int contentY = sY + CONTENT_Y;
-
-	// Match draw positions - right-align large box, left-align others to its left edge
-	const int contentRight = contentX + CONTENT_WIDTH;
-	const int rightMargin = 8;
-	const int boxRightEdge = contentRight - rightMargin;
-	const int largeBoxWidth = m_bFrameSizesInitialized ? m_iLargeBoxWidth : 280;
-	const int largeBoxHeight = m_bFrameSizesInitialized ? m_iLargeBoxHeight : 16;
-	const int wideBoxWidth = m_bFrameSizesInitialized ? m_iWideBoxWidth : 175;
-	const int wideBoxHeight = m_bFrameSizesInitialized ? m_iWideBoxHeight : 16;
-	const int largeBoxX = boxRightEdge - largeBoxWidth;
-	const int wideBoxX = largeBoxX;
-	const int smallBoxX = largeBoxX;
-
-	// A copy: apply_display replaces the window's settings
-	render::display_settings display = current_display();
-	const bool fullscreen = render::is_fullscreen(display.mode);
-	const bool rate_locked = display.vsync && display.mode != render::window_mode::exclusive_fullscreen;
-
-	// Scroll offset applied to lineY
-	int lineY = contentY + 5 - (m_graphics_scroll_offset * GRAPHICS_LINE_HEIGHT);
-
-	auto is_item_visible = [&](int ly) {
-		return (ly >= contentY - 2) && (ly + 16 <= contentY + CONTENT_HEIGHT);
-	};
-
-	// --- FPS Limit (the refresh rate) --- (disabled when VSync paces frames)
-	if (is_item_visible(lineY))
-	{
-		const int fpsBoxY = lineY - 2;
-		static const int s_FpsOptions[] = { 60, 100, 144, 240, 0 };
-		static const int s_NumFpsOptions = 5;
-		const int fpsRegionWidth = largeBoxWidth / s_NumFpsOptions;
-
-		if (!rate_locked && mouse_y >= fpsBoxY && mouse_y <= fpsBoxY + largeBoxHeight && mouse_x >= largeBoxX && mouse_x <= largeBoxX + largeBoxWidth) {
-			int clickedRegion = (mouse_x - largeBoxX) / fpsRegionWidth;
-			if (clickedRegion >= 0 && clickedRegion < s_NumFpsOptions) {
-				display.refresh_rate = s_FpsOptions[clickedRegion];
-				apply_display(display);
-				audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-				return true;
-			}
-		}
-	}
-
-	lineY += 18;
-
-	// --- Aspect Ratio --- (only enabled when fullscreen)
-	if (is_item_visible(lineY))
-	{
-		const int aspectBoxY = lineY - 2;
-		const int aspectRegionWidth = wideBoxWidth / 2;
-		if (fullscreen && mouse_y >= aspectBoxY && mouse_y <= aspectBoxY + wideBoxHeight && mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth) {
-			display.aspect = (mouse_x >= wideBoxX + aspectRegionWidth) ? render::aspect_mode::stretch : render::aspect_mode::letterbox;
-			apply_display(display);
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	lineY += 18;
-
-	// --- VSync toggle ---
-	if (is_item_visible(lineY))
-	{
-		if (is_in_toggle_area(smallBoxX, lineY)) {
-			display.vsync = !display.vsync;
-			apply_display(display);
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	lineY += 18;
-
-	// --- Detail Level --- wide box with three regions
-	if (is_item_visible(lineY))
-	{
-		const int boxY = lineY - 2;
-		const int regionWidth = wideBoxWidth / 3;
-		if (mouse_y >= boxY && mouse_y <= boxY + wideBoxHeight && mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth) {
-			if (mouse_x < wideBoxX + regionWidth) {
-				config_manager::get().set_detail_level(0);
-				add_event_list(NOTIFY_MSG_DETAIL_LEVEL_LOW, 10);
-				audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-				return true;
-			}
-			if (mouse_x < wideBoxX + (regionWidth * 2)) {
-				config_manager::get().set_detail_level(1);
-				add_event_list(NOTIFY_MSG_DETAIL_LEVEL_MEDIUM, 10);
-				audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-				return true;
-			}
-			config_manager::get().set_detail_level(2);
-			add_event_list(NOTIFY_MSG_DETAIL_LEVEL_HIGH, 10);
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	lineY += 18;
-
-	// --- Dialog Transparency toggle ---
-	if (is_item_visible(lineY))
-	{
-		if (is_in_toggle_area(smallBoxX, lineY)) {
-			bool enabled = config_manager::get().is_dialog_transparency_enabled();
-			config_manager::get().set_dialog_transparency_enabled(!enabled);
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	lineY += 18;
-
-	// --- Show FPS toggle ---
-	if (is_item_visible(lineY))
-	{
-		if (is_in_toggle_area(smallBoxX, lineY)) {
-			bool enabled = config_manager::get().is_show_fps_enabled();
-			config_manager::get().set_show_fps_enabled(!enabled);
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	lineY += 18;
-
-	// --- Show Latency toggle ---
-	if (is_item_visible(lineY))
-	{
-		if (is_in_toggle_area(smallBoxX, lineY)) {
-			bool enabled = config_manager::get().is_show_latency_enabled();
-			config_manager::get().set_show_latency_enabled(!enabled);
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	lineY += 18;
-
-	// --- Background FPS Throttle toggle ---
-	if (is_item_visible(lineY))
-	{
-		if (is_in_toggle_area(smallBoxX, lineY)) {
-			bool enabled = config_manager::get().is_background_fps_throttle_enabled();
-			config_manager::get().set_background_fps_throttle_enabled(!enabled);
-			hb::shared::render::Window::get()->set_background_fps_limit(enabled ? 0 : 5);
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	lineY += 18;
-
-	// --- Map Zoom toggle ---
-	if (is_item_visible(lineY))
-	{
-		if (is_in_toggle_area(smallBoxX, lineY)) {
-			// on = a zoomed tier (mid or in), off = the whole map
-			const bool zoomed = config_manager::get().get_minimap_zoom_level() > 0;
-			config_manager::get().set_minimap_zoom_level(zoomed ? 0 : 1);
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	lineY += 18;
-
-	// --- Antialias Font toggle ---
-	if (is_item_visible(lineY))
-	{
-		if (is_in_toggle_area(smallBoxX, lineY))
-		{
-			bool enabled = config_manager::get().is_font_smoothing_enabled();
-			config_manager::get().set_font_smoothing_enabled(!enabled);
-			if (hb::shared::text::GetTextRenderer())
-			{
-				hb::shared::text::GetTextRenderer()->set_font_smoothing(!enabled);
-			}
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	lineY += 18;
-
-	// --- Antialias Buffer toggle ---
-	if (is_item_visible(lineY))
-	{
-		if (is_in_toggle_area(smallBoxX, lineY))
-		{
-			bool enabled = config_manager::get().is_upscale_smoothing_enabled();
-			config_manager::get().set_upscale_smoothing_enabled(!enabled);
-			if (hb::shared::render::Renderer::get())
-			{
-				hb::shared::render::Renderer::get()->set_upscale_smoothing(!enabled);
-			}
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	lineY += 18;
-
-#ifdef _DEBUG
-	// Tile Grid toggle - DEBUG ONLY
-	if (is_item_visible(lineY))
-	{
-		if (is_in_toggle_area(smallBoxX, lineY)) {
-			bool enabled = config_manager::get().is_tile_grid_enabled();
-			config_manager::get().set_tile_grid_enabled(!enabled);
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	lineY += 18;
-
-	// Patching Grid toggle - DEBUG ONLY
-	if (is_item_visible(lineY))
-	{
-		if (is_in_toggle_area(smallBoxX, lineY)) {
-			bool enabled = config_manager::get().is_patching_grid_enabled();
-			config_manager::get().set_patching_grid_enabled(!enabled);
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	lineY += 18;
-#endif
-
-	// --- Display Mode --- (wide box, cycles the window modes this platform supports)
-	if (is_item_visible(lineY))
-	{
-		const int modeBoxY = lineY - 2;
-		if (mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= modeBoxY && mouse_y <= modeBoxY + wideBoxHeight) {
-			display.mode = next_window_mode(display.mode);
-			apply_display(display);
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	lineY += 18;
-
-	// --- Window Style toggle --- (wide box, only in windowed mode)
-	if (is_item_visible(lineY))
-	{
-		const int styleBoxY = lineY - 2;
-		if (!fullscreen && mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= styleBoxY && mouse_y <= styleBoxY + wideBoxHeight) {
-			display.windowed_borderless = !display.windowed_borderless;
-			apply_display(display);
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			return true;
-		}
-	}
-
-	lineY += 18;
-
-	// --- Resolution click --- (wide box, windowed and exclusive; borderless uses the desktop)
-	if (is_item_visible(lineY))
-	{
-		const int resBoxY = lineY - 2;
-		if (display.mode != render::window_mode::borderless_fullscreen && mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= resBoxY && mouse_y <= resBoxY + wideBoxHeight) {
-			cycle_resolution();
-			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-			add_event_list("Resolution changed.", 10);
-			return true;
-		}
-	}
-
-	return false;
-}
-
-bool DialogBox_SysMenu::on_click_audio(short sX, short sY)
-{
-	const int contentX = sX + CONTENT_X;
-	const int contentY = sY + CONTENT_Y;
-	const int toggleX = contentX + 68;
-
-	if (!audio_manager::get().is_sound_available())
-		return false;
-
-	// Master toggle (lineY = contentY + 8)
-	int lineY = contentY + 8;
-	if (is_in_toggle_area(toggleX, lineY)) {
-		bool enabled = audio_manager::get().is_master_enabled();
-		audio_manager::get().set_master_enabled(!enabled);
-		config_manager::get().set_master_enabled(!enabled);
-		config_manager::get().save();
-		audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-		return true;
-	}
-
-	// Effects toggle (lineY = contentY + 52)
-	lineY = contentY + 52;
-	if (is_in_toggle_area(toggleX, lineY)) {
-		bool enabled = audio_manager::get().is_sound_enabled();
-		audio_manager::get().set_sound_enabled(!enabled);
-		config_manager::get().set_sound_enabled(!enabled);
-		config_manager::get().save();
-		audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-		return true;
-	}
-
-	// Ambient toggle (lineY = contentY + 92)
-	lineY = contentY + 92;
-	if (is_in_toggle_area(toggleX, lineY)) {
-		bool enabled = audio_manager::get().is_ambient_enabled();
-		audio_manager::get().set_ambient_enabled(!enabled);
-		config_manager::get().set_ambient_enabled(!enabled);
-		config_manager::get().save();
-		audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-		return true;
-	}
-
-	// UI toggle (lineY = contentY + 132)
-	lineY = contentY + 132;
-	if (is_in_toggle_area(toggleX, lineY)) {
-		bool enabled = audio_manager::get().is_ui_enabled();
-		audio_manager::get().set_ui_enabled(!enabled);
-		config_manager::get().set_ui_enabled(!enabled);
-		config_manager::get().save();
-		audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-		return true;
-	}
-
-	// Music toggle (lineY = contentY + 172)
-	lineY = contentY + 172;
-	if (is_in_toggle_area(toggleX, lineY)) {
-		if (audio_manager::get().is_music_enabled()) {
-			audio_manager::get().set_music_enabled(false);
-			config_manager::get().set_music_enabled(false);
-			audio_manager::get().stop_music();
-		}
-		else {
-			audio_manager::get().set_music_enabled(true);
-			config_manager::get().set_music_enabled(true);
-			m_game->start_bgm();
-		}
-		config_manager::get().save();
-		audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-		return true;
-	}
-
-	return false;
-}
-
-bool DialogBox_SysMenu::on_click_system(short sX, short sY)
-{
-	const int contentX = sX + CONTENT_X;
-	const int contentY = sY + CONTENT_Y;
-	int lineY = contentY + 5;
-	const int valueX = contentX + 140;
-
-	// Whisper toggle
-	if (is_in_toggle_area(valueX, lineY)) {
-		if (ChatManager::get().is_whisper_enabled()) {
-			ChatManager::get().set_whisper_enabled(false);
-			add_event_list(BCHECK_LOCAL_CHAT_COMMAND7, 10);
-		}
-		else {
-			ChatManager::get().set_whisper_enabled(true);
-			add_event_list(BCHECK_LOCAL_CHAT_COMMAND6, 10);
-		}
-		audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-		return true;
-	}
-
-	lineY += 20;
-
-	// Shout toggle
-	if (is_in_toggle_area(valueX, lineY)) {
-		if (ChatManager::get().is_shout_enabled()) {
-			ChatManager::get().set_shout_enabled(false);
-			add_event_list(BCHECK_LOCAL_CHAT_COMMAND9, 10);
-		}
-		else {
-			ChatManager::get().set_shout_enabled(true);
-			add_event_list(BCHECK_LOCAL_CHAT_COMMAND8, 10);
-		}
-		audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-		return true;
-	}
-
-	lineY += 20;
-
-	// Running Mode toggle
-	if (is_in_toggle_area(valueX, lineY)) {
-		bool enabled = config_manager::get().is_running_mode_enabled();
-		config_manager::get().set_running_mode_enabled(!enabled);
-		audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-		return true;
-	}
-
-	lineY += 20;
-
-	// Capture Mouse toggle
-	if (is_in_toggle_area(valueX, lineY)) {
-		bool enabled = config_manager::get().is_mouse_capture_enabled();
-		config_manager::get().set_mouse_capture_enabled(!enabled);
-		hb::shared::render::Window::get()->set_mouse_capture_enabled(!enabled);
-		audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-		return true;
-	}
-
-	lineY += 20;
-
-	// Guide Map toggle
-	if (is_in_toggle_area(valueX, lineY)) {
-		if (m_game->get_dialog_box_manager().is_enabled(DialogBoxId::GuideMap))
-			disable_dialog_box(DialogBoxId::GuideMap);
-		else
-			enable_dialog_box(DialogBoxId::GuideMap, 0, 0, 0);
-		audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-		return true;
-	}
-
-	lineY += 20;
-
-	// Reduced Motion toggle
-	if (is_in_toggle_area(valueX, lineY)) {
-		bool enabled = config_manager::get().is_reduced_motion_enabled();
-		config_manager::get().set_reduced_motion_enabled(!enabled);
-		audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-		return true;
-	}
-
-	lineY += 20;
-
-	// Toggle to Chat toggle
-	if (is_in_toggle_area(valueX, lineY)) {
-		bool enabled = config_manager::get().is_toggle_to_chat_enabled();
-		config_manager::get().set_toggle_to_chat_enabled(!enabled);
-		audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
-		return true;
-	}
-
-	return false;
+		on_control = on_control || (c.is_focusable() && c.is_effectively_visible() && c.is_effectively_enabled() &&
+			cc::rect_contains(c.screen_bounds(), mx, my));
+	});
+	return on_control ? PressResult::ScrollClaimed : PressResult::Normal;
 }

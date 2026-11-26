@@ -454,6 +454,9 @@ void DialogBoxManager::toggle(DialogBoxId::Type id, int type, int64_t v1, int v2
 
 void DialogBoxManager::reset_all_for_map_change()
 {
+	// Dialogs are dropped here without on_disable: an unconfirmed display change must not outlive its popup
+	if (auto* sys_menu = get_dialog_as<DialogBox_SysMenu>(DialogBoxId::SystemMenu))
+		sys_menu->discard_unconfirmed_display();
 	for (auto& [id, dlg] : m_dialogs)
 	{
 		if (!dlg) continue;
@@ -565,6 +568,18 @@ bool mouse_over_dialog(const IDialogBox* dlg, bool inclusive)
 }
 
 } // namespace
+
+int DialogBoxManager::dialog_at_mouse() const
+{
+	int found = 0;
+	for_each_top_to_bottom([&](IDialogBox* dlg) -> bool {
+		if (!mouse_over_dialog(dlg, true))
+			return false;
+		found = static_cast<int>(dlg->get_id());
+		return true;
+	});
+	return found;
+}
 
 bool DialogBoxManager::handle_click()
 {

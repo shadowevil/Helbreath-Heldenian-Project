@@ -125,8 +125,11 @@ namespace hb::client
 		float field_darken = 0.5f;            // the kit's darken f: the field at f brightness (0 = unshaded)
 		float field_darken_disabled = 0.75f;
 		float list_darken = 0.45f;            // the open list's cloth
-		float shadow = 0.45f;                 // the open list's drop shadow opacity
-		int shadow_offset = 3;
+		// The open list's drop shadow: black at distance 0 on its left, right and bottom (none above), a Gaussian
+		// halo of radius shadow_blur composited shadow_passes times (user, 2026-11-25: alpha 255, blur 6, twice)
+		float shadow = 1.0f;
+		int shadow_blur = 6;
+		int shadow_passes = 2;
 		int text_x = 6;                       // value text from the field's left edge
 		int mark_x = 6;                       // the current option's diamond centre from the row's left edge
 		int row_text_x = 13;                  // option text from the row's left edge
@@ -211,14 +214,20 @@ namespace hb::client
 		// open; dark when disabled)
 		void dropdown_field(const kit_rect& r, const std::string& value, bool enabled, bool open,
 			const form_style& style = {}, float alpha = 1.0f) const;
-		// An open list's box: a soft drop shadow, the darkened cloth, the raised bevel
+		// An open list's box: the soft drop shadow, the darkened cloth, the inset bevel
 		void list_box(const kit_rect& r, const form_style& style = {}, float alpha = 1.0f) const;
+		// One line of default-font text, left-aligned and vertically centred in r, clipped to r
+		void clipped_text(const kit_rect& r, const std::string& text, const hb::shared::render::Color& color,
+			float alpha = 1.0f) const;
 		// A check box: the shaded field; checked = a raised square filled with the mark colour
 		void check_box(const kit_rect& r, bool checked, bool enabled, const form_style& style = {}, float alpha = 1.0f) const;
 
 		// ---- Text recipes. fill replaces the recipe's "fill" colour (pass the recipe's own via recipe_fill)
 		void text(std::string_view recipe, std::string_view text, int x, int y, text_anchor::type anchor,
 			const hb::shared::render::Color& fill, float alpha = 1.0f) const;
+		// The same with every draw in color (a recipe with fixed colours, such as field_label, recoloured)
+		void text_recolored(std::string_view recipe, std::string_view text, int x, int y, text_anchor::type anchor,
+			const hb::shared::render::Color& color, float alpha = 1.0f) const;
 		hb::shared::render::Color recipe_fill(std::string_view recipe, bool hover = false) const;
 		// Ink width of text in a recipe (faux bold included), for auto-sized buttons and flourish gaps
 		int text_width(std::string_view recipe, std::string_view text) const;

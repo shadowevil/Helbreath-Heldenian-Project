@@ -79,6 +79,8 @@ public:
 	// --- Z-Order ---
 	void set_z_layer(DialogBoxId::Type id, z_layer::type layer);
 	int get_top_id() const;  // topmost normal-layer dialog
+	// The dialog a mouse press would land on (the click order: topmost layer first), 0 = none
+	int dialog_at_mouse() const;
 #ifdef DEF_CLAUDE_TESTING
 	// Agent bridge, read-only: every enabled dialog in click order (topmost layer first, then normal, then underlay)
 	std::vector<const IDialogBox*> agent_dialogs_top_to_bottom() const;

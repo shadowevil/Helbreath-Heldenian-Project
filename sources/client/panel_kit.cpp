@@ -383,12 +383,14 @@ namespace hb::client
 			return *r.inks.emplace(std::move(key), rect).first;
 		}
 
-		void passes(const text_recipe& r, const std::string& s, int ox, int oy, const Color& fill, float alpha) const
+		// recolor: every draw in fill, its own colour or "fill x k" ignored (panel_kit::text_recolored)
+		void passes(const text_recipe& r, const std::string& s, int ox, int oy, const Color& fill, float alpha,
+			bool recolor = false) const
 		{
 			const hb::shared::text::text_run run{r.face, r.px, r.tracking};
 			for (const text_draw& d : r.draws)
 			{
-				Color c = d.fill_scale >= 0.0f ? scaled(fill, d.fill_scale) : d.color;
+				Color c = recolor ? fill : (d.fill_scale >= 0.0f ? scaled(fill, d.fill_scale) : d.color);
 				float a = std::clamp(d.alpha * alpha, 0.0f, 1.0f);
 				// text_fx emboldens one mask (the union of both copies) and draws it once at a; two copies
 				// at a would stack to 1 - (1 - a)^2 where they overlap (2a when additive). Each copy at
@@ -434,7 +436,7 @@ namespace hb::client
 		}
 
 		void draw_text(const text_recipe& r, std::string_view s, int x, int y, text_anchor::type anchor,
-			const Color& fill, float alpha) const
+			const Color& fill, float alpha, bool recolor = false) const
 		{
 			if (!text || s.empty())
 				return;
@@ -444,7 +446,7 @@ namespace hb::client
 				const auto& [run, i] = ink(r, s);
 				const int ox = anchor == text_anchor::lcap ? x - i.left
 					: anchor == text_anchor::rcap ? x - i.right : x - floor_div(i.left + i.right, 2);
-				passes(r, run, ox, origin_y(r, i, y, anchor), fill, alpha);
+				passes(r, run, ox, origin_y(r, i, y, anchor), fill, alpha, recolor);
 				return;
 			}
 
@@ -455,7 +457,7 @@ namespace hb::client
 			for_each_word(s, [&](std::string_view w)
 			{
 				const auto& [word, i] = ink(r, w);
-				passes(r, word, cx - i.left, oy, fill, alpha);
+				passes(r, word, cx - i.left, oy, fill, alpha, recolor);
 				cx += i.right - i.left + r.word_gap;
 			});
 		}
@@ -888,13 +890,33 @@ namespace hb::client
 		if (!m_data)
 			return;
 		inset(r, style.field, enabled ? style.field_darken : style.field_darken_disabled, alpha);
-		const Color& color = !enabled ? style.text_disabled : (open ? style.text_open : style.text);
-		hb::shared::text::draw_text_aligned(hb::shared::text::FONT_ID_DEFAULT, r.x + style.text_x, r.y, r.w - style.text_x, r.h,
-			value.c_str(), hb::shared::text::TextStyle(color, alpha), hb::shared::text::Align::MiddleLeft);
-
 		const std::string_view arrow = !enabled ? "btn_sq_left_dark" : (open ? "btn_sq_down" : "btn_sq_left");
-		if (const kit_data::piece* p = m_data->find(arrow))
-			m_data->draw(p, r.x + r.w - p->w - 2, r.y + (r.h - p->h) / 2, alpha);
+		const kit_data::piece* p = m_data->find(arrow);
+		const int arrow_x = p ? r.x + r.w - p->w - 2 : r.x + r.w;
+		// The value stops short of the arrow ("2560 x 1440 (16:9) - Desktop" is wider than the field)
+		const Color& color = !enabled ? style.text_disabled : (open ? style.text_open : style.text);
+		clipped_text({r.x + style.text_x, r.y, arrow_x - 1 - r.x - style.text_x, r.h}, value, color, alpha);
+		if (p)
+			m_data->draw(p, arrow_x, r.y + (r.h - p->h) / 2, alpha);
+	}
+
+	void panel_kit::clipped_text(const kit_rect& r, const std::string& text, const Color& color, float alpha) const
+	{
+		if (!m_data || r.w <= 0 || r.h <= 0)
+			return;
+		hb::shared::render::IRenderer& renderer = *m_data->renderer;
+		const hb::shared::geometry::GameRectangle prev = renderer.get_clip_area();
+		const int left = (std::max)(prev.Left(), r.x);
+		const int top = (std::max)(prev.Top(), r.y);
+		const int right = (std::min)(prev.Right(), r.x + r.w);
+		const int bottom = (std::min)(prev.Bottom(), r.y + r.h);
+		if (right > left && bottom > top)
+		{
+			renderer.set_clip_area(left, top, right - left, bottom - top);
+			hb::shared::text::draw_text_aligned(hb::shared::text::FONT_ID_DEFAULT, r.x, r.y, r.w, r.h, text.c_str(),
+				hb::shared::text::TextStyle(color, alpha), hb::shared::text::Align::MiddleLeft);
+			renderer.set_clip_area(prev.Left(), prev.Top(), prev.Right() - prev.Left(), prev.Bottom() - prev.Top());
+		}
 	}
 
 	void panel_kit::list_box(const kit_rect& r, const form_style& style, float alpha) const
@@ -902,10 +924,28 @@ namespace hb::client
 		if (!m_data)
 			return;
 		const kit_data& k = *m_data;
-		k.stretch("px_black", r.x + style.shadow_offset, r.y + style.shadow_offset, r.w, r.h, style.shadow * alpha);
+		// The halo of a Gaussian-blurred black box (sigma = shadow_blur) d px outside an edge, composited
+		// shadow_passes times, drawn one ring per distance on the left, right and bottom only (the reference
+		// crops the blur at the list's top edge). Each pixel lies on one ring, the corner ones at their larger
+		// distance, so the list's own area is never shaded.
+		if (style.shadow > 0.0f && style.shadow_blur > 0)
+		{
+			const double sigma = static_cast<double>(style.shadow_blur);
+			const int reach = 3 * style.shadow_blur;
+			for (int d = 1; d <= reach; d++)
+			{
+				const double once = 0.5 * std::erfc((d - 0.5) / (sigma * std::sqrt(2.0)));
+				const float a = static_cast<float>(1.0 - std::pow(1.0 - once, (std::max)(style.shadow_passes, 1))) * style.shadow * alpha;
+				k.stretch("px_black", r.x - d, r.y, 1, r.h + d, a);
+				k.stretch("px_black", r.x + r.w - 1 + d, r.y, 1, r.h + d, a);
+				k.stretch("px_black", r.x - d + 1, r.y + r.h - 1 + d, r.w + 2 * d - 2, 1, a);
+			}
+		}
+		// The darker stone cloth framed by the inset's bevel (user, 2026-11-25: "use the inset for the border",
+		// "keep the darker background though")
 		k.tile(k.tile_of("stone_cloth"), r.x, r.y, r.w, r.h, r.x, r.y, alpha);
 		k.stretch("px_black", r.x, r.y, r.w, r.h, (1.0f - style.list_darken) * alpha);
-		raised(r, alpha);
+		k.nine_slice(k.inset_bevel, r.x, r.y, r.w, r.h, k.inset_margin, alpha);
 	}
 
 	void panel_kit::check_box(const kit_rect& r, bool checked, bool enabled, const form_style& style, float alpha) const
@@ -944,9 +984,7 @@ namespace hb::client
 				if (current)
 					kit.diamond(row.x + style.mark_x, row.y + row.h / 2, 3, style.mark, style.mark_outline, alpha);
 				const Color& color = hot ? style.text_open : (current ? style.text_current : style.text);
-				hb::shared::text::draw_text_aligned(hb::shared::text::FONT_ID_DEFAULT, row.x + style.row_text_x, row.y,
-					row.w - style.row_text_x, row.h, d.options()[i].c_str(), hb::shared::text::TextStyle(color, alpha),
-					hb::shared::text::Align::MiddleLeft);
+				kit.clipped_text({row.x + style.row_text_x, row.y, row.w - style.row_text_x, row.h}, d.options()[i], color, alpha);
 			}
 			if (d.is_scrollable())
 			{
@@ -973,6 +1011,15 @@ namespace hb::client
 			return;
 		if (const kit_data::text_recipe* r = m_data->recipe(recipe))
 			m_data->draw_text(*r, text, x, y, anchor, fill, alpha);
+	}
+
+	void panel_kit::text_recolored(std::string_view recipe, std::string_view text, int x, int y, text_anchor::type anchor,
+		const Color& color, float alpha) const
+	{
+		if (!m_data)
+			return;
+		if (const kit_data::text_recipe* r = m_data->recipe(recipe))
+			m_data->draw_text(*r, text, x, y, anchor, color, alpha, true);
 	}
 
 	Color panel_kit::recipe_fill(std::string_view recipe, bool hover) const
