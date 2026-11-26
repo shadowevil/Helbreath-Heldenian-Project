@@ -28,12 +28,9 @@ public:
     virtual void shutdown() = 0;
 
     // ============== Display Modes ==============
-    virtual void set_fullscreen(bool fullscreen) = 0;
+    // The window owns the display model (IWindow::apply_display_settings); the renderer mirrors the part
+    // that shapes its output: a fullscreen mode, and whether its aspect stretches
     virtual bool is_fullscreen() const = 0;
-    virtual void change_display_mode(hb::shared::types::NativeWindowHandle hWnd) = 0;
-
-    // ============== Scaling ==============
-    virtual void set_fullscreen_stretch(bool stretch) = 0;
     virtual bool is_fullscreen_stretch() const = 0;
 
     // Upscale filtering at final present (true = smooth/bilinear, false = crisp/nearest)

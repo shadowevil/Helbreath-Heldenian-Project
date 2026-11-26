@@ -48,7 +48,9 @@
 
 #endif // _WIN32
 
+#include <algorithm>
 #include <cstdio>
+#include <vector>
 
 //////////////////////////////////////////////////////////////////////
 // Platform-neutral native type aliases.
@@ -164,6 +166,52 @@ inline int get_monitor_refresh_rate()
 	}
 #endif
 	return 60;
+}
+
+// The refresh rates the primary display's driver offers; width/height > 0 limits them to that size.
+// Empty where the platform cannot enumerate them.
+inline std::vector<int> get_display_refresh_rates(int width = 0, int height = 0)
+{
+	std::vector<int> rates;
+#ifdef _WIN32
+	DEVMODE dev_mode = {};
+	dev_mode.dmSize = sizeof(dev_mode);
+	for (DWORD i = 0; EnumDisplaySettings(nullptr, i, &dev_mode); ++i)
+	{
+		const bool size_matches = width <= 0 || (static_cast<int>(dev_mode.dmPelsWidth) == width
+			&& static_cast<int>(dev_mode.dmPelsHeight) == height);
+		const int rate = static_cast<int>(dev_mode.dmDisplayFrequency);
+		if (size_matches && rate > 1 && std::find(rates.begin(), rates.end(), rate) == rates.end())
+			rates.push_back(rate);
+	}
+#else
+	(void)width; (void)height;
+#endif
+	return rates;
+}
+
+// Switch the primary display, already in exclusive fullscreen at width x height, to that size at rate Hz.
+// SFML's fullscreen switch sets only size and depth, so Windows picks the rate; this sets it (as
+// SDL's DM_DISPLAYFREQUENCY). Returns false where unsupported or when the driver refuses.
+inline bool set_display_refresh_rate(int width, int height, int rate)
+{
+#ifdef _WIN32
+	DEVMODE dev_mode = {};
+	dev_mode.dmSize = sizeof(dev_mode);
+	if (!EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &dev_mode))
+		return false;
+	dev_mode.dmPelsWidth = static_cast<DWORD>(width);
+	dev_mode.dmPelsHeight = static_cast<DWORD>(height);
+	dev_mode.dmDisplayFrequency = static_cast<DWORD>(rate);
+	dev_mode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL | DM_DISPLAYFREQUENCY;
+	if (ChangeDisplaySettingsEx(nullptr, &dev_mode, nullptr, CDS_TEST, nullptr) != DISP_CHANGE_SUCCESSFUL)
+		return false;
+	// CDS_FULLSCREEN: temporary, so SFML's ChangeDisplaySettings(nullptr, 0) on leaving restores the registry mode
+	return ChangeDisplaySettingsEx(nullptr, &dev_mode, nullptr, CDS_FULLSCREEN, nullptr) == DISP_CHANGE_SUCCESSFUL;
+#else
+	(void)width; (void)height; (void)rate;
+	return false;
+#endif
 }
 
 // --- Timer resolution ---

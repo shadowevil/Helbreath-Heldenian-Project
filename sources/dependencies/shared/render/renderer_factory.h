@@ -93,12 +93,6 @@ public:
     // Show an error message box (platform-appropriate)
     static void show_error(const char* title, const char* message);
 
-    // Resize the window
-    static void set_size(int width, int height, bool center = true);
-
-    // Toggle borderless/bordered window mode
-    static void set_borderless(bool borderless);
-
 private:
     static IWindow* s_window;
 };

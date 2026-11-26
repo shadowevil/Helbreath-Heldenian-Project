@@ -16,6 +16,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <string>
+#include <vector>
 
 class SFMLWindow : public hb::shared::render::IWindow
 {
@@ -38,26 +39,22 @@ public:
     bool is_fullscreen() const override;
     bool is_active() const override;
 
-    // Display
-    void set_fullscreen(bool fullscreen) override;
-    void set_borderless(bool borderless) override;
-    bool is_borderless() const override;
-    void set_size(int width, int height, bool center = true) override;
+    // Display model
+    bool apply_display_settings(const hb::shared::render::display_settings& settings) override;
+    const hb::shared::render::display_settings& get_display_settings() const override;
+    bool is_window_mode_supported(hb::shared::render::window_mode::type mode) const override;
+    hb::shared::render::display_mode get_desktop_mode() const override;
+    std::vector<hb::shared::render::resolution_option> get_resolution_options() const override;
+    std::vector<hb::shared::render::refresh_option> get_refresh_options() const override;
+
+    // Visibility
     void show() override;
     void hide() override;
     void set_title(const char* title) override;
 
     // Frame Rate
-    void set_framerate_limit(int limit) override;
-    int get_framerate_limit() const override;
-    void set_vsync_enabled(bool enabled) override;
-    bool is_vsync_enabled() const override;
     void set_background_fps_limit(int limit) override;
     int get_background_fps_limit() const override;
-
-    // Scaling
-    void set_fullscreen_stretch(bool stretch) override;
-    bool is_fullscreen_stretch() const override;
 
     // Platform (stageable)
     void set_native_instance(hb::shared::types::NativeInstance instance) override;
@@ -91,7 +88,21 @@ public:
     sf::RenderWindow* GetRenderWindow() { return &m_renderWindow; }
     const sf::RenderWindow* GetRenderWindow() const { return &m_renderWindow; }
 
+    // Push the display state the renderer mirrors (letterbox, stretch, vsync, frame cap); called by apply
+    // and when a renderer is linked after realize()
+    void push_display_state();
+
 private:
+    // Create (or recreate) the OS window for m_display; false when the result differs from the request
+    bool create_native_window();
+    // Exclusive only: switch the monitor to m_display.refresh_rate; false when the driver refuses
+    bool apply_exclusive_refresh_rate();
+    // Re-point input and the renderer at the recreated window
+    void relink_window();
+    // The frame cap for the current state: background throttle, else the monitor rate under vsync, else
+    // the refresh setting (0 = unlimited)
+    int current_frame_cap() const;
+
     // Convert SFML key to abstract KeyCode
     static KeyCode SfmlKeyToKeyCode(sf::Keyboard::Key key);
 
@@ -111,8 +122,6 @@ private:
     // Fullscreen: position at monitor origin. Windowed: center in work area.
     void center_on_current_monitor();
 
-    // Cross-platform helpers — use platform wrappers on Windows, SFML on Linux.
-    void get_desktop_size(int& width, int& height) const;
     void move_window(int x, int y, int width, int height);
 
     // On Windows, clip the OS cursor to the rendered area (letterbox region)
@@ -128,17 +137,13 @@ private:
 
     // Staged/live params
     std::string m_title;
-    int m_width;
+    hb::shared::render::display_settings m_display;  // staged before realize, in effect after
+    int m_width;   // live client size (m_display holds the configured size)
     int m_height;
-    bool m_fullscreen;
-    bool m_fullscreen_stretch;
-    bool m_borderless;
+    bool m_in_exclusive;  // the monitor is switched to an exclusive mode right now
+    mutable hb::shared::render::display_mode m_desktop_cache;  // the desktop mode, kept while exclusive hides it
     bool m_mouse_capture_enabled;
-    bool m_vsync;
-    int m_fps_limit;
     int m_background_fps_limit;  // 0 = disabled, >0 = throttle to this FPS on focus loss
-    int m_windowed_width;
-    int m_windowed_height;
     hb::shared::types::NativeInstance m_nativeInstance;
     int m_icon_resource_id;
 };

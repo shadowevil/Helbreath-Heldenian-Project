@@ -1,5 +1,6 @@
 #pragma once
 
+#include "display_settings.h"
 #include <cstdint>
 
 // Maximum shortcuts matching game limits
@@ -19,6 +20,9 @@ public:
 	// File operations - replaces registry-based read_settings/write_settings
 	bool load(const char* filename = "settings.json");
 	bool save(const char* filename = "settings.json");
+	// False when the file existed but could not be parsed: the values are partial, so start-up must not save
+	// (the first later save backs the original up to <file>.bak)
+	bool is_loaded() const { return !m_load_failed; }
 
 	// Shortcuts - replaces registry storage
 	// Magic shortcut: -1 = none, 0-99 = valid slot
@@ -56,10 +60,10 @@ public:
 	void set_ambient_enabled(bool enabled);
 	void set_ui_enabled(bool enabled);
 
-	// hb::shared::render::Window/Resolution settings
-	int get_window_width() const { return m_window_width; }
-	int get_window_height() const { return m_window_height; }
-	void set_window_size(int width, int height);
+	// The display model (window mode, resolution, refresh rate, vsync, aspect, windowed decoration).
+	// The window applies it (IWindow::apply_display_settings); this only persists it.
+	const hb::shared::render::display_settings& get_display_settings() const { return m_display; }
+	void set_display_settings(const hb::shared::render::display_settings& settings);
 
 	// Display/Detail settings
 	bool is_show_fps_enabled() const { return m_show_fps; }
@@ -67,14 +71,12 @@ public:
 	int get_detail_level() const { return m_detail_level; }
 	bool is_dialog_transparency_enabled() const { return m_dialog_trans; }
 	bool is_running_mode_enabled() const { return m_running_mode; }
-	bool is_fullscreen_enabled() const { return m_fullscreen; }
 
 	void set_show_fps_enabled(bool enabled);
 	void set_show_latency_enabled(bool enabled);
 	void set_detail_level(int level);
 	void set_dialog_transparency_enabled(bool enabled);
 	void set_running_mode_enabled(bool enabled);
-	void set_fullscreen_enabled(bool enabled);
 
 	// Mouse capture
 	bool is_mouse_capture_enabled() const { return m_capture_mouse; }
@@ -88,25 +90,9 @@ public:
 	bool is_patching_grid_enabled() const { return m_patching_grid; }
 	void set_patching_grid_enabled(bool enabled);
 
-	// Borderless window
-	bool is_borderless_enabled() const { return m_borderless; }
-	void set_borderless_enabled(bool enabled);
-
-	// VSync
-	bool is_vsync_enabled() const { return m_vsync; }
-	void set_vsync_enabled(bool enabled);
-
-	// FPS limit (0 = unlimited)
-	int get_fps_limit() const { return m_fps_limit; }
-	void set_fps_limit(int limit);
-
 	// Background FPS throttle: reduce rendering when window loses focus
 	bool is_background_fps_throttle_enabled() const { return m_background_fps_throttle; }
 	void set_background_fps_throttle_enabled(bool enabled);
-
-	// Fullscreen stretch (false = letterbox, true = stretch to fill)
-	bool is_fullscreen_stretch_enabled() const { return m_fullscreen_stretch; }
-	void set_fullscreen_stretch_enabled(bool enabled);
 
 	// Smooth upscale filtering (true = bilinear/smooth, false = nearest/crisp)
 	bool is_upscale_smoothing_enabled() const { return m_upscale_smoothing; }
@@ -161,9 +147,8 @@ private:
 	bool m_ambient_enabled;
 	bool m_ui_enabled;
 
-	// hb::shared::render::Window/Resolution
-	int m_window_width;
-	int m_window_height;
+	// Display model
+	hb::shared::render::display_settings m_display;
 
 	// Display/Detail
 	bool m_show_fps;
@@ -171,13 +156,8 @@ private:
 	int m_detail_level;
 	bool m_dialog_trans;
 	bool m_running_mode;
-	bool m_fullscreen;
 	bool m_capture_mouse;
-	bool m_borderless;
-	bool m_vsync;
-	int m_fps_limit;
 	bool m_background_fps_throttle;
-	bool m_fullscreen_stretch;
 	bool m_upscale_smoothing;
 	bool m_font_smoothing;
 	bool m_tile_grid;
@@ -189,4 +169,6 @@ private:
 	// State
 	bool m_dirty;
 	bool m_initialized;
+	bool m_load_failed = false;      // the file existed but did not parse
+	bool m_backup_pending = false;   // copy it to <file>.bak before the first save overwrites it
 };

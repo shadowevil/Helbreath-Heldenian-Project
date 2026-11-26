@@ -46,69 +46,86 @@ static bool s_bDraggingAmbientSlider = false;
 static bool s_bDraggingUISlider = false;
 static bool s_bDraggingMusicSlider = false;
 
-// 4:3 resolutions from 640x480 to 1920x1440
-const Resolution DialogBox_SysMenu::s_Resolutions[] = {
-	//{ 640, 480 },
-	{ 800, 600 },
-	{ 1024, 768 },
-	{ 1280, 960 },
-	{ 1440, 1080 },
-	{ 1920, 1440 }
-};
+namespace render = hb::shared::render;
 
-const int DialogBox_SysMenu::s_NumResolutions = sizeof(s_Resolutions) / sizeof(s_Resolutions[0]);
-
-int DialogBox_SysMenu::get_current_resolution_index()
+// The display model in effect (the window's, which config_manager mirrors)
+static const render::display_settings& current_display()
 {
-	int currentWidth = config_manager::get().get_window_width();
-	int currentHeight = config_manager::get().get_window_height();
-
-	for (int i = 0; i < s_NumResolutions; i++) {
-		if (s_Resolutions[i].width == currentWidth && s_Resolutions[i].height == currentHeight) {
-			return i;
-		}
-	}
-	return get_nearest_resolution_index(currentWidth, currentHeight);
+	return render::Window::get()->get_display_settings();
 }
 
-int DialogBox_SysMenu::get_nearest_resolution_index(int width, int height)
+// Apply a display change through the graphics protocol and persist what took effect
+static void apply_display(const render::display_settings& settings)
 {
-	int bestIndex = 0;
-	int bestDiff = abs(s_Resolutions[0].width - width) + abs(s_Resolutions[0].height - height);
+	render::IWindow* window = render::Window::get();
+	if (!window)
+		return;
+	window->apply_display_settings(settings);
+	config_manager::get().set_display_settings(window->get_display_settings());
+	if (hb::shared::input::get())
+		hb::shared::input::get()->set_window_active(true);
+}
 
-	for (int i = 1; i < s_NumResolutions; i++) {
-		int diff = abs(s_Resolutions[i].width - width) + abs(s_Resolutions[i].height - height);
-		if (diff < bestDiff) {
-			bestDiff = diff;
-			bestIndex = i;
-		}
+// The next window mode this platform supports (Windowed -> Borderless -> Exclusive -> Windowed)
+static render::window_mode::type next_window_mode(render::window_mode::type mode)
+{
+	const render::IWindow* window = render::Window::get();
+	render::window_mode::type next = mode;
+	do
+	{
+		next = static_cast<render::window_mode::type>((next + 1) % (render::window_mode::exclusive_fullscreen + 1));
+	} while (next != mode && !window->is_window_mode_supported(next));
+	return next;
+}
+
+static const char* window_mode_text(render::window_mode::type mode)
+{
+	switch (mode)
+	{
+	case render::window_mode::borderless_fullscreen: return "Borderless";
+	case render::window_mode::exclusive_fullscreen: return "Exclusive";
+	default: return "Windowed";
 	}
-	return bestIndex;
 }
 
 void DialogBox_SysMenu::cycle_resolution()
 {
-	int currentIndex = get_current_resolution_index();
-	int nextIndex = (currentIndex + 1) % s_NumResolutions;
-	apply_resolution(nextIndex);
-}
+	const std::vector<render::resolution_option> options = render::Window::get()->get_resolution_options();
+	if (options.empty())
+		return;
 
-void DialogBox_SysMenu::apply_resolution(int index)
-{
-	if (index < 0 || index >= s_NumResolutions) return;
+	// In exclusive the monitor can answer a request with a nearby mode (1366x768 -> 1360x768). Step from
+	// what was last requested while that answer is still in effect, or the next click asks for the same
+	// size again and the row never moves on
+	struct size_request { int requested_w, requested_h, effective_w, effective_h; };
+	static size_request s_last{0, 0, 0, 0};
 
-	int newWidth = s_Resolutions[index].width;
-	int newHeight = s_Resolutions[index].height;
+	render::display_settings settings = current_display();
+	int from_w = settings.width;
+	int from_h = settings.height;
+	if (s_last.effective_w == from_w && s_last.effective_h == from_h)
+	{
+		from_w = s_last.requested_w;
+		from_h = s_last.requested_h;
+	}
 
-	config_manager::get().set_window_size(newWidth, newHeight);
-	config_manager::get().save();
+	// The first option past that size (options ascend); wraps to the smallest
+	size_t next = 0;
+	for (size_t i = 0; i < options.size(); i++)
+	{
+		const bool past = options[i].width != from_w ? options[i].width > from_w : options[i].height > from_h;
+		if (past)
+		{
+			next = i;
+			break;
+		}
+	}
+	settings.width = options[next].width;
+	settings.height = options[next].height;
+	apply_display(settings);
 
-	hb::shared::render::Window::set_size(newWidth, newHeight, true);
-
-	if (hb::shared::render::Renderer::get())
-		hb::shared::render::Renderer::get()->resize_back_buffer(newWidth, newHeight);
-
-	hb::shared::input::get()->set_window_active(true);
+	const render::display_settings& effective = current_display();
+	s_last = {settings.width, settings.height, effective.width, effective.height};
 }
 
 DialogBox_SysMenu::DialogBox_SysMenu(CGame* game)
@@ -447,7 +464,10 @@ void DialogBox_SysMenu::draw_graphics_tab(short sX, short sY)
 	const int wideBoxX = largeBoxX;
 	const int smallBoxX = largeBoxX;
 
-	const bool fullscreen = m_game->m_Renderer->is_fullscreen();
+	const render::display_settings& display = current_display();
+	const bool fullscreen = render::is_fullscreen(display.mode);
+	// The refresh rate is the frame cap unless vsync paces frames; exclusive also switches the monitor to it
+	const bool rate_locked = display.vsync && display.mode != render::window_mode::exclusive_fullscreen;
 
 	// Scroll support
 	bool scrollable = graphics_total_items > GRAPHICS_VISIBLE_ITEMS;
@@ -458,10 +478,10 @@ void DialogBox_SysMenu::draw_graphics_tab(short sX, short sY)
 		return (ly >= contentY - 2) && (ly + 16 <= contentY + CONTENT_HEIGHT);
 	};
 
-	// --- FPS Limit --- large box (frame 81) with 5 options (disabled when VSync is on)
+	// --- FPS Limit (the refresh rate) --- large box (frame 81) with 5 options (disabled when VSync paces frames)
 	if (is_item_visible(lineY))
 	{
-		const bool v_sync_on = config_manager::get().is_vsync_enabled();
+		const bool v_sync_on = rate_locked;
 		put_string(labelX, lineY, "FPS Limit:", GameColors::UILabel);
 		put_string(labelX + 1, lineY, "FPS Limit:", GameColors::UILabel);
 
@@ -472,7 +492,7 @@ void DialogBox_SysMenu::draw_graphics_tab(short sX, short sY)
 		static const char* s_FpsLabels[] = { "60", "100", "144", "240", "Max" };
 		static const int s_NumFpsOptions = 5;
 		const int fpsRegionWidth = largeBoxWidth / s_NumFpsOptions;
-		const int currentFps = config_manager::get().get_fps_limit();
+		const int currentFps = display.refresh_rate;
 
 		for (int i = 0; i < s_NumFpsOptions; i++)
 		{
@@ -498,7 +518,7 @@ void DialogBox_SysMenu::draw_graphics_tab(short sX, short sY)
 		const int aspectBoxY = lineY - 2;
 		draw_box(78, wideBoxX, aspectBoxY);
 
-		const bool stretch = config_manager::get().is_fullscreen_stretch_enabled();
+		const bool stretch = display.aspect == render::aspect_mode::stretch;
 		const int aspectRegionWidth = wideBoxWidth / 2;
 
 		const char* letterboxText = "Letterbox";
@@ -531,7 +551,7 @@ void DialogBox_SysMenu::draw_graphics_tab(short sX, short sY)
 	{
 		put_string(labelX, lineY, "VSync:", GameColors::UILabel);
 		put_string(labelX + 1, lineY, "VSync:", GameColors::UILabel);
-		draw_toggle(smallBoxX, lineY, config_manager::get().is_vsync_enabled());
+		draw_toggle(smallBoxX, lineY, display.vsync);
 	}
 
 	lineY += 18;
@@ -662,7 +682,7 @@ void DialogBox_SysMenu::draw_graphics_tab(short sX, short sY)
 	lineY += 18;
 #endif
 
-	// --- Display Mode --- wide box (Fullscreen / Windowed)
+	// --- Display Mode --- wide box (Windowed / Borderless / Exclusive, the modes this platform supports)
 	if (is_item_visible(lineY))
 	{
 		put_string(labelX, lineY, "Display Mode:", GameColors::UILabel);
@@ -674,7 +694,7 @@ void DialogBox_SysMenu::draw_graphics_tab(short sX, short sY)
 		bool modeHover = (mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= modeBoxY && mouse_y <= modeBoxY + wideBoxHeight);
 		const hb::shared::render::Color& modeColor = modeHover ? GameColors::UIWhite : GameColors::UIDisabled;
 
-		const char* modeText = fullscreen ? "Fullscreen" : "Windowed";
+		const char* modeText = window_mode_text(display.mode);
 		hb::shared::text::TextMetrics modeMetrics = hb::shared::text::GetTextRenderer()->measure_text(modeText);
 		int modeTextX = wideBoxX + (wideBoxWidth - modeMetrics.width) / 2;
 		int modeTextY = modeBoxY + (wideBoxHeight - modeMetrics.height) / 2;
@@ -695,7 +715,7 @@ void DialogBox_SysMenu::draw_graphics_tab(short sX, short sY)
 		bool styleHover = !fullscreen && (mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= styleBoxY && mouse_y <= styleBoxY + wideBoxHeight);
 		const hb::shared::render::Color& styleColor = fullscreen ? GameColors::UIDisabled : (styleHover ? GameColors::UIWhite : GameColors::UIDisabled);
 
-		const char* styleText = config_manager::get().is_borderless_enabled() ? "Borderless" : "Bordered";
+		const char* styleText = display.windowed_borderless ? "Borderless" : "Bordered";
 		hb::shared::text::TextMetrics styleMetrics = hb::shared::text::GetTextRenderer()->measure_text(styleText);
 		int styleTextX = wideBoxX + (wideBoxWidth - styleMetrics.width) / 2;
 		int styleTextY = styleBoxY + (wideBoxHeight - styleMetrics.height) / 2;
@@ -704,21 +724,19 @@ void DialogBox_SysMenu::draw_graphics_tab(short sX, short sY)
 
 	lineY += 18;
 
-	// --- Resolution --- wide box with centered text (disabled when fullscreen)
+	// --- Resolution --- wide box with centered text (disabled under borderless, which uses the desktop)
 	if (is_item_visible(lineY))
 	{
 		put_string(labelX, lineY, "Resolution:", GameColors::UILabel);
 		put_string(labelX + 1, lineY, "Resolution:", GameColors::UILabel);
 
-		int resWidth, resHeight;
-		if (fullscreen) {
-			resWidth = hb::platform::get_screen_width();
-			resHeight = hb::platform::get_screen_height();
-		}
-		else {
-			int resIndex = get_current_resolution_index();
-			resWidth = s_Resolutions[resIndex].width;
-			resHeight = s_Resolutions[resIndex].height;
+		const bool res_locked = display.mode == render::window_mode::borderless_fullscreen;
+		int resWidth = display.width;
+		int resHeight = display.height;
+		if (res_locked) {
+			const render::display_mode desktop = render::Window::get()->get_desktop_mode();
+			resWidth = desktop.width;
+			resHeight = desktop.height;
 		}
 
 		std::string resBuf;
@@ -727,8 +745,8 @@ void DialogBox_SysMenu::draw_graphics_tab(short sX, short sY)
 		const int resBoxY = lineY - 2;
 		draw_box(78, wideBoxX, resBoxY);
 
-		bool resHover = !fullscreen && (mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= resBoxY && mouse_y <= resBoxY + wideBoxHeight);
-		const hb::shared::render::Color& resColor = fullscreen ? GameColors::UIDisabled : (resHover ? GameColors::UIWhite : GameColors::UIDisabled);
+		bool resHover = !res_locked && (mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= resBoxY && mouse_y <= resBoxY + wideBoxHeight);
+		const hb::shared::render::Color& resColor = res_locked ? GameColors::UIDisabled : (resHover ? GameColors::UIWhite : GameColors::UIDisabled);
 
 		hb::shared::text::TextMetrics resMetrics = hb::shared::text::GetTextRenderer()->measure_text(resBuf.c_str());
 		int resTextX = wideBoxX + (wideBoxWidth - resMetrics.width) / 2;
@@ -1106,7 +1124,10 @@ bool DialogBox_SysMenu::on_click_graphics(short sX, short sY)
 	const int wideBoxX = largeBoxX;
 	const int smallBoxX = largeBoxX;
 
-	const bool fullscreen = m_game->m_Renderer->is_fullscreen();
+	// A copy: apply_display replaces the window's settings
+	render::display_settings display = current_display();
+	const bool fullscreen = render::is_fullscreen(display.mode);
+	const bool rate_locked = display.vsync && display.mode != render::window_mode::exclusive_fullscreen;
 
 	// Scroll offset applied to lineY
 	int lineY = contentY + 5 - (m_graphics_scroll_offset * GRAPHICS_LINE_HEIGHT);
@@ -1115,21 +1136,19 @@ bool DialogBox_SysMenu::on_click_graphics(short sX, short sY)
 		return (ly >= contentY - 2) && (ly + 16 <= contentY + CONTENT_HEIGHT);
 	};
 
-	// --- FPS Limit --- (disabled when VSync is on)
+	// --- FPS Limit (the refresh rate) --- (disabled when VSync paces frames)
 	if (is_item_visible(lineY))
 	{
-		const bool v_sync_on = config_manager::get().is_vsync_enabled();
 		const int fpsBoxY = lineY - 2;
 		static const int s_FpsOptions[] = { 60, 100, 144, 240, 0 };
 		static const int s_NumFpsOptions = 5;
 		const int fpsRegionWidth = largeBoxWidth / s_NumFpsOptions;
 
-		if (!v_sync_on && mouse_y >= fpsBoxY && mouse_y <= fpsBoxY + largeBoxHeight && mouse_x >= largeBoxX && mouse_x <= largeBoxX + largeBoxWidth) {
+		if (!rate_locked && mouse_y >= fpsBoxY && mouse_y <= fpsBoxY + largeBoxHeight && mouse_x >= largeBoxX && mouse_x <= largeBoxX + largeBoxWidth) {
 			int clickedRegion = (mouse_x - largeBoxX) / fpsRegionWidth;
 			if (clickedRegion >= 0 && clickedRegion < s_NumFpsOptions) {
-				int newLimit = s_FpsOptions[clickedRegion];
-				config_manager::get().set_fps_limit(newLimit);
-				hb::shared::render::Window::get()->set_framerate_limit(newLimit);
+				display.refresh_rate = s_FpsOptions[clickedRegion];
+				apply_display(display);
 				audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
 				return true;
 			}
@@ -1144,11 +1163,8 @@ bool DialogBox_SysMenu::on_click_graphics(short sX, short sY)
 		const int aspectBoxY = lineY - 2;
 		const int aspectRegionWidth = wideBoxWidth / 2;
 		if (fullscreen && mouse_y >= aspectBoxY && mouse_y <= aspectBoxY + wideBoxHeight && mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth) {
-			bool new_stretch = (mouse_x >= wideBoxX + aspectRegionWidth);
-			config_manager::get().set_fullscreen_stretch_enabled(new_stretch);
-			hb::shared::render::Window::get()->set_fullscreen_stretch(new_stretch);
-			if (hb::shared::render::Renderer::get())
-				hb::shared::render::Renderer::get()->set_fullscreen_stretch(new_stretch);
+			display.aspect = (mouse_x >= wideBoxX + aspectRegionWidth) ? render::aspect_mode::stretch : render::aspect_mode::letterbox;
+			apply_display(display);
 			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
 			return true;
 		}
@@ -1160,9 +1176,8 @@ bool DialogBox_SysMenu::on_click_graphics(short sX, short sY)
 	if (is_item_visible(lineY))
 	{
 		if (is_in_toggle_area(smallBoxX, lineY)) {
-			bool enabled = config_manager::get().is_vsync_enabled();
-			config_manager::get().set_vsync_enabled(!enabled);
-			hb::shared::render::Window::get()->set_vsync_enabled(!enabled);
+			display.vsync = !display.vsync;
+			apply_display(display);
 			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
 			return true;
 		}
@@ -1328,16 +1343,13 @@ bool DialogBox_SysMenu::on_click_graphics(short sX, short sY)
 	lineY += 18;
 #endif
 
-	// --- Display Mode toggle --- (wide box, toggles windowed/fullscreen)
+	// --- Display Mode --- (wide box, cycles the window modes this platform supports)
 	if (is_item_visible(lineY))
 	{
 		const int modeBoxY = lineY - 2;
 		if (mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= modeBoxY && mouse_y <= modeBoxY + wideBoxHeight) {
-			m_game->m_Renderer->set_fullscreen(!fullscreen);
-			m_game->m_Renderer->change_display_mode(hb::shared::render::Window::get_handle());
-			hb::shared::input::get()->set_window_active(true);
-			config_manager::get().set_fullscreen_enabled(!fullscreen);
-			config_manager::get().save();
+			display.mode = next_window_mode(display.mode);
+			apply_display(display);
 			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
 			return true;
 		}
@@ -1345,16 +1357,13 @@ bool DialogBox_SysMenu::on_click_graphics(short sX, short sY)
 
 	lineY += 18;
 
-	// --- hb::shared::render::Window Style toggle --- (wide box, only in windowed mode)
+	// --- Window Style toggle --- (wide box, only in windowed mode)
 	if (is_item_visible(lineY))
 	{
 		const int styleBoxY = lineY - 2;
 		if (!fullscreen && mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= styleBoxY && mouse_y <= styleBoxY + wideBoxHeight) {
-			bool borderless = config_manager::get().is_borderless_enabled();
-			config_manager::get().set_borderless_enabled(!borderless);
-			hb::shared::render::Window::set_borderless(!borderless);
-			hb::shared::input::get()->set_window_active(true);
-			config_manager::get().save();
+			display.windowed_borderless = !display.windowed_borderless;
+			apply_display(display);
 			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
 			return true;
 		}
@@ -1362,11 +1371,11 @@ bool DialogBox_SysMenu::on_click_graphics(short sX, short sY)
 
 	lineY += 18;
 
-	// --- Resolution click --- (wide box, only in windowed mode)
+	// --- Resolution click --- (wide box, windowed and exclusive; borderless uses the desktop)
 	if (is_item_visible(lineY))
 	{
 		const int resBoxY = lineY - 2;
-		if (!fullscreen && mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= resBoxY && mouse_y <= resBoxY + wideBoxHeight) {
+		if (display.mode != render::window_mode::borderless_fullscreen && mouse_x >= wideBoxX && mouse_x <= wideBoxX + wideBoxWidth && mouse_y >= resBoxY && mouse_y <= resBoxY + wideBoxHeight) {
 			cycle_resolution();
 			audio_manager::get().play_game_sound(sound_type::effect, 14, 5);
 			add_event_list("Resolution changed.", 10);

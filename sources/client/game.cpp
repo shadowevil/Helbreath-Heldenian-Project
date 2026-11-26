@@ -262,17 +262,24 @@ bool CGame::on_initialize()
 	hb::logger::initialize("logs");
 	hb::logger::log("client {}", hb::shared::version::version_string(hb::shared::version::component::client));
 
-	hb::shared::render::ResolutionConfig::initialize(
-		config_manager::get().get_window_width(),
-		config_manager::get().get_window_height()
-	);
-
 	// Configure window params via staged setters (no OS window yet)
 	auto* window = get_window();
 	window->set_title(std::format("Helbreath {}", hb::shared::version::version_string(hb::shared::version::component::client)).c_str());
-	window->set_size(config_manager::get().get_window_width(),
-		config_manager::get().get_window_height());
-	window->set_borderless(config_manager::get().is_borderless_enabled());
+
+	// The display model, staged: realize() creates the window from it. The size snaps to the offered
+	// list (capped at the desktop) for this session only, so a smaller desktop never shrinks the saved
+	// size; the window folds a mode this platform lacks (a saved exclusive loads as borderless on Linux).
+	// The logical size the list is filtered by is the compile-time base, valid before initialize.
+	hb::shared::render::display_settings display = config_manager::get().get_display_settings();
+	const std::vector<hb::shared::render::resolution_option> resolutions = window->get_resolution_options();
+	if (const hb::shared::render::resolution_option* nearest = hb::shared::render::nearest_resolution(resolutions, display.width, display.height))
+	{
+		display.width = nearest->width;
+		display.height = nearest->height;
+	}
+	hb::shared::render::ResolutionConfig::initialize(display.width, display.height);
+	window->apply_display_settings(display);
+
 	window->set_mouse_capture_enabled(config_manager::get().is_mouse_capture_enabled());
 	window->set_native_instance(m_native_instance);
 	window->set_icon_resource_id(m_icon_resource_id);
@@ -345,15 +352,21 @@ bool CGame::on_start()
 	m_sprite_factory.reset(hb::shared::render::CreateSpriteFactory(m_Renderer));
 	hb::shared::sprite::Sprites::set_factory(m_sprite_factory.get());
 
-	// push display settings from config_manager to engine
-	hb::shared::render::Window::get()->set_vsync_enabled(config_manager::get().is_vsync_enabled());
-	hb::shared::render::Window::get()->set_framerate_limit(config_manager::get().get_fps_limit());
-	hb::shared::render::Window::get()->set_fullscreen_stretch(config_manager::get().is_fullscreen_stretch_enabled());
+	// The display model was applied at realize (and mirrored into the renderer when it linked). Persist
+	// what took effect (a folded mode, an exclusive rate), but keep the saved size: the start-up snap and
+	// an exclusive fallback size are for this session. Never save when the file failed to load: its
+	// values are partial and a save would overwrite the player's file
+	if (config_manager::get().is_loaded())
+	{
+		hb::shared::render::display_settings effective = get_window()->get_display_settings();
+		effective.width = config_manager::get().get_display_settings().width;
+		effective.height = config_manager::get().get_display_settings().height;
+		config_manager::get().set_display_settings(effective);
+	}
 	hb::shared::render::Window::get()->set_background_fps_limit(
 		config_manager::get().is_background_fps_throttle_enabled() ? 5 : 0);
 	if (hb::shared::render::Renderer::get())
 	{
-		hb::shared::render::Renderer::get()->set_fullscreen_stretch(config_manager::get().is_fullscreen_stretch_enabled());
 		hb::shared::render::Renderer::get()->set_upscale_smoothing(config_manager::get().is_upscale_smoothing_enabled());
 	}
 	if (hb::shared::text::GetTextRenderer())

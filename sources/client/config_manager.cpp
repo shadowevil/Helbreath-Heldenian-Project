@@ -2,24 +2,23 @@
 #include "global_def.h"
 #include "json.hpp"
 #include "minimap.h"
+#include <algorithm>
+#include <filesystem>
 #include <fstream>
+#include <system_error>
 #include <cstring>
 #include <cstdlib>
+#include <string>
 
 using json = nlohmann::json;
 
-// 4:3 resolutions for validation (must match DialogBox_SysMenu)
 static constexpr int minimap_zoom_max = hb::client::minimap::tier_count - 1; // tiers: 0 whole map, 1 mid
 
-static const struct { int w, h; } s_ValidResolutions[] = {
-	//{ 640, 480 },
-	{ 800, 600 },
-	{ 1024, 768 },
-	{ 1280, 960 },
-	{ 1440, 1080 },
-	{ 1920, 1440 }
-};
-static const int s_NumValidResolutions = sizeof(s_ValidResolutions) / sizeof(s_ValidResolutions[0]);
+// Sanity bounds for a stored size; start-up snaps it to the window's resolution list (capped at the desktop)
+static constexpr int max_window_width = 16384;
+static constexpr int max_window_height = 16384;
+
+namespace render = hb::shared::render;
 
 config_manager& config_manager::get()
 {
@@ -70,9 +69,19 @@ void config_manager::set_defaults()
 	m_ambient_enabled = true;
 	m_ui_enabled = true;
 
-	// hb::shared::render::Window defaults
-	m_window_width = 800;
-	m_window_height = 600;
+	// Display model defaults
+	m_display = {};
+	m_display.width = 800;
+	m_display.height = 600;
+#ifdef DEF_WINDOWED_MODE
+	m_display.mode = render::window_mode::windowed;
+#else
+	m_display.mode = render::window_mode::borderless_fullscreen;
+#endif
+	m_display.windowed_borderless = true;
+	m_display.vsync = false;
+	m_display.refresh_rate = 60;
+	m_display.aspect = render::aspect_mode::letterbox;
 
 	// Display/Detail defaults
 	m_show_fps = false;
@@ -80,17 +89,8 @@ void config_manager::set_defaults()
 	m_detail_level = 2;
 	m_dialog_trans = false;
 	m_running_mode = false;
-#ifdef DEF_WINDOWED_MODE
-	m_fullscreen = false;
-#else
-	m_fullscreen = true;
-#endif
 	m_capture_mouse = true;
-	m_borderless = true;
-	m_vsync = false;
-	m_fps_limit = 60;
 	m_background_fps_throttle = true;
-	m_fullscreen_stretch = false;
 	m_upscale_smoothing = true;
 	m_font_smoothing = false;
 	m_tile_grid = false;     // Simple tile grid off by default
@@ -195,11 +195,11 @@ bool config_manager::load(const char* filename)
 			auto& window = j["window"];
 			if (window.contains("width"))
 			{
-				m_window_width = clamp(window["width"].get<int>(), 640, 3840);
+				m_display.width = clamp(window["width"].get<int>(), 1, max_window_width);
 			}
 			if (window.contains("height"))
 			{
-				m_window_height = clamp(window["height"].get<int>(), 480, 2160);
+				m_display.height = clamp(window["height"].get<int>(), 1, max_window_height);
 			}
 		}
 
@@ -227,17 +227,29 @@ bool config_manager::load(const char* filename)
 			{
 				m_running_mode = display["runningMode"].get<bool>();
 			}
-			if (display.contains("fullscreen"))
+			// Window mode: one string; older files had two booleans. "fullscreen" showed the desktop size,
+			// so it becomes borderless fullscreen (no monitor mode switch, the windowed size is kept);
+			// "borderless" was the windowed decoration and becomes windowedBorderless
+			if (display.contains("windowMode") && display["windowMode"].is_string())
 			{
-				m_fullscreen = display["fullscreen"].get<bool>();
+				render::parse_window_mode(display["windowMode"].get<std::string>(), m_display.mode);
+			}
+			else if (display.contains("fullscreen"))
+			{
+				m_display.mode = display["fullscreen"].get<bool>() ? render::window_mode::borderless_fullscreen
+					: render::window_mode::windowed;
+			}
+			if (display.contains("windowedBorderless"))
+			{
+				m_display.windowed_borderless = display["windowedBorderless"].get<bool>();
+			}
+			else if (display.contains("borderless"))
+			{
+				m_display.windowed_borderless = display["borderless"].get<bool>();
 			}
 			if (display.contains("captureMouse"))
 			{
 				m_capture_mouse = display["captureMouse"].get<bool>();
-			}
-			if (display.contains("borderless"))
-			{
-				m_borderless = display["borderless"].get<bool>();
 			}
 			if (display.contains("tileGrid"))
 			{
@@ -249,20 +261,30 @@ bool config_manager::load(const char* filename)
 			}
 			if (display.contains("vsync"))
 			{
-				m_vsync = display["vsync"].get<bool>();
+				m_display.vsync = display["vsync"].get<bool>();
 			}
-			if (display.contains("fpsLimit"))
+			// Refresh rate (0 = unlimited); older files had the frame cap as fpsLimit
+			if (display.contains("refreshRate"))
 			{
-				m_fps_limit = display["fpsLimit"].get<int>();
-				if (m_fps_limit < 0) m_fps_limit = 0;
+				m_display.refresh_rate = (std::max)(display["refreshRate"].get<int>(), 0);
+			}
+			else if (display.contains("fpsLimit"))
+			{
+				m_display.refresh_rate = (std::max)(display["fpsLimit"].get<int>(), 0);
 			}
 			if (display.contains("backgroundFpsThrottle"))
 			{
 				m_background_fps_throttle = display["backgroundFpsThrottle"].get<bool>();
 			}
-			if (display.contains("fullscreenStretch"))
+			// Aspect: "letterbox" / "stretch"; older files had fullscreenStretch
+			if (display.contains("aspect") && display["aspect"].is_string())
 			{
-				m_fullscreen_stretch = display["fullscreenStretch"].get<bool>();
+				render::parse_aspect_mode(display["aspect"].get<std::string>(), m_display.aspect);
+			}
+			else if (display.contains("fullscreenStretch"))
+			{
+				m_display.aspect = display["fullscreenStretch"].get<bool>() ? render::aspect_mode::stretch
+					: render::aspect_mode::letterbox;
 			}
 			if (display.contains("upscaleSmoothing"))
 			{
@@ -285,34 +307,13 @@ bool config_manager::load(const char* filename)
 				m_minimap_zoom_level = clamp(display["minimapZoomLevel"].get<int>(), 0, minimap_zoom_max);
 			}
 		}
-
-		// Validate resolution to nearest 4:3 option
-		bool valid_resolution = false;
-		for (int i = 0; i < s_NumValidResolutions; i++) {
-			if (m_window_width == s_ValidResolutions[i].w && m_window_height == s_ValidResolutions[i].h) {
-				valid_resolution = true;
-				break;
-			}
-		}
-		if (!valid_resolution) {
-			// Find nearest 4:3 resolution
-			int bestIndex = 0;
-			int bestDiff = abs(s_ValidResolutions[0].w - m_window_width) + abs(s_ValidResolutions[0].h - m_window_height);
-			for (int i = 1; i < s_NumValidResolutions; i++) {
-				int diff = abs(s_ValidResolutions[i].w - m_window_width) + abs(s_ValidResolutions[i].h - m_window_height);
-				if (diff < bestDiff) {
-					bestDiff = diff;
-					bestIndex = i;
-				}
-			}
-			m_window_width = s_ValidResolutions[bestIndex].w;
-			m_window_height = s_ValidResolutions[bestIndex].h;
-			m_dirty = true; // Mark dirty so corrected value is saved
-		}
 	}
 	catch (const json::exception&)
 	{
-		// Parse error - keep defaults
+		// Parse error - keep defaults (values read so far stay); nothing is saved now, and the first
+		// later save keeps a copy of the file the player had
+		m_load_failed = true;
+		m_backup_pending = true;
 		return false;
 	}
 
@@ -347,8 +348,8 @@ bool config_manager::save(const char* filename)
 	j["audio"]["uiEnabled"] = m_ui_enabled;
 
 	// hb::shared::render::Window settings
-	j["window"]["width"] = m_window_width;
-	j["window"]["height"] = m_window_height;
+	j["window"]["width"] = m_display.width;
+	j["window"]["height"] = m_display.height;
 
 	// Display/Detail settings
 	j["display"]["showFps"] = m_show_fps;
@@ -356,20 +357,31 @@ bool config_manager::save(const char* filename)
 	j["display"]["detailLevel"] = m_detail_level;
 	j["display"]["dialogTransparency"] = m_dialog_trans;
 	j["display"]["runningMode"] = m_running_mode;
-	j["display"]["fullscreen"] = m_fullscreen;
+	j["display"]["windowMode"] = std::string(render::window_mode_key(m_display.mode));
+	j["display"]["windowedBorderless"] = m_display.windowed_borderless;
 	j["display"]["captureMouse"] = m_capture_mouse;
-	j["display"]["borderless"] = m_borderless;
 	j["display"]["tileGrid"] = m_tile_grid;
 	j["display"]["patchingGrid"] = m_patching_grid;
-	j["display"]["vsync"] = m_vsync;
-	j["display"]["fpsLimit"] = m_fps_limit;
+	j["display"]["vsync"] = m_display.vsync;
+	j["display"]["refreshRate"] = m_display.refresh_rate;
 	j["display"]["backgroundFpsThrottle"] = m_background_fps_throttle;
-	j["display"]["fullscreenStretch"] = m_fullscreen_stretch;
+	j["display"]["aspect"] = std::string(render::aspect_mode_key(m_display.aspect));
 	j["display"]["upscaleSmoothing"] = m_upscale_smoothing;
 	j["display"]["fontSmoothing"] = m_font_smoothing;
 	j["display"]["reducedMotion"] = m_reduced_motion;
 	j["display"]["toggleToChat"] = m_toggle_to_chat;
 	j["display"]["minimapZoomLevel"] = m_minimap_zoom_level;
+
+	if (m_backup_pending)
+	{
+		// The file did not parse at load: keep the player's original once before overwriting it
+		std::error_code ec;
+		std::filesystem::copy_file(filename, std::string(filename) + ".bak",
+			std::filesystem::copy_options::overwrite_existing, ec);
+		if (ec)
+			return false;  // no copy, no overwrite
+		m_backup_pending = false;
+	}
 
 	std::ofstream file(filename);
 	if (!file.is_open())
@@ -523,35 +535,15 @@ void config_manager::set_ui_enabled(bool enabled)
 	}
 }
 
-void config_manager::set_window_size(int width, int height)
+void config_manager::set_display_settings(const render::display_settings& settings)
 {
-	// Validate to nearest 4:3 resolution
-	bool valid = false;
-	for (int i = 0; i < s_NumValidResolutions; i++) {
-		if (width == s_ValidResolutions[i].w && height == s_ValidResolutions[i].h) {
-			valid = true;
-			break;
-		}
-	}
-	if (!valid) {
-		// Snap to nearest valid resolution
-		int bestIndex = 0;
-		int bestDiff = abs(s_ValidResolutions[0].w - width) + abs(s_ValidResolutions[0].h - height);
-		for (int i = 1; i < s_NumValidResolutions; i++) {
-			int diff = abs(s_ValidResolutions[i].w - width) + abs(s_ValidResolutions[i].h - height);
-			if (diff < bestDiff) {
-				bestDiff = diff;
-				bestIndex = i;
-			}
-		}
-		width = s_ValidResolutions[bestIndex].w;
-		height = s_ValidResolutions[bestIndex].h;
-	}
-
-	if (m_window_width != width || m_window_height != height)
+	render::display_settings next = settings;
+	next.width = clamp(next.width, 1, max_window_width);
+	next.height = clamp(next.height, 1, max_window_height);
+	next.refresh_rate = (std::max)(next.refresh_rate, 0);
+	if (m_display != next)
 	{
-		m_window_width = width;
-		m_window_height = height;
+		m_display = next;
 		m_dirty = true;
 		save();
 	}
@@ -608,31 +600,11 @@ void config_manager::set_running_mode_enabled(bool enabled)
 	}
 }
 
-void config_manager::set_fullscreen_enabled(bool enabled)
-{
-	if (m_fullscreen != enabled)
-	{
-		m_fullscreen = enabled;
-		m_dirty = true;
-		save();
-	}
-}
-
 void config_manager::set_mouse_capture_enabled(bool enabled)
 {
 	if (m_capture_mouse != enabled)
 	{
 		m_capture_mouse = enabled;
-		m_dirty = true;
-		save();
-	}
-}
-
-void config_manager::set_borderless_enabled(bool enabled)
-{
-	if (m_borderless != enabled)
-	{
-		m_borderless = enabled;
 		m_dirty = true;
 		save();
 	}
@@ -658,42 +630,11 @@ void config_manager::set_patching_grid_enabled(bool enabled)
 	}
 }
 
-void config_manager::set_vsync_enabled(bool enabled)
-{
-	if (m_vsync != enabled)
-	{
-		m_vsync = enabled;
-		m_dirty = true;
-		save();
-	}
-}
-
-void config_manager::set_fps_limit(int limit)
-{
-	if (limit < 0) limit = 0;
-	if (m_fps_limit != limit)
-	{
-		m_fps_limit = limit;
-		m_dirty = true;
-		save();
-	}
-}
-
 void config_manager::set_background_fps_throttle_enabled(bool enabled)
 {
 	if (m_background_fps_throttle != enabled)
 	{
 		m_background_fps_throttle = enabled;
-		m_dirty = true;
-		save();
-	}
-}
-
-void config_manager::set_fullscreen_stretch_enabled(bool enabled)
-{
-	if (m_fullscreen_stretch != enabled)
-	{
-		m_fullscreen_stretch = enabled;
 		m_dirty = true;
 		save();
 	}

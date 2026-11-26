@@ -202,6 +202,14 @@ void SFMLRenderer::SetRenderWindow(sf::RenderWindow* window)
     if (!window)
         m_in_world = false;  // No window to composite onto; route_to_screen falls back to the world target
 
+    // A recreated window (display mode change) can leave the render textures invalid: rebuild them
+    if (window && m_texturesCreated)
+    {
+        const sf::Vector2u world_size = m_world_target.getSize();
+        if (world_size.x == 0 || world_size.y == 0)
+            m_texturesCreated = false;
+    }
+
     // Create render textures now that we have an OpenGL context
     if (window && !m_texturesCreated)
     {
@@ -272,45 +280,6 @@ int SFMLRenderer::GetFramerateLimit() const
 void SFMLRenderer::SetVSyncMode(bool enabled)
 {
     m_vsync = enabled;
-}
-
-void SFMLRenderer::change_display_mode(hb::shared::types::NativeWindowHandle hWnd)
-{
-    // get the window through the hb::shared::render::Window factory
-    hb::shared::render::IWindow* window = hb::shared::render::Window::get();
-    if (!window)
-        return;
-
-    // Cast to SFMLWindow to access SFML-specific methods
-    SFMLWindow* sfml_window = static_cast<SFMLWindow*>(window);
-
-    // Apply the fullscreen setting to the window
-    // This will recreate the window with the new mode
-    sfml_window->set_fullscreen(m_fullscreen);
-
-    // Update our render window pointer (window was recreated)
-    m_render_window = sfml_window->GetRenderWindow();
-
-    // Ensure the OpenGL context is active after window recreation
-    if (m_render_window)
-    {
-        (void)m_render_window->setActive(true);
-    }
-
-    // Verify render textures are still valid, recreate if needed
-    if (m_texturesCreated)
-    {
-        // Check if textures need to be recreated by verifying they're still valid
-        sf::Vector2u world_size = m_world_target.getSize();
-        if (world_size.x == 0 || world_size.y == 0)
-        {
-            // Textures became invalid, recreate them
-            m_texturesCreated = false;
-            CreateRenderTextures();
-        }
-    }
-
-    refresh_routing();
 }
 
 void SFMLRenderer::begin_frame()

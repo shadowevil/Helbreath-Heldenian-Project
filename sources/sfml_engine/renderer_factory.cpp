@@ -114,6 +114,8 @@ bool Renderer::Set(RendererType type)
             {
                 SFMLWindow* sfmlWindow = static_cast<SFMLWindow*>(window);
                 sfmlRenderer->SetRenderWindow(sfmlWindow->GetRenderWindow());
+                // The renderer mirrors the window's display state (letterbox, stretch, vsync, frame cap)
+                sfmlWindow->push_display_state();
 
                 // Create text renderer; it draws to the renderer's current target (loads the bundled font; check IsFontLoaded)
                 s_pTextRenderer = new hb::shared::text::SFMLTextRenderer(sfmlRenderer);
@@ -217,6 +219,7 @@ bool Window::realize()
         SFMLWindow* sfmlWindow = static_cast<SFMLWindow*>(s_window);
         SFMLRenderer* sfmlRenderer = static_cast<SFMLRenderer*>(renderer);
         sfmlRenderer->SetRenderWindow(sfmlWindow->GetRenderWindow());
+        sfmlWindow->push_display_state();
 
         // Create text renderer now that the renderer has its targets
         if (!s_pTextRenderer)
@@ -269,22 +272,6 @@ void Window::close()
     if (s_window)
     {
         s_window->close();
-    }
-}
-
-void Window::set_size(int width, int height, bool center)
-{
-    if (s_window)
-    {
-        s_window->set_size(width, height, center);
-    }
-}
-
-void Window::set_borderless(bool borderless)
-{
-    if (s_window)
-    {
-        s_window->set_borderless(borderless);
     }
 }
 

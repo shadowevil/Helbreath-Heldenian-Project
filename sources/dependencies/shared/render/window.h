@@ -7,7 +7,9 @@
 #pragma once
 
 #include "native_types.h"
+#include "display_settings.h"
 #include <cstdint>
+#include <vector>
 
 // Forward declare KeyCode enum
 enum class KeyCode : int;
@@ -16,20 +18,6 @@ namespace hb::shared::render {
 
 // Forward declaration
 class IWindowEventHandler;
-
-// Window creation parameters (staged before realize, applied on realize)
-struct window_params
-{
-    const char* title = "Application";
-    int width = 800;
-    int height = 600;
-    bool fullscreen = false;
-    bool borderless = false;
-    bool centered = true;
-    bool mouse_capture_enabled = false;
-    hb::shared::types::NativeInstance native_instance = {};
-    int icon_resource_id = 0;
-};
 
 // Abstract window interface
 class IWindow
@@ -47,33 +35,38 @@ public:
     virtual hb::shared::types::NativeWindowHandle get_handle() const = 0;
     virtual int get_width() const = 0;
     virtual int get_height() const = 0;
-    virtual bool is_fullscreen() const = 0;
+    virtual bool is_fullscreen() const = 0;  // a fullscreen window mode is in effect
     virtual bool is_active() const = 0;
 
-    // ============== Display ==============
-    virtual void set_fullscreen(bool fullscreen) = 0;
-    virtual void set_borderless(bool borderless) = 0;
-    virtual bool is_borderless() const = 0;
-    virtual void set_size(int width, int height, bool center = true) = 0;  // Resize window
+    // ============== Display model (d-038) ==============
+    // The one path that changes how the window is presented. Before realize() it stages the settings and
+    // realize() creates the window from them; after, it changes only what differs: mode, size, exclusive
+    // rate or decoration rebuild the window, while vsync, the frame cap and the aspect change in place.
+    // A mode the platform does not support is folded (exclusive -> borderless on Linux). Returns true when
+    // the request took effect exactly; false when the backend had to fall back (a size or rate the monitor
+    // does not offer, a failed mode switch). get_display_settings() always reports what is in effect.
+    virtual bool apply_display_settings(const display_settings& settings) = 0;
+    virtual const display_settings& get_display_settings() const = 0;
+    virtual bool is_window_mode_supported(window_mode::type mode) const = 0;
+
+    // The monitor's own mode (refresh_rate 0 when the platform cannot tell); valid before realize()
+    virtual display_mode get_desktop_mode() const = 0;
+    // The curated sizes between the logical size and the desktop, plus the desktop, labelled
+    virtual std::vector<resolution_option> get_resolution_options() const = 0;
+    // Unlimited (0) first, then the curated rates plus the driver's, labelled
+    virtual std::vector<refresh_option> get_refresh_options() const = 0;
+
+    // ============== Visibility ==============
     virtual void show() = 0;
     virtual void hide() = 0;
     virtual void set_title(const char* title) = 0;
 
     // ============== Frame Rate ==============
-    virtual void set_framerate_limit(int limit) = 0;  // 0 = unlimited
-    virtual int get_framerate_limit() const = 0;
-    virtual void set_vsync_enabled(bool enabled) = 0;
-    virtual bool is_vsync_enabled() const = 0;
-
     // Background FPS: when set (> 0), the window automatically throttles to
-    // this rate on focus loss and restores the user's limit on focus gain.
+    // this rate on focus loss and restores the display model's cap on focus gain.
     // Set to 0 to disable background throttling (default).
     virtual void set_background_fps_limit(int limit) = 0;
     virtual int get_background_fps_limit() const = 0;
-
-    // ============== Scaling ==============
-    virtual void set_fullscreen_stretch(bool stretch) = 0;
-    virtual bool is_fullscreen_stretch() const = 0;
 
     // ============== Platform (stageable — set before realize) ==============
     virtual void set_native_instance(hb::shared::types::NativeInstance instance) = 0;

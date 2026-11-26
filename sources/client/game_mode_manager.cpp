@@ -9,7 +9,6 @@
 #include "common_types.h"  // For GameClock
 #include "performance_monitor.h"  // For FrameTiming::GetDeltaTime()
 #include "input.h"       // For hb::shared::input::SetSuppressed
-#include "config_manager.h"
 #include "renderer_factory.h"
 #include "log.h"
 #include "agent_journal.h"
@@ -270,12 +269,12 @@ void GameModeManager::apply_screen_change()
             // Apply screen's preferred transition timing for fade-in
             m_config.fade_in_duration = m_pCurrentScreen->get_fade_in_duration();
 
-            // Apply user's configured display settings on every screen transition
+            // Re-push the display state in effect (vsync, frame cap) on every screen transition; nothing
+            // differs, so the window is not rebuilt
             hb::shared::render::IWindow* window = hb::shared::render::Window::get();
             if (window)
             {
-                window->set_vsync_enabled(config_manager::get().is_vsync_enabled());
-                window->set_framerate_limit(config_manager::get().get_fps_limit());
+                window->apply_display_settings(window->get_display_settings());
             }
         }
     }

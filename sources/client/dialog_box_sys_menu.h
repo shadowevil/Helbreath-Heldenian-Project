@@ -6,12 +6,6 @@ namespace hb::client
 	class kit_dialog;
 }
 
-// 4:3 resolution options
-struct Resolution {
-	int width;
-	int height;
-};
-
 class DialogBox_SysMenu : public IDialogBox
 {
 public:
@@ -33,13 +27,8 @@ public:
 	bool on_click() override;
 	PressResult on_press() override;
 
-	// Resolution management
-	static const Resolution s_Resolutions[];
-	static const int s_NumResolutions;
-	static int get_current_resolution_index();
-	static int get_nearest_resolution_index(int width, int height);
+	// Resolution: the next size the window offers (IWindow::get_resolution_options)
 	static void cycle_resolution();
-	static void apply_resolution(int index);
 
 private:
 	// Tab drawing

@@ -28,14 +28,11 @@ public:
     bool init(hb::shared::types::NativeWindowHandle hWnd) override;
     void shutdown() override;
 
-    // Display Modes
-    void set_fullscreen(bool fullscreen) override;
+    // Display Modes (mirrored from the window's display model)
     bool is_fullscreen() const override;
-    void change_display_mode(hb::shared::types::NativeWindowHandle hWnd) override;
+    bool is_fullscreen_stretch() const override;
 
     // Scaling
-    void set_fullscreen_stretch(bool stretch) override;
-    bool is_fullscreen_stretch() const override;
     void set_upscale_smoothing(bool enabled) override;
     bool is_upscale_smoothing() const override;
 
@@ -152,6 +149,10 @@ public:
 
     // Additive offset shader for PutTransSpriteRGB emulation
     const sf::Shader* get_additive_offset_shader() const;
+
+    // The display state SFMLWindow mirrors here (SFMLWindow::push_display_state)
+    void set_fullscreen(bool fullscreen);
+    void set_fullscreen_stretch(bool stretch);
 
     // Engine-owned frame rate control (called from SFMLWindow)
     void SetFramerateLimit(int limit);
