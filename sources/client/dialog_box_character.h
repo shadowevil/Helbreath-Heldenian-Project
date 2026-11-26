@@ -1,6 +1,7 @@
 #pragma once
 #include "dialog_box.h"
 #include "item/item_enums.h"
+#include <string>
 
 namespace hb::client
 {
@@ -29,7 +30,9 @@ public:
 	bool cancels_text_input_on_enable() const override { return false; }
 private:
 	// Helper methods
-	void draw_stat(int x1, int x2, int y, int baseStat, int angelicBonus);
+	// A value centred both ways in its dialog-relative box, the dialog at (x, y)
+	void draw_value(int x, int y, const hb::client::kit_rect& box, const std::string& text,
+		const hb::shared::render::Color& color);
 	void draw_equipped_item(hb::shared::item::EquipPos equipPos, int drawX, int drawY,
 		const char* equip_poi_status, bool highlight, int spriteOffset = 0);
 	// A kit text button at dialog-relative (btnX, btnY) in the dialog's kit frame, hovered when the mouse is on it

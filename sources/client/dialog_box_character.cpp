@@ -89,19 +89,11 @@ DialogBox_Character::DialogBox_Character(CGame* game)
 	set_default_rect(30 , 30 , 270, 376);
 }
 
-// Helper: Display stat with optional angelic bonus (blue if boosted)
-void DialogBox_Character::draw_stat(int x1, int x2, int y, int baseStat, int angelicBonus)
+void DialogBox_Character::draw_value(int x, int y, const hb::client::kit_rect& box, const std::string& text,
+	const hb::shared::render::Color& color)
 {
-	if (angelicBonus == 0)
-	{
-		auto buf = std::format("{}", baseStat);
-		put_aligned_string(x1, x2, y, buf.c_str(), GameColors::UILabel);
-	}
-	else
-	{
-		auto buf = std::format("{}", baseStat + angelicBonus);
-		put_aligned_string(x1, x2, y, buf.c_str(), GameColors::UIModifiedStat);
-	}
+	hb::shared::text::draw_text_aligned(GameFont::Default, x + box.x, y + box.y, box.w, box.h, text.c_str(),
+		hb::shared::text::TextStyle::from_color(color), hb::shared::text::Align::Center);
 }
 
 // Find the topmost equipped slot colliding with the mouse, using the given table.
@@ -185,6 +177,25 @@ namespace
 	// Some others will override such as the character dialog")
 	constexpr hb::client::flourish_style warm_knots{{196, 176, 126}, true, 0.5f};
 
+	// Label and value box rows, dialog-relative; on_draw centres each value in its box
+	struct row
+	{
+		const char* label;
+		hb::client::kit_rect box;
+	};
+	namespace row_id
+	{
+		enum type : uint8_t { level, exp, next_exp, health, mana, stamina, max_load, ek_count, str, dex, intel, mag,
+			vit, chr };
+	}
+	constexpr row rows[] = {
+		{"Level", {176, 104, 77, 17}}, {"EXP", {176, 122, 77, 17}}, {"Next EXP", {176, 140, 77, 17}},
+		{"Health", {176, 170, 77, 17}}, {"Mana", {176, 187, 77, 17}}, {"Stamina", {176, 205, 77, 17}},
+		{"Max.Load", {176, 238, 77, 17}}, {"EK.Count", {176, 255, 77, 17}},
+		{"Str.", {51, 281, 35, 18}}, {"Dex.", {51, 300, 35, 18}}, {"Int.", {134, 281, 35, 18}},
+		{"Mag.", {134, 300, 35, 18}}, {"Vit.", {218, 281, 35, 18}}, {"Chr.", {218, 300, 35, 18}},
+	};
+
 	// The dialog's frame and fixed art from the panel kit, at the original sprite's positions (dialog
 	// coordinates; layout from the approved rebuild). Values, the doll and the buttons are drawn by on_draw on top.
 	void draw_kit_frame(const hb::client::kit_dialog& d)
@@ -200,19 +211,6 @@ namespace
 		d.slot_ring(101, 183);
 		d.slot_ring(34, 195);
 
-		// Label and value box rows; the values themselves are the client's put_aligned_string text
-		struct row
-		{
-			const char* label;
-			hb::client::kit_rect box;
-		};
-		static constexpr row rows[] = {
-			{"Level", {176, 104, 77, 17}}, {"EXP", {176, 122, 77, 17}}, {"Next EXP", {176, 140, 77, 17}},
-			{"Health", {176, 170, 77, 17}}, {"Mana", {176, 187, 77, 17}}, {"Stamina", {176, 205, 77, 17}},
-			{"Max.Load", {176, 238, 77, 17}}, {"EK.Count", {176, 255, 77, 17}},
-			{"Str.", {51, 281, 35, 18}}, {"Dex.", {51, 300, 35, 18}}, {"Int.", {134, 281, 35, 18}},
-			{"Mag.", {134, 300, 35, 18}}, {"Vit.", {218, 281, 35, 18}}, {"Chr.", {218, 300, 35, 18}},
-		};
 		for (const row& r : rows)
 			d.field(r.label, r.box, {});
 
@@ -315,16 +313,19 @@ void DialogBox_Character::on_draw()
 	}
 	put_aligned_string(sX, sX + 275, sY + 69, statusBuf.c_str(), GameColors::UILabel);
 
+	const auto put_value = [&](row_id::type id, const std::string& text) {
+		draw_value(sX, sY, rows[id].box, text, GameColors::UILabel);
+	};
+	// A stat boosted by an angelic is shown with the bonus, in the modified-stat colour
+	const auto put_stat = [&](row_id::type id, int base, int angelic_bonus) {
+		draw_value(sX, sY, rows[id].box, std::format("{}", base + angelic_bonus),
+			angelic_bonus == 0 ? GameColors::UILabel : GameColors::UIModifiedStat);
+	};
+
 	// Level, Exp, Next Exp
-	std::string statBuf;
-	statBuf = std::format("{}", player().m_level);
-	put_aligned_string(sX + 180, sX + 250, sY + 106, statBuf.c_str(), GameColors::UILabel);
-
-	statBuf = m_game->format_comma_number(player().m_exp);
-	put_aligned_string(sX + 180, sX + 250, sY + 125, statBuf.c_str(), GameColors::UILabel);
-
-	statBuf = m_game->format_comma_number(m_game->get_level_exp(player().m_level + 1));
-	put_aligned_string(sX + 180, sX + 250, sY + 142, statBuf.c_str(), GameColors::UILabel);
+	put_value(row_id::level, std::format("{}", player().m_level));
+	put_value(row_id::exp, m_game->format_comma_number(player().m_exp));
+	put_value(row_id::next_exp, m_game->format_comma_number(m_game->get_level_exp(player().m_level + 1)));
 
 	// Calculate max stats
 	int max_hp = hb::shared::calc::max_hp(m_game->m_formula_engine,
@@ -342,37 +343,22 @@ void DialogBox_Character::on_draw()
 		hb::shared::calc::level{(double)player().m_level});
 
 	// HP, MP, SP
-	std::string valueBuf;
-	valueBuf = std::format("{}/{}", player().m_hp, max_hp);
-	put_aligned_string(sX + 180, sX + 250, sY + 173, valueBuf.c_str(), GameColors::UILabel);
+	put_value(row_id::health, std::format("{}/{}", player().m_hp, max_hp));
+	put_value(row_id::mana, std::format("{}/{}", player().m_mp, max_mp));
+	put_value(row_id::stamina, std::format("{}/{}", player().m_sp, max_sp));
 
-	valueBuf = std::format("{}/{}", player().m_mp, max_mp);
-	put_aligned_string(sX + 180, sX + 250, sY + 191, valueBuf.c_str(), GameColors::UILabel);
+	// Max load, enemy kills
+	const int total_weight = inventory_manager::get().calc_total_weight();
+	put_value(row_id::max_load, std::format("{:.2f}/{}", CItem::weight_to_stones(total_weight), max_load));
+	put_value(row_id::ek_count, std::format("{}", player().m_enemy_kill_count));
 
-	valueBuf = std::format("{}/{}", player().m_sp, max_sp);
-	put_aligned_string(sX + 180, sX + 250, sY + 208, valueBuf.c_str(), GameColors::UILabel);
-
-	// Max load
-	int total_weight = inventory_manager::get().calc_total_weight();
-	valueBuf = std::format("{:.2f}/{}", CItem::weight_to_stones(total_weight), max_load);
-	put_aligned_string(sX + 180, sX + 250, sY + 240, valueBuf.c_str(), GameColors::UILabel);
-
-	// Enemy Kills
-	valueBuf = std::format("{}", player().m_enemy_kill_count);
-	put_aligned_string(sX + 180, sX + 250, sY + 257, valueBuf.c_str(), GameColors::UILabel);
-
-	// Stats with angelic bonuses
-	draw_stat(sX + 44, sX + 86, sY + 285, player().m_str, player().m_angelic_str);   // Str
-	draw_stat(sX + 48, sX + 86, sY + 304, player().m_dex, player().m_angelic_dex);   // Dex
-	draw_stat(sX + 131, sX + 171, sY + 285, player().m_int, player().m_angelic_int); // Int
-	draw_stat(sX + 131, sX + 171, sY + 304, player().m_mag, player().m_angelic_mag); // Mag
-
-	// Vit and Chr (no angelic bonus)
-	std::string vitChrBuf;
-	vitChrBuf = std::format("{}", player().m_vit);
-	put_aligned_string(sX + 214, sX + 255, sY + 285, vitChrBuf.c_str(), GameColors::UILabel);
-	vitChrBuf = std::format("{}", player().m_charisma);
-	put_aligned_string(sX + 214, sX + 255, sY + 304, vitChrBuf.c_str(), GameColors::UILabel);
+	// Stats with angelic bonuses; Vit and Chr have none
+	put_stat(row_id::str, player().m_str, player().m_angelic_str);
+	put_stat(row_id::dex, player().m_dex, player().m_angelic_dex);
+	put_stat(row_id::intel, player().m_int, player().m_angelic_int);
+	put_stat(row_id::mag, player().m_mag, player().m_angelic_mag);
+	put_stat(row_id::vit, player().m_vit, 0);
+	put_stat(row_id::chr, player().m_charisma, 0);
 
 	// Build equipment status array
 	char equip_poi_status[DEF_MAXITEMEQUIPPOS];

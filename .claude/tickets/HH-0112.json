@@ -1,0 +1,21 @@
+{
+  "id": "HH-0112",
+  "summary": "Character Info values centred in their kit boxes",
+  "status": "in_review",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    1
+  ],
+  "author": "pm",
+  "created": "2026-11-26T04:21:07Z",
+  "updated": "2026-11-26T04:21:07Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": []
+  },
+  "body": "The Character Info dialog drew its values at the old sprite's text positions (put_aligned_string with hand-placed x ranges and y), not in the kit's value boxes, so several sat high or off-centre (Next EXP, EK.Count, Str/Dex/Int/Mag).\n\nFix: the row table (label, box) is shared, and each value is drawn with draw_text_aligned, Align::Center, over its box rect.\n\n**Done when:** every value is centred both ways in its box, checked in the client.\n\nSource: user request 2026-11-25; DialogBox_Character::on_draw in dialog_box_character.cpp.\n"
+}
