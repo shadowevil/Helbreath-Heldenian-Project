@@ -227,3 +227,5 @@ The client no longer loads the old button and character-card sheet (game_dialogs
 The item-upgrade dialog's item slot is drawn from the panel kit instead of the old game_dialogs sheet 002, which is archived (HH-0093).
 
 The level-up and majestic stat dialogs draw their stat table and +/- buttons from the panel kit, and the value boxes widen when a number is too long to fit (HH-0094). The change-password and notice overlays keep their old sizes without reading the old sheet. The old game_dialogs sheet 003 is archived.
+
+A widened stat value box now shows its number at the same height as the other boxes, not pressed against the top (HH-0111).
