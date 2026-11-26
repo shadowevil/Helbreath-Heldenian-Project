@@ -1,0 +1,24 @@
+{
+  "id": "HH-0122",
+  "summary": "HD Create New Character screen replaces InterfaceNdNewChar",
+  "status": "in_progress",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    12
+  ],
+  "author": "pm",
+  "created": "2026-11-26T04:57:52Z",
+  "updated": "2026-11-26T04:57:52Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "relates_to": [
+      "HH-0108"
+    ]
+  },
+  "body": "The user finished the HD Create New Character art (working/classic_ui/hd/character_creation_screen.png, 2053x1080: a 1920x1080 backdrop plus a strip of eight 48x33 arrow and +/- buttons) and approved the mockup on 2026-11-25 (\"Yes, wire it in\"). Every element keeps its place relative to its panel on the old screen (user: \"The layout should match the existing character selection in relative placement\"); value boxes are recesses cut into the panel like the select screen's (user: \"It should match the other boxes on the character selection screen\").\n\nMockup and spec: .claude/scratch/editor/create_char/ (mockup.png, spec.md). Accepted as mocked up: touching button rows, 20 px help text, the new special-points-left line.\n\n**Done when:** the screen draws from the new art in the client at 4:3 and wide, every control works (name, appearance and stat buttons, presets, Create, Cancel, help text), the old intermediate_screens sheet 006 is archived and no longer loaded, builds clean, review passes.\n\nSource: user, 2026-11-25.\n"
+}

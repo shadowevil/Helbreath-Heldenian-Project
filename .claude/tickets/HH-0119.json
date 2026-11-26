@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-26T04:29:40Z",
-  "updated": "2026-11-26T04:29:40Z",
+  "updated": "2026-11-26T05:05:11Z",
   "links": {
     "commits": [],
     "files": [],
@@ -20,5 +20,5 @@
       "HH-0114"
     ]
   },
-  "body": "Left tab column and Log Out, settings pane with Display and Quality sections, dropdowns and check boxes; every existing setting kept; General opens by default.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n"
+  "body": "Left tab column and Log Out, settings pane with Display and Quality sections, dropdowns and check boxes; every existing setting kept; General opens by default.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n\n**Carried from HH-0116 review, 2026-11-25:** skip direct wheel reads while a dropdown is open (is_open()/list_bounds()); clip option text; call set_screen_size; discard_pending_input when re-shown; defer rebuilds from check-box on_change; field shade awaits the user (d-037).\n\n**User, 2026-11-25:** the open dropdown list uses the kit inset bevel for its border (\"Can we use the inset for the border?\") and keeps its darker stone-cloth background (\"keep the darker background though\"). panel_kit.cpp skin_dropdown currently draws bevel_box_g3_raised: switch it to the inner inset bevel in this sub-task. Mockup: .claude/scratch/coordinator/sysmenu_mockup/b2.png.\n\n**User, 2026-11-25:** \"add a drop shadow behind the drop down? distance of 0 so it just shows a faint shadow behind\". Mockup: black at alpha 150/255, Gaussian blur radius 4, no offset, all round the open list (replaces the 3 px offset shadow). Implement in skin_dropdown.\n\n**User, 2026-11-25:** \"Only the left, right and bottom\" - the 0-distance shadow is clipped at the list's top edge (no shadow above).\n\n**User, 2026-11-25:** \"Slightly darker shadow?\" - shadow alpha 200/255 (was 150), blur 4, left/right/bottom.\n\n**User, 2026-11-25:** \"Increase the visibility of it\" - shadow now black alpha 255, blur radius 6, composited twice, left/right/bottom (supersedes the 200/4 values).\n\n**Tab layout, user 2026-11-25:** \"Add a gameplay and leave general mostly empty as it will be for general information, ping, etc...\"\n- General (default): information only - server name, date and time, ping/latency readout; room for more info later.\n- Graphics: Display (Window Mode, Resolution, Refresh Rate, VSync, Aspect; staged except VSync) and Quality (Detail Level, Transparency, Antialias Font, Antialias Buffer, Map Zoom), plus Show FPS, Show Latency, Power Saving; Tile/Patching Grid where they show today.\n- Audio: Master, Effects, Ambient.\n- Gameplay: Running Mode, Capture Mouse, Reduced Motion, Toggle to Chat.\n- Left column: Log Out / Continue, Restart (when dead).\n"
 }

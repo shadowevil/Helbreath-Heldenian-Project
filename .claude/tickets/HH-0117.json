@@ -1,7 +1,7 @@
 {
   "id": "HH-0117",
   "summary": "Sysmenu 3: display model - window_mode enum, resolution and refresh lists",
-  "status": "open",
+  "status": "in_progress",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-26T04:29:39Z",
-  "updated": "2026-11-26T04:32:25Z",
+  "updated": "2026-11-26T04:54:24Z",
   "links": {
     "commits": [],
     "files": [],
