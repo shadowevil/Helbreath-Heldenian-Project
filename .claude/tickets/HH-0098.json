@@ -1,7 +1,7 @@
 {
   "id": "HH-0098",
   "summary": "game_dialogs 007 (NewExchange): recreate the trade window in the kit",
-  "status": "open",
+  "status": "user_review",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-25T20:25:31Z",
-  "updated": "2026-11-26T04:59:16Z",
+  "updated": "2026-11-26T07:12:44Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "541fb5f5"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
@@ -23,5 +25,5 @@
       "HH-0114"
     ]
   },
-  "body": "The user, 2026-11-25: \"007 - we can recreate that\".\n\nSheet 007 (InterfaceNdNewExchange, 526x360, one frame) is the trade window background. It is drawn only by dialog_box_exchange.cpp:40 (draw_new_dialog_box(InterfaceNdNewExchange, sX, sY, 0), as of 2026-11-25). Recreate it with the panel kit at the same size and position, keeping every slot, label and button where it is now. Then remove InterfaceNdNewExchange, make sprite 7 an empty placeholder and archive 007.png.\n\n**Done when:** the trade window draws from the kit with every item slot, label and button in the same place, 007.png is archived byte-identical to working/archive/interface/game_dialogs/ with an empty manifest placeholder, both builds are clean, and in-client screenshots of the trade window are attached.\n\n**Scheduling, 2026-11-25:** user: \"Start 0098 after the entire system menu and graphics dialog is done.\" Blocked by HH-0114.\n"
+  "body": "The user, 2026-11-25: \"007 - we can recreate that\".\n\nSheet 007 (InterfaceNdNewExchange, 526x360, one frame) is the trade window background. It is drawn only by dialog_box_exchange.cpp:40 (draw_new_dialog_box(InterfaceNdNewExchange, sX, sY, 0), as of 2026-11-25). Recreate it with the panel kit at the same size and position, keeping every slot, label and button where it is now. Then remove InterfaceNdNewExchange, make sprite 7 an empty placeholder and archive 007.png.\n\n**Done when:** the trade window draws from the kit with every item slot, label and button in the same place, 007.png is archived byte-identical to working/archive/interface/game_dialogs/ with an empty manifest placeholder, both builds are clean, and in-client screenshots of the trade window are attached.\n\n**Scheduling, 2026-11-25:** user: \"Start 0098 after the entire system menu and graphics dialog is done.\" Blocked by HH-0114.\n\n**Started, 2026-11-26:** HH-0114 is done; editor dispatched.\n\n**Work, 2026-11-26:** Trade window frame rebuilt from the panel kit at 523x356 (draw_exchange_frame in dialog_box_exchange.cpp: kit frame, \"Exchange Item\" title with divider_wave, two 236x179 kit insets at x 16 and 269, header rule, three column vrules each; item slots, labels and buttons untouched). InterfaceNdNewExchange and its load removed; game_dialogs sprite 7 is an empty manifest placeholder; 007.png archived byte-identical to working/archive/interface/game_dialogs/007_2026-11-26.png (sha256 e20d9281c0789be72b053ffdaf2e4e124f574e65cd8f18a76a1b5aedc57546b1 before and after) and git rm'd. Client builds (0 errors, none of the 80 warnings in touched files), deployed; gen_sprite_index.py --check passes. Static reference-composer preview only (old frame above, kit frame below): .claude/scratch/editor/hh0098/preview.png. In-client screenshots of a live trade still needed.\n\n**Review and commit, 2026-11-26:** review passed (no blocking findings; long comment re-wrapped). Committed 541fb5f5. Archive sha256 e20d9281... matches. Left for the user: an in-client look at a live trade (needs two players) - check the column rules sit clear of the item slots (reviewer: rules 2-4 px left of slot midpoints, copied from the old art).\n"
 }
