@@ -229,3 +229,7 @@ The item-upgrade dialog's item slot is drawn from the panel kit instead of the o
 The level-up and majestic stat dialogs draw their stat table and +/- buttons from the panel kit, and the value boxes widen when a number is too long to fit (HH-0094). The change-password and notice overlays keep their old sizes without reading the old sheet. The old game_dialogs sheet 003 is archived.
 
 A widened stat value box now shows its number at the same height as the other boxes, not pressed against the top (HH-0111).
+
+The Character Info dialog centres every value in its box, across and up-down (HH-0112).
+
+The login screen shows the new HELBREATH / The Heldenian Project logo from the updated art (HH-0113).

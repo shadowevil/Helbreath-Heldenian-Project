@@ -1,7 +1,7 @@
 {
   "id": "HH-0113",
   "summary": "Login screen art: user's logo update wired in",
-  "status": "verified",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-26T04:21:07Z",
-  "updated": "2026-11-26T04:21:07Z",
+  "updated": "2026-11-26T04:21:53Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "513ec65c"
+    ],
     "files": [],
     "tickets": [],
     "relates_to": [
       "HH-0089"
     ]
   },
-  "body": "The user updated working/classic_ui/hd/login_screen.png on 2026-11-25: the HELBREATH / THE HELDENIAN PROJECT logo is added (changed area art x 730-1319, y 174-291, measured by pixel diff; the plate strip and everything else are byte-identical in colour). The staged copy is replaced; the old one is archived at working/archive/interface/front_end/login_screen_2026-11-25.png (sha256 prefix 543a1046423aaf6d, matching the old staged file).\n\nThe logo ends at art y 291, above the login plate (art y 328), so no layout change is needed.\n\n**Done when:** the login screen shows the logo in the client.\n\nSource: user, 2026-11-25 (\"I also updated the loginscreen\", \"Wire it in\").\n"
+  "body": "The user updated working/classic_ui/hd/login_screen.png on 2026-11-25: the HELBREATH / THE HELDENIAN PROJECT logo is added (changed area art x 730-1319, y 174-291, measured by pixel diff; the plate strip and everything else are byte-identical in colour). The staged copy is replaced; the old one is archived at working/archive/interface/front_end/login_screen_2026-11-25.png (sha256 prefix 543a1046423aaf6d, matching the old staged file).\n\nThe logo ends at art y 291, above the login plate (art y 328), so no layout change is needed.\n\n**Done when:** the login screen shows the logo in the client.\n\nSource: user, 2026-11-25 (\"I also updated the loginscreen\", \"Wire it in\").\n\n**Verified, 2026-11-25:** login screen in the client shows the logo above the plate.\n"
 }
