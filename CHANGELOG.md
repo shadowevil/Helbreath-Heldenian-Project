@@ -225,3 +225,5 @@ The character-select buttons' labels are larger, 18 px instead of 14, closer to 
 The client no longer loads the old button and character-card sheet (game_dialogs sprite 10). Its buttons come from the panel kit and its cards from the HD character select screen, so nothing drew from it (HH-0099). The sheet is archived.
 
 The item-upgrade dialog's item slot is drawn from the panel kit instead of the old game_dialogs sheet 002, which is archived (HH-0093).
+
+The level-up and majestic stat dialogs draw their stat table and +/- buttons from the panel kit, and the value boxes widen when a number is too long to fit (HH-0094). The change-password and notice overlays keep their old sizes without reading the old sheet. The old game_dialogs sheet 003 is archived.

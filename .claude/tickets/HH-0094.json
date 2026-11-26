@@ -1,7 +1,7 @@
 {
   "id": "HH-0094",
   "summary": "game_dialogs 003 (Game4): move to kit; add glowing +/- buttons to the kit",
-  "status": "open",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,21 +11,33 @@
   ],
   "author": "pm",
   "created": "2026-11-25T20:24:10Z",
-  "updated": "2026-11-26T02:12:18Z",
+  "updated": "2026-11-26T02:58:02Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "d57716d8"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0092"
     ]
   },
-  "body": "The user, 2026-11-25, sheet by sheet: \"001 - The kit should have all of these\" (HH-0091); \"002 - We can recreate those too\"; \"003 - Should already exist minus the glowing + - buttons - which we can add to the kit and recreate the rest\"; \"004 - The dialog can go as we can recreate it - but the rest can stay.\"; \"005 - that's fine\"; \"006 - We can recreate that as well\"; \"010 - we can remove this entirely since the kit already includes that too\".\n\nSheet 003 (InterfaceNdGame4) is used in about 10 dialogs (stat arrows 5/6, the majestic stat table, map and notice pieces, as of 2026-11-25). User: \"003 - Should already exist minus the glowing + - buttons - which we can add to the kit and recreate the rest\". Map each live frame to its existing kit piece; add the glowing +/- buttons to the panel kit (kit change goes through tools/panel_kit and its build); recreate anything else. Then empty sprite 3 and archive 003.png.\n\n**Done when:** every live use draws from the kit at the same place and with the same look, the sheet's retired frames are no longer loaded, retired images are archived byte-identical to working/archive/interface/game_dialogs/ with empty manifest placeholders, both builds are clean, and in-client screenshots of each affected dialog are attached.\n",
+  "body": "The user, 2026-11-25, sheet by sheet: \"001 - The kit should have all of these\" (HH-0091); \"002 - We can recreate those too\"; \"003 - Should already exist minus the glowing + - buttons - which we can add to the kit and recreate the rest\"; \"004 - The dialog can go as we can recreate it - but the rest can stay.\"; \"005 - that's fine\"; \"006 - We can recreate that as well\"; \"010 - we can remove this entirely since the kit already includes that too\".\n\nSheet 003 (InterfaceNdGame4) is used in about 10 dialogs (stat arrows 5/6, the majestic stat table, map and notice pieces, as of 2026-11-25). User: \"003 - Should already exist minus the glowing + - buttons - which we can add to the kit and recreate the rest\". Map each live frame to its existing kit piece; add the glowing +/- buttons to the panel kit (kit change goes through tools/panel_kit and its build); recreate anything else. Then empty sprite 3 and archive 003.png.\n\n**Done when:** every live use draws from the kit at the same place and with the same look, the sheet's retired frames are no longer loaded, retired images are archived byte-identical to working/archive/interface/game_dialogs/ with empty manifest placeholders, both builds are clean, and in-client screenshots of each affected dialog are attached.\n\n**Closed, 2026-11-25:** committed d57716d8. Both reviews passed (base: Opus; widen delta: Sonnet). The user asked for the widening after seeing the before/after. The stat-table insets are nested and use stone_field (d-037); no other shade was chosen.\n",
   "comments": [
     {
       "author": "pm",
       "at": "2026-11-26T02:12:18Z",
       "body": "User, 2026-11-25: \"Those all can be runtime generated on the base form - the buttons just need added to the kit\". So: the item-upgrade slot panel (002 frame 3), the sheet 003 pieces and the crusade dialog background are built at runtime from the kit's base form. The glowing +/- (003 frames 5/6) become new panel-kit pieces."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-26T02:44:51Z",
+      "body": "Editor, 2026-11-25: done, awaiting PM review (guard 161394b0, 15 files, hand edits plus one checked bytes-preserving script for the five overlays).\n\n- **Glowing +/-: the kit already has them; no kit change.** btn_sq_plus / btn_sq_minus (from panel_building.png in working/classic_ui/hd) are the same art as sheet 003 frames 5/6. Measured mean absolute difference: 3.9-5.7 and 5.2-7.8 per channel out of 255. The unlit pair in the old stat table matches btn_sq_plus_dark / btn_sq_minus_dark (5.9 and 5.6). build_panel_kit.py was not run.\n- **Stat table (frame 4)** is now `IDialogBox::draw_stat_table` (dialog_box.cpp), used by the level-up and majestic dialogs. It draws 13 standard stone_field insets on the frame's cloth grid at the old boxes, measured from frame 4: points box 74,101 18x17; value boxes 104/155, 124+19*row, 34x17. It also draws the unlit kit +/- buttons at 195/210, 127+19*row. On hover the dialogs draw the lit kit pieces in place of frames 5/6. Hit rects are unchanged.\n- **d-037 flag:** all 13 stat-table insets sit inside the tall frame's panel inset (nested). They use the standard stone_field, shade not chosen. A three-digit value (\"100\") overflows the 18x17 points box slightly, as it did with the old art.\n- **Map (frame 43):** sheet 003 had only frames 0-7, and SFMLSprite::draw returns early for an out-of-range frame, so the draw was a no-op. Removed it and updated the comment; the marker art is untouched.\n- **Placement-only callers:**\n  - Noticement and the four notice overlays centre from kit_layout::notice_size (315x171, frame 2's size), through the new IGameScreen::get_centered_notice_pos.\n  - Change password centres from the new kit_layout::change_password_size (334x256, frame 0's size).\n  - get_centered_dialog_pos(type, frame) became get_centered_pos(width, height); the unused draw_centered_dialog_box is removed.\n- **Sheet 003 retired:**\n  - Archived byte-identical to working/archive/interface/game_dialogs/003_2026-11-25.png (sha256 14b6012eb63525579bf6c326edd65717cd80be5fbaacecb871c01e5e2525cf09; source and copy match).\n  - Manifest entry 3 is now the empty placeholder, 003.png is git rm'd, and index.json is current (`--check` ok).\n  - The load is removed and InterfaceNdGame4 is gone from sprite_id.h. The placeholder comment now lists sprites 1 (HH-0091), 2 and 3.\n- **Build:** -Target Game -Config Debug clean (0 errors); client deployed (003.png removed). Server untouched and not rebuilt.\n- **Captures** (in-client, build/screenshots/):\n  - hh0094_before/after_levelup.png\n  - hh0094_before_levelup_hover_plus.png, hh0094_after_levelup_hover.png\n  - hh0094_before/after_majestic.png, hh0094_after_majestic_hover_minus.png (the lit minus)\n  - hh0094_before/after_change_password.png and hh0094_before/after_query_delete.png. Pixel diffs: query-delete identical; change-password identical except the blinking caret and the animated background behind the overlay.\n- **Unverified in-client:**\n  - The noticement (needs a server shutdown notice) and the log-res / force-login / version-mismatch overlays. They use the same notice size.\n  - The map dialog: its drawing is unchanged by construction.\n  - The lit plus in the level-up dialog is mostly under the cursor in its capture; the lit minus is shown in the majestic dialog."
+    },
+    {
+      "author": "client",
+      "at": "2026-11-26T02:56:37Z",
+      "body": "Editor, 2026-11-25: value boxes now grow with their text (user: \"Can we make the inset increase when the numerics get too long for comfort?\"). Delta guard acb65abe; stat-table code only (dialog_box.h/.cpp and the two dialogs' value draws).\n\n- **`IDialogBox::draw_stat_value`** draws each value's inset together with its text (measure_text, default font). `draw_stat_table` now draws only the +/- buttons.\n- **Rule:** a value that fits at its old text place, with 3 UI px to the right edge, keeps the base box and the old text position, so short values look as before. A longer one widens the box to text + 3 px each side and centres the text.\n- **Growth direction and maximum width per box:**\n  - points box: grows both ways, nothing beside it; up to 126 px (x 20 to 146).\n  - current box: grows left toward the label, staying clear of \"Intelligence\", which ends at 84; up to 48 px (x 90 to 138).\n  - next box: grows left, keeping 4 px from the current box; its right edge stays 6 px from the + button; up to 47 px (x 142 to 189).\n- **Captures** (build/screenshots/):\n  - Before: hh0094_after_majestic.png (\"100\" spills out of the 18 px points box).\n  - After: hh0094w_after_majestic_100.png (box widened and centred).\n  - Level-up: hh0094w_after_levelup_points.png and hh0094w_after_levelup_pending.png.\n  - hh0094w_debug_majestic_three_digit.png is a DEBUG capture. The test character can't reach three-digit stats (Set level stops at 19), so a temporary +100 on the displayed stats was built, captured and removed. The rebuild's Build ID matches the pre-debug build (DEV.875+52365).\n  - Three-digit stats (110-168) fit the 34 px boxes without widening. A box widens only at four digits.\n- Build: -Target Game clean; client redeployed without the debug line."
     }
   ]
 }
