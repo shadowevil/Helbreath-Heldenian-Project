@@ -4,11 +4,11 @@
  "ticket": "HH-0054",
  "inputs": {
   "panel_building": {
-   "path": "working/sprite_work/panel_building.png",
+   "path": "working/classic_ui/hd/panel_building.png",
    "sha256": "baf04e68f4bce36231b2e1682a8101dfa34059c2210cbb00a031e73edb560ac6"
   },
   "button_panel": {
-   "path": "working/sprite_work/button_panel.png",
+   "path": "working/classic_ui/hd/button_panel.png",
    "sha256": "6cd9a5a4918fcfbffaf982d33587802a58ac7c134c54be705cd6c729e78982e6"
   }
  },
@@ -1263,7 +1263,7 @@
   },
   "wide_button_label": {
    "font": "liberation_serif_regular.ttf",
-   "px": 14,
+   "px": 18,
    "tracking": 0.5,
    "word_gap": 8,
    "anchor": "cap",

@@ -18,7 +18,7 @@ The client specs are `.claude/design/plans/panel-kit-runtime.md` and `.claude/de
 
 ## Inputs
 
-The art sheets live in `working/sprite_work/`. That folder is gitignored and exists only on the author's machine:
+The art sheets live in `working/classic_ui/hd/`. That folder is gitignored and exists only on the author's machine:
 
 - `panel_building.png`: corners, bevels, rings, flourishes, wood bars, backgrounds and small buttons.
 - `button_panel.png`: the button frame, faces and caps.

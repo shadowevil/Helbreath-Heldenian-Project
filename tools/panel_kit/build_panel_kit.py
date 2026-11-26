@@ -4,8 +4,8 @@ Usage:
   python tools/panel_kit/build_panel_kit.py [--out <dir>] [--panel <png>] [--buttons <png>] [--check] [--dry-run]
 
 Reads the user's art sheets (read only):
-  working/sprite_work/panel_building.png   corners, bevels, rings, flourishes, wood bars, backgrounds, small buttons
-  working/sprite_work/button_panel.png     button frame, faces, arrow caps (the character-select cards are left out:
+  working/classic_ui/hd/panel_building.png   corners, bevels, rings, flourishes, wood bars, backgrounds, small buttons
+  working/classic_ui/hd/button_panel.png     button frame, faces, arrow caps (the character-select cards are left out:
                                            the Character List plates stay as they are)
 Writes into --out (default staged/client/sprites/panelkit/), names lowercase:
   panel_kit.png    one atlas: every piece copied pixel for pixel onto a 2 px padded sheet, plus the baked pieces
@@ -28,7 +28,7 @@ client has (region draws with alpha, tiling, 9-slice; tint + additive where the 
 --dry-run lists the pieces and the files that would be written; writes nothing.
 Writes go to <name>.tmp then rename, PNG first and JSON last, so a failure never leaves a mismatched pair.
 --out may not be under working/ (the user's art folder).
-Exit status 2 for a missing or unreadable input (the art sheets live in working/sprite_work, gitignored, on the
+Exit status 2 for a missing or unreadable input (the art sheets live in working/classic_ui/hd, gitignored, on the
 author's machine) or a build error. Output is deterministic (fixed piece order, no PNG metadata, sorted packing).
 Console text is ASCII. Needs Pillow.
 """
@@ -348,7 +348,7 @@ def recipes():
 								   "bold_passes": "all", "anchor": "cap",
 								   "draws": [{"dx": 0, "dy": 0, "color": "fill", "alpha": 1.0, "blend": "normal"}],
 								   "fill": [239, 222, 206], "fill_hover": [247, 247, 0], "draw_count": 2},
-			"wide_button_label": {"font": "liberation_serif_regular.ttf", "px": 14, "tracking": 0.5, "word_gap": 8,
+			"wide_button_label": {"font": "liberation_serif_regular.ttf", "px": 18, "tracking": 0.5, "word_gap": 8,
 								  "anchor": "cap", "per_word": True,
 								  "draws": [{"dx": 1, "dy": 1, "color": [24, 16, 8], "alpha": 0.8, "blend": "normal",
 											 "bold": True},
@@ -395,7 +395,7 @@ def write_pair(out, files):
 		print("wrote %s (%d bytes, sha256 %s)" % (out / name, len(data), hashlib.sha256(data).hexdigest()))
 
 
-SHEETS_NOTE = "art sheets live in working/sprite_work (gitignored, on the author's machine)"
+SHEETS_NOTE = "art sheets live in working/classic_ui/hd (gitignored, on the author's machine)"
 
 
 def build(panel_path, buttons_path):
@@ -436,8 +436,8 @@ def build(panel_path, buttons_path):
 def main(argv=None):
 	ap = argparse.ArgumentParser(description="Build the runtime panel/button kit (HH-0054).")
 	ap.add_argument("--out", default=str(REPO / "staged" / "client" / "sprites" / "panelkit"))
-	ap.add_argument("--panel", default=str(REPO / "working" / "sprite_work" / "panel_building.png"))
-	ap.add_argument("--buttons", default=str(REPO / "working" / "sprite_work" / "button_panel.png"))
+	ap.add_argument("--panel", default=str(REPO / "working" / "classic_ui" / "hd" / "panel_building.png"))
+	ap.add_argument("--buttons", default=str(REPO / "working" / "classic_ui" / "hd" / "button_panel.png"))
 	ap.add_argument("--check", action="store_true", help="compare a fresh build with --out byte for byte; write nothing")
 	ap.add_argument("--dry-run", action="store_true", help="list pieces and files; write nothing")
 	a = ap.parse_args(argv)
