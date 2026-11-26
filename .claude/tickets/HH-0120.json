@@ -1,7 +1,7 @@
 {
   "id": "HH-0120",
   "summary": "Sysmenu 6: Alt-Enter toggles fullscreen",
-  "status": "open",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-26T04:29:40Z",
-  "updated": "2026-11-26T04:29:40Z",
+  "updated": "2026-11-26T06:54:18Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "e174ed23"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0114"
     ]
   },
-  "body": "Alt-Enter switches between windowed and the saved fullscreen mode outside staging.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n"
+  "body": "Alt-Enter switches between windowed and the saved fullscreen mode outside staging.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n\n**Verified, 2026-11-26:** splash screen (agent) and in game (PM): windowed 1920x1440 -> borderless 2816x1762 -> windowed 1920x1440, chat not opened, saved size kept; review PASS; review's medium point (a '\\r' text event on Linux) fixed by dropping '\\r' while the latch is held. Not verified: exclusive mode, Linux run.\n"
 }

@@ -239,3 +239,9 @@ The panel kit has left and right square arrow buttons for dropdowns (HH-0115), a
 Display settings now go through the graphics layer: one window mode (windowed, borderless or exclusive fullscreen), resolution and refresh lists in every aspect up to the desktop size, and a real refresh rate in exclusive fullscreen on Windows (on Linux, exclusive becomes borderless). Saved settings move to the new keys on first start, and the saved window mode is now applied at start-up (HH-0117).
 
 The Create New Character screen is rebuilt on the new HD art, keeping the original layout, with its own arrow and +/- buttons and the stat-points-left line shown (HH-0122).
+
+The System Menu is rebuilt: a tab column (General for information, Graphics, Audio, Gameplay) with Log Out at its foot, dropdowns and check boxes. Window mode, resolution, refresh rate and aspect are held until Apply, then a "Keep these display settings?" popup reverts them after 15 seconds unless kept; leaving the game or changing maps reverts an unconfirmed change (HH-0118, HH-0119).
+
+Alt-Enter switches between windowed and the last fullscreen mode on every screen (HH-0120). The Linux build and behaviour are checked (HH-0121).
+
+A UI button hidden or disabled mid-click no longer fires on a later click (HH-0123).

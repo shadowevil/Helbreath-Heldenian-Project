@@ -1,7 +1,7 @@
 {
   "id": "HH-0114",
   "summary": "System menu and display handling overhaul, SDL model on our mockup (task)",
-  "status": "open",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,9 +11,11 @@
   ],
   "author": "pm",
   "created": "2026-11-26T04:29:39Z",
-  "updated": "2026-11-26T04:59:15Z",
+  "updated": "2026-11-26T07:05:06Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "e174ed23"
+    ],
     "files": [],
     "tickets": [],
     "blocked_by": [
@@ -29,5 +31,5 @@
       "HH-0098"
     ]
   },
-  "body": "Goal (user, 2026-11-25): \"start the system menu and window handling overhaul to match that of SDL but with our system menu mockup\". Mockup .claude/scratch/coordinator/sysmenu_mockup/b2.png (dropdowns point left collapsed, down open).\n\nPlan, research and decisions: .claude/design/plans/system-menu-display-overhaul.md. Refresh-rate decision still open.\n\n**Done when:** every sub-task is done and the menu, staging and window modes work in game on Windows, with Linux built and checked.\n"
+  "body": "Goal (user, 2026-11-25): \"start the system menu and window handling overhaul to match that of SDL but with our system menu mockup\". Mockup .claude/scratch/coordinator/sysmenu_mockup/b2.png (dropdowns point left collapsed, down open).\n\nPlan, research and decisions: .claude/design/plans/system-menu-display-overhaul.md. Refresh-rate decision still open.\n\n**Done when:** every sub-task is done and the menu, staging and window modes work in game on Windows, with Linux built and checked.\n\n**Done, 2026-11-26:** all sub-tasks done - HH-0115 3a3c150b, HH-0116 d2583b1b, HH-0117 b9a906a6, HH-0118/HH-0119 e80c0a34, HH-0120 e174ed23, HH-0121 verified (Linux), plus HH-0123 bb7b52e8 found on the way. Not verified on any platform: exclusive fullscreen with a real refresh-rate switch on Windows.\n"
 }

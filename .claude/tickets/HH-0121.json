@@ -1,7 +1,7 @@
 {
   "id": "HH-0121",
   "summary": "Sysmenu 7: Linux pass",
-  "status": "open",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-26T04:29:41Z",
-  "updated": "2026-11-26T04:29:41Z",
+  "updated": "2026-11-26T07:05:06Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "e174ed23"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0114"
     ]
   },
-  "body": "Linux build and behaviour; exclusive folded into borderless (user, 2026-11-25).\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n"
+  "body": "Linux build and behaviour; exclusive folded into borderless (user, 2026-11-25).\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n\nLinux verification (editor, 2026-11-26, WSL Ubuntu, Debug):\n- Client build: rc 0, 0 warnings (149 objects recompiled incl. display_settings.h, sfml_window/renderer, config_manager, sys menu, game, game_mode_manager, ccontrols). Server build: rc 0, 0 warnings (only 1 object rebuilt; server does not include the overhaul files). measured.\n- Read paths (verified by reading): is_window_mode_supported false for exclusive; saved exclusive folds to borderless in apply_display_settings and Alt-Enter; resolution list capped by sf::VideoMode::getDesktopMode; refresh list curated only (get_display_refresh_rates empty off Windows); set_display_refresh_rate stubbed false; menu lists only supported modes.\n- Note (not a fault, pre-existing): get_monitor_refresh_rate returns 60 on Linux, so vsync frame cap is 60 there.\n- GUI run under WSLg with a saved \"exclusive\": window opened, borderless at 1408x881, main menu drew, Alt-Enter -> windowed 800x600 (saved windowed), Alt-Enter -> borderless (saved borderless). Screenshots in .claude/scratch/editor/hh0121/. measured.\n- No fixes needed; no files edited.\n\n**Verified, 2026-11-26:** Linux client and server Debug builds, 0 warnings (149 client objects recompiled incl. every overhaul file); Linux paths verified by reading (exclusive unsupported and folded to borderless, desktop-capped resolutions, curated refresh list, Windows rate call stubbed); WSLg run: saved exclusive opened borderless, Alt-Enter windowed <-> borderless and saved. No fix needed. Verifies the overhaul as of e174ed23.\n"
 }
