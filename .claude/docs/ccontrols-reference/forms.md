@@ -43,7 +43,7 @@ hb::client::skin_dropdown(*mode, m_game->get_panel_kit());   // field and list h
 - **Field:** the standard `stone_field` inset shaded to `field_darken` 0.5 (0.75 when disabled). This is the nested-inset case of d-037.
 - **Text:** light text in the default font, drawn at `text_x`.
 - **Arrow:** `btn_sq_left` when collapsed, `btn_sq_down` when open, `btn_sq_left_dark` when disabled.
-- **List:** a `px_black` drop shadow, `stone_cloth` darkened to 0.45, and the raised bevel. The hot row is filled in `row_hover` and the current option gets a gold diamond and gold text. The kit scrollbar appears when the list scrolls.
+- **List:** `stone_cloth` darkened to 0.45 inside the kit inset bevel border, with a black drop shadow at distance 0 on the left, right and bottom only (`shadow` 1.0 = alpha 255, `shadow_blur` 6, `shadow_passes` 2: a Gaussian halo drawn twice). The hot row is filled in `row_hover` and the current option gets a gold diamond and gold text. The kit scrollbar appears when the list scrolls.
 - **Check box:** a shaded inset; when checked, a raised square filled with gold.
 
 The `panel_kit` members `fill`, `diamond`, `dropdown_field`, `list_box` and `check_box` draw these parts directly.

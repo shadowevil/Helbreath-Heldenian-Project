@@ -26,6 +26,8 @@ public:
 
 	bool minus_clicked() const;
 	bool plus_clicked() const;
+	// Drops pending clicks and presses; used when the control is no longer live (hidden or disabled)
+	void cancel_click();
 
 	void update(const input_state& input, const input_state& prev_input) override;
 

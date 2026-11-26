@@ -1,0 +1,24 @@
+{
+  "id": "HH-0123",
+  "summary": "CControls: hidden or disabled button can fire on a later mouse release",
+  "status": "in_progress",
+  "severity": "medium",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    1
+  ],
+  "author": "pm",
+  "created": "2026-11-26T06:40:13Z",
+  "updated": "2026-11-26T06:47:11Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "relates_to": [
+      "HH-0119"
+    ]
+  },
+  "body": "A CControls button whose parent is hidden or disabled stops receiving updates, but control_collection::handle_button_clicks still fires it if its last update saw a click, so it fires again on the next mouse release anywhere. Found while building the system menu (HH-0119): Apply re-applied the display when Keep or Revert was clicked. The menu works around it by giving a control one idle update before hiding or disabling it; other screens that hide or disable buttons are still exposed.\n\nProposed fix (author of HH-0119, unverified): in sources/ccontrols/control_collection.cpp handle_button_clicks, skip buttons that are not visible and enabled (effective, including parents).\n\n**Done when:** the library skips hidden/disabled buttons, the sys menu workaround is removed or kept as harmless, and a check shows a button hidden mid-click does not fire on a later release.\n\nSource: HH-0119 editor report, 2026-11-26.\n"
+}

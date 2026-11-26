@@ -301,13 +301,19 @@ void control_collection::play_click_sound(control* ctrl)
 
 void control_collection::handle_button_clicks()
 {
+	// A button hidden or disabled after its last update (itself or a parent) is no longer updated, so its
+	// click state is stale: drop it instead of firing on a release that has nothing to do with it
 	m_root.walk([this](control& c) {
 		auto* btn = dynamic_cast<button*>(&c);
-		if (btn && btn->was_clicked())
+		if (!btn || !btn->was_clicked())
+			return;
+		if (!btn->is_effectively_visible() || !btn->is_effectively_enabled())
 		{
-			play_click_sound(btn);
-			btn->fire_click();
+			btn->cancel_click();
+			return;
 		}
+		play_click_sound(btn);
+		btn->fire_click();
 	});
 }
 
@@ -318,6 +324,13 @@ void control_collection::handle_enter_key()
 
 void control_collection::handle_toggle_keys(const input_state& input, uint32_t time_ms)
 {
+	// Same stale-click guard as buttons: a toggle that is no longer live is not updated, so its clicks are dropped
+	m_root.walk([](control& c) {
+		auto* tog = dynamic_cast<toggle_button*>(&c);
+		if (tog && (!tog->is_effectively_visible() || !tog->is_effectively_enabled()))
+			tog->cancel_click();
+	});
+
 	auto* focused = m_focus.focused();
 	auto* toggle = dynamic_cast<toggle_button*>(focused);
 

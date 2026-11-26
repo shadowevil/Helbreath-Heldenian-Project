@@ -27,6 +27,12 @@ bool toggle_button::is_plus_held() const { return m_plus_held; }
 bool toggle_button::minus_clicked() const { return m_minus_clicked; }
 bool toggle_button::plus_clicked() const { return m_plus_clicked; }
 
+void toggle_button::cancel_click()
+{
+	m_minus_clicked = m_plus_clicked = false;
+	m_minus_was_held = m_plus_was_held = false;
+}
+
 void toggle_button::fire_change(int delta)
 {
 	if (m_on_change)

@@ -1,7 +1,7 @@
 {
   "id": "HH-0118",
   "summary": "Sysmenu 4: staged Apply with 15 s keep-or-revert popup",
-  "status": "in_progress",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-26T04:29:40Z",
-  "updated": "2026-11-26T05:48:51Z",
+  "updated": "2026-11-26T06:47:00Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "e80c0a34"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0114"
     ]
   },
-  "body": "Snapshot, apply, keep-or-revert popup with countdown; greying rules; pending / apply-at-once footer.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n\n**Carried from HH-0117 re-review, 2026-11-25:** a later menu display change saves the window's settings, which hold a size snapped to a smaller desktop (saved 2560x1440 becomes 1920x1080 on the first vsync toggle). When rebuilding apply/staging, keep the saved width and height unless the change is a resolution change.\n"
+  "body": "Snapshot, apply, keep-or-revert popup with countdown; greying rules; pending / apply-at-once footer.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n\n**Carried from HH-0117 re-review, 2026-11-25:** a later menu display change saves the window's settings, which hold a size snapped to a smaller desktop (saved 2560x1440 becomes 1920x1080 on the first vsync toggle). When rebuilding apply/staging, keep the saved width and height unless the change is a resolution change.\n\n**Editor, 2026-11-26 (checkpoints 9841de85 then 9dc5ebf4, not committed):**\n- Staging in `dialog_box_sys_menu.cpp`: Window Mode, Resolution, Refresh Rate and Aspect are staged. Apply snapshots `get_display_settings()` by value, applies through the window only and opens the keep-or-revert popup: a rivet notice centred on the menu with a 15 s countdown on an absolute GameClock deadline. Keep is the only path that saves. Revert, the timeout and closing the menu re-apply the snapshot and write nothing. A false return from apply adds a warning to the event list.\n- Saved-size bug fixed: one `persist_display(requested, before)` serves every save path (Keep, VSync, Borderless Window). It keeps the config's width and height unless the request changed the size. Verified in game: Keep borderless saved windowMode=borderless and kept 1920x1440.\n- Footer (\"Display change pending\" with Revert and Apply, else \"Changes apply at once\") and greying (Resolution shows the desktop under borderless; Aspect greyed under windowed; Refresh greyed while VSync is on outside exclusive) landed in the HH-0119 rebuild.\n- Verified in game: the timeout revert (windowed -> borderless -> windowed), the popup Revert button, Keep in both directions, Refresh Keep (refreshRate saved) and VSync at once.\n- Found and worked around a CControls bug: a control under a hidden or disabled parent is no longer updated, but `handle_button_clicks` still fires its stale `was_clicked` on the next mouse release anywhere. Apply was re-firing when Keep or Revert was clicked. The client hides and disables through a helper that gives the control one idle update first. The library fix (skip buttons that are not effectively visible and enabled in `control_collection::handle_button_clicks`) belongs in sources/ccontrols and needs its owner.\n- Not covered: `reset_all_for_map_change` disables dialogs without `on_disable`. A map change during the countdown leaves the applied mode in effect but unsaved, so the next start loads the saved mode.\n\n**Verified, 2026-11-26:** in game - staging, Apply, the 15 s popup (timeout, Revert, Keep both ways), VSync live, every tab, dropdown lists, greying, pending footer, wheel on an open list, slider save on release, drag, Log Out/Continue; review PASS after fixes (logout/map-change revert, stale confirm, effective-size save). Not verified: exclusive fullscreen, Restart, a Linux run. User to confirm the extra rows (UI/Music sliders, Whisper/Shout/Guide Map, Borderless Window).\n"
 }

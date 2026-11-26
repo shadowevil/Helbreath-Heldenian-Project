@@ -24,6 +24,12 @@ bool button::is_confirm_pending() const { return m_confirm_pending; }
 
 bool button::was_clicked() const { return m_was_clicked; }
 
+void button::cancel_click()
+{
+	m_was_clicked = false;
+	m_was_held_prev = false;
+}
+
 void button::fire_click()
 {
 	if (m_on_click)

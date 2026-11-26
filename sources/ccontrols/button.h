@@ -23,6 +23,8 @@ public:
 	bool is_confirm_pending() const;
 
 	bool was_clicked() const;
+	// Drops a pending click and press; used when the button is no longer live (hidden or disabled)
+	void cancel_click();
 
 	void update(const input_state& input, const input_state& prev_input) override;
 
