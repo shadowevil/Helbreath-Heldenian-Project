@@ -25,5 +25,5 @@
 
 - Date: 2026-11-25.
 - Quote: "We should follow the standard for every inset. If we inset more than once, then we can talk about another shade" (with a capture of the character dialog).
-- Decided: every recessed panel (inset) in a recreated dialog is the panel kit's standard inset with its standard background, as in the character dialog and the item-upgrade slot (leather). Old art's own shade is not matched per dialog. Only an inset drawn inside another inset is a case for a different shade, and that is raised with the user first.
+- Decided: every recessed panel (inset) in a recreated dialog is the panel kit's standard inset with its standard background (`stone_field`, the kit default, as in the character dialog). The item-upgrade slot's `leather` (HH-0093) sits inside the dialog's inset, so it is the nested case, and the user approved it before this ruling. Old art's own shade is not matched per dialog. Only an inset drawn inside another inset is a case for a different shade, and that is raised with the user first.
 - Recorded in: HH-0093 (item-upgrade slot).
