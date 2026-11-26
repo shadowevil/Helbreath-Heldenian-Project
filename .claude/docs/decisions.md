@@ -59,3 +59,4 @@ Sidecars are under `.claude/docs/decisions/`. Each line: id, title - scope; side
 - d-034 Text uses the classic drop shadow, rarely an outline - black copy +1 px right and down. Read before styling recreated text.
 - d-035 An HD counterpart replaces the lower-quality version - draw HD at every scale, archive the old art. Read before adding or keeping a low-resolution asset that has an HD version.
 - d-036 No fallbacks to old versions; fallbacks only at the user's discretion. Read before keeping an old path or asset beside its replacement.
+- d-037 Every inset uses the standard kit inset; only a nested inset may get another shade, asked first. Read before drawing a recessed panel in a dialog.

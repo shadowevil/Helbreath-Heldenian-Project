@@ -20,3 +20,10 @@
 - Quote: "We should not have fallbacks if we have created new versions - fall backs are only at my discression".
 - Decided: once a new version of an asset or code path exists, the old one is removed rather than kept as a fallback. A fallback exists only when the user asks for it. Extends d-035.
 - Recorded in: HH-0105 (newmaps fallback removed).
+
+## d-037 Every inset uses the standard kit inset; a nested inset may get its own shade
+
+- Date: 2026-11-25.
+- Quote: "We should follow the standard for every inset. If we inset more than once, then we can talk about another shade" (with a capture of the character dialog).
+- Decided: every recessed panel (inset) in a recreated dialog is the panel kit's standard inset with its standard background, as in the character dialog and the item-upgrade slot (leather). Old art's own shade is not matched per dialog. Only an inset drawn inside another inset is a case for a different shade, and that is raised with the user first.
+- Recorded in: HH-0093 (item-upgrade slot).
