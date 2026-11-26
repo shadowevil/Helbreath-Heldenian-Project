@@ -41,7 +41,9 @@ namespace hb::shared::render
 namespace cc
 {
 	class button;
+	class check_box;
 	class control;
+	class dropdown;
 }
 
 namespace hb::client
@@ -114,6 +116,29 @@ namespace hb::client
 		float opacity = 1.0f;
 	};
 
+	// The look of the kit-drawn form controls (cc::dropdown, cc::check_box); the defaults are the system menu
+	// mockup's (b2). The field is the standard inset (d-037) shaded by field_darken: these controls sit in the
+	// settings pane's own inset, the nested case.
+	struct form_style
+	{
+		std::string field = "stone_field";
+		float field_darken = 0.5f;            // the kit's darken f: the field at f brightness (0 = unshaded)
+		float field_darken_disabled = 0.75f;
+		float list_darken = 0.45f;            // the open list's cloth
+		float shadow = 0.45f;                 // the open list's drop shadow opacity
+		int shadow_offset = 3;
+		int text_x = 6;                       // value text from the field's left edge
+		int mark_x = 6;                       // the current option's diamond centre from the row's left edge
+		int row_text_x = 13;                  // option text from the row's left edge
+		hb::shared::render::Color text{239, 222, 206};
+		hb::shared::render::Color text_open{247, 247, 0};
+		hb::shared::render::Color text_disabled{150, 138, 120};
+		hb::shared::render::Color text_current{236, 200, 120};
+		hb::shared::render::Color row_hover{120, 72, 36};
+		hb::shared::render::Color mark{214, 170, 60};          // the current option's diamond, the check box's tick
+		hb::shared::render::Color mark_outline{90, 60, 20};
+	};
+
 	// A kit draw's opacity under the dialog transparency setting (the sprites' 0.25 blend), else opaque
 	constexpr float dialog_alpha(bool transparent)
 	{
@@ -177,6 +202,20 @@ namespace hb::client
 		kit_point flourish_size(std::string_view name, float scale = 0.0f) const;
 		void button(const button_style& style, std::string_view text, const kit_rect& r, bool hover, float alpha = 1.0f) const;
 
+		// ---- Form controls (the cc:: skins below draw with these)
+		void fill(const kit_rect& r, const hb::shared::render::Color& color, float alpha = 1.0f) const;   // solid colour
+		// A diamond centred on (cx, cy): radius in the outline colour, radius - 1 filled
+		void diamond(int cx, int cy, int radius, const hb::shared::render::Color& fill,
+			const hb::shared::render::Color& outline, float alpha = 1.0f) const;
+		// Collapsed dropdown: the shaded field, the value at text_x, a square arrow at the right (left; down when
+		// open; dark when disabled)
+		void dropdown_field(const kit_rect& r, const std::string& value, bool enabled, bool open,
+			const form_style& style = {}, float alpha = 1.0f) const;
+		// An open list's box: a soft drop shadow, the darkened cloth, the raised bevel
+		void list_box(const kit_rect& r, const form_style& style = {}, float alpha = 1.0f) const;
+		// A check box: the shaded field; checked = a raised square filled with the mark colour
+		void check_box(const kit_rect& r, bool checked, bool enabled, const form_style& style = {}, float alpha = 1.0f) const;
+
 		// ---- Text recipes. fill replaces the recipe's "fill" colour (pass the recipe's own via recipe_fill)
 		void text(std::string_view recipe, std::string_view text, int x, int y, text_anchor::type anchor,
 			const hb::shared::render::Color& fill, float alpha = 1.0f) const;
@@ -232,6 +271,11 @@ namespace hb::client
 		std::string m_text;
 		kit_point m_position;
 	};
+
+	// cc:: skins drawn from the kit at the control's screen bounds and opacity. The kit must outlive the handlers.
+	// skin_dropdown sets the field's render handler and the list's (rows, hover, current mark, scrollbar).
+	void skin_dropdown(cc::dropdown& control, const panel_kit& kit, const form_style& style = {});
+	void skin_check_box(cc::check_box& control, const panel_kit& kit, const form_style& style = {});
 
 	// A dialog frame drawn when constructed; components are placed relative to its top-left
 	class kit_dialog

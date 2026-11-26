@@ -104,6 +104,8 @@
     <ClInclude Include="textbox.h" />
     <ClInclude Include="label.h" />
     <ClInclude Include="toggle_button.h" />
+    <ClInclude Include="check_box.h" />
+    <ClInclude Include="dropdown.h" />
     <ClInclude Include="focus_manager.h" />
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +117,8 @@
     <ClCompile Include="textbox.cpp" />
     <ClCompile Include="label.cpp" />
     <ClCompile Include="toggle_button.cpp" />
+    <ClCompile Include="check_box.cpp" />
+    <ClCompile Include="dropdown.cpp" />
     <ClCompile Include="focus_manager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -6,4 +6,5 @@ Static C++20 UI control library (`sources/ccontrols/`), namespace `cc::`, no gam
 
 - `ccontrols-reference/core.md` - include, the one-collection-per-screen pattern, control types and construction, parent/child tree, input and click model, render handlers, state queries, toggle button, click sound, opacity, collection settings, default button, queries, tooltips, debug outlines, what not to do; read first, before building or changing any menu screen. Kept whole at about 10.6 KB (assessed 2026-11-23, HH-0026): one cohesive reference.
 - `ccontrols-reference/text-input.md` - `text_input` and `textbox`: character filter, validation, clipboard, built-in key handling, `draw_text_field`, the input-state helper; read when a screen has a text field.
+- `ccontrols-reference/forms.md` - `dropdown` and `check_box` (options, on_change, list layout, modal open list, overlay order, wheel input, the panel kit skins); read when a screen has a dropdown or check box.
 - `ccontrols-reference/layout.md` - alignment, margins, flow layout, padding and overlap; read when positioning controls by alignment or stacking instead of fixed x/y.

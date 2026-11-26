@@ -24,8 +24,23 @@ hb::shared::geometry::GamePoint world_mouse()
 	return mouse;
 }
 
+namespace
+{
+	int wheel_total = 0;   // wheel deltas of the presented frames so far (commit_mouse_wheel)
+}
+
+void commit_mouse_wheel()
+{
+	wheel_total += hb::shared::input::get_mouse_wheel_delta();
+	hb::shared::input::reset_mouse_wheel_delta();
+}
+
 void fill_input_state(cc::input_state& input)
 {
+	// The wheel is a level (total so far), so a frame updated more than once before it is presented
+	// still scrolls once. A suppressed screen gets it too, so it sees no jump when the suppression ends
+	input.mouse_wheel = wheel_total + hb::shared::input::get_mouse_wheel_delta();
+
 	// When input is suppressed (overlay active over base screen), hide mouse
 	// and skip consuming typed chars / key state so the overlay receives them.
 	bool suppressed = hb::shared::input::is_suppressed();

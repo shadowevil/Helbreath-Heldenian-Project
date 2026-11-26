@@ -13,6 +13,7 @@ class button;
 class textbox;
 class text_input;
 class toggle_button;
+class dropdown;
 
 class control_collection
 {
@@ -60,8 +61,12 @@ public:
 	void set_clipboard_provider(clipboard_get_fn get, clipboard_set_fn set);
 
 	// ===== Per-frame calls =====
-	void update(const input_state& input, uint32_t time_ms);
-	void render() const;
+	// While a dropdown's list is open it takes all input; every other control sees the mouse away and no
+	// navigation keys until the list closes and the mouse button is up
+	void update(const input_state& raw, uint32_t time_ms);
+	void render() const;           // render_tree() then render_overlay()
+	void render_tree() const;      // the controls, depth-first
+	void render_overlay() const;   // an open dropdown's list, over everything drawn before it
 
 	// ===== Queries =====
 	const char* active_tooltip() const;
@@ -83,10 +88,14 @@ private:
 	void handle_toggle_keys(const input_state& input, uint32_t time_ms);
 	void handle_text_input_keys(const input_state& input, uint32_t time_ms);
 	void update_tooltip(uint32_t time_ms);
+	dropdown* open_dropdown();   // closes any other, hidden or disabled open dropdown
+	void route_open_list(const input_state& raw, input_state& input);
 
 	panel m_root;
 	focus_manager m_focus;
-	input_state m_prev_input{};
+	input_state m_prev_input{};   // the input the tree saw (masked while a list is open)
+	input_state m_prev_raw{};     // the input as given
+	bool m_mask_mouse = false;    // a list is open, or closed with the mouse button still down
 	sound_callback m_default_click_sound;
 
 	// Clipboard

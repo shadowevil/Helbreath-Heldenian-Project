@@ -65,6 +65,8 @@ class Screen_Example : public IGameScreen
 | `cc::textbox` | Text input + validation (extends `text_input`) | Yes |
 | `cc::label` | Static text display | No |
 | `cc::toggle_button` | Paired -/+ buttons for value adjustment | Yes |
+| `cc::check_box` | Two-state box (`forms.md`) | Yes |
+| `cc::dropdown` | Option field with a drop-down list (`forms.md`) | Yes |
 | `cc::panel` | Invisible grouping container | No |
 | `cc::control_collection` | Screen-level owner (update + render) | N/A |
 

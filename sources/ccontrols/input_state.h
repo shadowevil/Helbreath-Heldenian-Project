@@ -10,6 +10,9 @@ struct input_state
 	int mouse_y = 0;
 	bool mouse_left_down = false;
 	bool mouse_right_down = false;
+	// Wheel position: the running total of wheel deltas (120 per notch, positive = away from the user), a
+	// level like the keys; the library takes the change since the previous frame
+	int mouse_wheel = 0;
 	bool key_tab = false;
 	bool key_shift = false;
 	bool key_enter = false;

@@ -14,6 +14,8 @@ add_library(CControls STATIC
     textbox.cpp
     label.cpp
     toggle_button.cpp
+    check_box.cpp
+    dropdown.cpp
     focus_manager.cpp
 )
 

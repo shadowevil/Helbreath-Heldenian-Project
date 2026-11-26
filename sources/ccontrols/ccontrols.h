@@ -13,4 +13,6 @@
 #include "textbox.h"
 #include "label.h"
 #include "toggle_button.h"
+#include "check_box.h"
+#include "dropdown.h"
 #include "focus_manager.h"

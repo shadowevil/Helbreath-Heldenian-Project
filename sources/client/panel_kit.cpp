@@ -8,11 +8,14 @@
 #include "text_renderer.h"
 #include "text_lib.h"
 #include "button.h"
+#include "check_box.h"
+#include "dropdown.h"
 #include "json.hpp"
 #include "log.h"
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <fstream>
 #include <functional>
 #include <map>
@@ -853,6 +856,114 @@ namespace hb::client
 
 		if (const kit_data::text_recipe* recipe = k.recipe(style.recipe))
 			k.draw_text(*recipe, text, x + w / 2, y + h / 2, text_anchor::cap, hover ? recipe->fill_hover : recipe->fill, alpha);
+	}
+
+	// ------------------------------------------------------------------ form controls
+
+	void panel_kit::fill(const kit_rect& r, const Color& color, float alpha) const
+	{
+		const kit_data::piece* p = m_data ? m_data->find("px_white") : nullptr;
+		if (!p || r.w <= 0 || r.h <= 0)
+			return;
+		m_data->renderer->draw_texture_region(m_data->sheet.get(), p->x, p->y, static_cast<float>(p->w), static_cast<float>(p->h),
+			static_cast<float>(r.x), static_cast<float>(r.y), static_cast<float>(r.w), static_cast<float>(r.h), alpha,
+			hb::shared::render::draw_tint{color});
+	}
+
+	void panel_kit::diamond(int cx, int cy, int radius, const Color& fill_color, const Color& outline, float alpha) const
+	{
+		// One row per y: half-width radius - |dy|, the outline first and the fill one smaller over it
+		for (int dy = -radius; dy <= radius; dy++)
+		{
+			const int half = radius - std::abs(dy);
+			fill({cx - half, cy + dy, 2 * half + 1, 1}, outline, alpha);
+			if (half > 0 && std::abs(dy) < radius)
+				fill({cx - half + 1, cy + dy, 2 * half - 1, 1}, fill_color, alpha);
+		}
+	}
+
+	void panel_kit::dropdown_field(const kit_rect& r, const std::string& value, bool enabled, bool open,
+		const form_style& style, float alpha) const
+	{
+		if (!m_data)
+			return;
+		inset(r, style.field, enabled ? style.field_darken : style.field_darken_disabled, alpha);
+		const Color& color = !enabled ? style.text_disabled : (open ? style.text_open : style.text);
+		hb::shared::text::draw_text_aligned(hb::shared::text::FONT_ID_DEFAULT, r.x + style.text_x, r.y, r.w - style.text_x, r.h,
+			value.c_str(), hb::shared::text::TextStyle(color, alpha), hb::shared::text::Align::MiddleLeft);
+
+		const std::string_view arrow = !enabled ? "btn_sq_left_dark" : (open ? "btn_sq_down" : "btn_sq_left");
+		if (const kit_data::piece* p = m_data->find(arrow))
+			m_data->draw(p, r.x + r.w - p->w - 2, r.y + (r.h - p->h) / 2, alpha);
+	}
+
+	void panel_kit::list_box(const kit_rect& r, const form_style& style, float alpha) const
+	{
+		if (!m_data)
+			return;
+		const kit_data& k = *m_data;
+		k.stretch("px_black", r.x + style.shadow_offset, r.y + style.shadow_offset, r.w, r.h, style.shadow * alpha);
+		k.tile(k.tile_of("stone_cloth"), r.x, r.y, r.w, r.h, r.x, r.y, alpha);
+		k.stretch("px_black", r.x, r.y, r.w, r.h, (1.0f - style.list_darken) * alpha);
+		raised(r, alpha);
+	}
+
+	void panel_kit::check_box(const kit_rect& r, bool checked, bool enabled, const form_style& style, float alpha) const
+	{
+		inset(r, style.field, enabled ? style.field_darken : style.field_darken_disabled, alpha);
+		if (!checked)
+			return;
+		const kit_rect tick{r.x + 3, r.y + 3, r.w - 6, r.h - 6};
+		raised(tick, alpha);
+		fill({tick.x + 1, tick.y + 1, tick.w - 2, tick.h - 2}, enabled ? style.mark : scaled(style.mark, 0.6f), alpha);
+	}
+
+	void skin_dropdown(cc::dropdown& control, const panel_kit& kit, const form_style& style)
+	{
+		control.set_render_handler([&kit, style](const cc::control& c)
+		{
+			const auto& d = static_cast<const cc::dropdown&>(c);
+			const cc::rect sb = d.screen_bounds();
+			kit.dropdown_field({sb.x, sb.y, sb.w, sb.h}, d.selected_text(), d.is_effectively_enabled(), d.is_open(),
+				style, d.opacity());
+		});
+		control.set_list_render_handler([&kit, style](const cc::control& c)
+		{
+			const auto& d = static_cast<const cc::dropdown&>(c);
+			const float alpha = d.opacity();
+			const cc::rect lb = d.list_bounds();
+			kit.list_box({lb.x, lb.y, lb.w, lb.h}, style, alpha);
+			const int last = d.first_visible() + d.visible_rows();
+			for (int i = d.first_visible(); i < last; i++)
+			{
+				const cc::rect row = d.row_bounds(i);
+				const bool hot = i == d.hot_row();
+				const bool current = i == d.selected();
+				if (hot)
+					kit.fill({row.x, row.y, row.w, row.h}, style.row_hover, alpha);
+				if (current)
+					kit.diamond(row.x + style.mark_x, row.y + row.h / 2, 3, style.mark, style.mark_outline, alpha);
+				const Color& color = hot ? style.text_open : (current ? style.text_current : style.text);
+				hb::shared::text::draw_text_aligned(hb::shared::text::FONT_ID_DEFAULT, row.x + style.row_text_x, row.y,
+					row.w - style.row_text_x, row.h, d.options()[i].c_str(), hb::shared::text::TextStyle(color, alpha),
+					hb::shared::text::Align::MiddleLeft);
+			}
+			if (d.is_scrollable())
+			{
+				const cc::rect bar = d.scrollbar_bounds();
+				kit.scrollbar({bar.x, bar.y, bar.w, bar.h}, d.scroll_pos(), alpha);
+			}
+		});
+	}
+
+	void skin_check_box(cc::check_box& control, const panel_kit& kit, const form_style& style)
+	{
+		control.set_render_handler([&kit, style](const cc::control& c)
+		{
+			const auto& box = static_cast<const cc::check_box&>(c);
+			const cc::rect sb = box.screen_bounds();
+			kit.check_box({sb.x, sb.y, sb.w, sb.h}, box.is_checked(), box.is_effectively_enabled(), style, box.opacity());
+		});
 	}
 
 	void panel_kit::text(std::string_view recipe, std::string_view text, int x, int y, text_anchor::type anchor,

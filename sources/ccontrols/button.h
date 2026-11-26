@@ -26,10 +26,12 @@ public:
 
 	void update(const input_state& input, const input_state& prev_input) override;
 
-private:
+protected:
 	friend class control_collection;
-	void fire_click();
+	// A click, Enter or Space on the focused button; a derived control adds its own action
+	virtual void fire_click();
 
+private:
 	button_callback m_on_click;
 	sound_callback m_click_sound;
 	bool m_has_sound_override = false;

@@ -18,4 +18,9 @@ hb::shared::geometry::GamePoint world_mouse();
 // Call once per frame in on_update() before m_controls.update().
 void fill_input_state(cc::input_state& input);
 
+// Ends a presented frame's wheel input: folds the engine's wheel delta (it accumulates across the skipped
+// frames before a presented one) into the running total fill_input_state reports, then resets it.
+// CGame calls it once per presented frame, in place of reset_mouse_wheel_delta().
+void commit_mouse_wheel();
+
 } // namespace hb::client

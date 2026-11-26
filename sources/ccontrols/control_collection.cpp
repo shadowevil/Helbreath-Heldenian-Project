@@ -3,8 +3,22 @@
 #include "textbox.h"
 #include "text_input.h"
 #include "toggle_button.h"
+#include "dropdown.h"
 
 namespace cc {
+
+namespace {
+
+// The mouse off every control (as the client's suppressed input), its buttons up
+void mask_mouse(input_state& in)
+{
+	in.mouse_x = -10000;
+	in.mouse_y = -10000;
+	in.mouse_left_down = false;
+	in.mouse_right_down = false;
+}
+
+} // namespace
 
 control_collection::control_collection()
 	: m_root(0, {0, 0, 0, 0})
@@ -29,6 +43,8 @@ void control_collection::clear()
 
 	// Reset repeat/edge/tooltip state
 	m_prev_input = {};
+	m_prev_raw = {};
+	m_mask_mouse = false;
 	m_toggle_repeat_dir = 0;
 	m_toggle_repeat_next_ms = 0;
 	m_text_repeat_key = 0;
@@ -79,8 +95,12 @@ void control_collection::set_clipboard_provider(clipboard_get_fn get, clipboard_
 	m_clipboard_set = std::move(set);
 }
 
-void control_collection::update(const input_state& input, uint32_t time_ms)
+void control_collection::update(const input_state& raw, uint32_t time_ms)
 {
+	// An open dropdown list takes the frame's input first; the rest of the tree sees it masked
+	input_state input = raw;
+	route_open_list(raw, input);
+
 	// Edge detection
 	m_mouse_released = !input.mouse_left_down && m_prev_input.mouse_left_down;
 	bool enter_edge = input.key_enter && !m_prev_input.key_enter;
@@ -171,11 +191,66 @@ void control_collection::update(const input_state& input, uint32_t time_ms)
 
 	// 9. Store previous input
 	m_prev_input = input;
+	m_prev_raw = raw;
+}
+
+void control_collection::route_open_list(const input_state& raw, input_state& input)
+{
+	if (dropdown* list = open_dropdown())
+	{
+		const int picked = list->update_list(raw, m_prev_raw);
+		if (picked >= 0)
+		{
+			play_click_sound(list);
+			list->commit(picked);   // the callback may rebuild the controls: list is not used after it
+		}
+		// The tree sees the keys held but no edge, and no typed characters; set after the callback, which
+		// may have cleared the collection, so neither the old tree nor a new one sees the closing key
+		m_mask_mouse = true;
+		input.typed_char_count = 0;
+		mask_mouse(input);
+		m_prev_input = input;
+		return;
+	}
+	if (m_mask_mouse && !raw.mouse_left_down)
+		m_mask_mouse = false;   // the press that closed the list is over
+	if (m_mask_mouse)
+		mask_mouse(input);
+}
+
+dropdown* control_collection::open_dropdown()
+{
+	dropdown* found = nullptr;
+	m_root.walk([&found](control& c) {
+		auto* d = dynamic_cast<dropdown*>(&c);
+		if (!d || !d->is_open())
+			return;
+		if (found || !d->is_effectively_visible() || !d->is_effectively_enabled())
+			d->close();
+		else
+			found = d;
+	});
+	return found;
 }
 
 void control_collection::render() const
 {
+	render_tree();
+	render_overlay();
+}
+
+void control_collection::render_tree() const
+{
 	m_root.render();
+}
+
+void control_collection::render_overlay() const
+{
+	m_root.walk([](const control& c) {
+		auto* d = dynamic_cast<const dropdown*>(&c);
+		if (d && d->is_open() && d->is_effectively_visible())
+			d->render_list();
+	});
 }
 
 const char* control_collection::active_tooltip() const { return m_active_tooltip; }
@@ -196,6 +271,7 @@ bool control_collection::debug_draw_enabled() const { return m_debug_draw; }
 void control_collection::discard_pending_input(const input_state& input)
 {
 	m_prev_input = input;
+	m_prev_raw = input;
 }
 
 void control_collection::play_click_sound(control* ctrl)

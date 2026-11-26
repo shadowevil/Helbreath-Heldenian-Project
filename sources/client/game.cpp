@@ -752,7 +752,7 @@ void CGame::on_render()
 
 	// reset scroll delta now that dialogs have consumed it this frame
 	// (scroll accumulates across skip frames until a rendered frame processes it)
-	hb::shared::input::reset_mouse_wheel_delta();
+	hb::client::commit_mouse_wheel();
 }
 
 
