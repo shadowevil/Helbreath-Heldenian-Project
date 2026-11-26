@@ -170,11 +170,9 @@ void IDialogBox::draw_stat_value(int x, int y, stat_box::type box, int text_y, c
 	// A standard inset on the frame's cloth grid (d-037)
 	m_game->get_panel_kit().inset({x + box_x, y + text_y - 1, box_w, 17}, "stone_field", 0.0f, 1.0f,
 		hb::client::kit_point{x + 1, y + 1});
-	// A value at its base box keeps the old text place; a widened box centres it
-	if (fits)
-		put_string(x + b.text_x, y + text_y, text, color);
-	else
-		put_aligned_string(x + box_x, x + box_x + box_w, y + text_y, text, color);
+	// A value at its base box keeps the old text place; a widened box centres it across, at the same height
+	const int text_x = fits ? b.text_x : box_x + (box_w - text_w) / 2;
+	put_string(x + text_x, y + text_y, text, color);
 }
 
 void IDialogBox::draw_tall_scrollbar(int x, int y, float pos)

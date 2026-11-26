@@ -1,0 +1,21 @@
+{
+  "id": "HH-0110",
+  "summary": "Bank dialog repeats the tail of its help text",
+  "status": "open",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    1
+  ],
+  "author": "pm",
+  "created": "2026-11-26T03:11:29Z",
+  "updated": "2026-11-26T03:11:29Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": []
+  },
+  "body": "The bank dialog shows its help line with the tail repeated: \"Either drag an item to restore from bag or click an item to take out on the list. item to take out on the list.\" Seen in the gallery pass, 2026-11-25 (.claude/scratch/editor/gallery/25_dialog_bank.png). Cause not investigated: a string table entry or the text wrapping.\n\n**Done when:** the bank help text shows once, with the line wrapped cleanly, confirmed in an in-client capture.\n\nSource: gallery capture pass, 2026-11-25.\n"
+}

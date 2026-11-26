@@ -1,0 +1,24 @@
+{
+  "id": "HH-0111",
+  "summary": "Widened stat value text sits high; centre it vertically",
+  "status": "in_progress",
+  "severity": "low",
+  "owner_area": "client",
+  "target_patch": "next",
+  "tags": [
+    3,
+    1
+  ],
+  "author": "pm",
+  "created": "2026-11-26T04:14:02Z",
+  "updated": "2026-11-26T04:14:02Z",
+  "links": {
+    "commits": [],
+    "files": [],
+    "tickets": [],
+    "relates_to": [
+      "HH-0094"
+    ]
+  },
+  "body": "When a stat-table value box widens to fit a long value (HH-0094), its text is drawn with put_aligned_string (Align::TopCenter in a 15 px band), which sits about 2 px higher than the put_string path used by a box at its base size. The majestic dialog's widened points box shows 100 against the top bevel.\n\nMeasured: hh0094_widen.png (2026-11-25), zoomed: widened 100 sits top-heavy; the row boxes (put_string) are centred.\n\n**Done when:** a widened box draws its text at the same y as an unwidened one, centred horizontally, checked in the client on the majestic dialog.\n\nSource: user report 2026-11-25 on .claude/scratch/coordinator/dialogs/hh0094_widen.png; IDialogBox::draw_stat_value in dialog_box.cpp.\n"
+}
