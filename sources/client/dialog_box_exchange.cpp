@@ -15,12 +15,41 @@
 #include <string>
 #include "input.h"
 #include "audio_manager.h"
+#include "panel_kit.h"
 
 using namespace hb::shared::net;
 using namespace hb::shared::item;
 using hb::shared::item::EquipPos;
 using hb::shared::item::to_int;
-using namespace hb::client::sprite_id;
+
+namespace
+{
+	// The old sprite (game_dialogs 007) drew a 523x356 frame with two sunken item panels, each a header strip
+	// over four item columns; the same geometry from the panel kit (HH-0098)
+	constexpr hb::client::kit_point frame_size{523, 356};
+	constexpr int panel_ys = 29;
+	constexpr int panel_w = 236;
+	constexpr int panel_h = 179;
+	constexpr int panel_xs[] = {16, 269};   // yours, then the other player's
+	constexpr int header_rule_y = 54;
+	constexpr int rule_inset = 6;           // the panel's bevel
+	constexpr int column_rule_y = 60;
+	constexpr int column_rule_h = 143;
+	constexpr int column_rule_xs[] = {57, 116, 174};   // from the panel's left edge
+
+	void draw_exchange_frame(const hb::client::panel_kit& kit, int sX, int sY)
+	{
+		const hb::client::kit_dialog dialog(kit, frame_size, hb::client::kit_point{sX, sY});
+		dialog.title("Exchange Item", 16, kit_layout::title_fill, "divider_wave", 14);
+		for (const int panel_x : panel_xs)
+		{
+			dialog.inset({panel_x, panel_ys, panel_w, panel_h});
+			dialog.rule(panel_x + rule_inset, header_rule_y, panel_w - 2 * rule_inset);
+			for (const int rule_x : column_rule_xs)
+				dialog.vrule(panel_x + rule_x, column_rule_y, column_rule_h);
+		}
+	}
+}
 
 DialogBox_Exchange::DialogBox_Exchange(CGame* game)
 	: IDialogBox(DialogBoxId::Exchange, game)
@@ -37,7 +66,7 @@ void DialogBox_Exchange::on_draw()
 	short sY = m_y;
 	short size_x = m_size_x;
 
-	m_game->draw_new_dialog_box(InterfaceNdNewExchange, sX, sY, 0);
+	draw_exchange_frame(m_game->get_panel_kit(), sX, sY);
 
 	switch (m_mode) {
 	case mode::pending:

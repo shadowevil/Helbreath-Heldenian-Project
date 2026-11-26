@@ -245,3 +245,5 @@ The System Menu is rebuilt: a tab column (General for information, Graphics, Aud
 Alt-Enter switches between windowed and the last fullscreen mode on every screen (HH-0120). The Linux build and behaviour are checked (HH-0121).
 
 A UI button hidden or disabled mid-click no longer fires on a later click (HH-0123).
+
+The trade window frame is drawn from the panel kit at the same size and position, with the standard inset in its two panels; the old baked frame is retired (HH-0098).
