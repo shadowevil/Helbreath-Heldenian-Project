@@ -233,3 +233,9 @@ A widened stat value box now shows its number at the same height as the other bo
 The Character Info dialog centres every value in its box, across and up-down (HH-0112).
 
 The login screen shows the new HELBREATH / The Heldenian Project logo from the updated art (HH-0113).
+
+The panel kit has left and right square arrow buttons for dropdowns (HH-0115), and the UI controls gain a dropdown and a check box (HH-0116). Nothing uses them yet; the system menu rebuild will.
+
+Display settings now go through the graphics layer: one window mode (windowed, borderless or exclusive fullscreen), resolution and refresh lists in every aspect up to the desktop size, and a real refresh rate in exclusive fullscreen on Windows (on Linux, exclusive becomes borderless). Saved settings move to the new keys on first start, and the saved window mode is now applied at start-up (HH-0117).
+
+The Create New Character screen is rebuilt on the new HD art, keeping the original layout, with its own arrow and +/- buttons and the stat-points-left line shown (HH-0122).

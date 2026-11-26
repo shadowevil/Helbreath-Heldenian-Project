@@ -1,7 +1,7 @@
 {
   "id": "HH-0116",
   "summary": "Sysmenu 2: cc::dropdown and check box controls",
-  "status": "in_progress",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-26T04:29:39Z",
-  "updated": "2026-11-26T04:31:40Z",
+  "updated": "2026-11-26T04:54:18Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "d2583b1b"
+    ],
     "files": [],
     "tickets": [],
     "blocks": [
       "HH-0114"
     ]
   },
-  "body": "A CControls dropdown: collapsed field with left arrow, open list with down arrow, hover, current mark, scroll when long, closes on outside click or Esc; a check box if missing.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n"
+  "body": "A CControls dropdown: collapsed field with left arrow, open list with down arrow, hover, current mark, scroll when long, closes on outside click or Esc; a check box if missing.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n\n## Editor result (2026-11-25, checkpoint c88e8900, not committed)\n\n- New: `sources/ccontrols/dropdown.{h,cpp}` and `check_box.{h,cpp}`. Both derive from `cc::button`, whose `fire_click` is now a protected virtual.\n- Changed: `control_collection` (an open list gets the input first and the rest of the tree sees masked input; `render()` = `render_tree()` + `render_overlay()`), `input_state::mouse_wheel` (a level: the running total), client `fill_input_state` + `commit_mouse_wheel()` (replaces `reset_mouse_wheel_delta` in `CGame::on_render`), and `panel_kit` (`form_style`, `fill`, `diamond`, `dropdown_field`, `list_box`, `check_box`, and the free functions `skin_dropdown` / `skin_check_box`).\n- Docs: `.claude/docs/ccontrols-reference/forms.md` (new sidecar) plus an index line and the core.md type table.\n- Verified:\n  - Game Debug build passed with 0 new warnings (80 pre-existing LNK4099 only).\n  - A scratch harness (10 scenarios: open, pick, outside click, no click-through, Esc not leaking, keyboard, wheel/scrollbar, opening upward, disabled/hidden/clear, a callback that clears) passed under MSVC /W4 and under WSL g++ 13 -Wall -Wextra.\n  - Each new header compiles on its own under GCC.\n  - The kit drawing itself was not seen on screen.\n- Open for the Coordinator/user: the field shade. It is `stone_field` at darken 0.5 (the mockup's look; the nested-inset case of d-037). It lives in `form_style`, so it can be changed in one place.\n\n**Verified, 2026-11-25:** Debug build clean; 10 logic scenarios in a throwaway harness under MSVC /W4 and GCC 13 (deleted after); review PASS. Not yet seen on screen (comes with HH-0119). Carry to HH-0119: (1) dialogs that read get_mouse_wheel_delta() directly must skip the wheel while a dropdown is open; (2) option text is not clipped to the row width; (3) dropdown field shade (stone_field at 0.5, nested inset) awaits the user's OK per d-037.\n"
 }

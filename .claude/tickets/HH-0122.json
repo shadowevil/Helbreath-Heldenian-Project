@@ -1,7 +1,7 @@
 {
   "id": "HH-0122",
   "summary": "HD Create New Character screen replaces InterfaceNdNewChar",
-  "status": "in_progress",
+  "status": "done",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,14 +11,16 @@
   ],
   "author": "pm",
   "created": "2026-11-26T04:57:52Z",
-  "updated": "2026-11-26T04:57:52Z",
+  "updated": "2026-11-26T05:49:37Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "ba7bc4ce"
+    ],
     "files": [],
     "tickets": [],
     "relates_to": [
       "HH-0108"
     ]
   },
-  "body": "The user finished the HD Create New Character art (working/classic_ui/hd/character_creation_screen.png, 2053x1080: a 1920x1080 backdrop plus a strip of eight 48x33 arrow and +/- buttons) and approved the mockup on 2026-11-25 (\"Yes, wire it in\"). Every element keeps its place relative to its panel on the old screen (user: \"The layout should match the existing character selection in relative placement\"); value boxes are recesses cut into the panel like the select screen's (user: \"It should match the other boxes on the character selection screen\").\n\nMockup and spec: .claude/scratch/editor/create_char/ (mockup.png, spec.md). Accepted as mocked up: touching button rows, 20 px help text, the new special-points-left line.\n\n**Done when:** the screen draws from the new art in the client at 4:3 and wide, every control works (name, appearance and stat buttons, presets, Create, Cancel, help text), the old intermediate_screens sheet 006 is archived and no longer loaded, builds clean, review passes.\n\nSource: user, 2026-11-25.\n"
+  "body": "The user finished the HD Create New Character art (working/classic_ui/hd/character_creation_screen.png, 2053x1080: a 1920x1080 backdrop plus a strip of eight 48x33 arrow and +/- buttons) and approved the mockup on 2026-11-25 (\"Yes, wire it in\"). Every element keeps its place relative to its panel on the old screen (user: \"The layout should match the existing character selection in relative placement\"); value boxes are recesses cut into the panel like the select screen's (user: \"It should match the other boxes on the character selection screen\").\n\nMockup and spec: .claude/scratch/editor/create_char/ (mockup.png, spec.md). Accepted as mocked up: touching button rows, 20 px help text, the new special-points-left line.\n\n**Done when:** the screen draws from the new art in the client at 4:3 and wide, every control works (name, appearance and stat buttons, presets, Create, Cancel, help text), the old intermediate_screens sheet 006 is archived and no longer loaded, builds clean, review passes.\n\nSource: user, 2026-11-25.\n\nEditor (2026-11-25): wired in, Debug build clean (0 warnings, 0 errors), not deployed, not committed. Guard checkpoint b4d2a0a5.\n- tools/front_end/make_create_backdrop.py writes staged/client/sprites/interface/front_end/character_create.png (2053x1080, strip kept); name, 6 stat and 3 HP/MP/SP recesses baked with recess()'s numbers; README updated.\n- screen_create_new_character.{cpp,h}: cover-fit backdrop; the old layout mapped per panel face (art px constants shared with the script); strip buttons as 22 cc::buttons (dark, lit on hover/hold); kit buttons via draw_text_button_in; help text hover zones are cc::panel controls; points-left line added; presets folded into apply_class_preset. Agent names kept (minus/plus now separate ids).\n- intermediate_screens 006 archived to working/archive/interface/intermediate_screens/006_2026-11-25.png (sha256 34b10a1a58a4fc89516aa70e64d0f88678b8c7a55c1ff9dc931421ddbdbf7ee0), manifest placeholder, git rm; the folder is no longer opened at load; InterfaceNdNewChar removed; gen_sprite_index --check ok (index unchanged).\n- Unverified: in-client look and behaviour (needs deploy + capture); name text uses the default font size (draw_text_field measures the caret at the default size).\n\n**Note, 2026-11-25:** the git rm of intermediate_screens/006.png (this ticket's archive step) was committed by mistake inside b9a906a6 (HH-0117). The archive copy and its sha256 are as recorded above.\n\n**Verified, 2026-11-25:** deployed; in the client at 1920x1440 (4:3) the screen draws from the new art; Warrior preset, gender arrow, typing a name, Intelligence help text (fits) and Create enabling checked; Cancel returns. Review PASS. Not checked: a wide (16:9) window, an actual character creation.\n"
 }

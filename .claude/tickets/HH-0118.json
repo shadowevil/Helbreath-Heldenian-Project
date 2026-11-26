@@ -1,7 +1,7 @@
 {
   "id": "HH-0118",
   "summary": "Sysmenu 4: staged Apply with 15 s keep-or-revert popup",
-  "status": "open",
+  "status": "in_progress",
   "severity": "medium",
   "owner_area": "client",
   "target_patch": "next",
@@ -11,7 +11,7 @@
   ],
   "author": "pm",
   "created": "2026-11-26T04:29:40Z",
-  "updated": "2026-11-26T04:29:40Z",
+  "updated": "2026-11-26T05:48:51Z",
   "links": {
     "commits": [],
     "files": [],
@@ -20,5 +20,5 @@
       "HH-0114"
     ]
   },
-  "body": "Snapshot, apply, keep-or-revert popup with countdown; greying rules; pending / apply-at-once footer.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n"
+  "body": "Snapshot, apply, keep-or-revert popup with countdown; greying rules; pending / apply-at-once footer.\n\nPlan: .claude/design/plans/system-menu-display-overhaul.md (part of HH-0114).\n\n**Done when:** built, reviewed and checked in game.\n\n**Carried from HH-0117 re-review, 2026-11-25:** a later menu display change saves the window's settings, which hold a size snapped to a smaller desktop (saved 2560x1440 becomes 1920x1080 on the first vsync toggle). When rebuilding apply/staging, keep the saved width and height unless the change is a resolution change.\n"
 }
