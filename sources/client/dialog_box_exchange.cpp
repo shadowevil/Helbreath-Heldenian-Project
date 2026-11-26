@@ -24,18 +24,20 @@ using hb::shared::item::to_int;
 
 namespace
 {
-	// The old sprite (game_dialogs 007) drew a 523x356 frame with two sunken item panels, each a header strip
-	// over four item columns; the same geometry from the panel kit (HH-0098)
+	// The trade window from the panel kit (HH-0098): a 523x356 frame with one inset per side; inside each, a
+	// name inset spanning the four columns over four column insets, one per item slot (centred on the slots
+	// at 48 + 58 * i from the dialog's left edge, + 20 for the second side)
 	constexpr hb::client::kit_point frame_size{523, 356};
-	constexpr int panel_ys = 29;
+	constexpr int panel_y = 29;
 	constexpr int panel_w = 236;
 	constexpr int panel_h = 179;
 	constexpr int panel_xs[] = {16, 269};   // yours, then the other player's
-	constexpr int header_rule_y = 54;
-	constexpr int rule_inset = 6;           // the panel's bevel
-	constexpr int column_rule_y = 60;
-	constexpr int column_rule_h = 143;
-	constexpr int column_rule_xs[] = {57, 116, 174};   // from the panel's left edge
+	constexpr int pad = 4;                  // panel edge to the nested insets
+	constexpr int header_h = 20;
+	constexpr int gap = 4;                  // between the nested insets
+	constexpr int column_w = 54;
+	constexpr int column_y = panel_y + pad + header_h + gap;
+	constexpr int column_h = panel_y + panel_h - pad - column_y;
 
 	void draw_exchange_frame(const hb::client::panel_kit& kit, int sX, int sY)
 	{
@@ -43,10 +45,10 @@ namespace
 		dialog.title("Exchange Item", 16, kit_layout::title_fill, "divider_wave", 14);
 		for (const int panel_x : panel_xs)
 		{
-			dialog.inset({panel_x, panel_ys, panel_w, panel_h});
-			dialog.rule(panel_x + rule_inset, header_rule_y, panel_w - 2 * rule_inset);
-			for (const int rule_x : column_rule_xs)
-				dialog.vrule(panel_x + rule_x, column_rule_y, column_rule_h);
+			dialog.inset({panel_x, panel_y, panel_w, panel_h});
+			dialog.inset({panel_x + pad, panel_y + pad, panel_w - 2 * pad, header_h});
+			for (int i = 0; i < 4; ++i)
+				dialog.inset({panel_x + pad + i * (column_w + gap), column_y, column_w, column_h});
 		}
 	}
 }
@@ -70,9 +72,9 @@ void DialogBox_Exchange::on_draw()
 
 	switch (m_mode) {
 	case mode::pending:
-		put_aligned_string(sX + 80, sX + 180, sY + 38, player().m_player_name.c_str(), GameColors::UIDarkGreen);
+		put_aligned_string(sX + 20, sX + 248, sY + 38, player().m_player_name.c_str(), GameColors::UIDarkGreen);
 		if (m_slots[4].v1 != -1)
-			put_aligned_string(sX + 250, sX + 540, sY + 38, m_slots[4].str2.c_str(), GameColors::UIDarkGreen);
+			put_aligned_string(sX + 273, sX + 501, sY + 38, m_slots[4].str2.c_str(), GameColors::UIDarkGreen);
 
 		draw_items(sX, sY, mouse_x, mouse_y, 0, 8);
 
@@ -111,9 +113,9 @@ void DialogBox_Exchange::on_draw()
 		break;
 
 	case mode::confirmed:
-		put_aligned_string(sX + 80, sX + 180, sY + 38, player().m_player_name.c_str(), GameColors::UIDarkGreen);
+		put_aligned_string(sX + 20, sX + 248, sY + 38, player().m_player_name.c_str(), GameColors::UIDarkGreen);
 		if (m_slots[4].v1 != -1)
-			put_aligned_string(sX + 250, sX + 540, sY + 38, m_slots[4].str2.c_str(), GameColors::UIDarkGreen);
+			put_aligned_string(sX + 273, sX + 501, sY + 38, m_slots[4].str2.c_str(), GameColors::UIDarkGreen);
 
 		draw_items(sX, sY, mouse_x, mouse_y, 0, 8);
 
