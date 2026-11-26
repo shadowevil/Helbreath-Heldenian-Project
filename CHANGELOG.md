@@ -221,3 +221,5 @@ The client no longer loads the retired monster, newmaps, old exit-screen and old
 The character selection screen uses the user's new HD art (HH-0108). The four character cards are full size, grey normally and gold when selected. The help, account and footer boxes from the original are recreated on the HD panel, with the text and buttons scaled to fit them. The old background is archived.
 
 The character-select buttons' labels are larger, 18 px instead of 14, closer to the original's (HH-0109). Small panel buttons such as Ok and Cancel are unchanged. The panel-kit builder now reads its art from the HD folder.
+
+The client no longer loads the old button and character-card sheet (game_dialogs sprite 10). Its buttons come from the panel kit and its cards from the HD character select screen, so nothing drew from it (HH-0099). The sheet is archived.

@@ -1,24 +1,26 @@
 {
   "id": "HH-0099",
   "summary": "Retire sheet 010 frames 61/62 (character-select cards)",
-  "status": "open",
+  "status": "done",
   "severity": "low",
   "owner_area": "client",
-  "target_patch": "backlog",
+  "target_patch": "next",
   "tags": [
     3,
     2
   ],
   "author": "pm",
   "created": "2026-11-25T21:04:16Z",
-  "updated": "2026-11-25T21:04:16Z",
+  "updated": "2026-11-26T02:03:03Z",
   "links": {
-    "commits": [],
+    "commits": [
+      "35312d33"
+    ],
     "files": [],
     "tickets": [],
     "relates_to": [
       "HH-0097"
     ]
   },
-  "body": "Sheet 010 (InterfaceNdButton) is now drawn only by screen_select_character.cpp, using frame 61 (the plain card) and frame 62 (the gold card on the focused slot). Frame 61 duplicates the card already baked into intermediate_screens 005. The user, 2026-11-25: \"Keep 61/62 for now\" (HH-0097).\n\n**Done when:** frame 62 is recreated (or the focus look is replaced), 61 is dropped, sprite 10 is emptied to a placeholder, and 010.png is archived to working/archive/interface/game_dialogs/.\n\nSource: HH-0097 close-out, 2026-11-25.\n"
+  "body": "Sheet 010 (InterfaceNdButton) is now drawn only by screen_select_character.cpp, using frame 61 (the plain card) and frame 62 (the gold card on the focused slot). Frame 61 duplicates the card already baked into intermediate_screens 005. The user, 2026-11-25: \"Keep 61/62 for now\" (HH-0097).\n\n**Done when:** frame 62 is recreated (or the focus look is replaced), 61 is dropped, sprite 10 is emptied to a placeholder, and 010.png is archived to working/archive/interface/game_dialogs/.\n\nSource: HH-0097 close-out, 2026-11-25.\n\n**Scope change, 2026-11-25:** frames 61/62 are no longer drawn (HH-0108 replaced them with the HD cards), and nothing draws from sheet 010 at all. User: \"Yes, retire it\" - retire the whole sheet.\n\n**Closed, 2026-11-25:** sheet 010 retired in 35312d33. Archive sha256 5359a68e... matches HEAD; client builds and deploys clean; review passed with no findings.\n"
 }
